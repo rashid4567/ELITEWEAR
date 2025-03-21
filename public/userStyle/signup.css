@@ -190,3 +190,8 @@ input::placeholder {
         padding: 0.625rem; 
     } 
 }
+.error-message {
+    color: red;
+    font-size: 0.75rem;
+    display: none;
+}
