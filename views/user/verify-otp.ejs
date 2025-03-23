@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <link rel="stylesheet" href="/userStyle/verify_otp.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="form-container">
+        <div class="form-header">
+            <h1>Enter the OTP</h1>
+            <p>We've sent an email with an activation code to your email <span class="email">test@gmail.com</span></p>
+        </div>
+
+        <form id="otpForm" onsubmit="return validateOtpForm()">
+            <div class="otp-group">
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+                <input type="text" class="otp-input" maxlength="1" required>
+            </div>
+
+            <input type="hidden" name="fullOtp" id="fullOtp">
+            <p class="error-message" id="otpError">Please enter a valid OTP code</p>
+
+            <div class="form-footer">
+                <div class="resend-container">
+                    <span>Send code again</span>
+                    <span class="timer">00:30</span>
+                </div>
+
+                <div class="resend-container">
+                    <span>I didn't receive a code</span>
+                    <button type="button" id="resendBtn" disabled>Resend</button>
+                </div>
+
+                <button type="submit" class="verify-btn">Verify</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.all.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        const otpInputs = document.querySelectorAll('.otp-input');
+        const fullOtpInput = document.getElementById('fullOtp');
+        const resendBtn = document.getElementById('resendBtn');
+        const timerElement = document.querySelector('.timer');
+        const otpError = document.getElementById('otpError');
+
+  
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', () => {
+                if (input.value.length === 1 && index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && input.value === '' && index > 0) {
+                    otpInputs[index - 1].focus();
+                }
+            });
+        });
+
+        function validateOtpForm() {
+            let otpCode = "";
+            otpInputs.forEach(input => {
+                otpCode += input.value;
+            });
+
+            if (otpCode.length !== 5) {
+                otpError.style.display = "block";
+                return false;
+            }
+            
+            fullOtpInput.value = otpCode;
+            otpError.style.display = "none";
+
+         
+            console.log("Submitting OTP:", otpCode);
+
+            $.ajax({
+                type: 'POST',
+                url: '/verify-otp', 
+                contentType: 'application/json',
+                data: JSON.stringify({ otp: otpCode }),
+                success: function (response) {
+                    console.log("Success response:", response);
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Verification Successful',
+                            text: 'Redirecting you to the home page...',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = response.redirectUrl;
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Verification Failed',
+                            text: response.message
+                        });
+                    }
+                },
+                error: function (xhr) {
+                    console.log("Error response:", xhr);
+                    let errorMessage = "Invalid OTP. Please try again.";
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.message) {
+                            errorMessage = response.message;
+                        }
+                    } catch (e) {
+                        console.error("Error parsing error response:", e);
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Verification Failed',
+                        text: errorMessage
+                    });
+                }
+            });
+
+            return false;
+        }
+
+        let timeLeft = 30;
+
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            if (timeLeft > 0) {
+                timeLeft--;
+                setTimeout(updateTimer, 1000);
+            } else {
+                resendBtn.disabled = false;
+                resendBtn.style.opacity = '1';
+                resendBtn.style.cursor = 'pointer';
+            }
+        }
+
+        updateTimer();
+
+        resendBtn.addEventListener('click', function () {
+            if (!this.disabled) {
+             
+                console.log("Requesting OTP resend");
+                
+                $.ajax({
+                    type: 'POST',
+                    url: '/resendotp', 
+                    contentType: 'application/json',
+                    data: JSON.stringify({}), 
+                    success: function (response) {
+                        console.log("Resend response:", response);
+                        if (response.success) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "OTP resent successfully!",
+                                showConfirmButton: false,
+                                timer: 1500
+                            });
+
+                         
+                            otpInputs.forEach(input => {
+                                input.value = '';
+                            });
+                            otpInputs[0].focus();
+
+                            // Reset timer
+                            timeLeft = 30;
+                            updateTimer();
+                            resendBtn.disabled = true;
+                            resendBtn.style.opacity = '0.5';
+                            resendBtn.style.cursor = 'not-allowed';
+                        } else {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Error",
+                                text: response.message
+                            });
+                        }
+                    },
+                    error: function (xhr) {
+                        console.log("Resend error:", xhr);
+                        let errorMessage = "Failed to resend OTP. Please try again later.";
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            console.error("Error parsing error response:", e);
+                        }
+
+                        Swal.fire({
+                            icon: "error",
+                            title: "Failed to resend OTP",
+                            text: errorMessage
+                        });
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +14,7 @@
         <div class="form-group">
             <label for="fullname">Full Name</label>
             <div class="input-wrapper">
-                <input type="text" id="fullname" name="name" placeholder="Enter your full name" required>
+                <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required>
                 <div id="error1" class="error-message"></div>
             </div>
         </div>
@@ -73,13 +72,13 @@
 
         <p class="login-text">Already have an account? <a href="/login">Log in</a></p>
 
-        <button type="submit" class="signup-button">Sign Up</button>
+        <button type="submit" href="verify_otp" class="signup-button">Sign Up</button>
 
         <div class="divider">
             <span>Or Register with</span>
         </div>
 
-        <button type="button" class="google-button">
+        <a type="button"  href="/auth/google" class="google-button">
             <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                 viewBox="0 0 186.69 190.5">
                 <g transform="translate(1184.583 765.171)">
@@ -98,7 +97,7 @@
                 </g>
             </svg>
             Google
-        </button>
+        </a>
     </form>
 
     <script>
@@ -118,14 +117,12 @@
     const referralBtn = document.getElementById('referralBtn');
     const referralCodeInput = document.getElementById('referralCode');
 
-    // Add event listeners for real-time validation
     fullnameInput.addEventListener('blur', validateName);
     emailInput.addEventListener('blur', validateEmail);
     mobileInput.addEventListener('blur', validateMobile);
     passwordInput.addEventListener('input', validatePassword);
     confirmPasswordInput.addEventListener('input', validatePasswordMatch);
 
-    // Toggle password visibility
     const togglePasswordButtons = document.querySelectorAll('.toggle-password');
     togglePasswordButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -133,12 +130,10 @@
             const passwordField = targetId === 'confirm-password' ? 
                 confirmPasswordInput : passwordInput;
             
-            // Toggle type between password and text
             passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
         });
     });
 
-    // Handle referral code button
     referralBtn.addEventListener('click', function() {
         const code = prompt("Enter your referral code:");
         if (code) {
@@ -238,7 +233,6 @@
         element.innerHTML = "";
     }
 
-    // Form submission handler
     signupForm.addEventListener("submit", function(event) {
         const isNameValid = validateName();
         const isEmailValid = validateEmail();
