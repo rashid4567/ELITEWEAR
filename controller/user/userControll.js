@@ -4,6 +4,7 @@ const session = require("express-session");
 const bcrypt = require('bcrypt');
 require("dotenv").config();
 const User = require("../../model/userSChema");
+const { error } = require("console");
 
 const generateOtp = () => {
     return Math.floor(10000 + Math.random() * 90000).toString();
@@ -37,8 +38,13 @@ const sendVerificationEmail = async (email, otp) => {
 
 const pageNotfound = async (req, res) => {
     try {
-        
-        return res.render("page-404");
+        const userId = req.session.user;
+        let userData = null;
+
+        if (userId) {
+            userData = await User.findOne({ _id: userId });
+        }  
+        return res.render("page-404", { user: userData });
     } catch (error) {
         console.error("Error rendering 404 page:", error);
         res.status(500).send("Error loading error page");
@@ -47,12 +53,20 @@ const pageNotfound = async (req, res) => {
 
 const loadHomepage = async (req, res) => {
     try {
-        return res.render("home");
+        const userId = req.session.user;
+        let userData = null;
+
+        if (userId) {
+            userData = await User.findOne({ _id: userId });
+        }
+
+        res.render("home", { user: userData }); 
     } catch (error) {
-        console.log(" Home page is not found");
+        console.log("Error loading home page:", error);
         res.status(500).send("Server error");
     }
 };
+
 
 const userSignup = async (req, res) => {
     try {
@@ -61,18 +75,18 @@ const userSignup = async (req, res) => {
         const { fullname, email, mobile, password, cpassword } = req.body;
 
         if (password !== cpassword) {
-            return res.render("signup", { message: "Passwords do not match" });
+            return res.render("signup", { message: "Passwords do not match", user: null });
         }
 
         const findUser = await User.findOne({ email });
         if (findUser) {
-            return res.render("signup", { message: "User with this Email already exists" });
+            return res.render("signup", { message: "User with this Email already exists", user: null });
         }
 
         const otp = generateOtp();
         const emailSent = await sendVerificationEmail(email, otp);
         if (!emailSent) {
-            return res.render("signup", { message: "Failed to send OTP. Try again." });
+            return res.render("signup", { message: "Failed to send OTP. Try again.", user: null });
         }
 
         req.session.userOtp = otp; 
@@ -88,14 +102,12 @@ const userSignup = async (req, res) => {
 
 const loadUserSignup = async (req, res) => {
     try {
-        return res.render("signup");
+        return res.render("signup", { user: null });
     } catch (error) {
         console.log(" Signup page is not found");
         res.status(500).send("Server issue");
     }
 };
-
-
 
 const securePassword = async (password) => {
     const passwordHash = await bcrypt.hash(password, 10);
@@ -226,7 +238,7 @@ const resendOtp = async (req, res) => {
 const userLogin = async (req, res) => {
     try {
         if(!req.session.user){
-            return res.render("login");
+            return res.render("login", { user: null });
         }else{
             res.redirect('/')
         }
@@ -236,30 +248,50 @@ const userLogin = async (req, res) => {
     }
 };
 
-const login = async (req,res)=>{
+const login = async (req, res) => {
     try {
         const {email, password} = req.body;
-        const findUser = await User.findOne({isAdmin:0, email:email})
-        if(!findUser){
-            return res.rendr("login",{message: "User not found"})
+        console.log("Login attempt with email:", email);
+        
+        const findUser = await User.findOne({isAdmin: 0, email: email});
+        if(!findUser) {
+            return res.render("login", {message: "User not found", user: null});
         }
-        if(findUser.isBlocked){
-            return re.render("login",{message: "User blocked by the admin"})
+        
+        if(findUser.isBlocked) {
+            return res.render("login", {message: "User blocked by the admin", user: null});
         }
-        const passwordMatch = await bcrypt.compare(password,findUser.password)
-        if(!passwordMatch){
-            return res.render('login',{message:"Incorrect password"})
+        
+        const passwordMatch = await bcrypt.compare(password, findUser.password);
+        if(!passwordMatch) {
+            return res.render('login', {message: "Incorrect password", user: null});
         }
+        
         req.session.user = findUser._id;
-        return res.redirect('/')
+        return res.redirect('/');
         
     } catch (error) {
-        console.log("loging error",error)
-        res.render("login",{message:'login failed please try again later'})
-        
+        console.log("Login error:", error);
+        res.render("login", {message: 'Login failed, please try again later', user: null});
     }
 }
 
+const logout = async (req, res) => {
+    try {
+      req.session.destroy((err) => {
+        if (err) {
+          console.log("Error in session destroy:", err.message);
+          return res.redirect('/page-not-found');
+        }
+        res.locals.user = null;
+        res.redirect('/login');
+      });
+    } catch (error) {
+      console.log("Logout error:", error);
+      res.redirect('/page-not-found');
+    }
+};
+  
 module.exports = {
     loadHomepage,
     pageNotfound,
@@ -268,5 +300,6 @@ module.exports = {
     loadUserSignup,
     verifyOtp,
     resendOtp,
-    login
+    login,
+    logout
 };

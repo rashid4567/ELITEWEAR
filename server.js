@@ -7,8 +7,11 @@ const PORT = process.env.PORT || 5000;
 const nocache = require('nocache');
 const connectDB = require('./config/dbs');
 const userRouter = require('./routers/userRoute');
+const adminRouter = require('./routers/adminRoute')
 const { Server } = require('http');
 const passport = require('./config/passport')
+
+
 
 connectDB();
 
@@ -28,7 +31,9 @@ app.use(session({
     }
 
 }))
+app.use('/admin',adminRouter)
 app.use('/',userRouter)
+
 app.use(passport.initialize())
 app.use(passport.session())
 
