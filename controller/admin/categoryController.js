@@ -7,7 +7,7 @@ const categoryInfo = async (req, res) => {
         const skip = (page - 1) * limit;
 
         const categoryData = await Category.find({})
-            .sort({ createdAt: -1 }) 
+            .sort({ addedDate: -1 }) 
             .skip(skip)
             .limit(limit);
 
@@ -23,35 +23,112 @@ const categoryInfo = async (req, res) => {
 
     } catch (error) {
         console.log("Error fetching category data:", error);
-        res.redirect("/pageerror");
+        res.status(500).redirect("/pageerror");
     }
 };
+
 const addCategory = async (req, res) => {
     try {
-        const { name, description } = req.body;
+        const { name, description, stock = 0 } = req.body;
 
+   
         if (!name || !description) {
-            return res.status(400).json({ message: "All fields are required" });
+            return res.status(400).json({ 
+                success: false,
+                message: "Category name and description are required" 
+            });
         }
 
-        let existingCategory = await Category.findOne({ name });
+ 
+        const trimmedName = name.trim().toLowerCase();
+
+        
+        const existingCategory = await Category.findOne({ 
+            name: { $regex: new RegExp(`^${trimmedName}$`, 'i') } 
+        });
+
         if (existingCategory) {
-            return res.status(400).json({ message: "Category already exists" });
+            return res.status(400).json({ 
+                success: false,
+                message: "Category already exists" 
+            });
         }
 
-        const newCategory = new Category({ name, description });
 
+        const newCategory = new Category({ 
+            name: trimmedName.charAt(0).toUpperCase() + trimmedName.slice(1), 
+            description: description.trim(),
+            stock: stock, 
+            offer: 0,     
+            sales: 0  
+        });
+
+       
         await newCategory.save();
-        return res.status(201).json({ message: "Category added successfully" });
+
+        res.status(201).json({ 
+            success: true,
+            message: "Category added successfully" 
+        });
 
     } catch (error) {
-        console.error("Unable to add category:", error);
-        res.status(500).json({ message: "Internal server error" });
+        console.error("Error adding category:", error);
+        
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ 
+                success: false,
+                message: error.message 
+            });
+        }
+
+        res.status(500).json({ 
+            success: false,
+            message: "Internal server error" 
+        });
     }
 };
 
+const toggleCategory = async (req, res) => {
+    try {
+        const { id } = req.body;
+
+        if (!id) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Category ID is required" 
+            });
+        }
+
+        const category = await Category.findById(id);
+
+        if (!category) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Category not found" 
+            });
+        }
+
+       
+        category.isListed = !category.isListed;
+        await category.save();
+
+        res.json({ 
+            success: true, 
+            message: `Category ${category.isListed ? 'listed' : 'unlisted'} successfully`,
+            isListed: category.isListed
+        });
+
+    } catch (error) {
+        console.error("Error toggling category:", error);
+        res.status(500).json({ 
+            success: false, 
+            message: "Internal server error" 
+        });
+    }
+};
 
 module.exports = {
     categoryInfo,
-    addCategory
+    addCategory,
+    toggleCategory
 };
