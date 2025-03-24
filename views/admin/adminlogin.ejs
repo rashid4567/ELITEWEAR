@@ -9,9 +9,7 @@
 <body>
     <div class="login-container">
         <h1>Admin Login</h1>
-        <% if (message) { %>
-            <div class="alert"><%= message %></div>
-        <% } %>
+       
         <form action="/admin/login" method="POST">
             <div class="form-group">
                 <label for="email">Email</label>
@@ -21,6 +19,9 @@
                 <label for="password">Password</label>
                 <div class="input-group">
                     <input type="password" id="password" name="password" required>
+                    <% if (message) { %>
+                        <div class="alert error-alert-message"><%= message %></div>
+                    <% } %>
                     <button type="button" class="toggle-password" onclick="togglePassword()">Show</button>
                 </div>
             </div>

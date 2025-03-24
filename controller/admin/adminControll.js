@@ -12,24 +12,40 @@ const loadLogin = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log("Login attempt:", email);
+        console.log("Login attempt for:", email);
         
         const admin = await User.findOne({ email, isAdmin: true });
 
         if (admin) {
             console.log("Admin found:", admin.email);
+            
+            // Add detailed password debugging
+            console.log("Password attempt:", password.substring(0,1) + "*****");
+            
             const passwordMatch = await bcrypt.compare(password, admin.password);
+            console.log("Password match result:", passwordMatch);
             
             if (passwordMatch) {
+                
                 req.session.admin = admin._id;
-                console.log("Password matched, setting session:", req.session.admin);
-                return res.redirect('/admin');
+                
+               
+                req.session.save(err => {
+                    if (err) {
+                        console.error("Session save error:", err);
+                        return res.render('adminlogin', { message: "Session error" });
+                    }
+                    
+                    console.log("Session saved successfully:", req.session.admin);
+                    console.log("Full session:", JSON.stringify(req.session));
+                    return res.redirect('/admin/dashboard');
+                });
             } else {
                 console.log("Password did not match");
                 return res.render('adminlogin', { message: "Invalid password" });
             }
         } else {
-            console.log("Admin not found");
+            console.log("Admin not found for email:", email);
             return res.render('adminlogin', { message: "Admin not found" });
         }
     } catch (error) {
@@ -41,8 +57,11 @@ const login = async (req, res) => {
 const loadDashboard = async (req, res) => {
     try {
         if (req.session.admin) {
+          
+            console.log("Dashboard accessed with session ID:", req.session.admin);
             return res.render("dashboard");
         } else {
+            console.log("Dashboard access attempt without session");
             return res.redirect("/admin/login");
         }
     } catch (error) {
@@ -53,16 +72,22 @@ const loadDashboard = async (req, res) => {
 
 const logout = async (req, res) => {
     try {
+        if (!req.session.admin) {
+            console.log("Logout attempted without active session");
+            return res.redirect("/admin/login");
+        }
+        
+        const sessionId = req.session.admin;
         req.session.destroy((err) => {
             if (err) {
-                console.log("Error in admin logout:", err);
+                console.error("Error in admin logout:", err);
                 return res.redirect('/admin/errorpage');
             }
-            console.log("Admin logged out successfully");
+            console.log("Admin logged out successfully, session destroyed:", sessionId);
             res.redirect("/admin/login");
         });
     } catch (error) {
-        console.log("Admin logout error:", error);
+        console.error("Admin logout error:", error);
         res.redirect('/admin/errorpage');
     }
 };

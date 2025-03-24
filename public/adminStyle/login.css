@@ -100,3 +100,6 @@ button[type="submit"]:hover {
         padding: 10px 12px;
     }
 }
+.error-alert-message{
+    color: #dc3545;
+}

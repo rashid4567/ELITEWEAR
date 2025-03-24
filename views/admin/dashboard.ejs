@@ -7,58 +7,8 @@
     <link rel="stylesheet" href="/adminStyle/dashboard.css">
 </head>
 <body>
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <h2>ELITE WEAR</h2>
-        </div>
-        <div class="sidebar-menu">
-            <div class="menu-item active">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>Dashboard</span>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-box"></i>
-                <span>Products</span>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-list"></i>
-                <span>Order List</span>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-user"></i>
-                <span>Customer</span>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-chart-line"></i>
-                <span>Sales</span>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-tag"></i>
-                <span>Category</span>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-percent"></i>
-                <span>Coupons</span>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-image"></i>
-                <span>Banner</span>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-        </div>
-        <div class="sidebar-footer">
-            <button class="btn">Account</button>
-            <a href="/admin/logout" class="btn btn-logout">Logout</a>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
+    <%- include("../partials/admin/header") %>
+    <!-- main content -->
     <main class="main-content">
         <!-- Header -->
         <header class="header">

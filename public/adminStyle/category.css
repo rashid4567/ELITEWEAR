@@ -1,0 +1,23 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.btn-sm {
+    font-size: 14px;
+    padding: 5px 10px;
+}
+
+.bi {
+    font-size: 1.2rem;
+    cursor: pointer;
+}

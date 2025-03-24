@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/adminStyle/userManagement.css">
+</head>
+<body>
+    <%- include("../partials/admin/header") %>
+
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="page-header mb-4">
+            <div>
+                <h1 class="h3 fw-bold">CUSTOMER LIST</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                        <li class="breadcrumb-item active">CUSTOMERS</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <form method="GET" action="/admin/customers" class="search-container">
+                    <input type="text" id="searchInput" name="search" class="form-control search-input"
+                           placeholder="Search customer..." value="<%= search || '' %>" oninput="toggleClearButton()">
+                    
+                    <button type="submit" class="search-btn">Search</button>
+                    
+                    <button type="button" id="clearBtn" class="clear-btn" onclick="clearSearch()">❌</button>
+                </form>
+            </div>
+            
+            <div class="col-md-6 text-md-end">
+                <button class="btn btn-light">
+                    <i class="bi bi-filter"></i> Filters
+                </button>
+            </div>
+        </div>
+
+        <!-- Table View -->
+        <div class="card shadow-sm mb-4">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 customer-table">
+                    <thead>
+                        <tr>
+                            <th>Customer Name</th>
+                            <th>Phone</th>
+                            <th>Orders</th>
+                            <th>Balance</th>
+                            <th>Status</th>
+                            <th>Block/Unblock</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (users.length === 0) { %>
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No customers found</td>
+                            </tr>
+                        <% } else { %>
+                            <% users.forEach(user => { %>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar">
+                                            <%= user.fullname.charAt(0) %>
+                                        </div>
+                                        <div>
+                                            <%= user.fullname %>
+                                            <div class="customer-email"><%= user.email %></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><%= user.mobile %></td>
+                                <td>0</td>
+                                <td>$0.00</td>
+                                <td>
+                                    <% if (user.isBlocked) { %>
+                                        <span class="badge bg-danger">Blocked</span>
+                                    <% } else { %>
+                                        <span class="badge bg-success">Active</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm <%= user.isBlocked ? 'btn-light btn-unblock' : 'btn-danger btn-block' %> toggle-button"
+                                        data-user-id="<%= user._id %>">
+                                        <%= user.isBlocked ? 'UNBLOCK' : 'BLOCK' %>
+                                    </button>
+                                </td>
+                                <td>
+                                    <button class="btn btn-light btn-sm rounded-circle">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <% }); %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <% if (pagination.hasPrevPage) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<%= pagination.currentPage - 1 %>&search=<%= search || '' %>" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                <% } %>
+
+                <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+                    <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %>&search=<%= search || '' %>"><%= i %></a>
+                    </li>
+                <% } %>
+
+                <% if (pagination.hasNextPage) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<%= pagination.currentPage + 1 %>&search=<%= search || '' %>" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                <% } %>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+  
+    <script>
+        document.querySelectorAll('.toggle-button').forEach(button => {
+            button.addEventListener('click', function () {
+                const userId = this.getAttribute('data-user-id');
+                const button = this;
+                const isBlocked = button.textContent.trim() === 'UNBLOCK';
+    
+               
+                Swal.fire({
+                    title: `Are you sure?`,
+                    text: `Do you want to ${isBlocked ? 'unblock' : 'block'} this user?`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: isBlocked ? "#28a745" : "#d33",
+                    cancelButtonColor: "#6c757d",
+                    confirmButtonText: isBlocked ? "Yes, Unblock" : "Yes, Block",
+                    cancelButtonText: "Cancel"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                     
+                        const endpoint = isBlocked ? "/admin/unblockCustomer" : "/admin/blockCustomer";
+    
+                        fetch(`${endpoint}?id=${userId}`, { method: "POST" })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    
+                                    button.classList.toggle("btn-danger");
+                                    button.classList.toggle("btn-light");
+                                    button.classList.toggle("btn-block");
+                                    button.classList.toggle("btn-unblock");
+                                    button.textContent = data.isBlocked ? "UNBLOCK" : "BLOCK";
+    
+                                    
+                                    const statusBadge = button.closest("tr").querySelector(".badge");
+                                    statusBadge.textContent = data.isBlocked ? "Blocked" : "Active";
+                                    statusBadge.classList.toggle("bg-danger");
+                                    statusBadge.classList.toggle("bg-success");
+    
+                                   
+                                    Swal.fire({
+                                        title: "Success!",
+                                        text: `User has been ${data.isBlocked ? "blocked" : "unblocked"}.`,
+                                        icon: "success",
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Error:", error);
+                                Swal.fire("Error", "Something went wrong. Please try again.", "error");
+                            });
+                    }
+                });
+            });
+        });
+    
+        function toggleClearButton() {
+            const searchInput = document.getElementById("searchInput");
+            const clearBtn = document.getElementById("clearBtn");
+    
+            if (searchInput.value.length > 0) {
+                clearBtn.style.display = "inline";
+            } else {
+                clearBtn.style.display = "none";
+            }
+        }
+    
+        function clearSearch() {
+            document.getElementById("searchInput").value = "";
+            document.getElementById("clearBtn").style.display = "none";
+            window.location.href = "/admin/customers";
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+</body>
+</html>
