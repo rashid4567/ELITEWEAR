@@ -247,34 +247,51 @@ const userLogin = async (req, res) => {
         res.status(500).send("Server issue");
     }
 };
-
 const login = async (req, res) => {
     try {
-        const {email, password} = req.body;
+        const { email, password } = req.body;
         console.log("Login attempt with email:", email);
-        
-        const findUser = await User.findOne({isAdmin: 0, email: email});
-        if(!findUser) {
-            return res.render("login", {message: "User not found", user: null});
+
+
+        if (!email || !password) {
+            return res.render("login", { message: "Email and password are required", user: null });
         }
-        
-        if(findUser.isBlocked) {
-            return res.render("login", {message: "User blocked by the admin", user: null});
+
+   
+        const findUser = await User.findOne({ isAdmin: 0, email: email });
+
+        if (!findUser) {
+            return res.render("login", { message: "User not found", user: null });
         }
+
         
+        if (findUser.isBlocked) {
+            return res.render("login", { message: "User blocked by the admin", user: null });
+        }
+
+
+        if (!findUser.password) {
+            console.log("Error: No password found for user:", findUser);
+            return res.render("login", { message: "Login failed, please contact support", user: null });
+        }
+
+  
         const passwordMatch = await bcrypt.compare(password, findUser.password);
-        if(!passwordMatch) {
-            return res.render('login', {message: "Incorrect password", user: null});
+
+        if (!passwordMatch) {
+            return res.render("login", { message: "Incorrect password", user: null });
         }
-        
+
+       
         req.session.user = findUser._id;
         return res.redirect('/');
-        
+
     } catch (error) {
-        console.log("Login error:", error);
-        res.render("login", {message: 'Login failed, please try again later', user: null});
+        console.error("Login error:", error);
+        return res.render("login", { message: 'Login failed, please try again later', user: null });
     }
-}
+};
+
 
 const logout = async (req, res) => {
     try {

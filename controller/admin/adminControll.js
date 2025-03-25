@@ -19,7 +19,7 @@ const login = async (req, res) => {
         if (admin) {
             console.log("Admin found:", admin.email);
             
-            // Add detailed password debugging
+      
             console.log("Password attempt:", password.substring(0,1) + "*****");
             
             const passwordMatch = await bcrypt.compare(password, admin.password);

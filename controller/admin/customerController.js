@@ -61,7 +61,7 @@ const customerInfo = async (req, res) => {
 
 const customerBlocked = async (req, res) => {
     try {
-        // Use query params since that's how your frontend is sending the ID
+       
         let id = req.query.id;
         await User.updateOne({ _id: id }, { $set: { isBlocked: true } });
         res.json({ success: true, isBlocked: true });
@@ -73,7 +73,7 @@ const customerBlocked = async (req, res) => {
 
 const customerUnblocked = async (req, res) => {
     try {
-        // Use query params since that's how your frontend is sending the ID
+        
         let id = req.query.id;
         await User.updateOne({ _id: id }, { $set: { isBlocked: false } });
         res.json({ success: true, isBlocked: false });
