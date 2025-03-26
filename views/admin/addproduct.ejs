@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product - Admin Dashboard</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Cropper.js -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+</head>
+
+<body class="bg-gray-50 p-6">
+    <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-8">
+        <% if (locals.error) { %>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">
+                    <%= error %>
+                </span>
+            </div>
+            <% } %>
+
+                <form id="productForm" method="post" action="/admin/addProduct" enctype="multipart/form-data">
+                    <!-- General Information -->
+                    <div class="mb-6">
+                        <h2 class="text-xl font-semibold mb-4">General Information</h2>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
+                                <input type="text" name="productName" class="form-input w-full border rounded px-3 py-2"
+                                    placeholder="Enter product name" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
+                                <input type="number" name="productPrice"
+                                    class="form-input w-full border rounded px-3 py-2" placeholder="Enter price" min="0"
+                                    step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Product Description</label>
+                            <textarea name="productDescription" class="form-input w-full border rounded px-3 py-2"
+                                rows="4" placeholder="Enter product description" required></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Product Images -->
+                    <div class="mb-6">
+                        <h2 class="text-xl font-semibold mb-4">Product Images</h2>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="col-span-2">
+                                <div
+                                    class="upload-zone h-64 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <p class="text-gray-500">Drag and drop main product image or click to upload</p>
+                                    <input type="file" name="mainImage" class="hidden" accept="image/*" required>
+                                </div>
+                            </div>
+                            <div class="grid grid-rows-3 gap-4">
+                                <div
+                                    class="upload-zone h-20 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
+                                    <p class="text-gray-500 text-sm">Additional Image 1</p>
+                                    <input type="file" name="additionalImage1" class="hidden" accept="image/*">
+                                </div>
+                                <div
+                                    class="upload-zone h-20 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
+                                    <p class="text-gray-500 text-sm">Additional Image 2</p>
+                                    <input type="file" name="additionalImage2" class="hidden" accept="image/*">
+                                </div>
+                                <div
+                                    class="upload-zone h-20 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
+                                    <p class="text-gray-500 text-sm">Additional Image 3</p>
+                                    <input type="file" name="additionalImage3" class="hidden" accept="image/*">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Options -->
+                    <div class="mb-6">
+                        <h2 class="text-xl font-semibold mb-4">Product Options</h2>
+                        <div class="grid grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                <select name="productCategory" class="form-input w-full border rounded px-3 py-2"
+                                    required>
+                                    <option value="">Select Category</option>
+                                    <% if (locals.categories && categories.length> 0) { %>
+                                        <% categories.forEach(function(category) { %>
+                                            <option value="<%= category.name %>">
+                                                <%= category.name %>
+                                            </option>
+                                            <% }); %>
+                                                <% } else { %>
+                                                    <option disabled>No categories available</option>
+                                                    <% } %>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Fit Type</label>
+                                <select name="fitType" class="form-input w-full border rounded px-3 py-2" required>
+                                    <option value="">Select Fit Type</option>
+                                    <option value="regular">Regular Fit</option>
+                                    <option value="slim">Slim Fit</option>
+                                    <option value="relaxed">Relaxed Fit</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Sleeve Type</label>
+                                <select name="sleeveType" class="form-input w-full border rounded px-3 py-2" required>
+                                    <option value="">Select Sleeve Type</option>
+                                    <option value="full">Full Sleeve</option>
+                                    <option value="half">Half Sleeve</option>
+                                    <option value="threefourth">Three-Fourth Sleeve</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Specifications -->
+
+                    <div class="mb-6">
+                        <h2 class="text-xl font-semibold mb-4">Product Specifications</h2>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">SKU</label>
+                                <input type="text" name="sku" class="form-input w-full border rounded px-3 py-2"
+                                    placeholder="Enter SKU" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Brand</label>
+                                <input type="text" name="brand" class="form-input w-full border rounded px-3 py-2"
+                                    placeholder="Enter brand" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                                <input type="text" name="productColor"
+                                    class="form-input w-full border rounded px-3 py-2" placeholder="Enter color">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Fabric</label>
+                                <input type="text" name="productFabric"
+                                    class="form-input w-full border rounded px-3 py-2" placeholder="Enter fabric type">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Total Stock Quantity</label>
+                                <input type="number" name="totalStockQuantity"
+                                    class="form-input w-full border rounded px-3 py-2"
+                                    placeholder="Enter total stock quantity" min="0" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Product Offer (%)</label>
+                                <input type="number" name="productOffer"
+                                    class="form-input w-full border rounded px-3 py-2"
+                                    placeholder="Enter offer percentage" min="0" max="100" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Options -->
+                    <div class="mb-6">
+                        <h2 class="text-xl font-semibold mb-4">Additional Options</h2>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Sizes</label>
+                                <div class="flex space-x-2">
+                                    <% ['S', 'M' , 'L' , 'XL' , 'XXL' ].forEach(function(size) { %>
+                                        <label class="inline-flex items-center">
+                                            <input type="checkbox" name="sizes" value="<%= size %>"
+                                                class="form-checkbox">
+                                            <span class="ml-2">
+                                                <%= size %>
+                                            </span>
+                                        </label>
+                                        <% }); %>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
+                                <div class="flex space-x-2">
+                                    <% ['Casual', 'Formal' , 'Sports' ].forEach(function(type) { %>
+                                        <label class="inline-flex items-center">
+                                            <input type="checkbox" name="productType" value="<%= type.toLowerCase() %>"
+                                                class="form-checkbox">
+                                            <span class="ml-2">
+                                                <%= type %>
+                                            </span>
+                                        </label>
+                                        <% }); %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg"
+                            onclick="window.location.href='/admin/productManagment'">Cancel</button>
+                        <button type="submit" class="px-4 py-2 bg-black text-white rounded-lg">Add Product</button>
+                    </div>
+                </form>
+    </div>
+
+    <!-- Modal for cropping -->
+    <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+        <div class="bg-white p-4 rounded-lg max-w-2xl">
+            <img id="imageToCrop" class="max-w-full max-h-[70vh]">
+            <div class="mt-4 flex justify-end space-x-2">
+                <button id="cancelCrop" class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+                <button id="cropImage" class="px-4 py-2 bg-black text-white rounded">Crop & Upload</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadZones = document.querySelectorAll('.upload-zone');
+            const cropModal = document.getElementById('cropModal');
+            const imageToCrop = document.getElementById('imageToCrop');
+            const cancelCrop = document.getElementById('cancelCrop');
+            const cropImage = document.getElementById('cropImage');
+            const productForm = document.getElementById('productForm');
+            let cropper;
+            let currentFileInput;
+
+            // Handle upload zones
+            uploadZones.forEach(zone => {
+                const fileInput = zone.querySelector('input[type="file"]');
+                const clearBtn = document.createElement('button');
+                clearBtn.innerHTML = '×';
+                clearBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hidden';
+                clearBtn.type = 'button';
+                zone.appendChild(clearBtn);
+
+                // Click to trigger file input
+                zone.addEventListener('click', (e) => {
+                    // Only prevent default if not needed; remove stopPropagation unless it’s causing issues
+                    if (e.target !== clearBtn) {
+                        fileInput.click(); // Trigger file input dialog
+                    }
+                });
+
+                // Handle file selection
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    // Validation
+                    if (!file.type.startsWith('image/')) {
+                        alert('Please upload a valid image file');
+                        fileInput.value = '';
+                        return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size should not exceed 5MB');
+                        fileInput.value = '';
+                        return;
+                    }
+
+                    // Show crop modal
+                    currentFileInput = fileInput;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        imageToCrop.src = event.target.result;
+                        cropModal.classList.remove('hidden');
+                        if (cropper) cropper.destroy();
+                        cropper = new Cropper(imageToCrop, {
+                            aspectRatio: 1,
+                            viewMode: 1,
+                            autoCropArea: 0.8,
+                            responsive: true
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                });
+
+                // Clear button
+                clearBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    fileInput.value = '';
+                    zone.style.backgroundImage = '';
+                    zone.querySelector('p').style.display = 'block';
+                    clearBtn.classList.add('hidden');
+                });
+            });
+
+            // Cancel crop
+            cancelCrop.addEventListener('click', () => {
+                cropModal.classList.add('hidden');
+                currentFileInput.value = '';
+                if (cropper) cropper.destroy();
+            });
+
+            // Crop and update preview
+            cropImage.addEventListener('click', () => {
+                cropper.getCroppedCanvas({
+                    width: 800,
+                    height: 800
+                }).toBlob((blob) => {
+                    const file = new File([blob], currentFileInput.files[0].name, { type: 'image/webp' });
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    currentFileInput.files = dataTransfer.files;
+
+                    // Update preview
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const zone = currentFileInput.closest('.upload-zone');
+                        zone.style.backgroundImage = `url(${e.target.result})`;
+                        zone.style.backgroundSize = 'cover';
+                        zone.style.backgroundPosition = 'center';
+                        zone.querySelector('p').style.display = 'none';
+                        zone.querySelector('button').classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+
+                    cropModal.classList.add('hidden');
+                    cropper.destroy();
+                }, 'image/webp', 0.8);
+            });
+
+            // Form submission with validation
+            productForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // Basic validation
+                const mainImage = document.querySelector('input[name="mainImage"]');
+                const sizes = document.querySelectorAll('input[name="sizes"]:checked');
+                if (!mainImage.files.length) {
+                    alert('Please upload a main product image');
+                    return;
+                }
+                if (sizes.length === 0) {
+                    alert('Please select at least one size');
+                    return;
+                }
+
+                const formData = new FormData(productForm);
+                try {
+                    const response = await fetch(productForm.action, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        window.location.href = '/admin/productManagment';
+                    } else {
+                        const errorText = await response.text();
+                        alert('Error adding product: ' + errorText);
+                    }
+                } catch (error) {
+                    alert('An error occurred while adding the product: ' + error.message);
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -57,7 +57,7 @@
 
     <script>
         function confirmUpdate(event) {
-            event.preventDefault(); // Prevent default form submission
+            event.preventDefault(); 
 
             Swal.fire({
                 title: "Are you sure?",
@@ -70,7 +70,7 @@
                 cancelButtonText: "Cancel"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    document.getElementById("editCategoryForm").submit(); // Submit after confirmation
+                    document.getElementById("editCategoryForm").submit(); 
                 }
             });
         }
