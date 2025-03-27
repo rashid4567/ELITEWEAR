@@ -2,8 +2,11 @@ const Product = require("../../model/productScheema");
 const Category = require("../../model/categoryScheema");
 const path = require('path');
 const fs = require('fs').promises;
+const mongoose = require('mongoose')
 const sharp = require("sharp");
 const { count } = require("console");
+const { unlink } = require("fs");
+const { promiseHooks } = require("v8");
 
 
 const ProductManagement = async (req, res) => {
@@ -48,8 +51,8 @@ const ProductManagement = async (req, res) => {
                 currentPage: page,
                 totalPage: Math.ceil(count / limit),
                 cat: category,
-                sales: formattedProductData[0]?.salePrice || 0, // Example for first product
-                stock: formattedProductData[0]?.quantity || 0   // Example for first product
+                sales: formattedProductData[0]?.salePrice || 0,
+                stock: formattedProductData[0]?.quantity || 0  
             });
         } else {
             return res.status(404).render("page-404");
@@ -324,6 +327,44 @@ const deleteImage = async (req, res) => {
         res.redirect('/pageerror');
     }
 };
+const deleteProduct = async (req, res) => {
+    try {
+        const productId = req.params.id;
+        console.log('Product ID to delete:', productId);
+
+       
+        if (!mongoose.Types.ObjectId.isValid(productId)) {
+            console.log('Invalid product ID format');
+            return res.status(400).json({ status: false, message: "Invalid product ID format" });
+        }
+
+      
+        const deletedProduct = await Product.findByIdAndDelete(productId);
+        
+        if (!deletedProduct) {
+            console.log('Product not found in database');
+            return res.status(404).json({ status: false, message: "Product not found" });
+        }
+
+        console.log('Product deleted successfully:', deletedProduct);
+        
+ 
+        
+        return res.json({ 
+            status: true, 
+            message: "Product deleted successfully",
+            deletedProductId: productId
+        });
+
+    } catch (error) {
+        console.error("Error deleting product:", error);
+        return res.status(500).json({ 
+            status: false, 
+            message: "Failed to delete product",
+            error: error.message 
+        });
+    }
+};
 module.exports = {
   
     ProductManagement,
@@ -331,6 +372,7 @@ module.exports = {
     addproduct,
     geteditProduct,
     editProduct,
-    deleteImage
+    deleteImage,
+    deleteProduct,
     
 };

@@ -349,7 +349,7 @@
                 const requiredFields = productForm.querySelectorAll('[required]');
                 let isValid = true;
 
-                // Validate all required fields
+            
                 requiredFields.forEach(field => {
                     if (!field.value) {
                         field.classList.add('border-red-500');
@@ -359,13 +359,13 @@
                     }
                 });
 
-                // Main image validation
+               
                 if (!mainImage.files.length && !<%= product.images && product.images.find(img => img.isMain) ? 'true' : 'false' %> ) {
                     alert('Please upload a main product image');
                     isValid = false;
                 }
 
-                // Size validation
+            
                 if (sizes.length === 0) {
                     alert('Please select at least one size');
                     isValid = false;

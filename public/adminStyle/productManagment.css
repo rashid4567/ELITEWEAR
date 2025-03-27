@@ -247,3 +247,55 @@ input:checked + .slider:after {
     background-color: #e9ecef;
     transform: translateY(-2px);
 }
+.custom-modal .modal-content {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+}
+.custom-modal .modal-header {
+    border-bottom: none;
+    padding: 0;
+    position: relative;
+}
+.custom-modal .modal-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    width: 100%;
+}
+.custom-modal .modal-body {
+    text-align: center;
+    font-size: 16px;
+    color: #666;
+    padding: 10px 0 20px;
+}
+.custom-modal .modal-footer {
+    border-top: none;
+    justify-content: center;
+    padding: 0;
+}
+.custom-modal .btn-close {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 20px;
+    color: #333;
+    opacity: 1;
+}
+.custom-modal .btn-close:hover {
+    color: #000;
+}
+.custom-modal .btn-danger {
+    background-color: #333;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+.custom-modal .btn-danger:hover {
+    background-color: #555;
+}
