@@ -68,112 +68,45 @@
                 <tbody>
                     <% for (let i = data.length - 1; i >= 0; i--) { %>
                         <tr>
-                            <td><img src="https://via.placeholder.com/60" alt="Product Image" class="product-img"></td>
-                            <td><%= data[i].name %></td>  <!-- Corrected from ProductName -->
-                            <td><%= data[i].Category %></td>
-                            <td>₹<%= data[i].sales %></td>  <!-- Corrected from salesprice -->
-                            <td><%= data[i].stock %></td>
+                            <td>
+                                <img 
+                                    src="<%= data[i].images && data[i].images.length > 0 ? data[i].images[0].url : 'https://via.placeholder.com/60' %>" 
+                                    alt="Product Image" 
+                                    class="product-img"
+                                >
+                            </td>
+                            <td><%= data[i].name %></td>
+                            <td><%= data[i].categoryId && data[i].categoryId.name ? data[i].categoryId.name : 'N/A' %></td>
+                            <td>₹<%= data[i].salePrice || 0 %></td>
+                            <td><%= data[i].quantity || 0 %></td>
                             <td>
                                 <label class="toggle-switch">
-                                    <input type="checkbox" checked>
+                                    <input type="checkbox" <%= data[i].isActive ? 'checked' : '' %>>
                                     <span class="slider"></span>
                                 </label>
                             </td>
                             <td>
-                                <button class="action-btn"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn">
+                                    <a href="/admin/editProduct/<%= data[i]._id %>"><i class="fas fa-edit"></i></a>
+                                </button>
+                                
                                 <button class="action-btn"><i class="fas fa-trash"></i></button>
                             </td>
-                            <td><span class="offer-text">20% Off</span></td>
+                            <td><span class="offer-text"><%= data[i].offer %>% Off</span></td>
                         </tr>
                     <% } %>
-                    
-                    <!-- <tr>
-                        <td><img src="https://via.placeholder.com/60" alt="Product Image" class="product-img"></td>
-                        <td>Mint Green Slim Fit Shirt</td>
-                        <td>casual</td>
-                        <td>₹ 999</td>
-                        <td>100</td>
-                        <td>
-                            <label class="toggle-switch">
-                                <input type="checkbox">
-                                <span class="slider"></span>
-                            </label>
-                        </td>
-                        <td>
-                            <button class="action-btn"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn"><i class="fas fa-trash"></i></button>
-                        </td>
-                        <td><button class="btn btn-add-offer">Add Offer</button></td>
-                    </tr>
-                    <tr>
-                        <td><img src="https://via.placeholder.com/60" alt="Product Image" class="product-img"></td>
-                        <td>Mint Green Slim Fit Shirt</td>
-                        <td>casual</td>
-                        <td>₹ 999</td>
-                        <td>100</td>
-                        <td>
-                            <label class="toggle-switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </td>
-                        <td>
-                            <button class="action-btn"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn"><i class="fas fa-trash"></i></button>
-                        </td>
-                        <td><span class="offer-text">200rs Off</span></td>
-                    </tr>
-                    <tr>
-                        <td><img src="https://via.placeholder.com/60" alt="Product Image" class="product-img"></td>
-                        <td>Mint Green Slim Fit Shirt</td>
-                        <td>casual</td>
-                        <td>₹ 999</td>
-                        <td>100</td>
-                        <td>
-                            <label class="toggle-switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </td>
-                        <td>
-                            <button class="action-btn"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn"><i class="fas fa-trash"></i></button>
-                        </td>
-                        <td><span class="offer-text">200rs Off</span></td>
-                    </tr>
-                    <tr>
-                        <td><img src="https://via.placeholder.com/60" alt="Product Image" class="product-img"></td>
-                        <td>Mint Green Slim Fit Shirt</td>
-                        <td>casual</td>
-                        <td>₹ 999</td>
-                        <td>100</td>
-                        <td>
-                            <label class="toggle-switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </td>
-                        <td>
-                            <button class="action-btn"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn"><i class="fas fa-trash"></i></button>
-                        </td>
-                        <td><span class="offer-text">200rs Off</span></td>
-                    </tr> -->
+                   
                 </tbody>
             </table>
         </div>
 
-        <!-- Pagination Section -->
+        
         <div class="pagination-section">
             <span>Showing 1-5 from 25</span>
             <nav aria-label="Page navigation">
                 <ul class="pagination">
                     <li class="page-item"><a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a></li>
                     <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
-                    <li class="page-item"><a class="page-link" href="#">4</a></li>
-                    <li class="page-item"><a class="page-link" href="#">5</a></li>
                     <li class="page-item"><a class="page-link" href="#">...</a></li>
                     <li class="page-item"><a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a></li>
                 </ul>

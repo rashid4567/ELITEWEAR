@@ -39,6 +39,35 @@ router.post(
         { name: 'additionalImage2', maxCount: 1 },
         { name: 'additionalImage3', maxCount: 1 }
     ]),
-    productManagment.addproduct // No need for processImages if Cloudinary handles transformations
+    productManagment.addproduct 
+);;
+router.get('/productManagment', adminAuth, productManagment.ProductManagement);
+router.get("/addProduct", adminAuth, productManagment.getaddproduct);
+router.post(
+    "/addProduct",
+    adminAuth,
+    upload.fields([
+        { name: 'mainImage', maxCount: 1 },
+        { name: 'additionalImage1', maxCount: 1 },
+        { name: 'additionalImage2', maxCount: 1 },
+        { name: 'additionalImage3', maxCount: 1 }
+    ]),
+    productManagment.addproduct
 );
+
+
+router.get("/editProduct/:id", adminAuth, productManagment.geteditProduct);
+router.post(
+    "/editProduct/:id",
+    adminAuth,
+    upload.fields([
+        { name: 'mainImage', maxCount: 1 },
+        { name: 'additionalImage1', maxCount: 1 },
+        { name: 'additionalImage2', maxCount: 1 },
+        { name: 'additionalImage3', maxCount: 1 }
+    ]),
+    productManagment.editProduct
+);
+router.post("/editProductImage", adminAuth, productManagment.deleteImage)
+
 module.exports = router;
