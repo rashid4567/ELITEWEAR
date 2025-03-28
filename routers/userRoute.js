@@ -3,7 +3,7 @@ const router = express.Router();
 const userControllers = require('../controller/user/userControll');
 const passport = require('../config/passport');
 const { profile } = require('console');
-const User = require('../model/userSChema'); 
+const User = require('../model/userSChema');
 
 router.get("/verify-otp", (req, res) => {
   const email = req.session.userData ? req.session.userData.email : '';

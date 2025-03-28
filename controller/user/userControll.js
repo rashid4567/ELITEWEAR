@@ -4,95 +4,151 @@ const session = require("express-session");
 const bcrypt = require('bcrypt');
 require("dotenv").config();
 const User = require("../../model/userSChema");
+const categories = require("../../model/categoryScheema")
 const validator = require('validator');
-
-// Improved OTP generation with crypto module
 const crypto = require('crypto');
-const generateOtp = () => {
-    return crypto.randomInt(10000, 99999).toString(); // 6-digit OTP
-};
+const Category = require("../../model/categoryScheema");
+const Product = require("../../model/productScheema");
 
-// Enhanced email transporter with connection pooling
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-        user: process.env.NODEMAILER_EMAIL,
-        pass: process.env.NODEMAILER_PASSWORD,
-    },
-    tls: {
-        rejectUnauthorized: false // For development only
-    },
-    pool: true, // Use connection pooling
-    maxConnections: 5,
-    maxMessages: 100
-});
 
-// Verify transporter connection on startup
-transporter.verify((error, success) => {
-    if (error) {
-        console.error('SMTP Connection Error:', error);
-    } else {
-        console.log('SMTP Server is ready to take our messages');
-    }
-});
+const OTP_EXPIRY_MINUTES = 10;
+const MAX_EMAIL_RETRIES = 3;
+const OTP_LENGTH = 5;
+const SALT_ROUNDS = 10;
 
-// Enhanced email sending with retries
-const sendVerificationEmail = async (email, otp) => {
-    const maxRetries = 3;
-    let attempts = 0;
-    
-    while (attempts < maxRetries) {
-        try {
-            const mailOptions = {
-                from: `"Your App Name" <${process.env.NODEMAILER_EMAIL}>`,
-                to: email,
-                subject: "Verify Your Account",
-                text: `Your verification code is: ${otp}`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                        <h2 style="color: #4a4a4a;">Email Verification</h2>
-                        <p style="font-size: 16px;">Please use the following verification code to complete your registration:</p>
-                        <div style="background: #f4f4f4; padding: 20px; text-align: center; margin: 20px 0;">
-                            <span style="font-size: 24px; font-weight: bold; letter-spacing: 2px;">${otp}</span>
-                        </div>
-                        <p style="font-size: 14px; color: #888;">
-                            This code will expire in 10 minutes. If you didn't request this, please ignore this email.
-                        </p>
-                    </div>
-                `
-            };
+const debug = process.env.NODE_ENV === 'development' 
+    ? (...args) => console.log('[DEBUG]', ...args) 
+    : () => {};
 
-            const info = await transporter.sendMail(mailOptions);
-            console.log("Email sent:", info.messageId);
-            console.log("Preview URL:", nodemailer.getTestMessageUrl(info));
-            return true;
-            
-        } catch (error) {
-            attempts++;
-            console.error(`Email send attempt ${attempts} failed:`, error);
-            
-            if (attempts >= maxRetries) {
-                console.error("Max retries reached for email sending");
-                return false;
-            }
-            
-            // Wait before retrying
-            await new Promise(resolve => setTimeout(resolve, 2000 * attempts));
+
+const createTransporter = () => {
+    const config = {
+        service: "gmail",
+        auth: {
+            user: process.env.NODEMAILER_EMAIL,
+            pass: process.env.NODEMAILER_PASSWORD
+        },
+        pool: true,
+        maxConnections: 5,
+        rateDelta: 2000,
+        rateLimit: 5
+    };
+
+    const transporter = nodemailer.createTransport(config);
+
+    transporter.verify((error) => {
+        if (error) {
+            console.error('SMTP Connection Error:', {
+                code: error.code,
+                command: error.command,
+                response: error.response
+            });
+        } else {
+            debug('SMTP Connection Verified');
         }
-    }
+    });
+
+    return transporter;
 };
 
-// Middleware to validate email format
+const transporter = createTransporter();
+
+
+const generateOtp = () => {
+    const otp = crypto.randomInt(
+        Math.pow(10, OTP_LENGTH - 1), 
+        Math.pow(10, OTP_LENGTH) - 1
+    ).toString();
+    
+    debug(`Generated OTP: ${otp}`);
+    return otp;
+};
+
+
 const validateEmail = (email) => {
     if (!validator.isEmail(email)) {
         throw new Error('Invalid email format');
     }
+    
+    if (!validator.isEmail(email, { domain_specific_validation: true })) {
+        throw new Error('Suspicious email domain');
+    }
+    
     return true;
 };
 
+
+const securePassword = async (password) => {
+    return await bcrypt.hash(password, SALT_ROUNDS);
+};
+
+
+const sendVerificationEmail = async (email, otp) => {
+    let attempts = 0;
+    
+    while (attempts < MAX_EMAIL_RETRIES) {
+        attempts++;
+        debug(`Email attempt ${attempts} for ${email}`);
+
+        try {
+            const mailOptions = {
+                from: `"E-Commerce App" <${process.env.NODEMAILER_EMAIL}>`,
+                to: email,
+                subject: "Verify Your Account",
+                html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                        <h2 style="color: #4a4a4a;">Email Verification</h2>
+                        <p style="font-size: 16px;">Please use the following verification code:</p>
+                        <div style="background: #f4f4f4; padding: 20px; text-align: center; margin: 20px 0;">
+                            <span style="font-size: 24px; font-weight: bold; letter-spacing: 2px;">${otp}</span>
+                        </div>
+                        <p style="font-size: 14px; color: #888;">
+                            This code expires in ${OTP_EXPIRY_MINUTES} minutes.
+                        </p>
+                    </div>
+                `,
+                headers: {
+                    'X-Priority': '1',
+                    'Importance': 'high'
+                }
+            };
+
+            const info = await transporter.sendMail(mailOptions);
+            
+            debug("Email delivery report:", {
+                messageId: info.messageId,
+                accepted: info.accepted
+            });
+
+            if (info.rejected && info.rejected.length > 0) {
+                throw new Error(`Email rejected for: ${info.rejected.join(', ')}`);
+            }
+
+            return { success: true, message: "Email sent successfully" };
+
+        } catch (error) {
+            console.error(`Email attempt ${attempts} failed:`, {
+                errorCode: error.code,
+                responseCode: error.responseCode,
+                message: error.message
+            });
+
+            if (attempts >= MAX_EMAIL_RETRIES) {
+                return { 
+                    success: false, 
+                    message: "Failed to send email after multiple attempts",
+                    error: error.message 
+                };
+            }
+
+            const delay = Math.pow(2, attempts) * 1000;
+            debug(`Waiting ${delay}ms before next attempt...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+};
+
+// Controller Methods
 const pageNotfound = async (req, res) => {
     try {
         const userId = req.session.user;
@@ -107,11 +163,47 @@ const pageNotfound = async (req, res) => {
 const loadHomepage = async (req, res) => {
     try {
         const userId = req.session.user;
+        const categories = await Category.find({ isListed: true });
+        const productData = await Product.find({
+            isBlocked: false, 
+            categoryId: { $in: categories.map(category => category._id) }
+        }).populate("categoryId").exec();
+
+        const formattedProductData = productData.map(product => {
+            const firstVariant = product.variants?.[0] || {};
+            return {
+                ...product.toObject(),
+                salePrice: firstVariant.salePrice || 0,
+                quantity: firstVariant.quantity || 0,
+                images: product.images || [], 
+                ratings: product.ratings || { average: 0, count: 0 } 
+            };
+        });
+
         const userData = userId ? await User.findById(userId) : null;
-        res.render("home", { user: userData });
+        res.render("home", { 
+            user: userData,
+            data: formattedProductData,
+            cat: categories,
+            error: formattedProductData.length === 0 ? "No products available" : null
+        });
     } catch (error) {
         console.error("Error loading home page:", error);
-        res.status(500).send("Server error");
+        res.render("home", { 
+            user: null,
+            data: [],
+            cat: [],
+            error: "Server error occurred while loading the page"
+        });
+    }
+};
+
+const loadUserSignup = async (req, res) => {
+    try {
+        res.render("signup", { user: null, message: null, formData: null });
+    } catch (error) {
+        console.error("Signup page error:", error);
+        res.status(500).send("Server issue");
     }
 };
 
@@ -119,7 +211,6 @@ const userSignup = async (req, res) => {
     try {
         const { fullname, email, mobile, password, cpassword } = req.body;
 
-        // Input validation
         if (password !== cpassword) {
             return res.render("signup", { 
                 message: "Passwords do not match", 
@@ -128,7 +219,7 @@ const userSignup = async (req, res) => {
             });
         }
 
-        validateEmail(email); // Validate email format
+        validateEmail(email);
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -140,21 +231,21 @@ const userSignup = async (req, res) => {
         }
 
         const otp = generateOtp();
-        const emailSent = await sendVerificationEmail(email, otp);
-        
-        if (!emailSent) {
+        debug(`OTP for ${email}: ${otp}`);
+
+        const emailResult = await sendVerificationEmail(email, otp);
+        if (!emailResult.success) {
             return res.render("signup", { 
-                message: "Failed to send verification email. Please try again.", 
+                message: "Failed to send verification. Please try again later.", 
                 user: null,
                 formData: { fullname, email, mobile }
             });
         }
 
-        // Store data in session
         req.session.registration = {
             otp,
             userData: { fullname, email, mobile, password },
-            otpExpires: Date.now() + 600000 // 10 minutes expiration
+            otpExpires: Date.now() + (OTP_EXPIRY_MINUTES * 60 * 1000)
         };
 
         return res.redirect("/verify-otp");
@@ -169,32 +260,18 @@ const userSignup = async (req, res) => {
     }
 };
 
-const loadUserSignup = async (req, res) => {
-    try {
-        res.render("signup", { user: null, message: null, formData: null });
-    } catch (error) {
-        console.error("Signup page error:", error);
-        res.status(500).send("Server issue");
-    }
-};
-
-const securePassword = async (password) => {
-    return await bcrypt.hash(password, 12); // Increased salt rounds
-};
-
 const verifyOtp = async (req, res) => {
     try {
         const { otp } = req.body;
         const { registration } = req.session;
 
-        if (!registration || !registration.otp) {
+        if (!registration) {
             return res.status(400).json({ 
                 success: false, 
                 message: "Session expired. Please register again." 
             });
         }
 
-        // Check OTP expiration
         if (Date.now() > registration.otpExpires) {
             delete req.session.registration;
             return res.status(400).json({ 
@@ -210,21 +287,14 @@ const verifyOtp = async (req, res) => {
             });
         }
 
-        // OTP verified - create user
-        const { userData } = registration;
-        const passwordHash = await securePassword(userData.password);
-
+        const hashedPassword = await securePassword(registration.userData.password);
         const newUser = new User({
-            fullname: userData.fullname,
-            email: userData.email,
-            mobile: userData.mobile,
-            password: passwordHash,
+            ...registration.userData,
+            password: hashedPassword,
             isVerified: true
         });
 
         await newUser.save();
-
-        // Clean up session
         req.session.user = newUser._id;
         delete req.session.registration;
 
@@ -246,27 +316,26 @@ const resendOtp = async (req, res) => {
     try {
         const { registration } = req.session;
         
-        if (!registration || !registration.userData) {
+        if (!registration?.userData?.email) {
             return res.status(400).json({
                 success: false, 
                 message: "Session expired. Please register again."
             });
         }
 
-        const { email } = registration.userData;
-        const otp = generateOtp();
-        
-        const emailSent = await sendVerificationEmail(email, otp);
-        if (!emailSent) {
+        const newOtp = generateOtp();
+        debug(`Resent OTP for ${registration.userData.email}: ${newOtp}`);
+
+        const emailResult = await sendVerificationEmail(registration.userData.email, newOtp);
+        if (!emailResult.success) {
             return res.status(500).json({
                 success: false, 
                 message: "Failed to resend OTP. Please try again."
             });
         }
 
-        // Update session with new OTP
-        req.session.registration.otp = otp;
-        req.session.registration.otpExpires = Date.now() + 600000; // 10 minutes
+        req.session.registration.otp = newOtp;
+        req.session.registration.otpExpires = Date.now() + (OTP_EXPIRY_MINUTES * 60 * 1000);
 
         return res.json({
             success: true, 
@@ -284,52 +353,39 @@ const resendOtp = async (req, res) => {
 
 const userLogin = async (req, res) => {
     try {
-        if(!req.session.user){
+        if (!req.session.user) {
             return res.render("login", { user: null });
-        }else{
-            res.redirect('/')
         }
+        res.redirect('/');
     } catch (error) {
-        console.log(" User login page is not found");
+        console.error("Login page error:", error);
         res.status(500).send("Server issue");
     }
 };
+
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log("Login attempt with email:", email);
-
 
         if (!email || !password) {
             return res.render("login", { message: "Email and password are required", user: null });
         }
 
-   
         const findUser = await User.findOne({ isAdmin: 0, email: email });
 
         if (!findUser) {
             return res.render("login", { message: "User not found", user: null });
         }
 
-        
         if (findUser.isBlocked) {
             return res.render("login", { message: "User blocked by the admin", user: null });
         }
 
-
-        if (!findUser.password) {
-            console.log("Error: No password found for user:", findUser);
-            return res.render("login", { message: "Login failed, please contact support", user: null });
-        }
-
-  
         const passwordMatch = await bcrypt.compare(password, findUser.password);
-
         if (!passwordMatch) {
             return res.render("login", { message: "Incorrect password", user: null });
         }
 
-       
         req.session.user = findUser._id;
         return res.redirect('/');
 
@@ -339,23 +395,22 @@ const login = async (req, res) => {
     }
 };
 
-
 const logout = async (req, res) => {
     try {
-      req.session.destroy((err) => {
-        if (err) {
-          console.log("Error in session destroy:", err.message);
-          return res.redirect('/page-not-found');
-        }
-        res.locals.user = null;
-        res.redirect('/login');
-      });
+        req.session.destroy((err) => {
+            if (err) {
+                console.error("Session destruction error:", err);
+                return res.redirect('/page-not-found');
+            }
+            res.locals.user = null;
+            res.redirect('/login');
+        });
     } catch (error) {
-      console.log("Logout error:", error);
-      res.redirect('/page-not-found');
+        console.error("Logout error:", error);
+        res.redirect('/page-not-found');
     }
 };
-  
+
 module.exports = {
     loadHomepage,
     pageNotfound,
@@ -365,6 +420,5 @@ module.exports = {
     verifyOtp,
     resendOtp,
     login,
-    logout,
-    sendVerificationEmail
+    logout
 };

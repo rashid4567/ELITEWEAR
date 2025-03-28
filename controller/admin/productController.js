@@ -88,6 +88,7 @@ const addproduct = async (req, res) => {
     try {
         console.log('Incoming files:', req.files);
 
+       
         const {
             productName,
             productPrice,
@@ -100,6 +101,7 @@ const addproduct = async (req, res) => {
             brand
         } = req.body;
 
+  
         const requiredFields = ['productName', 'productPrice', 'productDescription', 'productCategory', 'totalStockQuantity'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
         if (missingFields.length > 0) {
@@ -109,20 +111,20 @@ const addproduct = async (req, res) => {
             });
         }
 
+      
         const images = [];
-        if (req.files) {
-            if (req.files.mainImage) {
-                images.push({
-                    url: req.files.mainImage[0].path, // Cloudinary URL
-                    thumbnail: req.files.mainImage[0].path,
-                    isMain: true
-                });
-            }
+        if (req.files && req.files.mainImage) {
+            images.push({
+                url: req.files.mainImage[0].path,
+                thumbnail: req.files.mainImage[0].path,
+                isMain: true
+            });
+
             for (let i = 1; i <= 3; i++) {
                 const fieldName = `additionalImage${i}`;
                 if (req.files[fieldName]) {
                     images.push({
-                        url: req.files[fieldName][0].path, // Cloudinary URL
+                        url: req.files[fieldName][0].path,
                         thumbnail: req.files[fieldName][0].path,
                         isMain: false
                     });
@@ -130,6 +132,7 @@ const addproduct = async (req, res) => {
             }
         }
 
+      
         if (images.length === 0) {
             return res.status(400).render("addproduct", {
                 error: "Please upload at least one valid product image",
@@ -137,6 +140,7 @@ const addproduct = async (req, res) => {
             });
         }
 
+       
         const categoryData = await Category.findOne({ _id: productCategory });
         if (!categoryData) {
             return res.status(400).render("addproduct", {
@@ -145,24 +149,26 @@ const addproduct = async (req, res) => {
             });
         }
 
+    
         const regularPrice = parseFloat(productPrice);
         const offer = parseFloat(productOffer || 0);
         const salePrice = regularPrice * (1 - offer / 100);
 
-        const variants = Array.isArray(sizes)
-            ? sizes.map(size => ({
-                  size,
-                  regularPrice,
-                  salePrice,
-                  quantity: Math.floor(parseInt(totalStockQuantity) / sizes.length)
-              }))
-            : [{
-                  size: sizes,
-                  regularPrice,
-                  salePrice,
-                  quantity: parseInt(totalStockQuantity)
-              }];
 
+        let sizeArray = Array.isArray(sizes) ? sizes : [sizes];
+        let totalStock = parseInt(totalStockQuantity);
+
+ 
+        let quantityPerSize = sizeArray.length > 0 ? Math.floor(totalStock / sizeArray.length) : totalStock;
+
+        const variants = sizeArray.map(size => ({
+            size,
+            regularPrice,
+            salePrice,
+            quantity: quantityPerSize
+        }));
+
+      
         const newProduct = new Product({
             name: productName,
             description: productDescription,
@@ -179,6 +185,7 @@ const addproduct = async (req, res) => {
 
         await newProduct.save();
         console.log("Saved product images:", newProduct.images);
+
         return res.redirect("/admin/productManagment");
     } catch (error) {
         console.error('Product Add Error:', error);
@@ -188,6 +195,7 @@ const addproduct = async (req, res) => {
         });
     }
 };
+
 const geteditProduct = async (req, res) => {
     try {
         const id = req.params.id;
@@ -307,7 +315,7 @@ const editProduct = async (req, res) => {
 };
 const deleteImage = async (req, res) => {
     try {
-        const { imageToserver, productToserver } = req.body; // Match the frontend
+        const { imageToserver, productToserver } = req.body; 
         const product = await Product.findByIdAndUpdate(productToserver, { $pull: { images: { url: imageToserver } } });
         if (!product) {
             return res.status(404).json({ status: false, message: 'Product not found' });

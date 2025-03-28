@@ -4,7 +4,7 @@ const adminControll = require('../controller/admin/adminControll');
 const customerController = require("../controller/admin/customerController");
 const CategoryController = require("../controller/admin/categoryController");
 const productManagment = require('../controller/admin/productController');
-const upload = require('../middleware/cluadinaryConfig'); // Use Cloudinary config
+const upload = require('../middleware/cluadinaryConfig'); 
 const { userAuth, adminAuth } = require('../middleware/auth');
 
 router.get('/', adminAuth, adminControll.loadDashboard);

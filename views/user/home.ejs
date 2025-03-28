@@ -1,204 +1,159 @@
 <%- include("../partials/user/header") %>
-    <section class="hero">
-        <div class="container hero-content">
-            <div class="hero-text">
-                <h1 class="hero-title">Shirts</h1>
-                <div class="hero-subtitle">
-                    <span>Men</span>
-                    <span>Casual</span>
-                    <span>Formal</span>
-                    <span>Business</span>
-                </div>
-            </div>
-            <div class="hero-image">
-                <img src="/api/placeholder/500/400" alt="Man wearing a stylish shirt">
-            </div>
-        </div>
-        <div class="hero-nav">
-            <i class="fas fa-chevron-left"></i>
-        </div>
-        <div class="hero-nav right">
-            <i class="fas fa-chevron-right"></i>
-        </div>
-    </section>
 
-    <!-- New Arrivals Section -->
-    <section class="product-section">
+<section class="hero">
+    <div class="container hero-content">
+        <div class="hero-text">
+            <h1 class="hero-title">Shirts</h1>
+            <div class="hero-subtitle">
+                <span>Men</span>
+                <span>Casual</span>
+                <span>Formal</span>
+                <span>Business</span>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="/api/placeholder/500/400" alt="Man wearing a stylish shirt">
+        </div>
+    </div>
+    <div class="hero-nav">
+        <i class="fas fa-chevron-left"></i>
+    </div>
+    <div class="hero-nav right">
+        <i class="fas fa-chevron-right"></i>
+    </div>
+</section>
+
+<!-- Error Display -->
+<% if (error) { %>
+    <section class="error-section">
         <div class="container">
-            <h2 class="section-title">New Arrivals</h2>
-            <div class="product-grid">
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="/api/placeholder/300/300" alt="Black formal shirt">
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Premium Black Shirt</h3>
-                        <div class="product-price">
-                            <span class="current-price">$49.99</span>
-                            <span class="original-price">$69.99</span>
-                        </div>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="/api/placeholder/300/300" alt="Blue formal shirt">
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Navy Blue Shirt</h3>
-                        <div class="product-price">
-                            <span class="current-price">$45.99</span>
-                            <span class="original-price">$59.99</span>
-                        </div>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="/api/placeholder/300/300" alt="Pink formal shirt">
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Light Pink Shirt</h3>
-                        <div class="product-price">
-                            <span class="current-price">$52.99</span>
-                            <span class="original-price">$64.99</span>
-                        </div>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="far fa-star"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="/api/placeholder/300/300" alt="Light pink formal shirt">
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Classic Pink Shirt</h3>
-                        <div class="product-price">
-                            <span class="current-price">$48.99</span>
-                            <span class="original-price">$62.99</span>
-                        </div>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <p class="error-message" style="color: red; text-align: center;"><%= error %></p>
         </div>
     </section>
+<% } %>
 
-    <!-- Trending Section -->
-    <section class="product-section">
-        <div class="container">
-            <h2 class="section-title">Trending</h2>
-            <div class="product-grid">
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="/api/placeholder/300/300" alt="Blue casual shirt">
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Casual Blue Shirt</h3>
-                        <div class="product-price">
-                            <span class="current-price">$39.99</span>
-                            <span class="original-price">$49.99</span>
-                        </div>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="/api/placeholder/300/300" alt="Blue casual shirt">
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Denim Blue Shirt</h3>
-                        <div class="product-price">
-                            <span class="current-price">$42.99</span>
-                            <span class="original-price">$55.99</span>
-                        </div>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="product-card">
-                    <div class="product-image">
-                        <img src="/api/placeholder/300/300" alt="Blue casual shirt">
-                    </div>
-                    <div class="product-info">
-                        <h3 class="product-name">Light Blue Shirt</h3>
-                        <div class="product-price">
-                            <span class="current-price">$37.99</span>
-                            <span class="original-price">$47.99</span>
-                        </div>
-                        <div class="product-rating">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="far fa-star"></i>
+<!-- New Arrivals Section -->
+<section class="product-section">
+    <div class="container">
+        <h2 class="section-title">New Arrivals</h2>
+        <div class="product-grid">
+            <% if (data && Array.isArray(data) && data.length > 0) { %>
+                <% data.forEach((product) => { %>
+                    <div class="product-card">
+                        <a href="/productdetails?id=<%= product._id %>">
+                            <div class="product-image">
+                                <% if (product.images && product.images.length > 0 && product.images[0].url) { %>
+                                    <img src="<%= product.images[0].url %>" alt="<%= product.name || 'Product Image' %>">
+                                <% } else { %>
+                                    <img src="/api/placeholder/300/300" alt="Placeholder">
+                                <% } %>
+                            </div>
+                        </a>
+                        <div class="product-info">
+                            <h3 class="product-name"><%= product.name || 'Unnamed Product' %></h3>
+                            <div class="product-price">
+                                <span class="current-price">$<%= (product.salePrice || 0).toFixed(2) %></span>
+                                <% if (product.variants && product.variants[0] && product.variants[0].regularPrice > product.salePrice) { %>
+                                    <span class="original-price">$<%= product.variants[0].regularPrice.toFixed(2) %></span>
+                                <% } %>
+                            </div>
+                            <div class="product-rating">
+                                <% 
+                                    const rating = product.ratings && product.ratings.average ? product.ratings.average : 0;
+                                    for(let i = 1; i <= 5; i++) {
+                                        if(i <= rating) { %>
+                                            <i class="fas fa-star"></i>
+                                        <% } else if(i - 0.5 <= rating) { %>
+                                            <i class="fas fa-star-half-alt"></i>
+                                        <% } else { %>
+                                            <i class="far fa-star"></i>
+                                        <% } 
+                                    } 
+                                %>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                <% }) %>
+            <% } else { %>
+                <p>No new arrivals available at this time.</p>
+            <% } %>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Promotional Banner -->
-    <section class="promo-banner">
-        <img src="/api/placeholder/1200/200" alt="Promotional banner">
-        <div class="container">
-            <div class="promo-content">
-                <h2 class="promo-title">Refined Formal Shirts</h2>
-                <p class="promo-text">Elevate your style with our elegant collection</p>
-                <a href="#" class="promo-button">Shop Now</a>
-            </div>
+<!-- Trending Section -->
+<section class="product-section">
+    <div class="container">
+        <h2 class="section-title">Trending</h2>
+        <div class="product-grid">
+            <% if (data && Array.isArray(data) && data.length > 0) { %>
+                <% data.slice(0, 3).forEach((product) => { %>
+                    <div class="product-card">
+                        <a href="/productdetails?id=<%= product._id %>">
+                            <div class="product-image">
+                                <% if (product.images && product.images.length > 0 && product.images[0].url) { %>
+                                    <img src="<%= product.images[0].url %>" alt="<%= product.name || 'Product Image' %>">
+                                <% } else { %>
+                                    <img src="/api/placeholder/300/300" alt="Placeholder">
+                                <% } %>
+                            </div>
+                        </a>
+                        <div class="product-info">
+                            <h3 class="product-name"><%= product.name || 'Unnamed Product' %></h3>
+                            <div class="product-price">
+                                <span class="current-price">$<%= (product.salePrice || 0).toFixed(2) %></span>
+                                <% if (product.variants && product.variants[0] && product.variants[0].regularPrice > product.salePrice) { %>
+                                    <span class="original-price">$<%= product.variants[0].regularPrice.toFixed(2) %></span>
+                                <% } %>
+                            </div>
+                            <div class="product-rating">
+                                <% 
+                                    const rating = product.ratings && product.ratings.average ? product.ratings.average : 0;
+                                    for(let i = 1; i <= 5; i++) {
+                                        if(i <= rating) { %>
+                                            <i class="fas fa-star"></i>
+                                        <% } else if(i - 0.5 <= rating) { %>
+                                            <i class="fas fa-star-half-alt"></i>
+                                        <% } else { %>
+                                            <i class="far fa-star"></i>
+                                        <% } 
+                                    } 
+                                %>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <p>No trending products available at this time.</p>
+            <% } %>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Featured Banner -->
-    <section class="featured-banner">
-        <div class="container featured-content">
-            <div class="featured-text">
-                <h2 class="featured-title">Premium Collection</h2>
-                <p class="featured-description">Discover our handcrafted shirts made from the finest materials. Each
-                    piece is designed for comfort and style that lasts.</p>
-                <a href="#" class="featured-button">Explore Collection</a>
-            </div>
-            <div class="featured-image">
-                <img src="/api/placeholder/600/400" alt="Man in stylish formal attire">
-            </div>
+<!-- Promotional Banner -->
+<section class="promo-banner">
+    <img src="/api/placeholder/1200/200" alt="Promotional banner">
+    <div class="container">
+        <div class="promo-content">
+            <h2 class="promo-title">Refined Formal Shirts</h2>
+            <p class="promo-text">Elevate your style with our elegant collection</p>
+            <a href="#" class="promo-button">Shop Now</a>
         </div>
-    </section>
+    </div>
+</section>
 
+<!-- Featured Banner -->
+<section class="featured-banner">
+    <div class="container featured-content">
+        <div class="featured-text">
+            <h2 class="featured-title">Premium Collection</h2>
+            <p class="featured-description">Discover our handcrafted shirts made from the finest materials.</p>
+            <a href="#" class="featured-button">Explore Collection</a>
+        </div>
+        <div class="featured-image">
+            <img src="/api/placeholder/600/400" alt="Man in stylish formal attire">
+        </div>
+    </div>
+</section>
 
 <%- include("../partials/user/footer") %>
