@@ -40,7 +40,8 @@ router.post(
         { name: 'additionalImage3', maxCount: 1 }
     ]),
     productManagment.addproduct 
-);;
+);
+
 router.get('/productManagment', adminAuth, productManagment.ProductManagement);
 router.get("/addProduct", adminAuth, productManagment.getaddproduct);
 router.post(
@@ -54,7 +55,8 @@ router.post(
     ]),
     productManagment.addproduct
 );
-
+router.post('/unlistProduct/:id', adminAuth, productManagment.UnlistProduct)
+router.post('/listProduct/:id', adminAuth, productManagment.listProduct)
 
 router.get("/editProduct/:id", adminAuth, productManagment.geteditProduct);
 router.post(
@@ -68,6 +70,7 @@ router.post(
     ]),
     productManagment.editProduct
 );
+router.get('/filterProduct', adminAuth, productManagment.filterProduct)
 router.post("/editProductImage", adminAuth, productManagment.deleteImage)
 router.delete("/deleteProduct/:id", adminAuth, productManagment.deleteProduct);
 module.exports = router;

@@ -299,3 +299,23 @@ input:checked + .slider:after {
 .custom-modal .btn-danger:hover {
     background-color: #555;
 }
+.search-bar .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    z-index: 10;
+}
+
+.search-bar input {
+    padding-left: 35px;
+}
+
+.clear-btn {
+    z-index: 20;
+}
+
+.clear-btn:hover {
+    color: #dc3545 !important;
+}

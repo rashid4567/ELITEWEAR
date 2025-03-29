@@ -2,12 +2,10 @@ const Product = require("../../model/productScheema");
 const Category = require("../../model/categoryScheema");
 const path = require('path');
 const fs = require('fs').promises;
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 const sharp = require("sharp");
 const { count } = require("console");
 const { unlink } = require("fs");
-const { promiseHooks } = require("v8");
-
 
 const ProductManagement = async (req, res) => {
     try {
@@ -17,42 +15,42 @@ const ProductManagement = async (req, res) => {
 
         const count = await Product.countDocuments({
             $or: [
-                { name: { $regex: new RegExp(search, "i") } },
-                { brand: { $regex: new RegExp(search, "i") } }
+                { name: { $regex: ".*" + search + ".*", $options: "i" } },
+                { brand: { $regex: ".*" + search + ".*", $options: 'i' } }
             ]
         });
 
         const productData = await Product.find({
             $or: [
-                { name: { $regex: new RegExp(search, "i") } },
-                { brand: { $regex: new RegExp(search, "i") } }
+                { name: { $regex: ".*" + search + ".*", $options: "i" } },
+                { brand: { $regex: ".*" + search + ".*", $options: "i" } }
             ]
         })
-        .limit(limit)
-        .skip((page - 1) * limit)
-        .populate("categoryId")
-        .exec();
+            .limit(limit)
+            .skip((page - 1) * limit)
+            .populate("categoryId")
+            .exec();
 
         const category = await Category.find({ isListed: true });
 
         if (category.length > 0) {
-         
             const formattedProductData = productData.map(product => {
-                const firstVariant = product.variants[0] || {}; 
+                const firstVariant = product.variants[0] || {};
                 return {
                     ...product.toObject(),
                     salePrice: firstVariant.salePrice || 0,
-                    quantity: firstVariant.quantity || 0     
+                    quantity: firstVariant.quantity || 0
                 };
             });
 
             res.render("prodectManagment", {
+                search: search,
                 data: formattedProductData,
                 currentPage: page,
                 totalPage: Math.ceil(count / limit),
                 cat: category,
                 sales: formattedProductData[0]?.salePrice || 0,
-                stock: formattedProductData[0]?.quantity || 0  
+                stock: formattedProductData[0]?.quantity || 0
             });
         } else {
             return res.status(404).render("page-404");
@@ -62,8 +60,6 @@ const ProductManagement = async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 };
-
-
 
 const getaddproduct = async (req, res) => {
     try {
@@ -76,19 +72,19 @@ const getaddproduct = async (req, res) => {
 };
 
 async function fileExists(filePath) {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
+    try {
+        await fs.access(filePath);
+        return true;
+    } catch {
+        return false;
+    }
 }
+
 const addproduct = async (req, res) => {
     console.log('Add product request started');
     try {
         console.log('Incoming files:', req.files);
 
-       
         const {
             productName,
             productPrice,
@@ -101,7 +97,6 @@ const addproduct = async (req, res) => {
             brand
         } = req.body;
 
-  
         const requiredFields = ['productName', 'productPrice', 'productDescription', 'productCategory', 'totalStockQuantity'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
         if (missingFields.length > 0) {
@@ -111,7 +106,6 @@ const addproduct = async (req, res) => {
             });
         }
 
-      
         const images = [];
         if (req.files && req.files.mainImage) {
             images.push({
@@ -132,7 +126,6 @@ const addproduct = async (req, res) => {
             }
         }
 
-      
         if (images.length === 0) {
             return res.status(400).render("addproduct", {
                 error: "Please upload at least one valid product image",
@@ -140,8 +133,7 @@ const addproduct = async (req, res) => {
             });
         }
 
-       
-        const categoryData = await Category.findOne({ _id: productCategory });
+        const categoryData = await Category.findOne({ name: productCategory });
         if (!categoryData) {
             return res.status(400).render("addproduct", {
                 error: "Invalid category",
@@ -149,16 +141,12 @@ const addproduct = async (req, res) => {
             });
         }
 
-    
         const regularPrice = parseFloat(productPrice);
         const offer = parseFloat(productOffer || 0);
         const salePrice = regularPrice * (1 - offer / 100);
 
-
         let sizeArray = Array.isArray(sizes) ? sizes : [sizes];
         let totalStock = parseInt(totalStockQuantity);
-
- 
         let quantityPerSize = sizeArray.length > 0 ? Math.floor(totalStock / sizeArray.length) : totalStock;
 
         const variants = sizeArray.map(size => ({
@@ -168,7 +156,6 @@ const addproduct = async (req, res) => {
             quantity: quantityPerSize
         }));
 
-      
         const newProduct = new Product({
             name: productName,
             description: productDescription,
@@ -185,7 +172,6 @@ const addproduct = async (req, res) => {
 
         await newProduct.save();
         console.log("Saved product images:", newProduct.images);
-
         return res.redirect("/admin/productManagment");
     } catch (error) {
         console.error('Product Add Error:', error);
@@ -205,7 +191,7 @@ const geteditProduct = async (req, res) => {
 
         const product = await Product.findById(id).populate('categoryId');
         const categories = await Category.find({ isListed: true });
-        
+
         if (!product) {
             return res.redirect("/pageerror");
         }
@@ -222,12 +208,13 @@ const geteditProduct = async (req, res) => {
         res.redirect("/pageerror");
     }
 };
+
 const editProduct = async (req, res) => {
     try {
         const id = req.params.id;
         const product = await Product.findById(id);
         if (!product) {
-            return res.status(404).render("editProduct", { 
+            return res.status(404).render("editProduct", {
                 error: "Product not found",
                 product: null,
                 categories: await Category.find({ isListed: true })
@@ -248,13 +235,11 @@ const editProduct = async (req, res) => {
             });
         }
 
-       
-        let images = [...product.images]; 
+        let images = [...product.images];
         if (req.files && Object.keys(req.files).length > 0) {
             console.log("Files uploaded to Cloudinary:", req.files);
 
             if (req.files.mainImage) {
-              
                 images = images.filter(img => !img.isMain);
                 images.push({
                     url: req.files.mainImage[0].path,
@@ -285,20 +270,20 @@ const editProduct = async (req, res) => {
             categoryId: data.productCategory,
             offer: offer,
             sku: data.sku || undefined,
-            images, 
-            variants: Array.isArray(data.sizes) 
+            images,
+            variants: Array.isArray(data.sizes)
                 ? data.sizes.map(size => ({
-                      size,
-                      regularPrice,
-                      salePrice,
-                      quantity: Math.floor(parseInt(data.totalStockQuantity) / data.sizes.length)
-                  }))
+                    size,
+                    regularPrice,
+                    salePrice,
+                    quantity: Math.floor(parseInt(data.totalStockQuantity) / data.sizes.length)
+                }))
                 : [{
-                      size: data.sizes,
-                      regularPrice,
-                      salePrice,
-                      quantity: parseInt(data.totalStockQuantity)
-                  }]
+                    size: data.sizes,
+                    regularPrice,
+                    salePrice,
+                    quantity: parseInt(data.totalStockQuantity)
+                }]
         };
 
         const updatedProduct = await Product.findByIdAndUpdate(id, updateFields, { new: true });
@@ -313,9 +298,10 @@ const editProduct = async (req, res) => {
         });
     }
 };
+
 const deleteImage = async (req, res) => {
     try {
-        const { imageToserver, productToserver } = req.body; 
+        const { imageToserver, productToserver } = req.body;
         const product = await Product.findByIdAndUpdate(productToserver, { $pull: { images: { url: imageToserver } } });
         if (!product) {
             return res.status(404).json({ status: false, message: 'Product not found' });
@@ -335,46 +321,172 @@ const deleteImage = async (req, res) => {
         res.redirect('/pageerror');
     }
 };
+
 const deleteProduct = async (req, res) => {
     try {
         const productId = req.params.id;
         console.log('Product ID to delete:', productId);
 
-       
         if (!mongoose.Types.ObjectId.isValid(productId)) {
             console.log('Invalid product ID format');
             return res.status(400).json({ status: false, message: "Invalid product ID format" });
         }
 
-      
         const deletedProduct = await Product.findByIdAndDelete(productId);
-        
+
         if (!deletedProduct) {
             console.log('Product not found in database');
             return res.status(404).json({ status: false, message: "Product not found" });
         }
 
         console.log('Product deleted successfully:', deletedProduct);
-        
- 
-        
-        return res.json({ 
-            status: true, 
+
+        return res.json({
+            status: true,
             message: "Product deleted successfully",
             deletedProductId: productId
         });
-
     } catch (error) {
         console.error("Error deleting product:", error);
-        return res.status(500).json({ 
-            status: false, 
+        return res.status(500).json({
+            status: false,
             message: "Failed to delete product",
-            error: error.message 
+            error: error.message
         });
     }
 };
+
+const UnlistProduct = async (req, res) => {
+    try {
+        let id = req.params.id;
+        const result = await Product.updateOne({ _id: id }, { $set: { isActive: false } });
+        if (result.modifiedCount === 0) {
+            res.status(404).json({ message: "product not found" });
+        } else {
+            res.json({ success: true, isActive: false });
+        }
+    } catch (error) {
+        console.log("The admin unable to block product", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+const listProduct = async (req, res) => {
+    try {
+        let id = req.params.id;
+        const result = await Product.updateOne({ _id: id }, { $set: { isActive: true } });
+        if (result.modifiedCount === 0) {
+            res.status(404).json({ message: "Product unable to found" });
+        } else {
+            res.json({ success: true, isActive: true });
+        }
+    } catch (error) {
+        console.log("The admin can unable to list the product", error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+const filterProduct = async (req, res) => {
+    try {
+        const { category, minPrice, maxPrice, sort } = req.query;
+        const search = req.query.search || "";
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = 4;
+
+        let query = {
+            $or: [
+                { name: { $regex: ".*" + search + ".*", $options: "i" } },
+                { brand: { $regex: ".*" + search + ".*", $options: "i" } }
+            ],
+            isActive: true
+        };
+
+       
+        if (category && category !== 'all') {
+            const categoryData = await Category.findOne({ name: category });
+            if (categoryData) {
+                query.categoryId = categoryData._id;
+            } else {
+                console.log("⚠️ Category Not Found:", category);
+            }
+        }
+
+       
+        if (minPrice || maxPrice) {
+            query.variants = {
+                $elemMatch: {}
+            };
+            if (minPrice) query.variants.$elemMatch.salePrice = { $gte: parseFloat(minPrice) };
+            if (maxPrice) query.variants.$elemMatch.salePrice = { 
+                ...(query.variants.$elemMatch.salePrice || {}), 
+                $lte: parseFloat(maxPrice) 
+            };
+        }
+
+        const count = await Product.countDocuments(query);
+
+       
+        let sortOptions = {};
+        switch (sort) {
+            case 'desc':
+                sortOptions['variants.salePrice'] = -1;
+                break;
+            case 'asc':
+                sortOptions['variants.salePrice'] = 1;
+                break;
+            case 'latest':
+                sortOptions.createdAt = -1;
+                break;
+            default:
+                sortOptions.createdAt = -1;
+        }
+
+    
+        const productData = await Product.find(query)
+            .limit(limit)
+            .skip((page - 1) * limit)
+            .sort(sortOptions)
+            .populate("categoryId")
+            .exec();
+
+        const categoryList = await Category.find({ isListed: true });
+
+        if (categoryList.length > 0) {
+            const formattedProductData = productData.map(product => {
+                const firstVariant = product.variants[0] || {};
+                return {
+                    ...product.toObject(),
+                    salePrice: firstVariant.salePrice || 0,
+                    quantity: firstVariant.quantity || 0
+                };
+            });
+
+            res.render("prodectManagment", {
+                search: search,
+                data: formattedProductData,
+                currentPage: page,
+                totalPage: Math.ceil(count / limit),
+                cat: categoryList,
+                sales: formattedProductData[0]?.salePrice || 0,
+                stock: formattedProductData[0]?.quantity || 0,
+                filterCategory: category || 'all',
+                filterMinPrice: minPrice || '',
+                filterMaxPrice: maxPrice || '',
+                sortOption: sort || 'latest'
+            });
+        } else {
+            return res.status(404).render("page-404");
+        }
+    } catch (error) {
+        console.error(" Error filtering products:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
-  
     ProductManagement,
     getaddproduct,
     addproduct,
@@ -382,5 +494,7 @@ module.exports = {
     editProduct,
     deleteImage,
     deleteProduct,
-    
+    UnlistProduct,
+    listProduct,
+    filterProduct
 };

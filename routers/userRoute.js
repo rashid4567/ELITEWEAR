@@ -28,8 +28,9 @@ router.get('/google/callback', passport.authenticate('google', { failureRedirect
 });
 
 
+router.get('/allproduct', userControllers.allproduct)
+
 router.use((req, res) => {
   res.status(404).redirect('/page-not-found');
 });
-
 module.exports = router;

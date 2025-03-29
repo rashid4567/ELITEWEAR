@@ -148,7 +148,7 @@ const sendVerificationEmail = async (email, otp) => {
     }
 };
 
-// Controller Methods
+
 const pageNotfound = async (req, res) => {
     try {
         const userId = req.session.user;
@@ -159,29 +159,69 @@ const pageNotfound = async (req, res) => {
         res.status(500).send("Error loading error page");
     }
 };
-
 const loadHomepage = async (req, res) => {
     try {
         const userId = req.session.user;
+        
+        
         const categories = await Category.find({ isListed: true });
-        const productData = await Product.find({
-            isBlocked: false, 
-            categoryId: { $in: categories.map(category => category._id) }
-        }).populate("categoryId").exec();
+        console.log(`Found ${categories.length} listed categories`);
+        
+        if (categories.length === 0) {
+            console.log("No listed categories found");
+            return res.render("home", {
+                user: userId ? await User.findById(userId) : null,
+                data: [],
+                cat: [],
+                error: "No product categories are currently available"
+            });
+        }
+        
 
+        const categoryIds = categories.map(category => category._id);
+        
+        
+        const productData = await Product.find({
+            isActive: true,
+            categoryId: { $in: categoryIds }
+        }).populate("categoryId").exec();
+        
+        console.log(`Found ${productData.length} products`);
+        
+      
+        if (productData.length === 0) {
+           
+            const allActiveProducts = await Product.find({ isActive: true });
+            console.log(`Found ${allActiveProducts.length} active products total`);
+            
+  
+            const allProducts = await Product.find({});
+            console.log(`Found ${allProducts.length} total products in database`);
+            
+            
+            if (allActiveProducts.length > 0) {
+                const matchingProducts = allActiveProducts.filter(p => 
+                    categoryIds.some(cid => cid.equals(p.categoryId))
+                );
+                console.log(`${matchingProducts.length} active products match our listed categories`);
+            }
+        }
+        
+  
         const formattedProductData = productData.map(product => {
             const firstVariant = product.variants?.[0] || {};
             return {
-                ...product.toObject(),
+                _id: product._id,
+                name: product.name,
+                images: product.images || [],
                 salePrice: firstVariant.salePrice || 0,
-                quantity: firstVariant.quantity || 0,
-                images: product.images || [], 
-                ratings: product.ratings || { average: 0, count: 0 } 
+                variants: product.variants || [],
+                ratings: product.ratings || { average: 0, count: 0 }
             };
         });
-
+        
         const userData = userId ? await User.findById(userId) : null;
-        res.render("home", { 
+        res.render("home", {
             user: userData,
             data: formattedProductData,
             cat: categories,
@@ -189,7 +229,8 @@ const loadHomepage = async (req, res) => {
         });
     } catch (error) {
         console.error("Error loading home page:", error);
-        res.render("home", { 
+        console.error(error.stack);
+        res.render("home", {
             user: null,
             data: [],
             cat: [],
@@ -197,7 +238,6 @@ const loadHomepage = async (req, res) => {
         });
     }
 };
-
 const loadUserSignup = async (req, res) => {
     try {
         res.render("signup", { user: null, message: null, formData: null });
@@ -410,7 +450,50 @@ const logout = async (req, res) => {
         res.redirect('/page-not-found');
     }
 };
-
+const allproduct = async (req, res) => {
+    try {
+        const user = req.session.user;
+        const userData = await User.findOne({ _id: user });
+ 
+        const categories = await Category.find({ isListed: true }); // Fetching multiple categories
+        const categoryIds = categories.map(category => category._id.toString());
+ 
+        const page = parseInt(req.query.page) || 1;
+        const limit = 9;
+        const skip = (page - 1) * limit;
+ 
+        const products = await Product.find({
+            isBlocked: false,
+            category: { $in: categoryIds },
+            quantity: { $gte: 0 }
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
+ 
+        const totalProduct = await Product.countDocuments({
+            isBlocked: false,
+            category: { $in: categoryIds },
+            quantity: { $gte: 0 }
+        });
+ 
+        const totalPages = Math.ceil(totalProduct / limit);
+ 
+        res.render("allproduct", {
+            user: userData,
+            products: products,
+            categories: categories, 
+            totalProduct: totalProduct,
+            currentPage: page,
+            totalPages: totalPages
+        });
+ 
+    } catch (error) {
+        console.error("Error loading allproduct shop page:", error);
+        return res.redirect('/page-not-found');
+    }
+ };
+ 
 module.exports = {
     loadHomepage,
     pageNotfound,
@@ -420,5 +503,6 @@ module.exports = {
     verifyOtp,
     resendOtp,
     login,
-    logout
+    logout,
+    allproduct,
 };

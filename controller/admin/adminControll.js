@@ -1,43 +1,40 @@
-const mongoose = require('mongoose'); 
+const mongoose = require('mongoose');
 const User = require("../../model/userSChema");
 const bcrypt = require('bcrypt');
 
 const loadLogin = async (req, res) => {
     if (req.session.admin) {
-        return res.redirect("/admin/dashboard"); 
+        return res.redirect("/admin/dashboard");
     }
-    res.render('adminlogin', { message: null });  
+    res.render('adminlogin', { message: null });
 };
 
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         console.log("Login attempt for:", email);
-        
+
         const admin = await User.findOne({ email, isAdmin: true });
 
         if (admin) {
             console.log("Admin found:", admin.email);
-            
-      
-            console.log("Password attempt:", password.substring(0,1) + "*****");
-            
+
+
+            console.log("Password attempt:", password.substring(0, 1) + "*****");
+
             const passwordMatch = await bcrypt.compare(password, admin.password);
             console.log("Password match result:", passwordMatch);
-            
+
             if (passwordMatch) {
-                
+
                 req.session.admin = admin._id;
-                
-               
+
+
                 req.session.save(err => {
                     if (err) {
-                        console.error("Session save error:", err);
+
                         return res.render('adminlogin', { message: "Session error" });
                     }
-                    
-                    console.log("Session saved successfully:", req.session.admin);
-                    console.log("Full session:", JSON.stringify(req.session));
                     return res.redirect('/admin/dashboard');
                 });
             } else {
@@ -57,8 +54,8 @@ const login = async (req, res) => {
 const loadDashboard = async (req, res) => {
     try {
         if (req.session.admin) {
-          
-            console.log("Dashboard accessed with session ID:", req.session.admin);
+
+
             return res.render("dashboard");
         } else {
             console.log("Dashboard access attempt without session");
@@ -76,7 +73,7 @@ const logout = async (req, res) => {
             console.log("Logout attempted without active session");
             return res.redirect("/admin/login");
         }
-        
+
         const sessionId = req.session.admin;
         req.session.destroy((err) => {
             if (err) {

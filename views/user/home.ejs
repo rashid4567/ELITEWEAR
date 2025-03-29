@@ -53,7 +53,9 @@
                             <h3 class="product-name"><%= product.name || 'Unnamed Product' %></h3>
                             <div class="product-price">
                                 <span class="current-price">$<%= (product.salePrice || 0).toFixed(2) %></span>
-                                <% if (product.variants && product.variants[0] && product.variants[0].regularPrice > product.salePrice) { %>
+                                <% if (product.variants && product.variants[0] && 
+                                       product.variants[0].regularPrice && 
+                                       product.variants[0].regularPrice > product.salePrice) { %>
                                     <span class="original-price">$<%= product.variants[0].regularPrice.toFixed(2) %></span>
                                 <% } %>
                             </div>
@@ -91,7 +93,7 @@
                     <div class="product-card">
                         <a href="/productdetails?id=<%= product._id %>">
                             <div class="product-image">
-                                <% if (product.images && product.images.length > 0 && product.images[0].url) { %>
+                                <% if (product.images && product.images.length > 0 && product.images[0] && product.images[0].url) { %>
                                     <img src="<%= product.images[0].url %>" alt="<%= product.name || 'Product Image' %>">
                                 <% } else { %>
                                     <img src="/api/placeholder/300/300" alt="Placeholder">
@@ -129,8 +131,6 @@
         </div>
     </div>
 </section>
-
-<!-- Promotional Banner -->
 <section class="promo-banner">
     <img src="/api/placeholder/1200/200" alt="Promotional banner">
     <div class="container">
