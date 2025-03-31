@@ -9,6 +9,7 @@ const validator = require('validator');
 const crypto = require('crypto');
 const Category = require("../../model/categoryScheema");
 const Product = require("../../model/productScheema");
+const { filterProduct } = require("../admin/productController");
 
 
 const OTP_EXPIRY_MINUTES = 10;
@@ -16,9 +17,9 @@ const MAX_EMAIL_RETRIES = 3;
 const OTP_LENGTH = 5;
 const SALT_ROUNDS = 10;
 
-const debug = process.env.NODE_ENV === 'development' 
-    ? (...args) => console.log('[DEBUG]', ...args) 
-    : () => {};
+const debug = process.env.NODE_ENV === 'development'
+    ? (...args) => console.log('[DEBUG]', ...args)
+    : () => { };
 
 
 const createTransporter = () => {
@@ -56,10 +57,10 @@ const transporter = createTransporter();
 
 const generateOtp = () => {
     const otp = crypto.randomInt(
-        Math.pow(10, OTP_LENGTH - 1), 
+        Math.pow(10, OTP_LENGTH - 1),
         Math.pow(10, OTP_LENGTH) - 1
     ).toString();
-    
+
     debug(`Generated OTP: ${otp}`);
     return otp;
 };
@@ -69,11 +70,11 @@ const validateEmail = (email) => {
     if (!validator.isEmail(email)) {
         throw new Error('Invalid email format');
     }
-    
+
     if (!validator.isEmail(email, { domain_specific_validation: true })) {
         throw new Error('Suspicious email domain');
     }
-    
+
     return true;
 };
 
@@ -85,7 +86,7 @@ const securePassword = async (password) => {
 
 const sendVerificationEmail = async (email, otp) => {
     let attempts = 0;
-    
+
     while (attempts < MAX_EMAIL_RETRIES) {
         attempts++;
         debug(`Email attempt ${attempts} for ${email}`);
@@ -114,7 +115,7 @@ const sendVerificationEmail = async (email, otp) => {
             };
 
             const info = await transporter.sendMail(mailOptions);
-            
+
             debug("Email delivery report:", {
                 messageId: info.messageId,
                 accepted: info.accepted
@@ -134,10 +135,10 @@ const sendVerificationEmail = async (email, otp) => {
             });
 
             if (attempts >= MAX_EMAIL_RETRIES) {
-                return { 
-                    success: false, 
+                return {
+                    success: false,
                     message: "Failed to send email after multiple attempts",
-                    error: error.message 
+                    error: error.message
                 };
             }
 
@@ -162,11 +163,11 @@ const pageNotfound = async (req, res) => {
 const loadHomepage = async (req, res) => {
     try {
         const userId = req.session.user;
-        
-        
+
+
         const categories = await Category.find({ isListed: true });
         console.log(`Found ${categories.length} listed categories`);
-        
+
         if (categories.length === 0) {
             console.log("No listed categories found");
             return res.render("home", {
@@ -176,38 +177,38 @@ const loadHomepage = async (req, res) => {
                 error: "No product categories are currently available"
             });
         }
-        
+
 
         const categoryIds = categories.map(category => category._id);
-        
-        
+
+
         const productData = await Product.find({
             isActive: true,
             categoryId: { $in: categoryIds }
         }).populate("categoryId").exec();
-        
+
         console.log(`Found ${productData.length} products`);
-        
-      
+
+
         if (productData.length === 0) {
-           
+
             const allActiveProducts = await Product.find({ isActive: true });
             console.log(`Found ${allActiveProducts.length} active products total`);
-            
-  
+
+
             const allProducts = await Product.find({});
             console.log(`Found ${allProducts.length} total products in database`);
-            
-            
+
+
             if (allActiveProducts.length > 0) {
-                const matchingProducts = allActiveProducts.filter(p => 
+                const matchingProducts = allActiveProducts.filter(p =>
                     categoryIds.some(cid => cid.equals(p.categoryId))
                 );
                 console.log(`${matchingProducts.length} active products match our listed categories`);
             }
         }
-        
-  
+
+
         const formattedProductData = productData.map(product => {
             const firstVariant = product.variants?.[0] || {};
             return {
@@ -219,7 +220,7 @@ const loadHomepage = async (req, res) => {
                 ratings: product.ratings || { average: 0, count: 0 }
             };
         });
-        
+
         const userData = userId ? await User.findById(userId) : null;
         res.render("home", {
             user: userData,
@@ -252,8 +253,8 @@ const userSignup = async (req, res) => {
         const { fullname, email, mobile, password, cpassword } = req.body;
 
         if (password !== cpassword) {
-            return res.render("signup", { 
-                message: "Passwords do not match", 
+            return res.render("signup", {
+                message: "Passwords do not match",
                 user: null,
                 formData: { fullname, email, mobile }
             });
@@ -263,8 +264,8 @@ const userSignup = async (req, res) => {
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.render("signup", { 
-                message: "User with this email already exists", 
+            return res.render("signup", {
+                message: "User with this email already exists",
                 user: null,
                 formData: { fullname, email, mobile }
             });
@@ -275,8 +276,8 @@ const userSignup = async (req, res) => {
 
         const emailResult = await sendVerificationEmail(email, otp);
         if (!emailResult.success) {
-            return res.render("signup", { 
-                message: "Failed to send verification. Please try again later.", 
+            return res.render("signup", {
+                message: "Failed to send verification. Please try again later.",
                 user: null,
                 formData: { fullname, email, mobile }
             });
@@ -289,11 +290,11 @@ const userSignup = async (req, res) => {
         };
 
         return res.redirect("/verify-otp");
-        
+
     } catch (error) {
         console.error("Signup error:", error);
-        return res.render("signup", { 
-            message: error.message || "Registration failed", 
+        return res.render("signup", {
+            message: error.message || "Registration failed",
             user: null,
             formData: req.body
         });
@@ -306,24 +307,24 @@ const verifyOtp = async (req, res) => {
         const { registration } = req.session;
 
         if (!registration) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Session expired. Please register again." 
+            return res.status(400).json({
+                success: false,
+                message: "Session expired. Please register again."
             });
         }
 
         if (Date.now() > registration.otpExpires) {
             delete req.session.registration;
-            return res.status(400).json({ 
-                success: false, 
-                message: "OTP expired. Please request a new one." 
+            return res.status(400).json({
+                success: false,
+                message: "OTP expired. Please request a new one."
             });
         }
 
         if (otp !== registration.otp) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "Invalid OTP. Please try again." 
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP. Please try again."
             });
         }
 
@@ -338,16 +339,16 @@ const verifyOtp = async (req, res) => {
         req.session.user = newUser._id;
         delete req.session.registration;
 
-        return res.json({ 
-            success: true, 
-            redirectUrl: "/" 
+        return res.json({
+            success: true,
+            redirectUrl: "/"
         });
 
     } catch (error) {
         console.error("OTP verification error:", error);
-        return res.status(500).json({ 
-            success: false, 
-            message: "An error occurred during verification" 
+        return res.status(500).json({
+            success: false,
+            message: "An error occurred during verification"
         });
     }
 };
@@ -355,37 +356,35 @@ const verifyOtp = async (req, res) => {
 const resendOtp = async (req, res) => {
     try {
         const { registration } = req.session;
-        
+
         if (!registration?.userData?.email) {
             return res.status(400).json({
-                success: false, 
+                success: false,
                 message: "Session expired. Please register again."
             });
         }
 
         const newOtp = generateOtp();
         debug(`Resent OTP for ${registration.userData.email}: ${newOtp}`);
-
         const emailResult = await sendVerificationEmail(registration.userData.email, newOtp);
         if (!emailResult.success) {
             return res.status(500).json({
-                success: false, 
+                success: false,
                 message: "Failed to resend OTP. Please try again."
             });
         }
 
         req.session.registration.otp = newOtp;
         req.session.registration.otpExpires = Date.now() + (OTP_EXPIRY_MINUTES * 60 * 1000);
-
         return res.json({
-            success: true, 
+            success: true,
             message: "New OTP sent successfully"
         });
 
     } catch (error) {
         console.error("Resend OTP error:", error);
         return res.status(500).json({
-            success: false, 
+            success: false,
             message: "Internal server error"
         });
     }
@@ -454,46 +453,163 @@ const allproduct = async (req, res) => {
     try {
         const user = req.session.user;
         const userData = await User.findOne({ _id: user });
- 
-        const categories = await Category.find({ isListed: true }); // Fetching multiple categories
+
+        const categories = await Category.find({ isListed: true });
         const categoryIds = categories.map(category => category._id.toString());
- 
+
         const page = parseInt(req.query.page) || 1;
         const limit = 9;
         const skip = (page - 1) * limit;
- 
+
         const products = await Product.find({
-            isBlocked: false,
-            category: { $in: categoryIds },
-            quantity: { $gte: 0 }
+            isActive: true,
+            categoryId: { $in: categoryIds },
+            'variants.quantity': { $gte: 0 }
         })
         .sort({ createdAt: -1 })
         .skip(skip)
-        .limit(limit);
- 
-        const totalProduct = await Product.countDocuments({
-            isBlocked: false,
-            category: { $in: categoryIds },
-            quantity: { $gte: 0 }
+        .limit(limit)
+        .lean();
+
+      
+        products.forEach(product => {
+            if (product.variants && product.variants.length > 0) {
+                product.variants.forEach(variant => {
+                    console.log(`Product: ${product.name}, Variant Size: ${variant.size}, Sale Price: ${variant.salePrice}, Regular Price: ${variant.regularPrice}`);
+                });
+            }
         });
- 
-        const totalPages = Math.ceil(totalProduct / limit);
- 
+
+        const totalProducts = await Product.countDocuments({
+            isActive: true,
+            categoryId: { $in: categoryIds },
+            'variants.quantity': { $gte: 0 }
+        });
+
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        const filters = {
+            category: req.query.category || 'all',
+            size: req.query.size || '',
+            color: req.query.color || '',
+            minPrice: req.query.minPrice || '',
+            maxPrice: req.query.maxPrice || '',
+            sort: req.query.sort || 'latest'
+        };
+
         res.render("allproduct", {
             user: userData,
             products: products,
-            categories: categories, 
-            totalProduct: totalProduct,
+            categories: categories,
+            totalProducts: totalProducts,
             currentPage: page,
-            totalPages: totalPages
+            totalPages: totalPages,
+            filters: filters
         });
- 
+
     } catch (error) {
         console.error("Error loading allproduct shop page:", error);
         return res.redirect('/page-not-found');
     }
- };
- 
+};
+const filterProducts = async (req, res) => {
+    try {
+        const user = req.session.user;
+        const userData = user ? await User.findOne({ _id: user }) : null;
+
+        const { category, minPrice, maxPrice, color, sort, page = 1 } = req.query;
+        console.log('Filter parameters:', { category, minPrice, maxPrice, color, sort, page });
+
+        const limit = 9;
+        const skip = (page - 1) * limit;
+
+        const query = { isActive: true };
+
+        if (category && category !== 'all') {
+            const selectedCategory = await Category.findOne({ name: category });
+            if (selectedCategory) {
+                query.categoryId = selectedCategory._id;
+            } else {
+                console.log('Category not found');
+            }
+        }
+
+        if (minPrice || maxPrice) {
+            query['variants.salePrice'] = {};
+            if (minPrice) query['variants.salePrice'].$gte = parseFloat(minPrice);
+            if (maxPrice) query['variants.salePrice'].$lte = parseFloat(maxPrice);
+        }
+
+        if (color) {
+            query.color = { $regex: new RegExp(color, 'i') };
+        }
+        console.log('Query:', query);
+
+        let sortOption = {};
+        switch (sort) {
+            case 'price-high-low':
+                sortOption = { 'variants.salePrice': -1 };
+                break;
+            case 'price-low-high':
+                sortOption = { 'variants.salePrice': 1 };
+                break;
+            case 'popular':
+                sortOption = { popularity: -1 };
+                break;
+            case 'latest':
+            default:
+                sortOption = { createdAt: -1 };
+        }
+        console.log('Sort Option:', sortOption);
+
+        const products = await Product.find(query)
+            .sort(sortOption)
+            .skip(skip)
+            .limit(limit)
+            .lean();
+
+   
+        products.forEach(product => {
+            if (product.variants && product.variants.length > 0) {
+                product.variants.forEach(variant => {
+                    console.log(`Product: ${product.name}, Variant Size: ${variant.size}, Sale Price: ${variant.salePrice}, Regular Price: ${variant.regularPrice}`);
+                });
+            }
+        });
+
+        const totalProducts = await Product.countDocuments(query);
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        const categories = await Category.find({});
+
+        const filters = {
+            category: category || 'all',
+            size: req.query.size || '',
+            color: color || '',
+            minPrice: minPrice || '',
+            maxPrice: maxPrice || '',
+            sort: sort || 'latest'
+        };
+
+        res.render("allproduct", {
+            user: userData,
+            products: products,
+            categories: categories,
+            totalProducts: totalProducts,
+            currentPage: parseInt(page),
+            totalPages: totalPages,
+            filters: filters
+        });
+
+    } catch (error) {
+        console.error("Error filtering products:", error);
+        res.status(500).render("page-404");
+    }
+};
+
+
+
+
 module.exports = {
     loadHomepage,
     pageNotfound,
@@ -505,4 +621,6 @@ module.exports = {
     login,
     logout,
     allproduct,
+    filterProducts,
+
 };

@@ -120,14 +120,14 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
-                        <input type="text" name="productColor" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= typeof product !== 'undefined' ? product.productColor : '' %>" placeholder="Enter color">
+                        <input type="text" name="color" class="form-input w-full border rounded px-3 py-2" 
+                            value="<%= typeof product !== 'undefined' ? product.color : '' %>" 
+                            placeholder="Enter color">
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Fabric</label>
-                        <input type="text" name="productFabric" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= typeof product !== 'undefined' ? product.productFabric : '' %>" placeholder="Enter fabric type">
-                    </div>
+                    
+                    <input type="text" name="fabric" class="form-input w-full border rounded px-3 py-2" 
+                    value="<%= typeof product !== 'undefined' ? product.fabric : '' %>" placeholder="Enter fabric type">
+                
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Total Stock Quantity</label>
                         <input type="number" name="totalStockQuantity" class="form-input w-full border rounded px-3 py-2" 

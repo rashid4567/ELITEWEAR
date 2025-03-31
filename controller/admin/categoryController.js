@@ -148,16 +148,19 @@ const geteditCategory = async (req, res) => {
 };
 const editCategory = async (req, res) => {
     try {
+        
         const id = req.body.id;
 
         if (!id) {
             return res.status(400).json({ error: "Missing category ID" });
         }
 
-        const { name, description } = req.body;
+        const { name, description, offer } = req.body;
         const trimmedName = name.trim();
         const trimmedDescription = description.trim();
+        const offerValue = Number(offer); 
 
+      
         const existingCategory = await Category.findOne({
             name: trimmedName,
             _id: { $ne: id }
@@ -167,9 +170,10 @@ const editCategory = async (req, res) => {
             return res.status(400).json({ error: "Category already exists" });
         }
 
+      
         const updatedCategory = await Category.findByIdAndUpdate(
             id,
-            { $set: { name: trimmedName, description: trimmedDescription } },
+            { $set: { name: trimmedName, description: trimmedDescription, offer: offerValue } },
             { new: true }
         );
 
@@ -178,11 +182,14 @@ const editCategory = async (req, res) => {
         }
 
         res.redirect("/admin/categories");
+
     } catch (error) {
-        console.error("Error updating category:", error);
-        res.status(500).json({ error: "Internal server error" });
+        console.error("Error updating category:", error); 
+        res.status(500).json({ error: error.message || "Internal server error" });
     }
 };
+
+
 
 
 module.exports = editCategory;

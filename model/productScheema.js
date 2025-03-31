@@ -58,6 +58,10 @@ const productSchema = new Schema({
         type: String,
         required: false 
     },
+    color : {
+        type: String,
+        required: true
+    },
     offer: {
         type: Number,
         required: true
@@ -85,6 +89,10 @@ const productSchema = new Schema({
     isActive: {
         type: Boolean,
         default: true
+    },
+    fabric:{
+        type: String,
+        required: true,
     },
     createdAt: {
         type: Date,

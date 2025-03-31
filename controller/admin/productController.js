@@ -11,14 +11,19 @@ const ProductManagement = async (req, res) => {
     try {
         const search = req.query.search || "";
         const page = Math.max(parseInt(req.query.page) || 1, 1);
-        const limit = 4;
+        const limit = 6;
 
         const count = await Product.countDocuments({
             $or: [
                 { name: { $regex: ".*" + search + ".*", $options: "i" } },
-                { brand: { $regex: ".*" + search + ".*", $options: 'i' } }
+                { brand: { $regex: ".*" + search + ".*", $options: "i" } }
             ]
         });
+
+        // Ensure page doesn't exceed available pages
+        const totalPages = Math.ceil(count / limit);
+        const safePage = Math.min(page, totalPages);
+        const skip = (safePage - 1) * limit;
 
         const productData = await Product.find({
             $or: [
@@ -27,39 +32,45 @@ const ProductManagement = async (req, res) => {
             ]
         })
             .limit(limit)
-            .skip((page - 1) * limit)
+            .skip(skip)
             .populate("categoryId")
             .exec();
 
         const category = await Category.find({ isListed: true });
 
-        if (category.length > 0) {
-            const formattedProductData = productData.map(product => {
-                const firstVariant = product.variants[0] || {};
-                return {
-                    ...product.toObject(),
-                    salePrice: firstVariant.salePrice || 0,
-                    quantity: firstVariant.quantity || 0
-                };
-            });
-
-            res.render("prodectManagment", {
-                search: search,
-                data: formattedProductData,
-                currentPage: page,
-                totalPage: Math.ceil(count / limit),
-                cat: category,
-                sales: formattedProductData[0]?.salePrice || 0,
-                stock: formattedProductData[0]?.quantity || 0
-            });
-        } else {
+        if (!category.length) {
             return res.status(404).render("page-404");
         }
+
+        if (!productData.length) {
+            return res.render("no-products", { search, cat: category });
+        }
+
+        const formattedProductData = productData.map(product => {
+            const firstVariant = product.variants[0] || {};
+            return {
+                ...product.toObject(),
+                salePrice: firstVariant.salePrice || 0,
+                quantity: firstVariant.quantity || 0
+            };
+        });
+
+        res.render("prodectManagment", {
+            search,
+            data: formattedProductData,
+            currentPage: safePage,
+            totalPage: totalPages,
+            cat: category,
+            sales: formattedProductData[0]?.salePrice || 0,
+            stock: formattedProductData[0]?.quantity || 0
+        });
+
     } catch (error) {
         console.error("Error fetching product management:", error);
         res.status(500).send("Internal Server Error");
     }
 };
+
 
 const getaddproduct = async (req, res) => {
     try {
@@ -92,12 +103,14 @@ const addproduct = async (req, res) => {
             productCategory,
             productOffer,
             sizes,
+            color,
+            fabric,
             totalStockQuantity,
             sku,
             brand
         } = req.body;
 
-        const requiredFields = ['productName', 'productPrice', 'productDescription', 'productCategory', 'totalStockQuantity'];
+        const requiredFields = ['productName', 'productPrice', 'productDescription', 'productCategory', 'totalStockQuantity', 'color', 'fabric'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
         if (missingFields.length > 0) {
             return res.status(400).render("addproduct", {
@@ -144,7 +157,7 @@ const addproduct = async (req, res) => {
         const regularPrice = parseFloat(productPrice);
         const offer = parseFloat(productOffer || 0);
         const salePrice = regularPrice * (1 - offer / 100);
-
+    
         let sizeArray = Array.isArray(sizes) ? sizes : [sizes];
         let totalStock = parseInt(totalStockQuantity);
         let quantityPerSize = sizeArray.length > 0 ? Math.floor(totalStock / sizeArray.length) : totalStock;
@@ -165,6 +178,8 @@ const addproduct = async (req, res) => {
             images,
             variants,
             sku: sku || undefined,
+            fabric: fabric.trim(),
+            color: color.trim(),
             tags: req.body.tags ? (Array.isArray(req.body.tags) ? req.body.tags : [req.body.tags]) : [],
             ratings: { average: 0, count: 0 },
             isActive: true
@@ -270,6 +285,8 @@ const editProduct = async (req, res) => {
             categoryId: data.productCategory,
             offer: offer,
             sku: data.sku || undefined,
+            fabric: data.fabric ? data.fabric.trim() : "",  
+            color: data.color ? data.color.trim() : "", 
             images,
             variants: Array.isArray(data.sizes)
                 ? data.sizes.map(size => ({
@@ -287,8 +304,9 @@ const editProduct = async (req, res) => {
         };
 
         const updatedProduct = await Product.findByIdAndUpdate(id, updateFields, { new: true });
-        console.log("Updated product images:", updatedProduct.images);
+        console.log("Updated product details:", updatedProduct);
         res.redirect("/admin/productManagment");
+
     } catch (error) {
         console.error("Error editing product:", error);
         res.status(500).render("editProduct", {
@@ -298,6 +316,7 @@ const editProduct = async (req, res) => {
         });
     }
 };
+
 
 const deleteImage = async (req, res) => {
     try {
