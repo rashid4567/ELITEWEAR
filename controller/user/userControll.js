@@ -437,6 +437,8 @@ const filterProducts = async (req, res) => {
     }
 };
 
+
+
 module.exports = {
     loadHomepage,
     pageNotfound,
@@ -449,4 +451,5 @@ module.exports = {
     logout,
     allproduct,
     filterProducts,
+
 };

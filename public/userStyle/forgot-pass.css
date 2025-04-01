@@ -1,0 +1,44 @@
+body {
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+.password-reset-container {
+    max-width: 450px;
+    width: 100%;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+.heading {
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 30px;
+}
+.btn-verify {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 10px 0;
+    width: 100%;
+    margin-top: 20px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+.btn-verify:hover {
+    background-color: #333;
+    color: #fff;
+}
+.form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
+    border-color: #ced4da;
+}
+.form-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+.input-group {
+    margin-bottom: 15px;
+}

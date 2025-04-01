@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter New Password</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/userStyle/forgot-pass.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="password-reset-container">
+                    <h2 class="heading">Enter New Password</h2>
+                    <form id="passwordForm">
+                        <div class="mb-3">
+                            <input type="password" class="form-control" id="newPassword" placeholder="Enter new Password">
+                            <small id="passwordError" class="text-danger"></small>
+                        </div>
+                        <div class="mb-3">
+                            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password">
+                            <small id="confirmPasswordError" class="text-danger"></small>
+                        </div>
+                        <button type="submit" class="btn btn-verify">Verify</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.getElementById("passwordForm").addEventListener("submit", function(event) {
+            event.preventDefault(); 
+            
+            let password = document.getElementById("newPassword").value;
+            let confirmPassword = document.getElementById("confirmPassword").value;
+            let passwordError = document.getElementById("passwordError");
+            let confirmPasswordError = document.getElementById("confirmPasswordError");
+
+            let passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            
+            if (!passwordRegex.test(password)) {
+                passwordError.textContent = "Password must be 8+ chars with 1 uppercase, 1 number & 1 special character.";
+                return;
+            } else {
+                passwordError.textContent = "";
+            }
+
+            if (password !== confirmPassword) {
+                confirmPasswordError.textContent = "Passwords do not match!";
+                return;
+            } else {
+                confirmPasswordError.textContent = "";
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '/reset-password',
+                contentType: 'application/json',
+                data: JSON.stringify({ newPassword: password }),
+                success: function(response) {
+                    console.log("Password reset success:", response);
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Password Reset Successful',
+                            text: response.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = '/login';
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Password Reset Failed',
+                            text: response.message
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    console.log("Password reset error:", xhr);
+                    let errorMessage = "Failed to reset password.";
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.message) errorMessage = response.message;
+                    } catch (e) {
+                        console.error("Error parsing response:", e);
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Password Reset Failed',
+                        text: errorMessage
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
