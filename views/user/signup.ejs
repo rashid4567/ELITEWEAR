@@ -175,24 +175,8 @@
 
                 // Form submission
                 signupForm.addEventListener("submit", async function (event) {
-                    event.preventDefault();
-                    
-                    if (validateForm()) {
-                        // Store form data in session or send to server
-                        const formData = {
-                            fullname: fullnameInput.value.trim(),
-                            email: emailInput.value.trim(),
-                            mobile: mobileInput.value.trim(),
-                            password: passwordInput.value,
-                            cpassword: confirmPasswordInput.value,
-                            referralCode: document.getElementById('referralCode').value
-                        };
-
-                        // In a real app, you would send this to your backend
-                        console.log("Form data valid, redirecting to OTP page");
-                        
-                        // Redirect to OTP verification page
-                        window.location.href = "/verify-otp";
+                    if (!validateForm()) {
+                        event.preventDefault();
                     }
                 });
             }
@@ -204,7 +188,7 @@
                 const isPasswordValid = validatePassword();
                 const isPasswordMatchValid = validatePasswordMatch();
 
-                return isNameValid && isEmailValid && isMobileValid && 
+                return isNameValid && isEmailValid && isMobileValid &&
                        isPasswordValid && isPasswordMatchValid;
             }
 

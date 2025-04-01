@@ -1,191 +1,202 @@
-        /* Custom CSS */
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        
-        .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-        }
-        
-        .search-bar {
-            width: 100%;
-            max-width: 400px;
-        }
-        
-        .product-thumbnails img {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            cursor: pointer;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-        }
-        
-        .product-thumbnails img:hover {
-            border-color: #000;
-        }
-        
-        .product-main-image {
-            width: 100%;
-            height: auto;
-            object-fit: contain;
-        }
-        
-        .original-price {
-            text-decoration: line-through;
-            color: #999;
-            margin-left: 10px;
-        }
-        
-        .discount-badge {
-            background-color: #dc3545;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            margin-left: 10px;
-        }
-        
-        .size-selector input[type="radio"], .color-selector input[type="radio"] {
-            display: none;
-        }
-        
-        .size-selector label {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            text-align: center;
-            line-height: 40px;
-            border: 1px solid #ddd;
-            margin-right: 5px;
-            cursor: pointer;
-        }
-        
-        .size-selector input[type="radio"]:checked + label {
-            background-color: #000;
-            color: #fff;
-        }
-        
-        .color-selector label {
-            display: inline-block;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            margin-right: 5px;
-            cursor: pointer;
-            border: 1px solid #ddd;
-        }
-        
-        .color-selector input[type="radio"]:checked + label {
-            outline: 2px solid #000;
-            outline-offset: 2px;
-        }
-        
-        .quantity-selector {
-            width: 120px;
-        }
-        
-        .add-to-cart-btn {
-            background-color: #000;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-        }
-        
-        .add-to-cart-btn:hover {
-            background-color: #333;
-        }
-        
-        .buy-now-btn {
-            background-color: #fff;
-            color: #000;
-            border: 1px solid #000;
-            padding: 10px 20px;
-        }
-        
-        .buy-now-btn:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .product-specs {
-            margin-top: 40px;
-        }
-        
-        .product-specs h3 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
-        }
-        
-        .similar-product {
-            transition: transform 0.3s;
-        }
-        
-        .similar-product:hover {
-            transform: translateY(-5px);
-        }
-        
-        .cta-section {
-            background-color: #f8f9fa;
-            padding: 40px 0;
-        }
-        
-        .footer {
-            background-color: #212529;
-            color: #fff;
-            padding: 40px 0 20px;
-        }
-        
-        .footer h5 {
-            margin-bottom: 20px;
-        }
-        
-        .footer ul {
-            list-style: none;
-            padding-left: 0;
-        }
-        
-        .footer ul li {
-            margin-bottom: 10px;
-        }
-        
-        .footer-bottom {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #444;
-        }
-        
-        .social-icons a {
-            color: #fff;
-            margin-right: 15px;
-            font-size: 1.2rem;
-        }
-        
-        @media (max-width: 767px) {
-            .product-thumbnails {
-                display: flex;
-                overflow-x: auto;
-                margin-bottom: 15px;
-            }
-            
-            .product-thumbnails img {
-                width: 80px;
-                height: 80px;
-                margin-right: 10px;
-                margin-bottom: 0;
-            }
-        }
-        
-        /* Low stock warning */
-        .low-stock {
-            color: #dc3545;
-            font-size: 0.9rem;
-            margin-top: 5px;
-        }
-        
-        /* Animation for hover effects */
-        .btn {
-            transition: all 0.3s ease;
-        }
+/* Custom CSS */
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.search-bar {
+    width: 100%;
+    max-width: 400px;
+}
+
+.product-thumbnails img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    cursor: pointer;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+}
+
+.product-thumbnails img:hover {
+    border-color: #000;
+}
+
+.product-main-image-container {
+    position: relative;
+    overflow: hidden;
+    padding: 10px;
+}
+
+.product-main-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    transition: transform 0.4s ease-in-out;
+}
+
+.product-main-image-container:hover .product-main-image {
+    transform: scale(1.3);
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: #999;
+    margin-left: 10px;
+}
+
+.discount-badge {
+    background-color: #dc3545;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-left: 10px;
+}
+
+.size-selector input[type="radio"], .color-selector input[type="radio"] {
+    display: none;
+}
+
+.size-selector label {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    line-height: 40px;
+    border: 1px solid #ddd;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.size-selector input[type="radio"]:checked + label {
+    background-color: #000;
+    color: #fff;
+}
+
+.color-selector label {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: 5px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+}
+
+.color-selector input[type="radio"]:checked + label {
+    outline: 2px solid #000;
+    outline-offset: 2px;
+}
+
+.quantity-selector {
+    width: 120px;
+}
+
+.add-to-cart-btn {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+}
+
+.add-to-cart-btn:hover {
+    background-color: #333;
+}
+
+.buy-now-btn {
+    background-color: #fff;
+    color: #000;
+    border: 1px solid #000;
+    padding: 10px 20px;
+}
+
+.buy-now-btn:hover {
+    background-color: #f8f9fa;
+}
+
+.product-specs {
+    margin-top: 40px;
+}
+
+.product-specs h3 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.similar-product {
+    transition: transform 0.3s;
+}
+
+.similar-product:hover {
+    transform: translateY(-5px);
+}
+
+.cta-section {
+    background-color: #f8f9fa;
+    padding: 40px 0;
+}
+
+.footer {
+    background-color: #212529;
+    color: #fff;
+    padding: 40px 0 20px;
+}
+
+.footer h5 {
+    margin-bottom: 20px;
+}
+
+.footer ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.footer ul li {
+    margin-bottom: 10px;
+}
+
+.footer-bottom {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #444;
+}
+
+.social-icons a {
+    color: #fff;
+    margin-right: 15px;
+    font-size: 1.2rem;
+}
+
+@media (max-width: 767px) {
+    .product-thumbnails {
+        display: flex;
+        overflow-x: auto;
+        margin-bottom: 15px;
+    }
+
+    .product-thumbnails img {
+        width: 80px;
+        height: 80px;
+        margin-right: 10px;
+        margin-bottom: 0;
+    }
+}
+
+/* Low stock warning */
+.low-stock {
+    color: #dc3545;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+/* Animation for hover effects */
+.btn {
+    transition: all 0.3s ease;
+}

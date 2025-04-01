@@ -1,316 +1,380 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= product.name %> - Elite Wear</title>
+    <title>Admin Panel - Product Management</title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/userStyle/productSelected.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/adminStyle/productManagment.css">
 </head>
+
 <body>
-    <!-- Header and Navigation -->
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container">
-                <a class="navbar-brand" href="#">ELITE WEAR</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Men</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Women</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Sale</a>
-                        </li>
-                    </ul>
-                    <form class="d-flex search-bar mx-auto">
-                        <input class="form-control me-2" type="search" placeholder="Search products...">
-                        <button class="btn btn-outline-light" type="submit">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </form>
-                    <div class="d-flex ms-auto">
-                        <a href="#" class="btn btn-link text-white">
-                            <i class="fas fa-user"></i>
-                        </a>
-                        <a href="#" class="btn btn-link text-white">
-                            <i class="fas fa-heart"></i>
-                        </a>
-                        <a href="#" class="btn btn-link text-white">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span class="badge bg-danger rounded-pill">2</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </nav>
-    </header>
-
-    <!-- Main Content -->
-    <main class="container my-5">
-        <div class="row">
-            <!-- Product Images Section -->
-            <div class="col-md-6 mb-4">
-                <div class="row">
-                    <div class="col-2 product-thumbnails">
-                        <% product.images.forEach(function(image) { %>
-                            <img src="<%= image.url %>" alt="Thumbnail" onclick="changeMainImage(this.src)">
-                        <% }); %>
-                    </div>
-                    <div class="col-10">
-                        <img id="mainImage" src="<%= product.images[0].url %>" alt="<%= product.name %>" class="product-main-image">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Product Information Section -->
-            <div class="col-md-6">
-                <h1 class="mb-2"><%= product.name %></h1>
-                <p class="text-muted">Product Code: <%= product.code %></p>
-                
-                <div class="mb-3">
-                    <% for (let i = 0; i < 5; i++) { %>
-                        <% if (i < product.ratings.average) { %>
-                            <i class="fas fa-star text-warning"></i>
-                        <% } else if (i < product.ratings.average + 0.5) { %>
-                            <i class="fas fa-star-half-alt text-warning"></i>
-                        <% } else { %>
-                            <i class="far fa-star text-warning"></i>
-                        <% } %>
-                    <% } %>
-                    <span class="ms-2">(<%= product.reviews.length %> reviews)</span>
-                </div>
-                
-                <div class="mb-3">
-                    <span class="fs-4 fw-bold">₹<%= product.price %></span>
-                    <% if (totalOffer > 0) { %>
-                        <span class="original-price">₹<%= product.originalPrice %></span>
-                        <span class="discount-badge"><%= totalOffer %>% OFF</span>
-                    <% } %>
-                </div>
-                
-                <div class="mb-3">
-                    <% if (product.inStock > 0) { %>
-                        <span class="text-success">
-                            <i class="fas fa-check-circle"></i> In Stock
-                        </span>
-                        <% if (product.inStock <= 5) { %>
-                            <span class="low-stock ms-2">Only <%= product.inStock %> left!</span>
-                        <% } %>
-                    <% } else { %>
-                        <span class="text-danger">
-                            <i class="fas fa-times-circle"></i> Out of Stock
-                        </span>
-                    <% } %>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="form-label">Size:</label>
-                    <div class="size-selector">
-                        <% product.sizes.forEach(function(size) { %>
-                            <input type="radio" name="size" id="size-<%= size %>" value="<%= size %>">
-                            <label for="size-<%= size %>"><%= size %></label>
-                        <% }); %>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="form-label">Color:</label>
-                    <div class="color-selector">
-                        <% product.colors.forEach(function(color) { %>
-                            <input type="radio" name="color" id="color-<%= color %>" value="<%= color %>">
-                            <label for="color-<%= color %>" style="background-color: <%= color %>;"></label>
-                        <% }); %>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="form-label">Quantity:</label>
-                    <div class="input-group quantity-selector">
-                        <button class="btn btn-outline-secondary" type="button" onclick="decrementQuantity()">-</button>
-                        <input type="text" class="form-control text-center" id="quantity" value="1">
-                        <button class="btn btn-outline-secondary" type="button" onclick="incrementQuantity()">+</button>
-                    </div>
-                </div>
-                
-                <div class="d-grid gap-2 d-md-flex mb-4">
-                    <button class="btn add-to-cart-btn flex-fill">Add to Cart</button>
-                    <button class="btn buy-now-btn flex-fill">Buy Now</button>
-                </div>
-                
-                <div class="mb-4">
-                    <button class="btn btn-link p-0">
-                        <i class="far fa-heart"></i> Add to Wishlist
-                    </button>
-                </div>
-                
-                <!-- Product Description -->
-                <div class="product-specs">
-                    <h3>DESCRIPTION</h3>
-                    <p><%= product.description %></p>
-                    
-                    <h3>Size & Fit</h3>
-                    <p><%= product.sizeFit %></p>
-                    
-                    <h3>Wash Care</h3>
-                    <p><%= product.washCare %></p>
-                    
-                    <h3>Specifications</h3>
-                    <p><%= product.specifications %></p>
-                    
-                    <p class="text-muted fst-italic mt-4">Note: The actual colors of the product may vary slightly due to photographic lighting sources or your display settings.</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- You May Also Like Section -->
-        <div class="mt-5">
-            <h2 class="mb-4">YOU MAY ALSO LIKE</h2>
-            <div class="row">
-                <% product.similarProducts.forEach(function(similarProduct) { %>
-                    <div class="col-6 col-md-4 col-lg-3 mb-4">
-                        <div class="card similar-product">
-                            <img src="<%= similarProduct.images[0].url %>" class="card-img-top" alt="<%= similarProduct.name %>">
-                            <div class="card-body">
-                                <div class="mb-1">
-                                    <% for (let i = 0; i < 5; i++) { %>
-                                        <% if (i < similarProduct.ratings.average) { %>
-                                            <i class="fas fa-star text-warning"></i>
-                                        <% } else if (i < similarProduct.ratings.average + 0.5) { %>
-                                            <i class="fas fa-star-half-alt text-warning"></i>
-                                        <% } else { %>
-                                            <i class="far fa-star text-warning"></i>
-                                        <% } %>
-                                    <% } %>
-                                </div>
-                                <h5 class="card-title"><%= similarProduct.name %></h5>
-                                <p class="card-text fw-bold">₹<%= similarProduct.price %></p>
-                                <a href="/productdetails?id=<%= similarProduct._id %>" class="btn btn-sm btn-outline-dark">View Details</a>
+    <%- include("../partials/admin/header") %>
+        <div class="container my-5">
+            <!-- Header Section -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Products</li>
+                </ol>
+            </nav>
+            <div class="products-header d-flex justify-content-between align-items-center">
+                <h1>Products</h1>
+                <div class="d-flex align-items-center">
+                    <div class="search-bar me-3 position-relative">
+                        <form action="/admin/productManagment" method="GET" class="d-flex align-items-center">
+                            <div class="position-relative w-100">
+                                <i class="fas fa-search search-icon"></i>
+                                <input 
+                                    type="text" 
+                                    class="form-control ps-4" 
+                                    id="searchInput" 
+                                    name="search" 
+                                    placeholder="Search product..." 
+                                    value="<%= search || ''%>" 
+                                    oninput="toggleClearButton()"
+                                >
+                                <button 
+                                    type="button" 
+                                    id="clearBtn" 
+                                    class="clear-btn btn btn-link position-absolute top-50 end-0 translate-middle-y" 
+                                    onclick="clearSearch()" 
+                                    style="display: none;"
+                                >
+                                    <i class="fas fa-times-circle text-muted"></i>
+                                </button>
                             </div>
-                        </div>
+                            <button type="submit" class="btn btn-primary ms-2">Search</button>
+                        </form>
                     </div>
-                <% }); %>
-            </div>
-        </div>
-    </main>
-    
-    <!-- Call to Action Section -->
-    <section class="cta-section text-center">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <h2 class="mb-4">Get Exclusive Offers & Updates</h2>
-                    <p class="mb-4">Subscribe to our newsletter for exclusive deals, new arrivals, and fashion tips.</p>
-                    <div class="input-group mb-3 mx-auto" style="max-width: 500px;">
-                        <input type="email" class="form-control" placeholder="Enter your email address">
-                        <button class="btn btn-dark" type="button">Subscribe</button>
-                    </div>
+                   
+                    <a href="/admin/addproduct" class="btn btn-add-new">
+                        <i class="fas fa-plus me-1"></i> Add New Product
+                    </a>
                 </div>
             </div>
-        </div>
-    </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-3 mb-4">
-                    <h5>Customer Service</h5>
-                    <ul>
-                        <li><a href="#" class="text-white-50">Contact Us</a></li>
-                        <li><a href="#" class="text-white-50">FAQs</a></li>
-                        <li><a href="#" class="text-white-50">Size Guide</a></li>
-                        <li><a href="#" class="text-white-50">Order Tracking</a></li>
+         <!-- Filter and Sort Section -->
+<div class="filter-sort-section d-flex justify-content-between align-items-center">
+    <div>
+        <span class="me-2 fw-medium">Filter By</span>
+
+        <!-- Product Category Filter -->
+        <div class="dropdown d-inline-block">
+            <button class="btn " type="button" data-bs-toggle="dropdown">
+                Product Category <i class="fas fa-chevron-down ms-1"></i>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="filterByCategory('all')">All</a></li>
+                <li><a class="dropdown-item" href="#" onclick="filterByCategory('formal')">Formal</a></li>
+                <li><a class="dropdown-item" href="#" onclick="filterByCategory('casual')">Casual</a></li>
+                <li><a class="dropdown-item" href="#" onclick="filterByCategory('premium')">Premium</a></li>
+            </ul>
+        </div>
+
+        <!-- Price Filter -->
+        <div class="dropdown d-inline-block">
+            <button class="btn " type="button" data-bs-toggle="dropdown">
+                Price <i class="fas fa-chevron-down ms-1"></i>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" onclick="filterByPrice(0, 500)">Below ₹500</a></li>
+                <li><a class="dropdown-item" href="#" onclick="filterByPrice(500, 1500)">₹500 - ₹1500</a></li>
+                <li><a class="dropdown-item" href="#" onclick="filterByPrice(1500, 3000)">₹1500 - ₹3000</a></li>
+                <li><a class="dropdown-item" href="#" onclick="filterByPrice(3000, null)">Above ₹3000</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Sort Section -->
+    <div>
+        <span class="me-2 fw-medium">Sort</span>
+        <button class="btn" onclick="sortProducts('desc')">Price High-Low</button>
+        <button class="btn" onclick="sortProducts('asc')">Price Low-High</button>
+        <button class="btn" onclick="sortProducts('latest')">Last added first</button>
+    </div>
+</div>
+
+            <!-- Product Table -->
+            <div class="table-container">
+                <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th>IMAGE</th>
+                            <th>PRODUCT NAME</th>
+                            <th>CATEGORY</th>
+                            <th>PRICE</th>
+                            <th>STOCK</th>
+                            <th>LIST</th>
+                            <th>ACTION</th>
+                            <th>OFFER</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for (let i=data.length - 1; i>= 0; i--) { %>
+                            <tr data-id="<%= data[i]._id %>">
+                                <td>
+                                    <img src="<%= data[i].images && data[i].images.length > 0 ? data[i].images[0].url : 'https://via.placeholder.com/60' %>"
+                                        alt="Product Image" class="product-img">
+                                </td>
+                                <td>
+                                    <%= data[i].name %>
+                                </td>
+                                <td>
+                                    <%= data[i].categoryId && data[i].categoryId.name ? data[i].categoryId.name : 'N/A'
+                                        %>
+                                </td>
+                                <td>₹<%= data[i].salePrice || 0 %>
+                                </td>
+                                <td>
+                                    <%= data[i].quantity || 0 %>
+                                </td>
+                                <td>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" data-product-id="<%= data[i]._id %>" <%= data[i].isActive ? 'checked' : '' %> onchange="toggleStatus('<%= data[i]._id %>', this.checked)">
+                                            <span class="slider"></span>
+                                    </label>
+                                    <span id="status-<%= data[i]._id %>">
+                                        <%= data[i].isActive ? 'Listed' : 'Unlisted' %>
+                                    </span>
+
+
+                                </td>
+                                <td>
+                                    <button class="action-btn">
+                                        <a href="/admin/editProduct/<%= data[i]._id %>"><i class="fas fa-edit"></i></a>
+                                    </button>
+                                    <button class="action-btn delete-btn" data-id="<%= data[i]._id %>"
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td><span class="offer-text">
+                                        <%= data[i].offer %>% Off
+                                    </span></td>
+                            </tr>
+                            <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Section -->
+            <div class="pagination-section">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <!-- Previous Button -->
+                        <% if (currentPage > 1) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search %>">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        <% } %>
+            
+                        <!-- Page Numbers -->
+                        <% for (let i = 1; i <= totalPage; i++) { %>
+                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                <a class="page-link" href="?page=<%= i %>&search=<%= search %>"><%= i %></a>
+                            </li>
+                        <% } %>
+            
+                        <!-- Next Button -->
+                        <% if (currentPage < totalPage) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search %>">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        <% } %>
                     </ul>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <h5>Shop</h5>
-                    <ul>
-                        <li><a href="#" class="text-white-50">Men's Collection</a></li>
-                        <li><a href="#" class="text-white-50">Women's Collection</a></li>
-                        <li><a href="#" class="text-white-50">New Arrivals</a></li>
-                        <li><a href="#" class="text-white-50">Sale</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <h5>Company</h5>
-                    <ul>
-                        <li><a href="#" class="text-white-50">About Us</a></li>
-                        <li><a href="#" class="text-white-50">Careers</a></li>
-                        <li><a href="#" class="text-white-50">Privacy Policy</a></li>
-                        <li><a href="#" class="text-white-50">Terms & Conditions</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-3 mb-4">
-                    <h5>Follow Us</h5>
-                    <div class="social-icons mb-3">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
-                        <a href="#"><i class="fab fa-twitter"></i></a>
-                        <a href="#"><i class="fab fa-pinterest"></i></a>
-                    </div>
-                    <h5>We Accept</h5>
-                    <div>
-                        <i class="fab fa-cc-visa me-2"></i>
-                        <i class="fab fa-cc-mastercard me-2"></i>
-                        <i class="fab fa-cc-amex me-2"></i>
-                        <i class="fab fa-cc-paypal"></i>
-                    </div>
-                </div>
+                </nav>
             </div>
             
-            <div class="footer-bottom text-center">
-                <p>&copy; 2025 ELITE WEAR. All Rights Reserved.</p>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade custom-modal" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel">ARE YOU SURE!!!</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">×</button>
+                    </div>
+                    <div class="modal-body">
+                        Do you want to delete the product
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">YES Delete</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </footer>
 
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Custom JavaScript -->
-    <script>
-        // Function to change main image
-        function changeMainImage(src) {
-            document.getElementById('mainImage').src = src;
-        }
-        
-        // Quantity selector functions
-        function incrementQuantity() {
-            const quantityInput = document.getElementById('quantity');
-            const currentValue = parseInt(quantityInput.value);
-            quantityInput.value = currentValue + 1;
-        }
-        
-        function decrementQuantity() {
-            const quantityInput = document.getElementById('quantity');
-            const currentValue = parseInt(quantityInput.value);
-            if (currentValue > 1) {
-                quantityInput.value = currentValue - 1;
-            }
-        }
-        
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
+
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const deleteButtons = document.querySelectorAll('.delete-btn');
+                const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                let productIdToDelete = null;
+
+                deleteButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        productIdToDelete = this.getAttribute('data-id');
+                        console.log('Product to delete:', productIdToDelete);
+                    });
+                });
+
+                document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+                    if (!productIdToDelete) {
+                        console.error('No product ID to delete');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/admin/deleteProduct/${productIdToDelete}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                        });
+
+                        const data = await response.json();
+
+                        if (data.status) {
+
+                            const row = document.querySelector(`tr[data-id="${productIdToDelete}"]`);
+                            if (row) row.remove();
+
+
+                            modal.hide();
+
+                            e
+                            alert('Product deleted successfully');
+                        } else {
+                            alert(data.message || 'Failed to delete product');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('An error occurred while deleting the product');
+                    }
                 });
             });
-        });
-    </script>
+
+            function toggleClearButton() {
+    const searchInput = document.getElementById("searchInput");
+    const clearBtn = document.getElementById('clearBtn');
+    
+   
+    if (searchInput.value.trim().length > 0) {
+        clearBtn.style.display = "block";
+    } else {
+        clearBtn.style.display = "none";
+    }
+}
+
+function clearSearch() {
+    const searchInput = document.getElementById("searchInput");
+    searchInput.value = "";
+    document.getElementById("clearBtn").style.display = "none";
+    
+ 
+    window.location.href = "/admin/productManagment";
+}
+function toggleStatus(productId, isChecked) {
+    const url = isChecked ? `/admin/listProduct/${productId}` : `/admin/unlistProduct/${productId}`;
+    const checkbox = document.querySelector(`input[data-product-id="${productId}"]`);
+    if (!checkbox) return; 
+
+    
+    checkbox.disabled = true;
+
+    fetch(url, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            const statusElement = document.getElementById(`status-${productId}`);
+            if (statusElement) {
+                statusElement.innerText = data.isActive ? "Listed" : "Unlisted";
+            }
+        } else {
+            throw new Error(data.message || "Failed to update status");
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert(error.message || "Something went wrong!");
+        checkbox.checked = !isChecked; 
+    })
+    .finally(() => {
+       
+        checkbox.disabled = false;
+    });
+}
+function filterByCategory(category) {
+    const currentUrl = new URL(window.location.href);
+    const params = new URLSearchParams(currentUrl.search);
+
+    if (category === "all") {
+        params.delete("category"); 
+    } else {
+        params.set("category", category);
+    }
+
+    window.location.href = `/admin/filterProduct?${params.toString()}`;
+}
+
+function filterByPrice(min, max) {
+    const currentUrl = new URL(window.location.href);
+    const params = new URLSearchParams(currentUrl.search);
+
+    if (min) {
+        params.set("minPrice", min);
+    } else {
+        params.delete("minPrice");
+    }
+
+    if (max) {
+        params.set("maxPrice", max);
+    } else {
+        params.delete("maxPrice"); 
+    }
+
+    window.location.href = `/admin/filterProduct?${params.toString()}`;
+}
+
+function sortProducts(sortOption) {
+    const currentUrl = new URL(window.location.href);
+    const params = new URLSearchParams(currentUrl.search);
+
+    if (sortOption) {
+        params.set("sort", sortOption);
+    } else {
+        params.delete("sort"); 
+    }
+
+    window.location.href = `/admin/filterProduct?${params.toString()}`;
+}
+
+        </script>
 </body>
+
 </html>

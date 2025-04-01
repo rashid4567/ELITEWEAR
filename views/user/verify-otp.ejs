@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,12 +7,11 @@
     <link rel="stylesheet" href="/userStyle/verify_otp.css">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.css" rel="stylesheet">
 </head>
-
 <body>
     <div class="form-container">
         <div class="form-header">
             <h1>Enter the OTP</h1>
-            <p>We've sent an email with an activation code to your email <span class="email">test@gmail.com</span></p>
+            <p>We've sent an email with an activation code to your email <span class="email"><%= email %></span></p>
         </div>
 
         <form id="otpForm" onsubmit="return validateOtpForm()">
@@ -54,7 +52,6 @@
         const timerElement = document.querySelector('.timer');
         const otpError = document.getElementById('otpError');
 
-  
         otpInputs.forEach((input, index) => {
             input.addEventListener('input', () => {
                 if (input.value.length === 1 && index < otpInputs.length - 1) {
@@ -83,16 +80,15 @@
             fullOtpInput.value = otpCode;
             otpError.style.display = "none";
 
-         
             console.log("Submitting OTP:", otpCode);
 
             $.ajax({
                 type: 'POST',
-                url: '/verify-otp', 
+                url: '/verify-otp',
                 contentType: 'application/json',
                 data: JSON.stringify({ otp: otpCode }),
                 success: function (response) {
-                    console.log("Success response:", response);
+                    console.log("Verification success:", response);
                     if (response.success) {
                         Swal.fire({
                             icon: 'success',
@@ -112,17 +108,14 @@
                     }
                 },
                 error: function (xhr) {
-                    console.log("Error response:", xhr);
+                    console.log("Verification error:", xhr);
                     let errorMessage = "Invalid OTP. Please try again.";
                     try {
                         const response = JSON.parse(xhr.responseText);
-                        if (response.message) {
-                            errorMessage = response.message;
-                        }
+                        if (response.message) errorMessage = response.message;
                     } catch (e) {
-                        console.error("Error parsing error response:", e);
+                        console.error("Error parsing response:", e);
                     }
-
                     Swal.fire({
                         icon: 'error',
                         title: 'Verification Failed',
@@ -155,16 +148,15 @@
 
         resendBtn.addEventListener('click', function () {
             if (!this.disabled) {
-             
                 console.log("Requesting OTP resend");
                 
                 $.ajax({
                     type: 'POST',
-                    url: '/resendotp', 
+                    url: '/resend-otp',
                     contentType: 'application/json',
-                    data: JSON.stringify({}), 
+                    data: JSON.stringify({}),
                     success: function (response) {
-                        console.log("Resend response:", response);
+                        console.log("Resend success:", response);
                         if (response.success) {
                             Swal.fire({
                                 icon: "success",
@@ -173,13 +165,9 @@
                                 timer: 1500
                             });
 
-                         
-                            otpInputs.forEach(input => {
-                                input.value = '';
-                            });
+                            otpInputs.forEach(input => input.value = '');
                             otpInputs[0].focus();
 
-                            
                             timeLeft = 30;
                             updateTimer();
                             resendBtn.disabled = true;
@@ -195,16 +183,13 @@
                     },
                     error: function (xhr) {
                         console.log("Resend error:", xhr);
-                        let errorMessage = "Failed to resend OTP. Please try again later.";
+                        let errorMessage = "Failed to resend OTP.";
                         try {
                             const response = JSON.parse(xhr.responseText);
-                            if (response.message) {
-                                errorMessage = response.message;
-                            }
+                            if (response.message) errorMessage = response.message;
                         } catch (e) {
-                            console.error("Error parsing error response:", e);
+                            console.error("Error parsing response:", e);
                         }
-
                         Swal.fire({
                             icon: "error",
                             title: "Failed to resend OTP",
@@ -216,5 +201,4 @@
         });
     </script>
 </body>
-
 </html>

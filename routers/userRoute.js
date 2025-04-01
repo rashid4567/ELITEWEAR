@@ -4,14 +4,14 @@ const userControllers = require('../controller/user/userControll');
 const productController = require("../controller/user/productControllers");
 const passport = require('../config/passport');
 
-const User = require('../model/userSChema');
-
 router.get("/verify-otp", (req, res) => {
-  const email = req.session.userData ? req.session.userData.email : '';
+  console.log('GET /verify-otp - Session data:', req.session); 
+  const email = req.session.registration?.userData?.email || 'unknown@email.com';
   res.render("verify-otp", { email, user: null });
 });
+
 router.post("/verify-otp", userControllers.verifyOtp);
-router.post('/resendotp', userControllers.resendOtp);
+router.post('/resend-otp', userControllers.resendOtp);
 
 router.get('/login', userControllers.userLogin);
 router.post('/login', userControllers.login);
@@ -24,7 +24,6 @@ router.get('/', userControllers.loadHomepage);
 router.get('/page-not-found', userControllers.pageNotfound);
 
 router.get('/filterProducts', userControllers.filterProducts);
-
 
 router.get('/productdetails', productController.productdetails);
 
