@@ -3,17 +3,17 @@ const router = express.Router();
 const userControllers = require('../controller/user/userControll');
 const productController = require("../controller/user/productControllers");
 const passport = require('../config/passport');
-const profileController = require("../controller/user/profileController")
+const profileController = require("../controller/user/profileController");
 
 router.get('/', userControllers.loadHomepage);
 
 router.get("/verify-otp", (req, res) => {
   console.log('GET /verify-otp - Session data:', req.session); 
-  const email = req.session.registration?.userData?.email || 'unknown@email.com';
-  res.render("verify-otp", { email, user: null });
+  const email = req.session.email || 'unknown@email.com';
+  res.render("forgotOtp", { email });  
 });
-router.post("/verify-otp", userControllers.verifyOtp);
-router.post('/resend-otp', userControllers.resendOtp);
+router.post("/verify-otp", profileController.passForgotten); // Updated to use profileController
+router.post('/resend-otp', profileController.resendForgotOtp); // Ensure this route matches the client-side AJAX request URL
 router.get('/login', userControllers.userLogin);
 router.post('/login', userControllers.login);
 router.get('/logout', userControllers.logout);
@@ -22,9 +22,8 @@ router.post('/signup', userControllers.userSignup);
 
 router.get('/page-not-found', userControllers.pageNotfound);
 
-router.get("/forgotPassword", profileController.forgotPassword);
+router.get("/forgot-password", profileController.forgotPassword);
 router.post("/forgot-email-id", profileController.forgotemailValidations);
-router.post("/verify-passForgotOtp", profileController.passForgotten);
 router.get("/reset-password", profileController.resetPasswordPage);
 router.post("/reset-password", profileController.resetPassword);
 

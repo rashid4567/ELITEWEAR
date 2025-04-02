@@ -105,10 +105,10 @@
                                             <% if (product.variants && product.variants.length > 0) { %>
                                                 <% const variant = product.variants[0]; %>
                                                 <% if (variant.salePrice && variant.salePrice < variant.regularPrice) { %>
-                                                    <span class="product-price">$<%= variant.salePrice.toFixed(2) %></span>
-                                                    <span class="product-original-price">$<%= variant.regularPrice.toFixed(2) %></span>
+                                                    <span class="product-price">₹ <%= variant.salePrice.toFixed(2) %></span>
+                                                    <span class="product-original-price">₹ <%= variant.regularPrice.toFixed(2) %></span>
                                                 <% } else { %>
-                                                    <span class="product-price">$<%= (variant.regularPrice || 0).toFixed(2) %></span>
+                                                    <span class="product-price">₹ <%= (variant.regularPrice || 0).toFixed(2) %></span>
                                                 <% } %>
                                             <% } %>
                                         </div>

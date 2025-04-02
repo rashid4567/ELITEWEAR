@@ -125,7 +125,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Form elements
+      
             const signupForm = document.getElementById('signupForm');
             const fullnameInput = document.getElementById('fullname');
             const emailInput = document.getElementById('email');
@@ -134,7 +134,7 @@
             const confirmPasswordInput = document.getElementById("confirm_password");
             const submitBtn = document.querySelector('.signup-button');
 
-            // Error elements
+      
             const errorElements = {
                 name: document.getElementById('error1'),
                 email: document.getElementById('error2'),
@@ -143,18 +143,17 @@
                 confirm: document.getElementById('error5')
             };
 
-            // Initialize event listeners
             initEventListeners();
 
             function initEventListeners() {
-                // Form validation
+         
                 fullnameInput.addEventListener('blur', validateName);
                 emailInput.addEventListener('blur', validateEmail);
                 mobileInput.addEventListener('blur', validateMobile);
                 passwordInput.addEventListener('input', validatePassword);
                 confirmPasswordInput.addEventListener('input', validatePasswordMatch);
 
-                // Password toggle
+       
                 document.querySelectorAll('.toggle-password').forEach(button => {
                     button.addEventListener('click', function () {
                         const targetId = this.getAttribute('data-target');
@@ -164,7 +163,7 @@
                     });
                 });
 
-                // Referral code
+              
                 document.getElementById('referralBtn').addEventListener('click', function () {
                     const code = prompt("Enter your referral code:");
                     if (code) {
@@ -173,7 +172,7 @@
                     }
                 });
 
-                // Form submission
+         
                 signupForm.addEventListener("submit", async function (event) {
                     if (!validateForm()) {
                         event.preventDefault();

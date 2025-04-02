@@ -7,6 +7,18 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/userStyle/forgot-pass.css">
+    <style>
+        .password-container {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -15,12 +27,14 @@
                 <div class="password-reset-container">
                     <h2 class="heading">Enter New Password</h2>
                     <form id="passwordForm">
-                        <div class="mb-3">
+                        <div class="mb-3 password-container">
                             <input type="password" class="form-control" id="newPassword" placeholder="Enter new Password">
+                            <span class="toggle-password" id="toggleNewPassword">👁️</span>
                             <small id="passwordError" class="text-danger"></small>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3 password-container">
                             <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password">
+                            <span class="toggle-password" id="toggleConfirmPassword">👁️</span>
                             <small id="confirmPasswordError" class="text-danger"></small>
                         </div>
                         <button type="submit" class="btn btn-verify">Verify</button>
@@ -32,6 +46,8 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.all.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
         document.getElementById("passwordForm").addEventListener("submit", function(event) {
@@ -62,7 +78,7 @@
                 type: 'POST',
                 url: '/reset-password',
                 contentType: 'application/json',
-                data: JSON.stringify({ newPassword: password }),
+                data: JSON.stringify({ newPassword: password, confirmPassword: confirmPassword }),
                 success: function(response) {
                     console.log("Password reset success:", response);
                     if (response.success) {
@@ -99,6 +115,29 @@
                     });
                 }
             });
+        });
+
+        // Toggle password visibility
+        document.getElementById('toggleNewPassword').addEventListener('click', function() {
+            const passwordField = document.getElementById('newPassword');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                this.textContent = '🙈';
+            } else {
+                passwordField.type = 'password';
+                this.textContent = '👁️';
+            }
+        });
+
+        document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+            const passwordField = document.getElementById('confirmPassword');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                this.textContent = '🙈';
+            } else {
+                passwordField.type = 'password';
+                this.textContent = '👁️';
+            }
         });
     </script>
 </body>
