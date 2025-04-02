@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pure Threads Admin Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/adminStyle/banner.css">
+</head>
+<body>
+    <!-- <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>ELITE WEAR</h2>
+        </div>
+        <div class="sidebar-nav">
+            <a href="#" class="sidebar-link">
+                <i class="bi bi-grid"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="bi bi-box"></i>
+                <span>Products</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="bi bi-list-check"></i>
+                <span>Order List</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="bi bi-person"></i>
+                <span>Customer</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="bi bi-graph-up"></i>
+                <span>Sales</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="bi bi-tag"></i>
+                <span>Category</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <i class="bi bi-ticket-perforated"></i>
+                <span>Coupons</span>
+            </a>
+            <a href="#" class="sidebar-link active">
+                <i class="bi bi-image"></i>
+                <span>Banner</span>
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <button class="btn btn-outline-dark w-100">Account</button>
+            <button class="btn btn-dark w-100 mt-2">Logout</button>
+        </div>
+    </div> -->
+    <%- include("../partials/admin/header") %>  
+
+    <div class="main-content">
+        <div class="page-header">
+            <div>
+                <h2>Banners</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Sales Report</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="user-profile">
+                <img src="/api/placeholder/40/40" alt="User Avatar">
+                <div>
+                    <div>Aimad</div>
+                    <small class="text-muted">Admin</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-sort-filter">
+            <div class="search-container">
+                <i class="bi bi-search"></i>
+                <input type="text" class="form-control" placeholder="Search banner by title...">
+            </div>
+            
+            <div class="dropdown sort-dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Sort
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+                    <li><a class="dropdown-item" href="#">more days left</a></li>
+                    <li><a class="dropdown-item" href="#">less days left</a></li>
+                    <li><a class="dropdown-item" href="#">Last added first</a></li>
+                </ul>
+            </div>
+            
+            <div class="filter-pills">
+                <button class="btn btn-outline-secondary active">ALL</button>
+                <button class="btn btn-outline-secondary">ACTIVE</button>
+                <button class="btn btn-outline-secondary">INACTIVE</button>
+            </div>
+        </div>
+
+        <div class="banner-table">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Title</th>
+                        <th>Starting Date</th>
+                        <th>Ending Date</th>
+                        <th>Status</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(locals.data){%>
+                        <%for(let i=0; i<data.length; i++){%>
+                    <tr>
+                        <td><img src="<%= data[i].images && data[i].images.length > 0 ? data[i].images[0].url : 'https://via.placeholder.com/60' %>" alt="Shirts Banner"></td>
+                        <td><%data[i].title%></td>
+                        <td><%data.Starting-date%></td>
+                        <td><%data.Ending-date%></td>
+                        <td>5 days left</td>
+                        <td class="action-buttons">
+                            <a class="edit" href="/admin/editBaner?id=<%=data[i]._id%>"><i class="bi bi-pencil"></i></a>
+                            <a class="delete" href="/admin/deleteBaner?id=<%=data[i]._id%>"><i class="bi bi-trash"></i></a>
+                        </td>
+                    </tr>
+                <%}%>
+                <%}else{%>
+                    No Banner found
+                    <%}%>
+                </tbody>
+            </table>
+        </div>
+        
+        <a href="/admin/addBanner" class="add-banner-btn">ADD BANNER</a>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

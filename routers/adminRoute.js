@@ -4,6 +4,7 @@ const adminControll = require('../controller/admin/adminControll');
 const customerController = require("../controller/admin/customerController");
 const CategoryController = require("../controller/admin/categoryController");
 const productManagment = require('../controller/admin/productController');
+const BannerController = require('../controller/admin/BannerController');
 const upload = require('../middleware/cluadinaryConfig'); 
 const { userAuth, adminAuth } = require('../middleware/auth');
 
@@ -73,4 +74,10 @@ router.post(
 router.get('/filterProduct', adminAuth, productManagment.filterProduct)
 router.post("/editProductImage", adminAuth, productManagment.deleteImage)
 router.delete("/deleteProduct/:id", adminAuth, productManagment.deleteProduct);
+
+
+router.get('/getbannerPage', adminAuth, BannerController.getbannerPage)
+router.get("/addBanner", adminAuth, BannerController.getaddBanner)
+
+
 module.exports = router;
