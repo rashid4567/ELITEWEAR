@@ -8,9 +8,9 @@
 </head>
 <body>
     <%- include("../partials/admin/header") %>
-    <!-- main content -->
+ 
     <main class="main-content">
-        <!-- Header -->
+   
         <header class="header">
             <button class="mobile-toggle" id="toggle-sidebar">
                 <i class="fas fa-bars"></i>
@@ -27,9 +27,8 @@
             </div>
         </header>
 
-        <!-- Dashboard Content -->
         <div class="dashboard">
-            <!-- Metrics -->
+           
             <div class="metrics">
                 <div class="metric-card">
                     <div class="metric-icon blue-bg">
@@ -69,7 +68,7 @@
                 </div>
             </div>
             
-            <!-- Welcome Message -->
+
             <div class="welcome-card">
                 <h2>Welcome to Elite Wear Dashboard</h2>
                 <p>
@@ -82,12 +81,12 @@
     </main>
 
     <script>
-        // Toggle sidebar on mobile
+      
         document.getElementById('toggle-sidebar').addEventListener('click', function() {
             document.getElementById('sidebar').classList.toggle('active');
         });
 
-        // Close sidebar when clicking outside on mobile
+      
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('toggle-sidebar');

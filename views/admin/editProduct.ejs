@@ -22,7 +22,7 @@
 
                 <form id="productForm" method="post" action="/admin/editProduct/<%= product._id %>"
                     enctype="multipart/form-data" novalidate>
-                    <!-- General Information -->
+               
                     <div class="mb-6">
                         <h2 class="text-xl font-semibold mb-4">General Information</h2>
                         <div class="grid grid-cols-2 gap-4">
@@ -51,7 +51,6 @@
                         </div>
                     </div>
 
-                    <!-- Product Images -->
                     <div class="mb-6">
                         <h2 class="text-xl font-semibold mb-4">Product Images</h2>
                         <div class="grid grid-cols-3 gap-4">
@@ -93,7 +92,6 @@
                         </div>
                     </div>
 
-                    <!-- Product Options -->
                     <div class="mb-6">
                         <h2 class="text-xl font-semibold mb-4">Product Options</h2>
                         <div class="grid grid-cols-3 gap-4">
@@ -147,7 +145,6 @@
                         </div>
                     </div>
 
-                    <!-- Product Specifications -->
                     <div class="mb-6">
                         <h2 class="text-xl font-semibold mb-4">Product Specifications</h2>
                         <div class="grid grid-cols-2 gap-4">
@@ -196,7 +193,7 @@
                         </div>
                     </div>
 
-                    <!-- Additional Options -->
+                
                     <div class="mb-6">
                         <h2 class="text-xl font-semibold mb-4">Additional Options</h2>
                         <div class="grid grid-cols-2 gap-4">
@@ -234,7 +231,7 @@
                         </div>
                     </div>
 
-                    <!-- Action Buttons -->
+     
                     <div class="flex justify-end space-x-4">
                         <button type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg"
                             onclick="window.location.href='/admin/productManagment'">Cancel</button>
@@ -243,7 +240,7 @@
                 </form>
     </div>
 
-    <!-- Crop Modal -->
+
     <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
         <div class="bg-white p-4 rounded-lg max-w-2xl w-full">
             <h3 class="text-lg font-semibold mb-4">Crop Image</h3>

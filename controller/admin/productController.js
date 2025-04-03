@@ -20,7 +20,7 @@ const ProductManagement = async (req, res) => {
             ]
         });
 
-        // Ensure page doesn't exceed available pages
+        
         const totalPages = Math.ceil(count / limit);
         const safePage = Math.min(page, totalPages);
         const skip = (safePage - 1) * limit;

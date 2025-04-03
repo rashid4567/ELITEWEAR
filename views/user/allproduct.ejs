@@ -23,7 +23,7 @@
     <div class="container shop-section">
         <div class="row">
             <div class="col-lg-3">
-                <!-- Filter Form -->
+  
                 <form id="filterForm" action="/filterProducts" method="GET">
                     <div class="filter-section">
                         <h5 class="filter-title">Filter By</h5>
@@ -39,7 +39,7 @@
                             </select>
                         </div>
 
-                        <!-- Size Filter -->
+       
                         <div class="filter-group">
                             <span class="filter-label">Size</span>
                             <div class="d-flex flex-wrap gap-2">
@@ -75,7 +75,7 @@
                 <div class="products-header d-flex justify-content-between align-items-center mb-4">
                     <h4>Products (<%= totalProducts %>)</h4>
 
-                    <!-- Sorting Options -->
+             
                     <div class="sorting-options">
                         <select class="form-select" id="sortOption" name="sort" form="filterForm">
                             <option value="latest" <%=(filters && filters.sort === 'latest') ? 'selected' : '' %>>New Arrivals</option>

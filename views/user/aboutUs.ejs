@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - ELITE WEAR</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/userStyle/aboutUs.css">
+</head>
+<body>
+    <%- include("../partials/user/header") %>
+         
+    <section class="hero-section">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-dark">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">About</li>
+                </ol>
+            </nav>
+            
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="our-story-title">Our Story</h1>
+                    <p class="our-story-text">Elevate your wardrobe with ELITE WEAR – where every outfit tells a story of elegance and sophistication. Our premium clothing collection is crafted with meticulous attention to detail, using only the finest materials sourced from around the world.</p>
+                    <p class="our-story-text">Since our founding, we've been dedicated to creating timeless pieces that blend contemporary trends with classic styles. Each garment is designed to not just be worn, but to be experienced – empowering you to express your unique personality and style.</p>
+                </div>
+                <div class="col-lg-6">
+                    <img src="/uploads/first.jpg" alt="Model wearing ELITE WEAR clothing" class="our-story-img">
+                </div>
+            </div>
+        </div>
+    </section>
+    <%- include("../partials/user/footer") %>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

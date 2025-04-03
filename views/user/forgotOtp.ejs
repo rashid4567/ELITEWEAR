@@ -80,7 +80,7 @@
 
             $.ajax({
                 type: 'POST',
-                url: '/verify-otp', // Changed from '/verify-passForgotOtp'
+                url: '/forgot-otp', 
                 contentType: 'application/json',
                 data: JSON.stringify({ otp: otpCode }),
                 success: function (response) {
@@ -148,7 +148,7 @@
                 
                 $.ajax({
                     type: 'POST',
-                    url: '/resend-otp',
+                    url: '/resend-forgot-otp', 
                     contentType: 'application/json',
                     data: JSON.stringify({}),
                     success: function (response) {

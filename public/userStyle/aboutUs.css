@@ -1,0 +1,147 @@
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* Navbar styles */
+.navbar {
+    background-color: #000;
+    padding: 15px 0;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    font-size: 24px;
+    letter-spacing: 1px;
+}
+
+.nav-link {
+    color: #fff !important;
+    font-weight: 500;
+    margin-right: 20px;
+}
+
+.nav-link:hover {
+    color: #f8f9fa !important;
+}
+
+.sale-link {
+    font-weight: 600;
+}
+
+/* Top banner */
+.top-banner {
+    background-color: #f8f9fa;
+    padding: 8px 0;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Hero section */
+.hero-section {
+    padding: 40px 0;
+    background-color: #fff;
+}
+
+.breadcrumb {
+    margin-bottom: 30px;
+}
+
+.our-story-title {
+    font-size: 42px;
+    font-weight: 700;
+    margin-bottom: 25px;
+}
+
+.our-story-text {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+.our-story-img {
+    width: 155%;
+    border-radius: 50px;
+}
+
+/* Footer styles */
+.footer {
+    background-color: #000;
+    color: #fff;
+    padding: 50px 0 20px;
+}
+
+.footer-title {
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.footer-text {
+    font-size: 14px;
+    color: #ccc;
+}
+
+.footer-icon {
+    font-size: 28px;
+    margin-bottom: 15px;
+}
+
+.social-icon {
+    background-color: #333;
+    color: #fff;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+    background-color: #555;
+    transform: translateY(-3px);
+}
+
+.newsletter-input {
+    border-radius: 30px 0 0 30px;
+    border: none;
+    padding: 10px 20px;
+}
+
+.newsletter-btn {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 0 30px 30px 0;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.newsletter-btn:hover {
+    background-color: #555;
+}
+
+.footer-bottom {
+    border-top: 1px solid #333;
+    padding-top: 20px;
+    margin-top: 30px;
+    font-size: 12px;
+    color: #999;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .our-story-title {
+        font-size: 32px;
+    }
+    
+    .footer-service {
+        margin-bottom: 30px;
+    }
+    
+    .footer-contact {
+        margin-top: 30px;
+    }
+}

@@ -18,7 +18,6 @@ const debug = process.env.NODE_ENV === 'development'
     ? (...args) => console.log('[DEBUG]', ...args)
     : () => { };
 
-
 const generateOtp = () => {
     console.log('Generating OTP...');
     const otp = crypto.randomInt(
@@ -29,7 +28,6 @@ const generateOtp = () => {
     debug(`Generated OTP: ${otp}`);
     return otp;
 };
-
 
 const validateEmail = (email) => {
     console.log(`Validating email: ${email}`);
@@ -42,11 +40,9 @@ const validateEmail = (email) => {
     return true;
 };
 
-
 const securePassword = async (password) => {
     return await bcrypt.hash(password, SALT_ROUNDS);
 };
-
 
 const sendVerificationEmail = async (email, otp) => {
     console.log(`Sending OTP ${otp} to ${email}`);
@@ -57,7 +53,6 @@ const sendVerificationEmail = async (email, otp) => {
     }
     return result;
 };
-
 
 const pageNotfound = async (req, res) => {
     try {
@@ -70,15 +65,15 @@ const pageNotfound = async (req, res) => {
     }
 };
 
-
 const loadHomepage = async (req, res) => {
     try {
+        const userId = req.session.user;
+        const userData = userId ? await User.findById(userId) : null;
         const today = new Date().toISOString();
         const findBanner = await Banner.find({
             startingDate: { $lt: new Date(today) },
             endingDate: { $gt: new Date(today) }
         });
-        const userId = req.session.user;
         const categories = await Category.find({ isListed: true });
         const categoryIds = categories.map(category => category._id);
         const productData = await Product.find({
@@ -98,7 +93,6 @@ const loadHomepage = async (req, res) => {
             };
         });
 
-        const userData = userId ? await User.findById(userId) : null;
         res.render("home", {
             user: userData,
             data: formattedProductData,
@@ -112,7 +106,6 @@ const loadHomepage = async (req, res) => {
     }
 };
 
-
 const loadUserSignup = async (req, res) => {
     try {
         console.log('Loading signup page');
@@ -123,13 +116,12 @@ const loadUserSignup = async (req, res) => {
     }
 };
 
-
 const userSignup = async (req, res) => {
     try {
         console.log('Signup request received:', req.body);
         const { fullname, email, mobile, password, cpassword } = req.body;
 
-        console.log('Step 1: Validate Password');
+       
         if (password !== cpassword) {
             console.log('Passwords do not match');
             return res.render("signup", {
@@ -139,10 +131,10 @@ const userSignup = async (req, res) => {
             });
         }
 
-        console.log('Step 2: Validate Email');
+      
         validateEmail(email);
 
-        console.log('Step 3: Check Existing User');
+      
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             console.log('User already exists:', email);
@@ -153,11 +145,11 @@ const userSignup = async (req, res) => {
             });
         }
 
-        console.log('Step 4: Generate OTP');
+    
         const otp = generateOtp();
         console.log(`Signup OTP for ${email}: ${otp}`);
 
-        console.log('Step 5: Send Verification Email');
+      
         const emailResult = await sendVerificationEmail(email, otp);
         console.log('Email send result:', emailResult);
 
@@ -188,7 +180,6 @@ const userSignup = async (req, res) => {
         });
     }
 };
-
 
 const verifyOtp = async (req, res) => {
     try {
@@ -247,7 +238,6 @@ const verifyOtp = async (req, res) => {
     }
 };
 
-
 const resendOtp = async (req, res) => {
     try {
         console.log('Resend OTP request received');
@@ -292,7 +282,6 @@ const resendOtp = async (req, res) => {
     }
 };
 
-
 const userLogin = async (req, res) => {
     try {
         if (!req.session.user) {
@@ -304,7 +293,6 @@ const userLogin = async (req, res) => {
         res.status(500).send("Server issue");
     }
 };
-
 
 const login = async (req, res) => {
     try {
@@ -334,7 +322,6 @@ const login = async (req, res) => {
         return res.render("login", { message: "Login failed", user: null });
     }
 };
-
 
 const logout = async (req, res) => {
     try {
@@ -457,7 +444,15 @@ const filterProducts = async (req, res) => {
         res.status(500).render("page-404");
     }
 };
+const aboutUs = async (req,res)=>{
+    try {
+        res.render("aboutUs")
 
+    } catch (error) {
+        console.log("unable to get About us page")
+        res.status(500).render("page-404")
+    }
+}
 module.exports = {
     loadHomepage,
     pageNotfound,
@@ -469,5 +464,6 @@ module.exports = {
     login,
     logout,
     allproduct,
-    filterProducts
+    filterProducts,
+    aboutUs,
 };

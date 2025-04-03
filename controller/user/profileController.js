@@ -85,7 +85,6 @@ const forgotemailValidations = async (req, res) => {
         res.status(500).json({ success: false, message: "An error occurred, please try again" });
     }
 };
-
 const passForgotten = async (req, res) => {
     try {
         const { otp } = req.body;
@@ -105,7 +104,7 @@ const passForgotten = async (req, res) => {
             return res.status(400).json({ success: false, message: "OTP expired. Please request a new one." });
         }
 
-        // Ensure both OTPs are strings for comparison
+      
         const storedOtp = String(req.session.userOtp);
         const enteredOtp = String(otp);
 
@@ -113,7 +112,7 @@ const passForgotten = async (req, res) => {
         if (storedOtp === enteredOtp) {
             console.log('[passForgotten] OTP matched successfully');
             req.session.userOtp = null;
-            req.session.otpVerified = true; // Mark OTP as verified
+            req.session.otpVerified = true;
             return res.json({ success: true, redirectUrl: "/reset-password" });
         } else {
             console.log('[passForgotten] OTP does not match');
@@ -124,7 +123,6 @@ const passForgotten = async (req, res) => {
         res.status(500).json({ success: false, message: "An error occurred, please try again" });
     }
 };
-
 const resetPasswordPage = async (req, res) => {
     try {
         if (req.session.otpVerified) {
@@ -161,7 +159,7 @@ const resetPassword = async (req, res) => {
         const hashedPassword = await securePassword(newPassword);
         console.log("Hashed password:", hashedPassword);
 
-        // Check if the user exists before updating
+     
         const findUser = await User.findOne({ email: email });
         if (!findUser) {
             console.log("User not found for email:", email);

@@ -192,7 +192,7 @@ const editCategory = async (req, res) => {
 
 
 
-module.exports = editCategory;
+
 module.exports = {
     categoryInfo,
     addCategory,
