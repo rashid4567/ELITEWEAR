@@ -7,15 +7,17 @@ const validator = require('validator');
 const crypto = require('crypto');
 const Category = require("../../model/categoryScheema");
 const Product = require("../../model/productScheema");
+const Banner = require("../../model/BannerScheema");
 const { sendOtpEmail } = require("../../config/mailer");
 
-const OTP_EXPIRY_MINUTES = 10;
+const OTP_EXPIRY_MINUTES = 15;
 const OTP_LENGTH = 5;
 const SALT_ROUNDS = 10;
 
 const debug = process.env.NODE_ENV === 'development'
     ? (...args) => console.log('[DEBUG]', ...args)
     : () => { };
+
 
 const generateOtp = () => {
     console.log('Generating OTP...');
@@ -28,6 +30,7 @@ const generateOtp = () => {
     return otp;
 };
 
+
 const validateEmail = (email) => {
     console.log(`Validating email: ${email}`);
     if (!validator.isEmail(email)) {
@@ -39,9 +42,11 @@ const validateEmail = (email) => {
     return true;
 };
 
+
 const securePassword = async (password) => {
     return await bcrypt.hash(password, SALT_ROUNDS);
 };
+
 
 const sendVerificationEmail = async (email, otp) => {
     console.log(`Sending OTP ${otp} to ${email}`);
@@ -52,6 +57,7 @@ const sendVerificationEmail = async (email, otp) => {
     }
     return result;
 };
+
 
 const pageNotfound = async (req, res) => {
     try {
@@ -64,8 +70,14 @@ const pageNotfound = async (req, res) => {
     }
 };
 
+
 const loadHomepage = async (req, res) => {
     try {
+        const today = new Date().toISOString();
+        const findBanner = await Banner.find({
+            startingDate: { $lt: new Date(today) },
+            endingDate: { $gt: new Date(today) }
+        });
         const userId = req.session.user;
         const categories = await Category.find({ isListed: true });
         const categoryIds = categories.map(category => category._id);
@@ -91,13 +103,15 @@ const loadHomepage = async (req, res) => {
             user: userData,
             data: formattedProductData,
             cat: categories,
+            Banner: findBanner || [],
             error: formattedProductData.length === 0 ? "No products available" : null
         });
     } catch (error) {
         console.error("Error loading home page:", error);
-        res.render("home", { user: null, data: [], cat: [], error: "Server error" });
+        res.render("home", { user: null, data: [], cat: [], Banner: [], error: "Server error" });
     }
 };
+
 
 const loadUserSignup = async (req, res) => {
     try {
@@ -108,6 +122,8 @@ const loadUserSignup = async (req, res) => {
         res.status(500).send("Server issue");
     }
 };
+
+
 const userSignup = async (req, res) => {
     try {
         console.log('Signup request received:', req.body);
@@ -173,6 +189,7 @@ const userSignup = async (req, res) => {
     }
 };
 
+
 const verifyOtp = async (req, res) => {
     try {
         console.log('Verify OTP request received:', req.body);
@@ -230,6 +247,7 @@ const verifyOtp = async (req, res) => {
     }
 };
 
+
 const resendOtp = async (req, res) => {
     try {
         console.log('Resend OTP request received');
@@ -274,6 +292,7 @@ const resendOtp = async (req, res) => {
     }
 };
 
+
 const userLogin = async (req, res) => {
     try {
         if (!req.session.user) {
@@ -285,6 +304,7 @@ const userLogin = async (req, res) => {
         res.status(500).send("Server issue");
     }
 };
+
 
 const login = async (req, res) => {
     try {
@@ -314,6 +334,7 @@ const login = async (req, res) => {
         return res.render("login", { message: "Login failed", user: null });
     }
 };
+
 
 const logout = async (req, res) => {
     try {
@@ -437,8 +458,6 @@ const filterProducts = async (req, res) => {
     }
 };
 
-
-
 module.exports = {
     loadHomepage,
     pageNotfound,
@@ -450,6 +469,5 @@ module.exports = {
     login,
     logout,
     allproduct,
-    filterProducts,
-
+    filterProducts
 };

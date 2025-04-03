@@ -3,8 +3,6 @@ const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-
-
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -14,11 +12,11 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: async (req, file) => {
-        const productName = req.body.productName
-            ? req.body.productName.toLowerCase().replace(/\s+/g, '-')
+        const productName = req.body.title
+            ? req.body.title.toLowerCase().replace(/\s+/g, '-')
             : 'unnamed';
         return {
-            folder: 'product-images',
+            folder: 'banners',
             public_id: `${productName}-${Date.now()}`,
             format: 'webp',
             transformation: [

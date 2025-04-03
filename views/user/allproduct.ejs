@@ -139,7 +139,6 @@
                     <% } %>
                 </div>
 
-                <!-- Pagination -->
                 <% if (totalPages && totalPages > 1) { %>
                     <nav aria-label="Page navigation">
                         <ul class="pagination justify-content-center">
@@ -188,7 +187,7 @@
         const filters = `<%- JSON.stringify(filters || { category: 'all', size: '', color: '', minPrice: '', maxPrice: '', sort: 'latest' }) %>;`
 
         document.addEventListener('DOMContentLoaded', function () {
-            // Category select handling
+  
             document.getElementById('categorySelect').addEventListener('change', function () {
         
                 this.form.submit();

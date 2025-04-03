@@ -11,49 +11,6 @@
     <link rel="stylesheet" href="/adminStyle/banner.css">
 </head>
 <body>
-    <!-- <div class="sidebar">
-        <div class="sidebar-header">
-            <h2>ELITE WEAR</h2>
-        </div>
-        <div class="sidebar-nav">
-            <a href="#" class="sidebar-link">
-                <i class="bi bi-grid"></i>
-                <span>Dashboard</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <i class="bi bi-box"></i>
-                <span>Products</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <i class="bi bi-list-check"></i>
-                <span>Order List</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <i class="bi bi-person"></i>
-                <span>Customer</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <i class="bi bi-graph-up"></i>
-                <span>Sales</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <i class="bi bi-tag"></i>
-                <span>Category</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <i class="bi bi-ticket-perforated"></i>
-                <span>Coupons</span>
-            </a>
-            <a href="#" class="sidebar-link active">
-                <i class="bi bi-image"></i>
-                <span>Banner</span>
-            </a>
-        </div>
-        <div class="sidebar-footer">
-            <button class="btn btn-outline-dark w-100">Account</button>
-            <button class="btn btn-dark w-100 mt-2">Logout</button>
-        </div>
-    </div> -->
     <%- include("../partials/admin/header") %>  
 
     <div class="main-content">
@@ -109,27 +66,29 @@
                         <th>Starting Date</th>
                         <th>Ending Date</th>
                         <th>Status</th>
-                        <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <% if(locals.data){%>
-                        <%for(let i=0; i<data.length; i++){%>
-                    <tr>
-                        <td><img src="<%= data[i].images && data[i].images.length > 0 ? data[i].images[0].url : 'https://via.placeholder.com/60' %>" alt="Shirts Banner"></td>
-                        <td><%data[i].title%></td>
-                        <td><%data.Starting-date%></td>
-                        <td><%data.Ending-date%></td>
-                        <td>5 days left</td>
-                        <td class="action-buttons">
-                            <a class="edit" href="/admin/editBaner?id=<%=data[i]._id%>"><i class="bi bi-pencil"></i></a>
-                            <a class="delete" href="/admin/deleteBaner?id=<%=data[i]._id%>"><i class="bi bi-trash"></i></a>
-                        </td>
-                    </tr>
-                <%}%>
-                <%}else{%>
-                    No Banner found
-                    <%}%>
+                    <% if(data && data.length > 0) { %>
+                        <% data.forEach(banner => { %>
+                            <tr>
+                                <td><img src="<%= banner.image ? banner.image : 'https://via.placeholder.com/60' %>" alt="Banner Image"></td>
+                                <td><%= banner.title %></td>
+                                <td><%= banner.startingDate.toDateString() %></td>
+                                <td><%= banner.endingDate.toDateString() %></td>
+                                <td><%= banner.status %></td>
+                                <td class="action-buttons">
+                                    <a class="edit" href="/admin/editBaner?id=<%= banner._id %>"><i class="bi bi-pencil"></i></a>
+                                    <a class="delete" href="/admin/deleteBaner?id=<%= banner._id %>"><i class="bi bi-trash"></i></a>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="6">No Banner found</td>
+                        </tr>
+                    <% } %>
                 </tbody>
             </table>
         </div>

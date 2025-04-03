@@ -14,20 +14,15 @@ router.post('/login', adminControll.login);
 router.get('/dashboard', adminAuth, (req, res) => res.redirect('/admin'));
 router.get('/logout', adminAuth, adminControll.logout);
 
-
 router.get("/customers", adminAuth, customerController.customerInfo); 
 router.post("/blockCustomer", adminAuth, customerController.customerBlocked);
 router.post("/unblockCustomer", adminAuth, customerController.customerUnblocked);
 
-
-
-router.get("/categories", adminAuth, CategoryController.categoryInfo)
+router.get("/categories", adminAuth, CategoryController.categoryInfo);
 router.post("/addcategory", adminAuth, CategoryController.addCategory);
 router.post("/toggle-category", adminAuth, CategoryController.toggleCategory);
-router.get('/editCategory', adminAuth, CategoryController.geteditCategory)
-router.post('/editCategory', adminAuth, CategoryController.editCategory)
-
-
+router.get('/editCategory', adminAuth, CategoryController.geteditCategory);
+router.post('/editCategory', adminAuth, CategoryController.editCategory);
 
 router.get('/productManagment', adminAuth, productManagment.ProductManagement);
 router.get("/addProduct", adminAuth, productManagment.getaddproduct);
@@ -43,22 +38,6 @@ router.post(
     productManagment.addproduct 
 );
 
-router.get('/productManagment', adminAuth, productManagment.ProductManagement);
-router.get("/addProduct", adminAuth, productManagment.getaddproduct);
-router.post(
-    "/addProduct",
-    adminAuth,
-    upload.fields([
-        { name: 'mainImage', maxCount: 1 },
-        { name: 'additionalImage1', maxCount: 1 },
-        { name: 'additionalImage2', maxCount: 1 },
-        { name: 'additionalImage3', maxCount: 1 }
-    ]),
-    productManagment.addproduct
-);
-router.post('/unlistProduct/:id', adminAuth, productManagment.UnlistProduct)
-router.post('/listProduct/:id', adminAuth, productManagment.listProduct)
-
 router.get("/editProduct/:id", adminAuth, productManagment.geteditProduct);
 router.post(
     "/editProduct/:id",
@@ -71,13 +50,12 @@ router.post(
     ]),
     productManagment.editProduct
 );
-router.get('/filterProduct', adminAuth, productManagment.filterProduct)
-router.post("/editProductImage", adminAuth, productManagment.deleteImage)
+router.get('/filterProduct', adminAuth, productManagment.filterProduct);
+router.post("/editProductImage", adminAuth, productManagment.deleteImage);
 router.delete("/deleteProduct/:id", adminAuth, productManagment.deleteProduct);
 
-
-router.get('/getbannerPage', adminAuth, BannerController.getbannerPage)
-router.get("/addBanner", adminAuth, BannerController.getaddBanner)
-
+router.get('/getbannerPage', adminAuth, BannerController.getbannerPage);
+router.get("/addBanner", adminAuth, BannerController.getaddBanner);
+router.post("/addBanner", adminAuth, upload.single('posterImage'), BannerController.addBanner);
 
 module.exports = router;

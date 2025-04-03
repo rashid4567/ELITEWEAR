@@ -9,7 +9,6 @@
     <!-- Bootstrap Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/adminStyle/addBanner.css">
-
 </head>
 <body>
     <%- include("../partials/admin/header") %> 
@@ -42,48 +41,46 @@
         <div class="form-container">
             <h3 class="form-title">ADD NEW BANNER</h3>
             
-            <form>
+            <form action="/admin/addBanner" method="POST" enctype="multipart/form-data">
                 <label for="title" class="form-label">TITLE</label>
-                <input type="text" class="form-control" id="title" placeholder="Title...">
+                <input type="text" class="form-control" id="title" name="title" placeholder="Title...">
                 
                 <div class="upload-area" id="dropzone">
                     <i class="bi bi-image upload-icon"></i>
                     <p class="upload-text">Drag and drop image here, or click and add image</p>
                     <button type="button" class="upload-btn" id="selectImage">Add Image</button>
-                    <input type="file" id="fileInput" style="display: none;" accept="image/*">
+                    <input type="file" id="fileInput" name="posterImage" style="display: none;" accept="image/*">
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="status" class="form-label">Status</label>
-                        <input type="text" class="form-control" id="status" value="30 days left">
+                        <input type="text" class="form-control" id="status" name="status" value="30 days left">
                     </div>
                     
                     <div class="form-group">
                         <label for="startDate" class="form-label">Starting Date</label>
-                        <input type="date" class="form-control" id="startDate" value="2024-04-30">
+                        <input type="date" class="form-control" id="startDate" name="startingDate" value="2024-04-30">
                     </div>
                     
                     <div class="form-group">
                         <label for="endDate" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="endDate" value="2024-04-30">
+                        <input type="date" class="form-control" id="endDate" name="endingDate" value="2024-04-30">
                     </div>
                 </div>
+
+                <button type="submit" class="submit-btn">ADD</button>
             </form>
         </div>
-        
-        <button type="submit" class="submit-btn">ADD</button>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Image upload functionality
         const dropzone = document.getElementById('dropzone');
         const fileInput = document.getElementById('fileInput');
         const selectImageBtn = document.getElementById('selectImage');
         
-        // Open file browser when clicking on the button or dropzone
         selectImageBtn.addEventListener('click', function(e) {
             e.preventDefault();
             fileInput.click();
@@ -93,14 +90,12 @@
             fileInput.click();
         });
         
-        // Handle file selection
         fileInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
                 handleFile(this.files[0]);
             }
         });
         
-        // Drag and drop functionality
         dropzone.addEventListener('dragover', function(e) {
             e.preventDefault();
             dropzone.style.borderColor = '#007bff';
@@ -120,22 +115,17 @@
         });
         
         function handleFile(file) {
-            // Here you would typically upload the file or display a preview
-            // For demonstration, let's just update the text
             const uploadText = document.querySelector('.upload-text');
             uploadText.textContent = `Selected file: ${file.name}`;
             
-            // Create a preview if it's an image
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    // Remove previous preview if exists
                     const existingPreview = dropzone.querySelector('.preview-image');
                     if (existingPreview) {
                         existingPreview.remove();
                     }
                     
-                    // Create new preview
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.className = 'preview-image';

@@ -56,7 +56,6 @@ const forgotPassword = async (req, res) => {
         res.redirect("/page-not-found");
     }
 };
-
 const forgotemailValidations = async (req, res) => {
     try {
         const { email } = req.body;
@@ -74,7 +73,7 @@ const forgotemailValidations = async (req, res) => {
                 req.session.email = email;
                 req.session.otpExpires = Date.now() + (OTP_EXPIRY_MINUTES * 60 * 1000);
                 console.log('OTP saved in session:', req.session.userOtp);
-                return res.json({ success: true, message: "OTP sent successfully", redirectUrl: "/verify-otp" });
+                return res.json({ success: true, message: "OTP sent successfully", redirectUrl: "/forgot-otp" });
             } else {
                 return res.json({ success: false, message: "Failed to send OTP, please try again" });
             }
