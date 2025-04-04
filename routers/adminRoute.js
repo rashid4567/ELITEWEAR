@@ -37,7 +37,6 @@ router.post(
     ]),
     productManagment.addproduct 
 );
-
 router.get("/editProduct/:id", adminAuth, productManagment.geteditProduct);
 router.post(
     "/editProduct/:id",
@@ -53,6 +52,10 @@ router.post(
 router.get('/filterProduct', adminAuth, productManagment.filterProduct);
 router.post("/editProductImage", adminAuth, productManagment.deleteImage);
 router.delete("/deleteProduct/:id", adminAuth, productManagment.deleteProduct);
+
+
+router.post('/listProduct/:id', adminAuth, productManagment.listProduct);
+router.post('/unlistProduct/:id', adminAuth, productManagment.UnlistProduct);
 
 router.get('/getbannerPage', adminAuth, BannerController.getbannerPage);
 router.get("/addBanner", adminAuth, BannerController.getaddBanner);

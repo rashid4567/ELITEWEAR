@@ -79,7 +79,7 @@ const loadHomepage = async (req, res) => {
         const productData = await Product.find({
             isActive: true,
             categoryId: { $in: categoryIds }
-        }).populate("categoryId").exec();
+        }).sort({createdAt: -1}).populate("categoryId").exec();
 
         const formattedProductData = productData.map(product => {
             const firstVariant = product.variants?.[0] || {};

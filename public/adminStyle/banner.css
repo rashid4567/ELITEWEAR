@@ -195,6 +195,7 @@ body {
     text-align: center;
     cursor: pointer;
     transition: all 0.3s;
+    text-decoration: none;
 }
 
 .add-banner-btn:hover {

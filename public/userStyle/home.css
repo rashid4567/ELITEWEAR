@@ -469,10 +469,11 @@ header {
     cursor: pointer;
 }
 
-/* Authentication Buttons Styles */
+
 .auth-buttons {
     display: flex;
     margin-right: 15px;
+    transform: translateX(6.25rem);
 }
 
 .auth-button {
@@ -505,7 +506,7 @@ header {
     border-color: #e6c300;
 }
 
-/* Add this to your existing media queries for responsive design */
+
 @media (max-width: 768px) {
     .auth-buttons {
         margin-right: 10px;
@@ -536,7 +537,7 @@ header {
     }
 }
 
-/* Dropdown Styles */
+
 .dropdown {
     position: relative;
     display: inline-block;
@@ -597,7 +598,7 @@ header {
     display: block;
 }
 
-/* Media queries for responsive dropdown */
+
 @media (max-width: 768px) {
     .sign-in-link {
         padding: 6px 10px;
