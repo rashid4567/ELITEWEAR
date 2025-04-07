@@ -25,16 +25,16 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
-                        <input type="text" name="productName" id="productName" class="form-input w-full border rounded px-3 py-2" placeholder="Enter product name">
+                        <input type="text" name="productName" id="productName" class="form-input w-full border rounded px-3 py-2" placeholder="Enter product name" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
-                        <input type="number" name="productPrice" id="productPrice" class="form-input w-full border rounded px-3 py-2" placeholder="Enter price" min="0" step="0.01">
+                        <input type="number" name="productPrice" id="productPrice" class="form-input w-full border rounded px-3 py-2" placeholder="Enter price" min="0" step="0.01" required>
                     </div>
                 </div>
                 <div class="mt-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Product Description</label>
-                    <textarea name="productDescription" class="form-input w-full border rounded px-3 py-2" rows="4" placeholder="Enter product description"></textarea>
+                    <textarea name="productDescription" class="form-input w-full border rounded px-3 py-2" rows="4" placeholder="Enter product description" required></textarea>
                 </div>
             </div>
 
@@ -43,24 +43,24 @@
                 <h2 class="text-xl font-semibold mb-4">Product Images</h2>
                 <div class="grid grid-cols-3 gap-4">
                     <div class="col-span-2">
-                        <div class="upload-zone h-64 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
+                        <div class="upload-zone h-64 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative" data-name="mainImage">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                             <p class="text-gray-500">Drag and drop main product image or click to upload</p>
-                            <input type="file" name="mainImage" class="hidden" accept="image/*">
+                            <input type="file" name="mainImage" class="hidden" accept="image/*" required>
                         </div>
                     </div>
                     <div class="grid grid-rows-3 gap-4">
-                        <div class="upload-zone h-20 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
+                        <div class="upload-zone h-20 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative" data-name="additionalImage1">
                             <p class="text-gray-500 text-sm">Additional Image 1</p>
                             <input type="file" name="additionalImage1" class="hidden" accept="image/*">
                         </div>
-                        <div class="upload-zone h-20 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
+                        <div class="upload-zone h-20 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative" data-name="additionalImage2">
                             <p class="text-gray-500 text-sm">Additional Image 2</p>
                             <input type="file" name="additionalImage2" class="hidden" accept="image/*">
                         </div>
-                        <div class="upload-zone h-20 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
+                        <div class="upload-zone h-20 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative" data-name="additionalImage3">
                             <p class="text-gray-500 text-sm">Additional Image 3</p>
                             <input type="file" name="additionalImage3" class="hidden" accept="image/*">
                         </div>
@@ -74,7 +74,7 @@
                 <div class="grid grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                        <select name="productCategory" class="form-input w-full border rounded px-3 py-2">
+                        <select name="productCategory" class="form-input w-full border rounded px-3 py-2" required>
                             <option value="">Select Category</option>
                             <% categories.forEach(function(category) { %>
                                 <option value="<%= category.name %>"><%= category.name %></option>
@@ -107,11 +107,11 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
-                        <input type="text" name="color" class="form-input w-full border rounded px-3 py-2" placeholder="Enter color">
+                        <input type="text" name="color" class="form-input w-full border rounded px-3 py-2" placeholder="Enter color" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Fabric</label>
-                        <input type="text" name="fabric" class="form-input w-full border rounded px-3 py-2" placeholder="Enter fabric type">
+                        <input type="text" name="fabric" class="form-input w-full border rounded px-3 py-2" placeholder="Enter fabric type" required>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Product Offer (%)</label>
@@ -140,391 +140,316 @@
     </div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
-    const uploadZones = document.querySelectorAll('.upload-zone');
-    const cropModal = document.getElementById('cropModal');
-    const imageToCrop = document.getElementById('imageToCrop');
-    const cancelCrop = document.getElementById('cancelCrop');
-    const cropImage = document.getElementById('cropImage');
-    const productForm = document.getElementById('productForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const variantContainer = document.getElementById('variantContainer');
-    const addVariantBtn = document.getElementById('addVariant');
-    const productName = document.getElementById('productName');
-    const productPrice = document.getElementById('productPrice');
-    const productCategory = document.querySelector('select[name="productCategory"]');
-    let cropper;
-    let currentFileInput;
-    let variantCount = 0;
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadZones = document.querySelectorAll('.upload-zone');
+            const cropModal = document.getElementById('cropModal');
+            const imageToCrop = document.getElementById('imageToCrop');
+            const cancelCrop = document.getElementById('cancelCrop');
+            const cropImage = document.getElementById('cropImage');
+            const productForm = document.getElementById('productForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const variantContainer = document.getElementById('variantContainer');
+            const addVariantBtn = document.getElementById('addVariant');
+            const productName = document.getElementById('productName');
+            const productPrice = document.getElementById('productPrice');
+            const productCategory = document.querySelector('select[name="productCategory"]');
+            let cropper;
+            let currentFileInput;
+            let variantCount = 0;
+            const uploadedFiles = new Set(); // Track uploaded file hashes to prevent duplicates
 
-    // Function to create error message elements
-    function createErrorElement(message) {
-        const errorElement = document.createElement('p');
-        errorElement.className = 'text-red-500 text-xs mt-1 hidden error-message';
-        errorElement.textContent = message;
-        return errorElement;
-    }
-    
-    // Add error messages for fields
-    const nameErrorElement = createErrorElement('Please enter the product name');
-    productName.insertAdjacentElement('afterend', nameErrorElement);
-    
-    const priceErrorElement = createErrorElement('Please enter the product price');
-    productPrice.insertAdjacentElement('afterend', priceErrorElement);
-    
-    const categoryErrorElement = createErrorElement('Please select a category');
-    productCategory.insertAdjacentElement('afterend', categoryErrorElement);
-    
-    // Create and add main image error message
-    const mainImageInput = document.querySelector('input[name="mainImage"]');
-    const mainImageZone = mainImageInput.closest('.upload-zone');
-    const mainImageErrorElement = createErrorElement('Please upload a main product image');
-    mainImageZone.insertAdjacentElement('afterend', mainImageErrorElement);
-    
-    // Validation function for single field
-    function validateField(field, errorElement) {
-        if (!field.value.trim()) {
-            errorElement.classList.remove('hidden');
-            field.classList.add('border-red-500');
-            return false;
-        } else {
-            errorElement.classList.add('hidden');
-            field.classList.remove('border-red-500');
-            return true;
-        }
-    }
-    
-    // Specific validation for file inputs
-    function validateFileInput(fileInput, errorElement) {
-        if (!fileInput.files.length) {
-            errorElement.classList.remove('hidden');
-            fileInput.closest('.upload-zone').classList.add('border-red-500');
-            return false;
-        } else {
-            errorElement.classList.add('hidden');
-            fileInput.closest('.upload-zone').classList.remove('border-red-500');
-            return true;
-        }
-    }
-    
-    // Add input event listeners to clear errors on typing
-    productName.addEventListener('input', () => validateField(productName, nameErrorElement));
-    productPrice.addEventListener('input', () => validateField(productPrice, priceErrorElement));
-    productCategory.addEventListener('change', () => validateField(productCategory, categoryErrorElement));
-    mainImageInput.addEventListener('change', () => validateFileInput(mainImageInput, mainImageErrorElement));
-
-    // Function to validate variant fields
-    function validateVariantRow(row) {
-        const sizeInput = row.querySelector('input[name$="[size]"]');
-        const priceInput = row.querySelector('input[name$="[varientPrice]"]');
-        const stockInput = row.querySelector('input[name$="[varientquatity]"]');
-        
-        // Create error elements if they don't exist
-        if (!row.querySelector('.size-error')) {
-            const sizeError = createErrorElement('Please enter the size');
-            sizeInput.insertAdjacentElement('afterend', sizeError);
-            sizeError.classList.add('size-error');
-            
-            sizeInput.addEventListener('input', () => validateField(sizeInput, sizeError));
-        }
-        
-        if (!row.querySelector('.price-error')) {
-            const priceError = createErrorElement('Please enter the price');
-            priceInput.insertAdjacentElement('afterend', priceError);
-            priceError.classList.add('price-error');
-            
-            priceInput.addEventListener('input', () => validateField(priceInput, priceError));
-        }
-        
-        if (!row.querySelector('.stock-error')) {
-            const stockError = createErrorElement('Please enter the stock');
-            stockInput.insertAdjacentElement('afterend', stockError);
-            stockError.classList.add('stock-error');
-            
-            stockInput.addEventListener('input', () => validateField(stockInput, stockError));
-        }
-        
-        const sizeValid = validateField(sizeInput, row.querySelector('.size-error'));
-        const priceValid = validateField(priceInput, row.querySelector('.price-error'));
-        const stockValid = validateField(stockInput, row.querySelector('.stock-error'));
-        
-        return sizeValid && priceValid && stockValid;
-    }
-
-    // Main form validation function
-    function validateForm() {
-        const nameValid = validateField(productName, nameErrorElement);
-        const priceValid = validateField(productPrice, priceErrorElement);
-        const categoryValid = validateField(productCategory, categoryErrorElement);
-        const mainImageValid = validateFileInput(mainImageInput, mainImageErrorElement);
-        
-        // Validate variants
-        const variantRows = document.querySelectorAll('.variant-row');
-        let allVariantsValid = true;
-        
-        if (variantRows.length === 0) {
-            // Create a temporary error message if no variants exist
-            const tempError = document.createElement('p');
-            tempError.className = 'text-red-500 text-sm mt-2';
-            tempError.textContent = 'Please add at least one variant';
-            
-            // Check if the error already exists
-            const existingError = variantContainer.nextElementSibling;
-            if (existingError && existingError.classList.contains('text-red-500')) {
-                // Error already exists, do nothing
-            } else {
-                variantContainer.insertAdjacentElement('afterend', tempError);
-                setTimeout(() => tempError.remove(), 3000); // Remove after 3 seconds
+            // Function to create error message elements
+            function createErrorElement(message) {
+                const errorElement = document.createElement('p');
+                errorElement.className = 'text-red-500 text-xs mt-1 hidden error-message';
+                errorElement.textContent = message;
+                return errorElement;
             }
-            
-            allVariantsValid = false;
-        } else {
-            // Validate each variant
-            for (const row of variantRows) {
-                const rowValid = validateVariantRow(row);
-                if (!rowValid) allVariantsValid = false;
-            }
-        }
-        
-        return nameValid && priceValid && categoryValid && mainImageValid && allVariantsValid;
-    }
 
-    // Upload zone functionality
-    uploadZones.forEach(zone => {
-        const fileInput = zone.querySelector('input[type="file"]');
-        const clearBtn = document.createElement('button');
-        clearBtn.innerHTML = '×';
-        clearBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hidden';
-        clearBtn.type = 'button';
-        zone.appendChild(clearBtn);
+            // Add error messages for fields
+            const nameErrorElement = createErrorElement('Please enter the product name');
+            productName.insertAdjacentElement('afterend', nameErrorElement);
 
-        zone.addEventListener('click', (e) => {
-            if (e.target !== clearBtn) fileInput.click();
-        });
+            const priceErrorElement = createErrorElement('Please enter the product price');
+            productPrice.insertAdjacentElement('afterend', priceErrorElement);
 
-        fileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            
-            // File validation
-            let fileError = false;
-            if (!file.type.startsWith('image/')) {
-                const errorMsg = createErrorElement('Please upload a valid image file');
-                if (zone.nextElementSibling && zone.nextElementSibling.classList.contains('error-message')) {
-                    zone.nextElementSibling.textContent = 'Please upload a valid image file';
-                    zone.nextElementSibling.classList.remove('hidden');
+            const categoryErrorElement = createErrorElement('Please select a category');
+            productCategory.insertAdjacentElement('afterend', categoryErrorElement);
+
+            const mainImageInput = document.querySelector('input[name="mainImage"]');
+            const mainImageZone = mainImageInput.closest('.upload-zone');
+            const mainImageErrorElement = createErrorElement('Please upload a main product image');
+            mainImageZone.insertAdjacentElement('afterend', mainImageErrorElement);
+
+            // Validation functions
+            function validateField(field, errorElement) {
+                if (!field.value.trim()) {
+                    errorElement.classList.remove('hidden');
+                    field.classList.add('border-red-500');
+                    return false;
                 } else {
-                    zone.insertAdjacentElement('afterend', errorMsg);
-                    errorMsg.classList.remove('hidden');
+                    errorElement.classList.add('hidden');
+                    field.classList.remove('border-red-500');
+                    return true;
                 }
-                fileInput.value = '';
-                fileError = true;
-            } else if (file.size > 5 * 1024 * 1024) {
-                const errorMsg = createErrorElement('File size should not exceed 5MB');
-                if (zone.nextElementSibling && zone.nextElementSibling.classList.contains('error-message')) {
-                    zone.nextElementSibling.textContent = 'File size should not exceed 5MB';
-                    zone.nextElementSibling.classList.remove('hidden');
+            }
+
+            function validateFileInput(fileInput, errorElement) {
+                if (!fileInput.files.length) {
+                    errorElement.classList.remove('hidden');
+                    fileInput.closest('.upload-zone').classList.add('border-red-500');
+                    return false;
                 } else {
-                    zone.insertAdjacentElement('afterend', errorMsg);
-                    errorMsg.classList.remove('hidden');
+                    errorElement.classList.add('hidden');
+                    fileInput.closest('.upload-zone').classList.remove('border-red-500');
+                    return true;
                 }
-                fileInput.value = '';
-                fileError = true;
             }
-            
-            if (fileError) return;
-            
-            // Hide any error messages
-            if (zone.nextElementSibling && zone.nextElementSibling.classList.contains('error-message')) {
-                zone.nextElementSibling.classList.add('hidden');
+
+            function validateVariantRow(row) {
+                const sizeInput = row.querySelector('input[name$="[size]"]');
+                const priceInput = row.querySelector('input[name$="[varientPrice]"]');
+                const stockInput = row.querySelector('input[name$="[varientquatity]"]');
+
+                const sizeError = createErrorElement('Please enter the size');
+                if (!row.querySelector('.size-error')) sizeInput.insertAdjacentElement('afterend', sizeError.addClass('size-error'));
+                const priceError = createErrorElement('Please enter the price');
+                if (!row.querySelector('.price-error')) priceInput.insertAdjacentElement('afterend', priceError.addClass('price-error'));
+                const stockError = createErrorElement('Please enter the stock');
+                if (!row.querySelector('.stock-error')) stockInput.insertAdjacentElement('afterend', stockError.addClass('stock-error'));
+
+                const sizeValid = validateField(sizeInput, sizeError);
+                const priceValid = validateField(priceInput, priceError);
+                const stockValid = validateField(stockInput, stockError);
+
+                return sizeValid && priceValid && stockValid;
             }
-            
-            currentFileInput = fileInput;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                imageToCrop.src = event.target.result;
-                cropModal.classList.remove('hidden');
-                if (cropper) cropper.destroy();
-                cropper = new Cropper(imageToCrop, {
-                    aspectRatio: 1,
-                    viewMode: 1,
-                    autoCropArea: 0.8,
-                    responsive: true
+
+            // Form validation
+            function validateForm() {
+                const nameValid = validateField(productName, nameErrorElement);
+                const priceValid = validateField(productPrice, priceErrorElement);
+                const categoryValid = validateField(productCategory, categoryErrorElement);
+                const mainImageValid = validateFileInput(mainImageInput, mainImageErrorElement);
+
+                const variantRows = document.querySelectorAll('.variant-row');
+                let allVariantsValid = variantRows.length > 0;
+                variantRows.forEach(row => {
+                    if (!validateVariantRow(row)) allVariantsValid = false;
                 });
-            };
-            reader.readAsDataURL(file);
-        });
 
-        clearBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            fileInput.value = '';
-            zone.style.backgroundImage = '';
-            zone.querySelector('p').style.display = 'block';
-            clearBtn.classList.add('hidden');
-            
-            // Show any error message if this is the main image
-            if (fileInput === mainImageInput) {
-                mainImageErrorElement.classList.remove('hidden');
-                zone.classList.add('border-red-500');
-            }
-        });
-    });
-
-    cancelCrop.addEventListener('click', () => {
-        cropModal.classList.add('hidden');
-        currentFileInput.value = '';
-        if (cropper) cropper.destroy();
-        
-        // Show error message if this was the main image
-        if (currentFileInput === mainImageInput) {
-            mainImageErrorElement.classList.remove('hidden');
-            currentFileInput.closest('.upload-zone').classList.add('border-red-500');
-        }
-    });
-
-    cropImage.addEventListener('click', () => {
-        cropper.getCroppedCanvas({
-            width: 2000,
-            height: 2000
-        }).toBlob((blob) => {
-            const file = new File([blob], currentFileInput.files[0].name, { type: 'image/webp' });
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            currentFileInput.files = dataTransfer.files;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const zone = currentFileInput.closest('.upload-zone');
-                zone.style.backgroundImage = `url(${e.target.result})`;
-                zone.style.backgroundSize = 'cover';
-                zone.style.backgroundPosition = 'center';
-                zone.querySelector('p').style.display = 'none';
-                zone.querySelector('button').classList.remove('hidden');
-                
-                // Hide error message if this was the main image
-                if (currentFileInput === mainImageInput) {
-                    mainImageErrorElement.classList.add('hidden');
-                    zone.classList.remove('border-red-500');
+                if (!allVariantsValid && variantRows.length === 0) {
+                    const tempError = document.createElement('p');
+                    tempError.className = 'text-red-500 text-sm mt-2';
+                    tempError.textContent = 'Please add at least one variant';
+                    variantContainer.insertAdjacentElement('afterend', tempError);
+                    setTimeout(() => tempError.remove(), 3000);
                 }
-            };
-            reader.readAsDataURL(file);
 
-            cropModal.classList.add('hidden');
-            cropper.destroy();
-        }, 'image/webp', 0.8);
-    });
-
-    // Variant row functionality
-    function addVariantRow(size = '', price = '', stock = '') {
-        const variantDiv = document.createElement('div');
-        variantDiv.className = 'variant-row flex space-x-4 items-start';
-        variantDiv.innerHTML = `
-            <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Size</label>
-                <input type="text" name="variants[${variantCount}][size]" value="${size}" class="form-input w-full border rounded px-3 py-2" placeholder="e.g., S, M, L">
-            </div>
-            <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
-                <input type="number" name="variants[${variantCount}][varientPrice]" value="${price}" class="form-input w-full border rounded px-3 py-2" placeholder="Enter price" min="0" step="0.01">
-            </div>
-            <div class="flex-1">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Stock</label>
-                <input type="number" name="variants[${variantCount}][varientquatity]" value="${stock}" class="form-input w-full border rounded px-3 py-2" placeholder="Enter stock" min="0">
-            </div>
-            <button type="button" class="remove-variant px-3 py-2 bg-red-500 text-white rounded-lg mt-6">Remove</button>
-        `;
-        variantContainer.appendChild(variantDiv);
-        
-        // Add validation for the new row
-        validateVariantRow(variantDiv);
-        
-        // Remove variant row event
-        variantDiv.querySelector('.remove-variant').addEventListener('click', () => {
-            variantDiv.remove();
-            // Check if we need to show "add at least one variant" error
-            const remainingRows = document.querySelectorAll('.variant-row');
-            if (remainingRows.length === 0) {
-                const tempError = document.createElement('p');
-                tempError.className = 'text-red-500 text-sm mt-2';
-                tempError.textContent = 'Please add at least one variant';
-                variantContainer.insertAdjacentElement('afterend', tempError);
-                setTimeout(() => tempError.remove(), 3000);
+                return nameValid && priceValid && categoryValid && mainImageValid && allVariantsValid;
             }
-        });
-        
-        variantCount++;
-        
-        // Remove any "add at least one variant" error message
-        const nextEl = variantContainer.nextElementSibling;
-        if (nextEl && nextEl.classList.contains('text-red-500')) {
-            nextEl.remove();
-        }
-    }
 
-    addVariantBtn.addEventListener('click', () => addVariantRow());
-    
-    // Add initial variant row
-    addVariantRow();
+            // Upload zone functionality
+            uploadZones.forEach(zone => {
+                const fileInput = zone.querySelector('input[type="file"]');
+                const clearBtn = document.createElement('button');
+                clearBtn.innerHTML = '×';
+                clearBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hidden';
+                clearBtn.type = 'button';
+                zone.appendChild(clearBtn);
 
-    // Submit button click event
-    submitBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (validateForm()) {
-            submitProductForm();
-        } else {
-            // Scroll to the first error
-            const firstError = document.querySelector('.error-message:not(.hidden)');
-            if (firstError) {
-                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-    });
+                zone.addEventListener('click', (e) => {
+                    if (e.target !== clearBtn) fileInput.click();
+                });
 
-    // Form submission function
-    async function submitProductForm() {
-        const formData = new FormData(productForm);
-        try {
-            const response = await fetch(productForm.action, {
-                method: 'POST',
-                body: formData
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    // Generate a unique hash for the file (name + size)
+                    const fileHash = `${file.name}-${file.size}`;
+                    if (uploadedFiles.has(fileHash)) {
+                        const errorMsg = createErrorElement('This image has already been uploaded');
+                        zone.insertAdjacentElement('afterend', errorMsg);
+                        errorMsg.classList.remove('hidden');
+                        setTimeout(() => errorMsg.remove(), 3000);
+                        fileInput.value = '';
+                        return;
+                    }
+
+                    if (!file.type.startsWith('image/')) {
+                        const errorMsg = createErrorElement('Please upload a valid image file');
+                        zone.insertAdjacentElement('afterend', errorMsg);
+                        errorMsg.classList.remove('hidden');
+                        fileInput.value = '';
+                        return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                        const errorMsg = createErrorElement('File size should not exceed 5MB');
+                        zone.insertAdjacentElement('afterend', errorMsg);
+                        errorMsg.classList.remove('hidden');
+                        fileInput.value = '';
+                        return;
+                    }
+
+                    uploadedFiles.add(fileHash);
+                    currentFileInput = fileInput;
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        imageToCrop.src = event.target.result;
+                        cropModal.classList.remove('hidden');
+                        if (cropper) cropper.destroy();
+                        cropper = new Cropper(imageToCrop, {
+                            aspectRatio: 1,
+                            viewMode: 1,
+                            autoCropArea: 0.8,
+                            responsive: true
+                        });
+                    };
+                    reader.readAsDataURL(file);
+                });
+
+                clearBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const file = fileInput.files[0];
+                    if (file) uploadedFiles.delete(`${file.name}-${file.size}`);
+                    fileInput.value = '';
+                    zone.style.backgroundImage = '';
+                    zone.querySelector('p').style.display = 'block';
+                    clearBtn.classList.add('hidden');
+                    if (fileInput.name === 'mainImage') {
+                        mainImageErrorElement.classList.remove('hidden');
+                        zone.classList.add('border-red-500');
+                    }
+                });
             });
 
-            if (response.ok) {
-                // Use a small inline notification instead of SweetAlert
-                const notification = document.createElement('div');
-                notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50';
-                notification.textContent = 'Product added successfully! Redirecting...';
-                document.body.appendChild(notification);
-                
-                setTimeout(() => {
-                    window.location.href = '/admin/productManagment';
-                }, 1500);
-            } else {
-                const errorText = await response.text();
-                const notification = document.createElement('div');
-                notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg z-50';
-                notification.textContent = 'Error adding product: ' + errorText;
-                document.body.appendChild(notification);
-                
-                setTimeout(() => {
-                    notification.remove();
-                }, 3000);
-            }
-        } catch (error) {
-            const notification = document.createElement('div');
-            notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg z-50';
-            notification.textContent = 'An error occurred: ' + error.message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
-    }
-});
+            cancelCrop.addEventListener('click', () => {
+                cropModal.classList.add('hidden');
+                const file = currentFileInput.files[0];
+                if (file) uploadedFiles.delete(`${file.name}-${file.size}`);
+                currentFileInput.value = '';
+                if (cropper) cropper.destroy();
+                if (currentFileInput.name === 'mainImage') {
+                    mainImageErrorElement.classList.remove('hidden');
+                    currentFileInput.closest('.upload-zone').classList.add('border-red-500');
+                }
+            });
 
-       
-       
+            cropImage.addEventListener('click', () => {
+                cropper.getCroppedCanvas({
+                    width: 2000,
+                    height: 2000
+                }).toBlob((blob) => {
+                    const originalFile = currentFileInput.files[0];
+                    const file = new File([blob], originalFile.name, { type: 'image/webp' });
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    currentFileInput.files = dataTransfer.files;
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const zone = currentFileInput.closest('.upload-zone');
+                        zone.style.backgroundImage = `url(${e.target.result})`;
+                        zone.style.backgroundSize = 'cover';
+                        zone.style.backgroundPosition = 'center';
+                        zone.querySelector('p').style.display = 'none';
+                        zone.querySelector('button').classList.remove('hidden');
+                        if (currentFileInput.name === 'mainImage') {
+                            mainImageErrorElement.classList.add('hidden');
+                            zone.classList.remove('border-red-500');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+
+                    cropModal.classList.add('hidden');
+                    cropper.destroy();
+                }, 'image/webp', 0.8);
+            });
+
+            // Variant row functionality
+            function addVariantRow(size = '', price = '', stock = '') {
+                const variantDiv = document.createElement('div');
+                variantDiv.className = 'variant-row flex space-x-4 items-start';
+                variantDiv.innerHTML = `
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Size</label>
+                        <input type="text" name="variants[${variantCount}][size]" value="${size}" class="form-input w-full border rounded px-3 py-2" placeholder="e.g., S, M, L">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
+                        <input type="number" name="variants[${variantCount}][varientPrice]" value="${price}" class="form-input w-full border rounded px-3 py-2" placeholder="Enter price" min="0" step="0.01">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Stock</label>
+                        <input type="number" name="variants[${variantCount}][varientquatity]" value="${stock}" class="form-input w-full border rounded px-3 py-2" placeholder="Enter stock" min="0">
+                    </div>
+                    <button type="button" class="remove-variant px-3 py-2 bg-red-500 text-white rounded-lg mt-6">Remove</button>
+                `;
+                variantContainer.appendChild(variantDiv);
+                validateVariantRow(variantDiv);
+
+                variantDiv.querySelector('.remove-variant').addEventListener('click', () => {
+                    variantDiv.remove();
+                    const remainingRows = document.querySelectorAll('.variant-row');
+                    if (remainingRows.length === 0) {
+                        const tempError = document.createElement('p');
+                        tempError.className = 'text-red-500 text-sm mt-2';
+                        tempError.textContent = 'Please add at least one variant';
+                        variantContainer.insertAdjacentElement('afterend', tempError);
+                        setTimeout(() => tempError.remove(), 3000);
+                    }
+                });
+
+                variantCount++;
+            }
+
+            addVariantBtn.addEventListener('click', () => addVariantRow());
+            addVariantRow(); // Initial variant row
+
+            submitBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (validateForm()) {
+                    submitProductForm();
+                } else {
+                    const firstError = document.querySelector('.error-message:not(.hidden)');
+                    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            });
+
+            async function submitProductForm() {
+                const formData = new FormData(productForm);
+                try {
+                    const response = await fetch(productForm.action, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const notification = document.createElement('div');
+                        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50';
+                        notification.textContent = 'Product added successfully! Redirecting...';
+                        document.body.appendChild(notification);
+                        setTimeout(() => {
+                            window.location.href = '/admin/productManagment';
+                        }, 1500);
+                    } else {
+                        const errorText = await response.text();
+                        const notification = document.createElement('div');
+                        notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg z-50';
+                        notification.textContent = 'Error adding product: ' + errorText;
+                        document.body.appendChild(notification);
+                        setTimeout(() => notification.remove(), 3000);
+                    }
+                } catch (error) {
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg z-50';
+                    notification.textContent = 'An error occurred: ' + error.message;
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 3000);
+                }
+            }
+        });
     </script>
 </body>
 </html>

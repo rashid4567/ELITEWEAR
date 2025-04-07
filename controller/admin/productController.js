@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const sharp = require("sharp");
 const { count } = require("console");
 const { unlink } = require("fs");
+const cloudinary = require('cloudinary').v2;
 
 const ProductManagement = async (req, res) => {
     try {
@@ -141,29 +142,41 @@ const addproduct = async (req, res) => {
         }
 
         const images = [];
-        if (req.files && req.files.mainImage) {
+        const imageSet = new Set(); // To track unique image URLs
+
+        // Handle main image
+        if (req.files && req.files.mainImage && req.files.mainImage.length > 0) {
+            const mainImagePath = req.files.mainImage[0].path;
             images.push({
-                url: req.files.mainImage[0].path,
-                thumbnail: req.files.mainImage[0].path,
+                url: mainImagePath,
+                thumbnail: mainImagePath,
                 isMain: true
             });
-            for (let i = 1; i <= 3; i++) {
-                const fieldName = `additionalImage${i}`;
-                if (req.files[fieldName]) {
-                    images.push({
-                        url: req.files[fieldName][0].path,
-                        thumbnail: req.files[fieldName][0].path,
-                        isMain: false
-                    });
-                }
-            }
-        }
-        if (images.length === 0) {
+            imageSet.add(mainImagePath);
+        } else {
             return res.status(400).render("addproduct", {
-                error: "Please upload at least one valid product image",
+                error: "Please upload a main product image",
                 categories: await Category.find({ isListed: true }),
             });
         }
+
+        // Handle additional images
+        for (let i = 1; i <= 3; i++) {
+            const fieldName = `additionalImage${i}`;
+            if (req.files && req.files[fieldName] && req.files[fieldName].length > 0) {
+                const additionalImagePath = req.files[fieldName][0].path;
+                if (!imageSet.has(additionalImagePath)) {
+                    images.push({
+                        url: additionalImagePath,
+                        thumbnail: additionalImagePath,
+                        isMain: false
+                    });
+                    imageSet.add(additionalImagePath);
+                }
+            }
+        }
+
+        console.log('Processed images:', images);
 
         const categoryData = await Category.findOne({ name: productCategory });
         if (!categoryData) {
@@ -214,7 +227,6 @@ const addproduct = async (req, res) => {
         });
     }
 };
-
 const geteditProduct = async (req, res) => {
     try {
         const id = req.params.id;
@@ -270,7 +282,6 @@ const editProduct = async (req, res) => {
             brand
         } = req.body;
 
-      
         const requiredFields = ['productName', 'productDescription', 'productCategory', 'color', 'fabric'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
         if (missingFields.length > 0) {
@@ -281,7 +292,6 @@ const editProduct = async (req, res) => {
             });
         }
 
-       
         const existProduct = await Product.findOne({
             name: productName,
             _id: { $ne: id }
@@ -294,30 +304,41 @@ const editProduct = async (req, res) => {
             });
         }
 
-      
-        let images = [...product.images];
-        
-        
+        let images = [...product.images]; // Start with the current images array
+
+        // Handle image updates with Cloudinary
+        const cloudinaryDeletePromises = []; // To delete old images from Cloudinary
+
+        // Replace main image if a new one is uploaded
         if (req.files && req.files.mainImage) {
-            
-            const oldMainImageIndex = images.findIndex(img => img.isMain);
-            if (oldMainImageIndex !== -1) {
-                images.splice(oldMainImageIndex, 1);
+            const oldMainImage = images.find(img => img.isMain);
+            if (oldMainImage) {
+                const publicId = oldMainImage.url.split('/').pop().split('.')[0]; // Extract public_id from URL
+                cloudinaryDeletePromises.push(
+                    cloudinary.uploader.destroy(`banners/${publicId}`)
+                );
+                images = images.filter(img => !img.isMain); // Remove old main image
             }
-            
-           
             images.push({
-                url: req.files.mainImage[0].path,
+                url: req.files.mainImage[0].path, // Cloudinary URL
                 thumbnail: req.files.mainImage[0].path,
                 isMain: true
             });
         }
-        
-        
+
+        // Replace additional images if new ones are uploaded
         for (let i = 1; i <= 3; i++) {
             const fieldName = `additionalImage${i}`;
             if (req.files && req.files[fieldName]) {
-             
+                const oldImageIndex = images.findIndex(img => !img.isMain && img.url === (images[i]?.url || '')); // Find by position or URL
+                if (oldImageIndex !== -1) {
+                    const oldImage = images[oldImageIndex];
+                    const publicId = oldImage.url.split('/').pop().split('.')[0];
+                    cloudinaryDeletePromises.push(
+                        cloudinary.uploader.destroy(`banners/${publicId}`)
+                    );
+                    images.splice(oldImageIndex, 1); // Remove old additional image
+                }
                 images.push({
                     url: req.files[fieldName][0].path,
                     thumbnail: req.files[fieldName][0].path,
@@ -326,7 +347,9 @@ const editProduct = async (req, res) => {
             }
         }
 
-      
+        // Wait for all Cloudinary deletions to complete
+        await Promise.all(cloudinaryDeletePromises);
+
         if (images.length === 0) {
             return res.status(400).render("editProduct", {
                 error: "At least one product image is required",
@@ -335,7 +358,6 @@ const editProduct = async (req, res) => {
             });
         }
 
-       
         const categoryData = await Category.findOne({ name: productCategory });
         if (!categoryData) {
             return res.status(400).render("editProduct", {
@@ -345,10 +367,8 @@ const editProduct = async (req, res) => {
             });
         }
 
-     
         let parsedVariants = [];
         if (variants) {
-         
             if (Array.isArray(variants)) {
                 parsedVariants = variants.map(variant => ({
                     size: variant.size,
@@ -357,7 +377,6 @@ const editProduct = async (req, res) => {
                     varientquatity: parseInt(variant.varientquatity)
                 }));
             } else if (typeof variants === 'object') {
-               
                 parsedVariants = Object.values(variants).map(variant => ({
                     size: variant.size,
                     varientPrice: parseFloat(variant.varientPrice),
@@ -375,7 +394,6 @@ const editProduct = async (req, res) => {
             });
         }
 
-    
         const updateFields = {
             name: productName,
             description: productDescription,
@@ -385,14 +403,13 @@ const editProduct = async (req, res) => {
             sku: sku || undefined,
             fabric: fabric.trim(),
             color: color.trim(),
-            images,
+            images, // Updated images array
             variants: parsedVariants
         };
 
         const updatedProduct = await Product.findByIdAndUpdate(id, updateFields, { new: true });
         console.log("Updated product details:", updatedProduct);
-        
-       
+
         if (req.xhr) {
             return res.json({ 
                 success: true, 
@@ -410,7 +427,7 @@ const editProduct = async (req, res) => {
             product: await Product.findById(req.params.id),
             categories: await Category.find({ isListed: true })
         };
-        
+
         if (req.xhr) {
             return res.status(500).json({ 
                 success: false, 
