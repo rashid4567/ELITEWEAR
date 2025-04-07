@@ -3,10 +3,8 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../model/userSChema');
 require('dotenv').config();
 
-
 const clientID = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-``
 
 passport.use(
     new GoogleStrategy(
@@ -18,7 +16,9 @@ passport.use(
         async (accessToken, refreshToken, profile, done) => {
             try {
                 let user = await User.findOne({ googleId: profile.id });
-
+                if (user && user.isBlocked) {
+                    return done(null, false, { message: "Sorry, your account is blocked by the admin." });
+                }
                 if (user) {
                     return done(null, user);
                 } else {
@@ -27,7 +27,6 @@ passport.use(
                         email: profile.emails[0].value,
                         googleId: profile.id,
                     });
-
                     await user.save();
                     return done(null, user);
                 }

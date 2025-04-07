@@ -18,27 +18,23 @@
             </div>
         <% } %>
 
-     
-        <form id="productForm" method="post" action="<%= typeof product !== 'undefined' && product._id ? `/admin/editProduct/${product._id}` : '/admin/addproduct' %>" enctype="multipart/form-data">
-        
+        <form id="productForm" method="post" action="/admin/addproduct" enctype="multipart/form-data">
+            <!-- General Information -->
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">General Information</h2>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
-                        <input type="text" name="productName" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= typeof product !== 'undefined' ? product.productName : '' %>" placeholder="Enter product name">
+                        <input type="text" name="productName" id="productName" class="form-input w-full border rounded px-3 py-2" placeholder="Enter product name">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
-                        <input type="number" name="productPrice" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= typeof product !== 'undefined' ? product.productPrice : '' %>" placeholder="Enter price" min="0" step="0.01">
+                        <input type="number" name="productPrice" id="productPrice" class="form-input w-full border rounded px-3 py-2" placeholder="Enter price" min="0" step="0.01">
                     </div>
                 </div>
                 <div class="mt-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Product Description</label>
-                    <textarea name="productDescription" class="form-input w-full border rounded px-3 py-2" rows="4" 
-                        placeholder="Enter product description"><%= typeof product !== 'undefined' ? product.productDescription : '' %></textarea>
+                    <textarea name="productDescription" class="form-input w-full border rounded px-3 py-2" rows="4" placeholder="Enter product description"></textarea>
                 </div>
             </div>
 
@@ -72,6 +68,7 @@
                 </div>
             </div>
 
+            <!-- Product Options -->
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">Product Options</h2>
                 <div class="grid grid-cols-3 gap-4">
@@ -84,106 +81,54 @@
                             <% }); %>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Fit Type</label>
-                        <select name="fitType" class="form-input w-full border rounded px-3 py-2">
-                            <option value="">Select Fit Type</option>
-                            <option value="regular" <%= typeof product !== 'undefined' && product.fitType === 'regular' ? 'selected' : '' %>>Regular Fit</option>
-                            <option value="slim" <%= typeof product !== 'undefined' && product.fitType === 'slim' ? 'selected' : '' %>>Slim Fit</option>
-                            <option value="relaxed" <%= typeof product !== 'undefined' && product.fitType === 'relaxed' ? 'selected' : '' %>>Relaxed Fit</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Sleeve Type</label>
-                        <select name="sleeveType" class="form-input w-full border rounded px-3 py-2">
-                            <option value="">Select Sleeve Type</option>
-                            <option value="full" <%= typeof product !== 'undefined' && product.sleeveType === 'full' ? 'selected' : '' %>>Full Sleeve</option>
-                            <option value="half" <%= typeof product !== 'undefined' && product.sleeveType === 'half' ? 'selected' : '' %>>Half Sleeve</option>
-                            <option value="threefourth" <%= typeof product !== 'undefined' && product.sleeveType === 'threefourth' ? 'selected' : '' %>>Three-Fourth Sleeve</option>
-                        </select>
-                    </div>
                 </div>
             </div>
 
-           
+            <!-- Product Variants -->
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold mb-4">Product Variants</h2>
+                <div id="variantContainer" class="space-y-4">
+                    <!-- Dynamic variant rows will be added here -->
+                </div>
+                <button type="button" id="addVariant" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg">Add Variant</button>
+            </div>
+
+            <!-- Product Specifications -->
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">Product Specifications</h2>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">SKU</label>
-                        <input type="text" name="sku" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= typeof product !== 'undefined' ? product.sku : '' %>" placeholder="Enter SKU">
+                        <input type="text" name="sku" class="form-input w-full border rounded px-3 py-2" placeholder="Enter SKU">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Brand</label>
-                        <input type="text" name="brand" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= typeof product !== 'undefined' ? product.brand : '' %>" placeholder="Enter brand">
+                        <input type="text" name="brand" class="form-input w-full border rounded px-3 py-2" placeholder="Enter brand">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
-                        <input type="text" name="color" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= typeof product !== 'undefined' ? product.color : '' %>" 
-                            placeholder="Enter color">
+                        <input type="text" name="color" class="form-input w-full border rounded px-3 py-2" placeholder="Enter color">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Fabric</label>
-                        <input type="text" name="fabric" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= typeof product !== 'undefined' ? product.fabric : '' %>" placeholder="Enter fabric type">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Total Stock Quantity</label>
-                        <input type="number" name="totalStockQuantity" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= typeof product !== 'undefined' ? product.totalStockQuantity : '' %>" placeholder="Enter total stock quantity" min="0">
+                        <input type="text" name="fabric" class="form-input w-full border rounded px-3 py-2" placeholder="Enter fabric type">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Product Offer (%)</label>
-                        <input type="number" name="productOffer" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= typeof product !== 'undefined' ? product.productOffer : '' %>" placeholder="Enter offer percentage" min="0" max="100">
+                        <input type="number" name="productOffer" class="form-input w-full border rounded px-3 py-2" placeholder="Enter offer percentage" min="0" max="100">
                     </div>
                 </div>
             </div>
 
-        
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold mb-4">Additional Options</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Sizes</label>
-                        <div class="flex space-x-2">
-                            <% ['S', 'M', 'L', 'XL', 'XXL'].forEach(function(size) { %>
-                                <label class="inline-flex items-center">
-                                    <input type="checkbox" name="sizes" value="<%= size %>" 
-                                        <%= typeof product !== 'undefined' && product.sizes && product.sizes.includes(size) ? 'checked' : '' %> class="form-checkbox">
-                                    <span class="ml-2"><%= size %></span>
-                                </label>
-                            <% }); %>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
-                        <div class="flex space-x-2">
-                            <% ['Casual', 'Formal', 'Sports'].forEach(function(type) { %>
-                                <label class="inline-flex items-center">
-                                    <input type="checkbox" name="productType" value="<%= type.toLowerCase() %>" 
-                                        <%= typeof product !== 'undefined' && product.productType && product.productType.includes(type.toLowerCase()) ? 'checked' : '' %> class="form-checkbox">
-                                    <span class="ml-2"><%= type %></span>
-                                </label>
-                            <% }); %>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            <!-- Form Buttons -->
             <div class="flex justify-end space-x-4">
-                <button type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg" 
-                    onclick="window.location.href='/admin/productManagment'">Cancel</button>
-                <button type="button" id="submitBtn" class="px-4 py-2 bg-black text-white rounded-lg">
-                    <%= typeof product !== 'undefined' && product._id ? 'Update Product' : 'Add Product' %>
-                </button>
+                <button type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg" onclick="window.location.href='/admin/productManagment'">Cancel</button>
+                <button type="button" id="submitBtn" class="px-4 py-2 bg-black text-white rounded-lg">Add Product</button>
             </div>
         </form>
     </div>
 
+    <!-- Crop Modal -->
     <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
         <div class="bg-white p-6 rounded-lg max-w-4xl w-full">
             <img id="imageToCrop" class="max-w-full max-h-[80vh]">
@@ -193,201 +138,393 @@
             </div>
         </div>
     </div>
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const uploadZones = document.querySelectorAll('.upload-zone');
-            const cropModal = document.getElementById('cropModal');
-            const imageToCrop = document.getElementById('imageToCrop');
-            const cancelCrop = document.getElementById('cancelCrop');
-            const cropImage = document.getElementById('cropImage');
-            const productForm = document.getElementById('productForm');
-            const submitBtn = document.getElementById('submitBtn');
-            let cropper;
-            let currentFileInput;
+      document.addEventListener('DOMContentLoaded', () => {
+    const uploadZones = document.querySelectorAll('.upload-zone');
+    const cropModal = document.getElementById('cropModal');
+    const imageToCrop = document.getElementById('imageToCrop');
+    const cancelCrop = document.getElementById('cancelCrop');
+    const cropImage = document.getElementById('cropImage');
+    const productForm = document.getElementById('productForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const variantContainer = document.getElementById('variantContainer');
+    const addVariantBtn = document.getElementById('addVariant');
+    const productName = document.getElementById('productName');
+    const productPrice = document.getElementById('productPrice');
+    const productCategory = document.querySelector('select[name="productCategory"]');
+    let cropper;
+    let currentFileInput;
+    let variantCount = 0;
 
-            uploadZones.forEach(zone => {
-                const fileInput = zone.querySelector('input[type="file"]');
-                const clearBtn = document.createElement('button');
-                clearBtn.innerHTML = '×';
-                clearBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hidden';
-                clearBtn.type = 'button';
-                zone.appendChild(clearBtn);
+    // Function to create error message elements
+    function createErrorElement(message) {
+        const errorElement = document.createElement('p');
+        errorElement.className = 'text-red-500 text-xs mt-1 hidden error-message';
+        errorElement.textContent = message;
+        return errorElement;
+    }
+    
+    // Add error messages for fields
+    const nameErrorElement = createErrorElement('Please enter the product name');
+    productName.insertAdjacentElement('afterend', nameErrorElement);
+    
+    const priceErrorElement = createErrorElement('Please enter the product price');
+    productPrice.insertAdjacentElement('afterend', priceErrorElement);
+    
+    const categoryErrorElement = createErrorElement('Please select a category');
+    productCategory.insertAdjacentElement('afterend', categoryErrorElement);
+    
+    // Create and add main image error message
+    const mainImageInput = document.querySelector('input[name="mainImage"]');
+    const mainImageZone = mainImageInput.closest('.upload-zone');
+    const mainImageErrorElement = createErrorElement('Please upload a main product image');
+    mainImageZone.insertAdjacentElement('afterend', mainImageErrorElement);
+    
+    // Validation function for single field
+    function validateField(field, errorElement) {
+        if (!field.value.trim()) {
+            errorElement.classList.remove('hidden');
+            field.classList.add('border-red-500');
+            return false;
+        } else {
+            errorElement.classList.add('hidden');
+            field.classList.remove('border-red-500');
+            return true;
+        }
+    }
+    
+    // Specific validation for file inputs
+    function validateFileInput(fileInput, errorElement) {
+        if (!fileInput.files.length) {
+            errorElement.classList.remove('hidden');
+            fileInput.closest('.upload-zone').classList.add('border-red-500');
+            return false;
+        } else {
+            errorElement.classList.add('hidden');
+            fileInput.closest('.upload-zone').classList.remove('border-red-500');
+            return true;
+        }
+    }
+    
+    // Add input event listeners to clear errors on typing
+    productName.addEventListener('input', () => validateField(productName, nameErrorElement));
+    productPrice.addEventListener('input', () => validateField(productPrice, priceErrorElement));
+    productCategory.addEventListener('change', () => validateField(productCategory, categoryErrorElement));
+    mainImageInput.addEventListener('change', () => validateFileInput(mainImageInput, mainImageErrorElement));
 
-                zone.addEventListener('click', (e) => {
-                    if (e.target !== clearBtn) {
-                        fileInput.click();
-                    }
-                });
+    // Function to validate variant fields
+    function validateVariantRow(row) {
+        const sizeInput = row.querySelector('input[name$="[size]"]');
+        const priceInput = row.querySelector('input[name$="[varientPrice]"]');
+        const stockInput = row.querySelector('input[name$="[varientquatity]"]');
+        
+        // Create error elements if they don't exist
+        if (!row.querySelector('.size-error')) {
+            const sizeError = createErrorElement('Please enter the size');
+            sizeInput.insertAdjacentElement('afterend', sizeError);
+            sizeError.classList.add('size-error');
+            
+            sizeInput.addEventListener('input', () => validateField(sizeInput, sizeError));
+        }
+        
+        if (!row.querySelector('.price-error')) {
+            const priceError = createErrorElement('Please enter the price');
+            priceInput.insertAdjacentElement('afterend', priceError);
+            priceError.classList.add('price-error');
+            
+            priceInput.addEventListener('input', () => validateField(priceInput, priceError));
+        }
+        
+        if (!row.querySelector('.stock-error')) {
+            const stockError = createErrorElement('Please enter the stock');
+            stockInput.insertAdjacentElement('afterend', stockError);
+            stockError.classList.add('stock-error');
+            
+            stockInput.addEventListener('input', () => validateField(stockInput, stockError));
+        }
+        
+        const sizeValid = validateField(sizeInput, row.querySelector('.size-error'));
+        const priceValid = validateField(priceInput, row.querySelector('.price-error'));
+        const stockValid = validateField(stockInput, row.querySelector('.stock-error'));
+        
+        return sizeValid && priceValid && stockValid;
+    }
 
-                fileInput.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-
-                    if (!file.type.startsWith('image/')) {
-                        alert('Please upload a valid image file');
-                        fileInput.value = '';
-                        return;
-                    }
-                    if (file.size > 5 * 1024 * 1024) {
-                        alert('File size should not exceed 5MB');
-                        fileInput.value = '';
-                        return;
-                    }
-
-                    currentFileInput = fileInput;
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        imageToCrop.src = event.target.result;
-                        cropModal.classList.remove('hidden');
-                        if (cropper) cropper.destroy();
-                        cropper = new Cropper(imageToCrop, {
-                            aspectRatio: 1,
-                            viewMode: 1,
-                            autoCropArea: 0.8,
-                            responsive: true
-                        });
-                    };
-                    reader.readAsDataURL(file);
-                });
-
-                clearBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    fileInput.value = '';
-                    zone.style.backgroundImage = '';
-                    zone.querySelector('p').style.display = 'block';
-                    clearBtn.classList.add('hidden');
-                });
-            });
-
-            cancelCrop.addEventListener('click', () => {
-                cropModal.classList.add('hidden');
-                currentFileInput.value = '';
-                if (cropper) cropper.destroy();
-            });
-
-            cropImage.addEventListener('click', () => {
-                cropper.getCroppedCanvas({
-                    width: 2000,
-                    height: 2000
-                }).toBlob((blob) => {
-                    const file = new File([blob], currentFileInput.files[0].name, { type: 'image/webp' });
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(file);
-                    currentFileInput.files = dataTransfer.files;
-
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const zone = currentFileInput.closest('.upload-zone');
-                        zone.style.backgroundImage = `url(${e.target.result})`;
-                        zone.style.backgroundSize = 'cover';
-                        zone.style.backgroundPosition = 'center';
-                        zone.querySelector('p').style.display = 'none';
-                        zone.querySelector('button').classList.remove('hidden');
-                    };
-                    reader.readAsDataURL(file);
-
-                    cropModal.classList.add('hidden');
-                    cropper.destroy();
-                }, 'image/webp', 0.8);
-            });
-
-           
-            function validateForm() {
-                const mainImage = document.querySelector('input[name="mainImage"]');
-                const sizes = document.querySelectorAll('input[name="sizes"]:checked');
-                if (!mainImage.files.length) {
-                    Swal.fire({
-                        title: "Error!",
-                        text: "Please upload a main product image",
-                        icon: "error",
-                        confirmButtonColor: "#000"
-                    });
-                    return false;
-                }
-                if (sizes.length === 0) {
-                    Swal.fire({
-                        title: "Error!",
-                        text: "Please select at least one size",
-                        icon: "error",
-                        confirmButtonColor: "#000"
-                    });
-                    return false;
-                }
-                return true;
+    // Main form validation function
+    function validateForm() {
+        const nameValid = validateField(productName, nameErrorElement);
+        const priceValid = validateField(productPrice, priceErrorElement);
+        const categoryValid = validateField(productCategory, categoryErrorElement);
+        const mainImageValid = validateFileInput(mainImageInput, mainImageErrorElement);
+        
+        // Validate variants
+        const variantRows = document.querySelectorAll('.variant-row');
+        let allVariantsValid = true;
+        
+        if (variantRows.length === 0) {
+            // Create a temporary error message if no variants exist
+            const tempError = document.createElement('p');
+            tempError.className = 'text-red-500 text-sm mt-2';
+            tempError.textContent = 'Please add at least one variant';
+            
+            // Check if the error already exists
+            const existingError = variantContainer.nextElementSibling;
+            if (existingError && existingError.classList.contains('text-red-500')) {
+                // Error already exists, do nothing
+            } else {
+                variantContainer.insertAdjacentElement('afterend', tempError);
+                setTimeout(() => tempError.remove(), 3000); // Remove after 3 seconds
             }
+            
+            allVariantsValid = false;
+        } else {
+            // Validate each variant
+            for (const row of variantRows) {
+                const rowValid = validateVariantRow(row);
+                if (!rowValid) allVariantsValid = false;
+            }
+        }
+        
+        return nameValid && priceValid && categoryValid && mainImageValid && allVariantsValid;
+    }
 
-           
-            submitBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                if (!validateForm()) return;
-                
-                Swal.fire({
-                    title: "ARE YOU SURE!!",
-                    text: "Do you want to add this product?",
-                    icon: "question",
-                    showCancelButton: true,
-                    confirmButtonColor: "#000",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, Add",
-                    cancelButtonText: "Cancel",
-                    customClass: {
-                        popup: 'swal-custom-popup',
-                        confirmButton: 'swal-custom-button',
-                        cancelButton: 'swal-custom-cancel-button'
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        submitProductForm();
-                    } else if (result.dismiss === Swal.DismissReason.cancel) {
-                        Swal.fire({
-                            title: "Cancelled",
-                            text: "Your action was cancelled.",
-                            icon: "error",
-                            confirmButtonColor: "#000"
-                        });
-                    }
-                });
-            });
+    // Upload zone functionality
+    uploadZones.forEach(zone => {
+        const fileInput = zone.querySelector('input[type="file"]');
+        const clearBtn = document.createElement('button');
+        clearBtn.innerHTML = '×';
+        clearBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hidden';
+        clearBtn.type = 'button';
+        zone.appendChild(clearBtn);
 
-           
-            async function submitProductForm() {
-                const formData = new FormData(productForm);
-                try {
-                    const response = await fetch(productForm.action, {
-                        method: 'POST',
-                        body: formData
-                    });
+        zone.addEventListener('click', (e) => {
+            if (e.target !== clearBtn) fileInput.click();
+        });
 
-                    if (response.ok) {
-                        Swal.fire({
-                            title: "Added!",
-                            text: "Your product has been added successfully.",
-                            icon: "success",
-                            confirmButtonColor: "#000"
-                        }).then(() => {
-                            window.location.href = '/admin/productManagment';
-                        });
-                    } else {
-                        const errorText = await response.text();
-                        Swal.fire({
-                            title: "Error!",
-                            text: "Error adding product: " + errorText,
-                            icon: "error",
-                            confirmButtonColor: "#000"
-                        });
-                    }
-                } catch (error) {
-                    Swal.fire({
-                        title: "Error!",
-                        text: "An error occurred while adding the product: " + error.message,
-                        icon: "error",
-                        confirmButtonColor: "#000"
-                    });
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // File validation
+            let fileError = false;
+            if (!file.type.startsWith('image/')) {
+                const errorMsg = createErrorElement('Please upload a valid image file');
+                if (zone.nextElementSibling && zone.nextElementSibling.classList.contains('error-message')) {
+                    zone.nextElementSibling.textContent = 'Please upload a valid image file';
+                    zone.nextElementSibling.classList.remove('hidden');
+                } else {
+                    zone.insertAdjacentElement('afterend', errorMsg);
+                    errorMsg.classList.remove('hidden');
                 }
+                fileInput.value = '';
+                fileError = true;
+            } else if (file.size > 5 * 1024 * 1024) {
+                const errorMsg = createErrorElement('File size should not exceed 5MB');
+                if (zone.nextElementSibling && zone.nextElementSibling.classList.contains('error-message')) {
+                    zone.nextElementSibling.textContent = 'File size should not exceed 5MB';
+                    zone.nextElementSibling.classList.remove('hidden');
+                } else {
+                    zone.insertAdjacentElement('afterend', errorMsg);
+                    errorMsg.classList.remove('hidden');
+                }
+                fileInput.value = '';
+                fileError = true;
+            }
+            
+            if (fileError) return;
+            
+            // Hide any error messages
+            if (zone.nextElementSibling && zone.nextElementSibling.classList.contains('error-message')) {
+                zone.nextElementSibling.classList.add('hidden');
+            }
+            
+            currentFileInput = fileInput;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                imageToCrop.src = event.target.result;
+                cropModal.classList.remove('hidden');
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+
+        clearBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            fileInput.value = '';
+            zone.style.backgroundImage = '';
+            zone.querySelector('p').style.display = 'block';
+            clearBtn.classList.add('hidden');
+            
+            // Show any error message if this is the main image
+            if (fileInput === mainImageInput) {
+                mainImageErrorElement.classList.remove('hidden');
+                zone.classList.add('border-red-500');
             }
         });
+    });
+
+    cancelCrop.addEventListener('click', () => {
+        cropModal.classList.add('hidden');
+        currentFileInput.value = '';
+        if (cropper) cropper.destroy();
+        
+        // Show error message if this was the main image
+        if (currentFileInput === mainImageInput) {
+            mainImageErrorElement.classList.remove('hidden');
+            currentFileInput.closest('.upload-zone').classList.add('border-red-500');
+        }
+    });
+
+    cropImage.addEventListener('click', () => {
+        cropper.getCroppedCanvas({
+            width: 2000,
+            height: 2000
+        }).toBlob((blob) => {
+            const file = new File([blob], currentFileInput.files[0].name, { type: 'image/webp' });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            currentFileInput.files = dataTransfer.files;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const zone = currentFileInput.closest('.upload-zone');
+                zone.style.backgroundImage = `url(${e.target.result})`;
+                zone.style.backgroundSize = 'cover';
+                zone.style.backgroundPosition = 'center';
+                zone.querySelector('p').style.display = 'none';
+                zone.querySelector('button').classList.remove('hidden');
+                
+                // Hide error message if this was the main image
+                if (currentFileInput === mainImageInput) {
+                    mainImageErrorElement.classList.add('hidden');
+                    zone.classList.remove('border-red-500');
+                }
+            };
+            reader.readAsDataURL(file);
+
+            cropModal.classList.add('hidden');
+            cropper.destroy();
+        }, 'image/webp', 0.8);
+    });
+
+    // Variant row functionality
+    function addVariantRow(size = '', price = '', stock = '') {
+        const variantDiv = document.createElement('div');
+        variantDiv.className = 'variant-row flex space-x-4 items-start';
+        variantDiv.innerHTML = `
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Size</label>
+                <input type="text" name="variants[${variantCount}][size]" value="${size}" class="form-input w-full border rounded px-3 py-2" placeholder="e.g., S, M, L">
+            </div>
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
+                <input type="number" name="variants[${variantCount}][varientPrice]" value="${price}" class="form-input w-full border rounded px-3 py-2" placeholder="Enter price" min="0" step="0.01">
+            </div>
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Stock</label>
+                <input type="number" name="variants[${variantCount}][varientquatity]" value="${stock}" class="form-input w-full border rounded px-3 py-2" placeholder="Enter stock" min="0">
+            </div>
+            <button type="button" class="remove-variant px-3 py-2 bg-red-500 text-white rounded-lg mt-6">Remove</button>
+        `;
+        variantContainer.appendChild(variantDiv);
+        
+        // Add validation for the new row
+        validateVariantRow(variantDiv);
+        
+        // Remove variant row event
+        variantDiv.querySelector('.remove-variant').addEventListener('click', () => {
+            variantDiv.remove();
+            // Check if we need to show "add at least one variant" error
+            const remainingRows = document.querySelectorAll('.variant-row');
+            if (remainingRows.length === 0) {
+                const tempError = document.createElement('p');
+                tempError.className = 'text-red-500 text-sm mt-2';
+                tempError.textContent = 'Please add at least one variant';
+                variantContainer.insertAdjacentElement('afterend', tempError);
+                setTimeout(() => tempError.remove(), 3000);
+            }
+        });
+        
+        variantCount++;
+        
+        // Remove any "add at least one variant" error message
+        const nextEl = variantContainer.nextElementSibling;
+        if (nextEl && nextEl.classList.contains('text-red-500')) {
+            nextEl.remove();
+        }
+    }
+
+    addVariantBtn.addEventListener('click', () => addVariantRow());
+    
+    // Add initial variant row
+    addVariantRow();
+
+    // Submit button click event
+    submitBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (validateForm()) {
+            submitProductForm();
+        } else {
+            // Scroll to the first error
+            const firstError = document.querySelector('.error-message:not(.hidden)');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+
+    // Form submission function
+    async function submitProductForm() {
+        const formData = new FormData(productForm);
+        try {
+            const response = await fetch(productForm.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                // Use a small inline notification instead of SweetAlert
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50';
+                notification.textContent = 'Product added successfully! Redirecting...';
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    window.location.href = '/admin/productManagment';
+                }, 1500);
+            } else {
+                const errorText = await response.text();
+                const notification = document.createElement('div');
+                notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg z-50';
+                notification.textContent = 'Error adding product: ' + errorText;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+        } catch (error) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg z-50';
+            notification.textContent = 'An error occurred: ' + error.message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    }
+});
+
+       
+       
     </script>
 </body>
 </html>

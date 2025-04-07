@@ -10,27 +10,44 @@ const { unlink } = require("fs");
 const ProductManagement = async (req, res) => {
     try {
         const search = req.query.search || "";
+        const categoryFilter = req.query.category || "";
+        const brandFilter = req.query.brand || "";
         const page = Math.max(parseInt(req.query.page) || 1, 1);
         const limit = 6;
 
-        const count = await Product.countDocuments({
-            $or: [
-                { name: { $regex: ".*" + search + ".*", $options: "i" } },
-                { brand: { $regex: ".*" + search + ".*", $options: "i" } }
+        let query = {
+            $and: [
+                {
+                    $or: [
+                        { name: { $regex: ".*" + search + ".*", $options: "i" } },
+                        { brand: { $regex: ".*" + search + ".*", $options: "i" } }
+                    ]
+                }
             ]
-        });
+        };
+
+
+        if (categoryFilter && categoryFilter !== "all") {
+            const categoryData = await Category.findOne({ name: categoryFilter });
+            if (categoryData) {
+                query.$and.push({ categoryId: categoryData._id });
+            } else {
+                console.error(`Category not found: ${categoryFilter}`);
+            }
+        }
 
         
+        if (brandFilter) {
+            query.$and.push({ brand: { $regex: ".*" + brandFilter + ".*", $options: "i" } });
+        }
+
+        const count = await Product.countDocuments(query);
+
         const totalPages = Math.ceil(count / limit);
         const safePage = Math.min(page, totalPages);
         const skip = (safePage - 1) * limit;
 
-        const productData = await Product.find({
-            $or: [
-                { name: { $regex: ".*" + search + ".*", $options: "i" } },
-                { brand: { $regex: ".*" + search + ".*", $options: "i" } }
-            ]
-        })
+        const productData = await Product.find(query)
             .limit(limit)
             .skip(skip)
             .populate("categoryId")
@@ -42,27 +59,33 @@ const ProductManagement = async (req, res) => {
             return res.status(404).render("page-404");
         }
 
+        let message = "";
         if (!productData.length) {
-            return res.render("no-products", { search, cat: category });
+            message = search 
+                ? `Sorry, no products found for "${search}"`
+                : "Sorry, no products are available";
         }
 
         const formattedProductData = productData.map(product => {
             const firstVariant = product.variants[0] || {};
+            const totalStock = product.variants.reduce((sum, variant) => sum + (variant.varientquatity || 0), 0);
             return {
                 ...product.toObject(),
                 salePrice: firstVariant.salePrice || 0,
-                quantity: firstVariant.quantity || 0
+                varientquatity: totalStock 
             };
         });
-
         res.render("prodectManagment", {
             search,
+            categoryFilter,
+            brandFilter,
             data: formattedProductData,
             currentPage: safePage,
             totalPage: totalPages,
             cat: category,
             sales: formattedProductData[0]?.salePrice || 0,
-            stock: formattedProductData[0]?.quantity || 0
+            stock: formattedProductData[0]?.quantity || 0,
+            message: message
         });
 
     } catch (error) {
@@ -70,8 +93,6 @@ const ProductManagement = async (req, res) => {
         res.status(500).send("Internal Server Error");
     }
 };
-
-
 const getaddproduct = async (req, res) => {
     try {
         const categories = await Category.find({ isListed: true });
@@ -95,6 +116,7 @@ const addproduct = async (req, res) => {
     console.log('Add product request started');
     try {
         console.log('Incoming files:', req.files);
+        console.log('Incoming body:', req.body);
 
         const {
             productName,
@@ -102,15 +124,14 @@ const addproduct = async (req, res) => {
             productDescription,
             productCategory,
             productOffer,
-            sizes,
+            variants,
             color,
             fabric,
-            totalStockQuantity,
             sku,
             brand
         } = req.body;
 
-        const requiredFields = ['productName', 'productPrice', 'productDescription', 'productCategory', 'totalStockQuantity', 'color', 'fabric'];
+        const requiredFields = ['productName', 'productDescription', 'productCategory', 'color', 'fabric'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
         if (missingFields.length > 0) {
             return res.status(400).render("addproduct", {
@@ -126,7 +147,6 @@ const addproduct = async (req, res) => {
                 thumbnail: req.files.mainImage[0].path,
                 isMain: true
             });
-
             for (let i = 1; i <= 3; i++) {
                 const fieldName = `additionalImage${i}`;
                 if (req.files[fieldName]) {
@@ -138,7 +158,6 @@ const addproduct = async (req, res) => {
                 }
             }
         }
-
         if (images.length === 0) {
             return res.status(400).render("addproduct", {
                 error: "Please upload at least one valid product image",
@@ -154,29 +173,28 @@ const addproduct = async (req, res) => {
             });
         }
 
-        const regularPrice = parseFloat(productPrice);
-        const offer = parseFloat(productOffer || 0);
-        const salePrice = regularPrice * (1 - offer / 100);
-    
-        let sizeArray = Array.isArray(sizes) ? sizes : [sizes];
-        let totalStock = parseInt(totalStockQuantity);
-        let quantityPerSize = sizeArray.length > 0 ? Math.floor(totalStock / sizeArray.length) : totalStock;
+        const parsedVariants = Array.isArray(variants) ? variants.map(variant => ({
+            size: variant.size,
+            varientPrice: parseFloat(variant.varientPrice),
+            salePrice: parseInt(variant.varientPrice) * (1 - parseInt(productOffer || 0) / 100),
+            varientquatity: parseInt(variant.varientquatity)
+        })) : [];
 
-        const variants = sizeArray.map(size => ({
-            size,
-            regularPrice,
-            salePrice,
-            quantity: quantityPerSize
-        }));
+        if (parsedVariants.length === 0) {
+            return res.status(400).render("addproduct", {
+                error: "Please add at least one variant",
+                categories: await Category.find({ isListed: true }),
+            });
+        }
 
         const newProduct = new Product({
             name: productName,
             description: productDescription,
             categoryId: categoryData._id,
             brand: brand || undefined,
-            offer,
+            offer: parseFloat(productOffer || 0),
             images,
-            variants,
+            variants: parsedVariants,
             sku: sku || undefined,
             fabric: fabric.trim(),
             color: color.trim(),
@@ -225,6 +243,7 @@ const geteditProduct = async (req, res) => {
 };
 
 const editProduct = async (req, res) => {
+    console.log('Edit product request started');
     try {
         const id = req.params.id;
         const product = await Product.findById(id);
@@ -236,12 +255,37 @@ const editProduct = async (req, res) => {
             });
         }
 
-        const data = req.body;
+        console.log('Incoming files:', req.files);
+        console.log('Incoming body:', req.body);
+
+        const {
+            productName,
+            productDescription,
+            productCategory,
+            productOffer,
+            variants,
+            color,
+            fabric,
+            sku,
+            brand
+        } = req.body;
+
+      
+        const requiredFields = ['productName', 'productDescription', 'productCategory', 'color', 'fabric'];
+        const missingFields = requiredFields.filter(field => !req.body[field]);
+        if (missingFields.length > 0) {
+            return res.status(400).render("editProduct", {
+                error: `Missing required fields: ${missingFields.join(', ')}`,
+                product,
+                categories: await Category.find({ isListed: true })
+            });
+        }
+
+       
         const existProduct = await Product.findOne({
-            name: data.productName,
+            name: productName,
             _id: { $ne: id }
         });
-
         if (existProduct) {
             return res.status(400).render("editProduct", {
                 error: "Product with this name already exists",
@@ -250,74 +294,133 @@ const editProduct = async (req, res) => {
             });
         }
 
+      
         let images = [...product.images];
-        if (req.files && Object.keys(req.files).length > 0) {
-            console.log("Files uploaded to Cloudinary:", req.files);
-
-            if (req.files.mainImage) {
-                images = images.filter(img => !img.isMain);
-                images.push({
-                    url: req.files.mainImage[0].path,
-                    thumbnail: req.files.mainImage[0].path,
-                    isMain: true
-                });
+        
+        
+        if (req.files && req.files.mainImage) {
+            
+            const oldMainImageIndex = images.findIndex(img => img.isMain);
+            if (oldMainImageIndex !== -1) {
+                images.splice(oldMainImageIndex, 1);
             }
-            for (let i = 1; i <= 3; i++) {
-                const fieldName = `additionalImage${i}`;
-                if (req.files[fieldName]) {
-                    images.push({
-                        url: req.files[fieldName][0].path,
-                        thumbnail: req.files[fieldName][0].path,
-                        isMain: false
-                    });
-                }
+            
+           
+            images.push({
+                url: req.files.mainImage[0].path,
+                thumbnail: req.files.mainImage[0].path,
+                isMain: true
+            });
+        }
+        
+        
+        for (let i = 1; i <= 3; i++) {
+            const fieldName = `additionalImage${i}`;
+            if (req.files && req.files[fieldName]) {
+             
+                images.push({
+                    url: req.files[fieldName][0].path,
+                    thumbnail: req.files[fieldName][0].path,
+                    isMain: false
+                });
             }
         }
 
-        const regularPrice = parseFloat(data.productPrice);
-        const offer = parseFloat(data.productOffer || 0);
-        const salePrice = regularPrice * (1 - offer / 100);
+      
+        if (images.length === 0) {
+            return res.status(400).render("editProduct", {
+                error: "At least one product image is required",
+                product,
+                categories: await Category.find({ isListed: true })
+            });
+        }
 
+       
+        const categoryData = await Category.findOne({ name: productCategory });
+        if (!categoryData) {
+            return res.status(400).render("editProduct", {
+                error: "Invalid category",
+                product,
+                categories: await Category.find({ isListed: true })
+            });
+        }
+
+     
+        let parsedVariants = [];
+        if (variants) {
+         
+            if (Array.isArray(variants)) {
+                parsedVariants = variants.map(variant => ({
+                    size: variant.size,
+                    varientPrice: parseFloat(variant.varientPrice),
+                    salePrice: parseFloat(variant.varientPrice) * (1 - parseFloat(productOffer || 0) / 100),
+                    varientquatity: parseInt(variant.varientquatity)
+                }));
+            } else if (typeof variants === 'object') {
+               
+                parsedVariants = Object.values(variants).map(variant => ({
+                    size: variant.size,
+                    varientPrice: parseFloat(variant.varientPrice),
+                    salePrice: parseFloat(variant.varientPrice) * (1 - parseFloat(productOffer || 0) / 100),
+                    varientquatity: parseInt(variant.varientquatity)
+                }));
+            }
+        }
+
+        if (parsedVariants.length === 0) {
+            return res.status(400).render("editProduct", {
+                error: "Please add at least one variant",
+                product,
+                categories: await Category.find({ isListed: true })
+            });
+        }
+
+    
         const updateFields = {
-            name: data.productName,
-            description: data.productDescription,
-            brand: data.brand || undefined,
-            categoryId: data.productCategory,
-            offer: offer,
-            sku: data.sku || undefined,
-            fabric: data.fabric ? data.fabric.trim() : "",  
-            color: data.color ? data.color.trim() : "", 
+            name: productName,
+            description: productDescription,
+            brand: brand || undefined,
+            categoryId: categoryData._id,
+            offer: parseFloat(productOffer || 0),
+            sku: sku || undefined,
+            fabric: fabric.trim(),
+            color: color.trim(),
             images,
-            variants: Array.isArray(data.sizes)
-                ? data.sizes.map(size => ({
-                    size,
-                    regularPrice,
-                    salePrice,
-                    quantity: Math.floor(parseInt(data.totalStockQuantity) / data.sizes.length)
-                }))
-                : [{
-                    size: data.sizes,
-                    regularPrice,
-                    salePrice,
-                    quantity: parseInt(data.totalStockQuantity)
-                }]
+            variants: parsedVariants
         };
 
         const updatedProduct = await Product.findByIdAndUpdate(id, updateFields, { new: true });
         console.log("Updated product details:", updatedProduct);
-        res.redirect("/admin/productManagment");
+        
+       
+        if (req.xhr) {
+            return res.json({ 
+                success: true, 
+                message: "Product updated successfully",
+                redirectUrl: "/admin/productManagment"
+            });
+        } else {
+            return res.redirect("/admin/productManagment");
+        }
 
     } catch (error) {
         console.error("Error editing product:", error);
-        res.status(500).render("editProduct", {
+        const errorResponse = {
             error: "Failed to edit product: " + error.message,
             product: await Product.findById(req.params.id),
             categories: await Category.find({ isListed: true })
-        });
+        };
+        
+        if (req.xhr) {
+            return res.status(500).json({ 
+                success: false, 
+                error: error.message 
+            });
+        } else {
+            return res.status(500).render("editProduct", errorResponse);
+        }
     }
 };
-
-
 const deleteImage = async (req, res) => {
     try {
         const { imageToserver, productToserver } = req.body;
@@ -406,97 +509,141 @@ const listProduct = async (req, res) => {
 };
 const filterProduct = async (req, res) => {
     try {
-        const { category, minPrice, maxPrice, sort } = req.query;
-        const search = req.query.search || "";
+        const { category, minPrice, maxPrice, sort, search } = req.query;
         const page = Math.max(parseInt(req.query.page) || 1, 1);
-        const limit = 4;
+        const limit = 6; 
 
+        
         let query = {
-            $or: [
-                { name: { $regex: ".*" + search + ".*", $options: "i" } },
-                { brand: { $regex: ".*" + search + ".*", $options: "i" } }
-            ],
-            isActive: true
+            $and: [
+                {
+                    $or: [
+                        { name: { $regex: ".*" + (search || "") + ".*", $options: "i" } },
+                        { brand: { $regex: ".*" + (search || "") + ".*", $options: "i" } }
+                    ]
+                },
+                { isActive: true }
+            ]
         };
 
        
-        if (category && category !== 'all') {
+        if (category && category !== "all") {
             const categoryData = await Category.findOne({ name: category });
             if (categoryData) {
-                query.categoryId = categoryData._id;
-            } else {
-                console.log("⚠️ Category Not Found:", category);
+                query.$and.push({ categoryId: categoryData._id });
             }
         }
 
+     
+        let pipeline = [{ $match: query }];
+
+        
+        pipeline.push({ $unwind: "$variants" });
+
        
         if (minPrice || maxPrice) {
-            query.variants = {
-                $elemMatch: {}
-            };
-            if (minPrice) query.variants.$elemMatch.salePrice = { $gte: parseFloat(minPrice) };
-            if (maxPrice) query.variants.$elemMatch.salePrice = { 
-                ...(query.variants.$elemMatch.salePrice || {}), 
-                $lte: parseFloat(maxPrice) 
-            };
+            let priceMatch = {};
+            if (minPrice) priceMatch["variants.salePrice"] = { $gte: parseFloat(minPrice) };
+            if (maxPrice) {
+                priceMatch["variants.salePrice"] = priceMatch["variants.salePrice"] || {};
+                priceMatch["variants.salePrice"].$lte = parseFloat(maxPrice);
+            }
+            pipeline.push({ $match: priceMatch });
         }
-
-        const count = await Product.countDocuments(query);
 
        
-        let sortOptions = {};
+        let sortStage = {};
         switch (sort) {
-            case 'desc':
-                sortOptions['variants.salePrice'] = -1;
+            case "desc":
+                sortStage = { $sort: { "variants.salePrice": -1 } };
                 break;
-            case 'asc':
-                sortOptions['variants.salePrice'] = 1;
+            case "asc":
+                sortStage = { $sort: { "variants.salePrice": 1 } };
                 break;
-            case 'latest':
-                sortOptions.createdAt = -1;
+            case "latest":
+                sortStage = { $sort: { createdAt: -1 } };
                 break;
             default:
-                sortOptions.createdAt = -1;
+                sortStage = { $sort: { createdAt: -1 } };
         }
+        pipeline.push(sortStage);
 
-    
-        const productData = await Product.find(query)
-            .limit(limit)
-            .skip((page - 1) * limit)
-            .sort(sortOptions)
-            .populate("categoryId")
-            .exec();
+       
+        pipeline.push({
+            $group: {
+                _id: "$_id",
+                doc: { $first: "$$ROOT" },
+                totalStock: { $sum: "$variants.varientquatity" }
+            }
+        });
+        pipeline.push({ $replaceRoot: { newRoot: { $mergeObjects: ["$doc", { totalStock: "$totalStock" }] } } });
+
+       
+        const countPipeline = [...pipeline];
+        countPipeline.push({ $count: "total" });
+        const countResult = await Product.aggregate(countPipeline);
+        const count = countResult.length > 0 ? countResult[0].total : 0;
+
+        
+        const totalPages = Math.ceil(count / limit);
+        const safePage = Math.min(page, totalPages || 1);
+        pipeline.push({ $skip: (safePage - 1) * limit });
+        pipeline.push({ $limit: limit });
+
+        
+        pipeline.push({
+            $lookup: {
+                from: "categories",
+                localField: "categoryId",
+                foreignField: "_id",
+                as: "categoryId"
+            }
+        });
+        pipeline.push({
+            $unwind: {
+                path: "$categoryId",
+                preserveNullAndEmptyArrays: true
+            }
+        });
+
+        
+        const productData = await Product.aggregate(pipeline);
 
         const categoryList = await Category.find({ isListed: true });
-
-        if (categoryList.length > 0) {
-            const formattedProductData = productData.map(product => {
-                const firstVariant = product.variants[0] || {};
-                return {
-                    ...product.toObject(),
-                    salePrice: firstVariant.salePrice || 0,
-                    quantity: firstVariant.quantity || 0
-                };
-            });
-
-            res.render("prodectManagment", {
-                search: search,
-                data: formattedProductData,
-                currentPage: page,
-                totalPage: Math.ceil(count / limit),
-                cat: categoryList,
-                sales: formattedProductData[0]?.salePrice || 0,
-                stock: formattedProductData[0]?.quantity || 0,
-                filterCategory: category || 'all',
-                filterMinPrice: minPrice || '',
-                filterMaxPrice: maxPrice || '',
-                sortOption: sort || 'latest'
-            });
-        } else {
+        if (!categoryList.length) {
             return res.status(404).render("page-404");
         }
+
+        const formattedProductData = productData.map(product => {
+            const firstVariant = product.variants[0] || {};
+            return {
+                ...product,
+                salePrice: firstVariant.salePrice || 0,
+                varientquatity: product.totalStock || 0 
+            };
+        });
+
+        let message = "";
+        if (!formattedProductData.length) {
+            message = search
+                ? `Sorry, no products found for "${search}"`
+                : "Sorry, no products are available";
+        }
+
+        res.render("prodectManagment", {
+            search: search || "",
+            categoryFilter: category || "",
+            brandFilter: "", 
+            data: formattedProductData,
+            currentPage: safePage,
+            totalPage: totalPages,
+            cat: categoryList,
+            sales: formattedProductData[0]?.salePrice || 0,
+            stock: formattedProductData[0]?.varientquatity || 0,
+            message
+        });
     } catch (error) {
-        console.error(" Error filtering products:", error);
+        console.error("Error filtering products:", error);
         res.status(500).json({
             success: false,
             message: "Internal Server Error",
@@ -504,7 +651,6 @@ const filterProduct = async (req, res) => {
         });
     }
 };
-
 module.exports = {
     ProductManagement,
     getaddproduct,

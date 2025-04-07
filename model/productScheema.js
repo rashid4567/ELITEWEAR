@@ -6,7 +6,7 @@ const variantSchema = new Schema({
         type: String, 
         required: true
     },
-    regularPrice: {
+    varientPrice: {  
         type: Number,
         required: true
     },
@@ -14,7 +14,7 @@ const variantSchema = new Schema({
         type: Number,
         required: true
     },
-    quantity: {
+    varientquatity: { 
         type: Number,
         required: true
     }
@@ -110,4 +110,4 @@ productSchema.pre('save', function(next) {
 });
 
 const Product = mongoose.model('Product', productSchema);
-module.exports = Product
+module.exports = Product;
