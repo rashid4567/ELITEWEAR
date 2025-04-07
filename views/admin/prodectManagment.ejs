@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/adminStyle/productManagment.css">
 </head>
-
 <body>
     <%- include("../partials/admin/header") %>
     <div class="container my-5">
@@ -32,7 +30,7 @@
                                 id="searchInput" 
                                 name="search" 
                                 placeholder="Search product..." 
-                                value="<%= search || ''%>" 
+                                value="<%= search || '' %>" 
                                 oninput="toggleClearButton()"
                             >
                             <button 
@@ -40,7 +38,10 @@
                                 id="clearBtn" 
                                 class="clear-btn btn btn-link position-absolute top-50 end-0 translate-middle-y" 
                                 onclick="clearSearch()" 
-                                style="display: none;"
+                                style="display: '<%= (search && search.length > 0) ? 'block' : 'none' %>;'"
+
+
+
                             >
                                 <i class="fas fa-times-circle text-muted"></i>
                             </button>
@@ -54,11 +55,11 @@
             </div>
         </div>
 
-        <div class="filter-sort-section d-flex justify-content-between align-items-center">
+        <div class="filter-sort-section d-flex justify-content-between align-items-center mt-4">
             <div>
                 <span class="me-2 fw-medium">Filter By</span>
                 <div class="dropdown d-inline-block">
-                    <button class="btn " type="button" data-bs-toggle="dropdown">
+                    <button class="btn" type="button" data-bs-toggle="dropdown">
                         Product Category <i class="fas fa-chevron-down ms-1"></i>
                     </button>
                     <ul class="dropdown-menu">
@@ -69,7 +70,7 @@
                     </ul>
                 </div>
                 <div class="dropdown d-inline-block">
-                    <button class="btn " type="button" data-bs-toggle="dropdown">
+                    <button class="btn" type="button" data-bs-toggle="dropdown">
                         Price <i class="fas fa-chevron-down ms-1"></i>
                     </button>
                     <ul class="dropdown-menu">
@@ -84,90 +85,101 @@
                 <span class="me-2 fw-medium">Sort</span>
                 <button class="btn" onclick="sortProducts('desc')">Price High-Low</button>
                 <button class="btn" onclick="sortProducts('asc')">Price Low-High</button>
-                <button class="btn" onclick="sortProducts('latest')">Last added first</button>
+                <button class="btn" onclick="sortProducts('latest')">Last Added First</button>
             </div>
         </div>
 
-        <% if (message && message.length > 0) { %>
-            <div class="alert alert-warning text-center mt-4">
-                <%= message %>
-            </div>
-        <% } else { %>
-            <div class="table-container">
-                <table class="table table-borderless">
-                    <thead>
-                        <tr>
-                            <th>IMAGE</th>
-                            <th>PRODUCT NAME</th>
-                            <th>CATEGORY</th>
-                            <th>PRICE</th>
-                            <th>STOCK</th>
-                            <th>LIST</th>
-                            <th>ACTION</th>
-                            <th>OFFER</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% for (let i = 0; i < data.length; i++) { %>
-                            <tr data-id="<%= data[i]._id %>">
-                                <td>
-                                    <img src="<%= data[i].images && data[i].images.length > 0 ? data[i].images[0].url : 'https://via.placeholder.com/60' %>"
-                                        alt="Product Image" class="product-img">
-                                </td>
-                                <td><%= data[i].name %></td>
-                                <td><%= data[i].categoryId && data[i].categoryId.name ? data[i].categoryId.name : 'N/A' %></td>
-                                <td>₹<%= data[i].salePrice || 0 %></td>
-                                <td><%= data[i].varientquatity || 0 %></td>
-                                <td>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" data-product-id="<%= data[i]._id %>" <%= data[i].isActive ? 'checked' : '' %> onchange="toggleStatus('<%= data[i]._id %>', this.checked)">
-                                        <span class="slider"></span>
-                                    </label>
-                                    <span id="status-<%= data[i]._id %>"><%= data[i].isActive ? 'Listed' : 'Unlisted' %></span>
-                                </td>
-                                <td>
-                                    <button class="action-btn">
-                                        <a href="/admin/editProduct/<%= data[i]._id %>"><i class="fas fa-edit"></i></a>
-                                    </button>
-                                    <button class="action-btn delete-btn" data-id="<%= data[i]._id %>" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                                <td><span class="offer-text"><%= data[i].offer %>% Off</span></td>
+        <!-- Message or Product Table -->
+        <div class="mt-4">
+            <% if (message && message.length > 0) { %>
+                <div class="alert alert-warning text-center py-4">
+                    <h4><%= message %></h4>
+                    <p>Try adjusting your search or filters, or <a href="/admin/addproduct" class="alert-link">add a new product</a>.</p>
+                </div>
+            <% } else if (data && data.length > 0) { %>
+                <div class="table-container">
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th>IMAGE</th>
+                                <th>PRODUCT NAME</th>
+                                <th>CATEGORY</th>
+                                <th>PRICE</th>
+                                <th>STOCK</th>
+                                <th>LIST</th>
+                                <th>ACTION</th>
+                                <th>OFFER</th>
                             </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            <% data.forEach(product => { %>
+                                <tr data-id="<%= product._id %>">
+                                    <td>
+                                        <img src="<%= product.images && product.images.length > 0 ? product.images[0].url : 'https://via.placeholder.com/60' %>"
+                                            alt="Product Image" class="product-img">
+                                    </td>
+                                    <td><%= product.name %></td>
+                                    <td><%= product.categoryId && product.categoryId.name ? product.categoryId.name : 'N/A' %></td>
+                                    <td>₹<%= product.salePrice || 0 %></td>
+                                    <td><%= product.varientquatity || 0 %></td>
+                                    <td>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" data-product-id="<%= product._id %>" <%= product.isActive ? 'checked' : '' %> onchange="toggleStatus('<%= product._id %>', this.checked)">
+                                            <span class="slider"></span>
+                                        </label>
+                                        <span id="status-<%= product._id %>"><%= product.isActive ? 'Listed' : 'Unlisted' %></span>
+                                    </td>
+                                    <td>
+                                        <button class="action-btn">
+                                            <a href="/admin/editProduct/<%= product._id %>"><i class="fas fa-edit"></i></a>
+                                        </button>
+                                        <button class="action-btn delete-btn" data-id="<%= product._id %>" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                    <td><span class="offer-text"><%= product.offer || 0 %>% Off</span></td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
 
-            <div class="pagination-section">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination">
-                        <% if (currentPage > 1) { %>
-                            <li class="page-item">
-                                <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search %>&category=<%= categoryFilter %>&brand=<%= brandFilter %>">
-                                    <i class="fas fa-chevron-left"></i>
-                                </a>
-                            </li>
-                        <% } %>
-                        <% for (let i = 1; i <= totalPage; i++) { %>
-                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                <a class="page-link" href="?page=<%= i %>&search=<%= search %>&category=<%= categoryFilter %>&brand=<%= brandFilter %>"><%= i %></a>
-                            </li>
-                        <% } %>
-                        <% if (currentPage < totalPage) { %>
-                            <li class="page-item">
-                                <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search %>&category=<%= categoryFilter %>&brand=<%= brandFilter %>">
-                                    <i class="fas fa-chevron-right"></i>
-                                </a>
-                            </li>
-                        <% } %>
-                    </ul>
-                </nav>
-            </div>
-        <% } %>
+                <!-- Pagination -->
+                <div class="pagination-section mt-4">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <% if (currentPage > 1) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search %>&category=<%= categoryFilter %>&brand=<%= brandFilter %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&sort=<%= sort %>">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            <% } %>
+                            <% for (let i = 1; i <= totalPage; i++) { %>
+                                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                    <a class="page-link" href="?page=<%= i %>&search=<%= search %>&category=<%= categoryFilter %>&brand=<%= brandFilter %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&sort=<%= sort %>"><%= i %></a>
+                                </li>
+                            <% } %>
+                            <% if (currentPage < totalPage) { %>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search %>&category=<%= categoryFilter %>&brand=<%= brandFilter %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&sort=<%= sort %>">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            <% } %>
+                        </ul>
+                    </nav>
+                </div>
+            <% } else { %>
+                <div class="alert alert-info text-center py-4">
+                    <h4>No products available</h4>
+                    <p>It looks like there are no products to display. <a href="/admin/addproduct" class="alert-link">Add a new product</a> to get started.</p>
+                </div>
+            <% } %>
+        </div>
     </div>
 
+    <!-- Delete Modal -->
     <div class="modal fade custom-modal" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -197,29 +209,20 @@
             deleteButtons.forEach(button => {
                 button.addEventListener('click', function () {
                     productIdToDelete = this.getAttribute('data-id');
-                    console.log('Product to delete:', productIdToDelete);
                 });
             });
 
             document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
-                if (!productIdToDelete) {
-                    console.error('No product ID to delete');
-                    return;
-                }
+                if (!productIdToDelete) return;
 
                 try {
                     const response = await fetch(`/admin/deleteProduct/${productIdToDelete}`, {
                         method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        headers: { 'Content-Type': 'application/json' }
                     });
-
                     const data = await response.json();
-
                     if (data.status) {
-                        const row = document.querySelector(`tr[data-id="${productIdToDelete}"]`);
-                        if (row) row.remove();
+                        document.querySelector(`tr[data-id="${productIdToDelete}"]`)?.remove();
                         modal.hide();
                         alert('Product deleted successfully');
                     } else {
@@ -235,18 +238,10 @@
         function toggleClearButton() {
             const searchInput = document.getElementById("searchInput");
             const clearBtn = document.getElementById('clearBtn');
-
-            if (searchInput.value.trim().length > 0) {
-                clearBtn.style.display = "block";
-            } else {
-                clearBtn.style.display = "none";
-            }
+            clearBtn.style.display = searchInput.value.trim().length > 0 ? "block" : "none";
         }
 
         function clearSearch() {
-            const searchInput = document.getElementById("searchInput");
-            searchInput.value = "";
-            document.getElementById("clearBtn").style.display = "none";
             window.location.href = "/admin/productManagment";
         }
 
@@ -257,88 +252,47 @@
 
             checkbox.disabled = true;
 
-            fetch(url, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    const statusElement = document.getElementById(`status-${productId}`);
-                    if (statusElement) {
-                        statusElement.innerText = data.isActive ? "Listed" : "Unlisted";
+            fetch(url, { method: "POST", headers: { 'Content-Type': 'application/json' } })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById(`status-${productId}`).innerText = data.isActive ? "Listed" : "Unlisted";
+                    } else {
+                        throw new Error(data.message || "Failed to update status");
                     }
-                } else {
-                    throw new Error(data.message || "Failed to update status");
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                alert(error.message || "Something went wrong!");
-                checkbox.checked = !isChecked;
-            })
-            .finally(() => {
-                checkbox.disabled = false;
-            });
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert(error.message || "Something went wrong!");
+                    checkbox.checked = !isChecked;
+                })
+                .finally(() => checkbox.disabled = false);
         }
 
         function filterByCategory(category) {
-            const currentUrl = new URL(window.location.href);
-            const params = new URLSearchParams(currentUrl.search);
-
-            if (category === "all") {
-                params.delete("category");
-            } else {
-                params.set("category", category);
-            }
-
-           
-            if (params.has("page")) params.set("page", "1"); 
-            
+            const params = new URLSearchParams(window.location.search);
+            if (category === "all") params.delete("category");
+            else params.set("category", category);
+            params.set("page", "1");
             window.location.href = `/admin/productManagment?${params.toString()}`;
         }
 
         function filterByPrice(min, max) {
-    const currentUrl = new URL(window.location.href);
-    const params = new URLSearchParams(currentUrl.search);
+            const params = new URLSearchParams(window.location.search);
+            if (min !== null) params.set("minPrice", min);
+            else params.delete("minPrice");
+            if (max !== null) params.set("maxPrice", max);
+            else params.delete("maxPrice");
+            params.set("page", "1");
+            window.location.href = `/admin/productManagment?${params.toString()}`;
+        }
 
-    if (min !== null) {
-        params.set("minPrice", min);
-    } else {
-        params.delete("minPrice");
-    }
-
-    if (max !== null) {
-        params.set("maxPrice", max);
-    } else {
-        params.delete("maxPrice");
-    }
-
-  
-    params.set("page", "1");
-    
-    window.location.href = `/admin/productManagment?${params.toString()}`;
-}
         function sortProducts(sortOption) {
-            const currentUrl = new URL(window.location.href);
-            const params = new URLSearchParams(currentUrl.search);
-
-            if (sortOption) {
-                params.set("sort", sortOption);
-            } else {
-                params.delete("sort");
-            }
-
+            const params = new URLSearchParams(window.location.search);
+            if (sortOption) params.set("sort", sortOption);
+            else params.delete("sort");
             window.location.href = `/admin/productManagment?${params.toString()}`;
         }
     </script>
 </body>
-
 </html>

@@ -15,7 +15,7 @@ body {
     line-height: 1.6;
 }
 
-/* Navigation */
+
 .navbar {
     padding: 1rem 2rem;
     background-color: var(--primary);
@@ -50,7 +50,6 @@ body {
     transition: all 0.3s ease;
 }
 
-/* Hero Section */
 .hero {
     background: linear-gradient(to right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
     background-size: cover;
@@ -77,7 +76,7 @@ body {
 
 }
 
-/* Shop Section */
+
 .shop-section {
     padding: 2rem 0;
 }
@@ -91,7 +90,7 @@ body {
     transform: translateX(-2.40em);
 }
 
-/* Push sidebar to the left edge */
+
 @media (min-width: 992px) {
     .col-lg-3 {
         padding-left: 0;
@@ -101,7 +100,7 @@ body {
         padding-left: 0;
     }
     
-    /* Alternatively, if the above doesn't work well with your layout */
+
     .row {
         margin-left: 0;
     }
@@ -154,8 +153,10 @@ body {
     width: 100%;
     transition: all 0.3s ease;
 }
+.search-button{
+    transform: translateY(10px);
+}
 
-/* Products Grid */
 .products-header {
     display: flex;
     justify-content: space-between;
@@ -194,24 +195,24 @@ body {
     transition: all 0.3s ease;
     border: none;
     background: transparent;
-    padding: 0; /* Remove horizontal padding to use maximum width */
+    padding: 0;
     height: 100%;
     display: flex;
     flex-direction: column;
 }
 .col-md-3 {
-    padding: 0 15px; /* Increase gutter space between cards */
+    padding: 0 15px;
 }
 
 .product-img-container {
     position: relative;
     overflow: hidden;
     margin-bottom: 1rem;
-    height: 280px; /* Keep your increased height */
+    height: 280px;
 }
 .product-img {
     width: 100%;
-    height: 100%; /* Fill the container */
+    height: 100%; 
     object-fit: cover;
     transition: transform 0.3s ease;
 }
@@ -245,14 +246,14 @@ body {
     transform: scale(1.05);
 }
 .container.shop-section {
-    max-width: 95%; /* Increase container width */
+    max-width: 95%;
     padding: 0 15px;
 }
 
 .product-title {
     font-weight: 500;
     font-size: 0.95rem;
-    margin-bottom: 0.2rem; /* Decreased spacing */
+    margin-bottom: 0.2rem; 
     text-transform: uppercase;
 }
 .product-price {
@@ -271,7 +272,7 @@ body {
 
 .product-rating {
     color: #ffc107;
-    margin: 0.3rem 0; /* Decreased from 0.5rem */
+    margin: 0.3rem 0; 
     font-size: 0.85rem;
 }
 .add-to-cart {
@@ -279,15 +280,15 @@ body {
     color: var(--white);
     border: none;
     width: 100%;
-    padding: 6px 0; /* Decreased from 8px */
+    padding: 6px 0;
     font-weight: 500;
     text-transform: uppercase;
     transition: all 0.3s ease;
-    margin-top: 0.3rem; /* Decreased from 0.5rem */
+    margin-top: 0.3rem;
     font-size: 0.85rem;
 }
 
-/* Pagination */
+
 .pagination {
     justify-content: center;
     margin-top: 2rem;
@@ -305,7 +306,7 @@ body {
     color: var(--white);
 }
 
-/* Footer */
+
 .footer {
     background-color: var(--primary);
     color: var(--white);

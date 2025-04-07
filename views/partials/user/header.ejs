@@ -23,6 +23,8 @@
                 <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
             </ul>
 
+           
+
             <div class="auth-buttons">
                 <% if (user) { %>
                     <div class="dropdown">
@@ -44,5 +46,27 @@
             </a>
         </div>
     </header>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const clearButton = document.getElementById('clearSearch');
+            
+            
+            searchInput.addEventListener('input', function() {
+                clearButton.style.display = this.value ? 'block' : 'none';
+            });
+            
+         
+            clearButton.addEventListener('click', function() {
+                searchInput.value = '';
+                clearButton.style.display = 'none';
+                searchInput.focus();
+            });
+            
+
+            clearButton.style.display = searchInput.value ? 'block' : 'none';
+        });
+    </script>
 </body>
 </html>

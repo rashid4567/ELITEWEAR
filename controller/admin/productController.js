@@ -8,57 +8,103 @@ const { count } = require("console");
 const { unlink } = require("fs");
 const cloudinary = require('cloudinary').v2;
 
+
 const ProductManagement = async (req, res) => {
     try {
         const search = req.query.search || "";
         const categoryFilter = req.query.category || "";
         const brandFilter = req.query.brand || "";
-        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const minPrice = req.query.minPrice ? parseFloat(req.query.minPrice) : "";
+        const maxPrice = req.query.maxPrice ? parseFloat(req.query.maxPrice) : "";
+        const sort = req.query.sort || "";
+        const page = Math.max(parseInt(req.query.page) || 1, 1); 
         const limit = 6;
 
-        let query = {
-            $and: [
-                {
-                    $or: [
-                        { name: { $regex: ".*" + search + ".*", $options: "i" } },
-                        { brand: { $regex: ".*" + search + ".*", $options: "i" } }
-                    ]
-                }
-            ]
-        };
+        let query = { $and: [] };
+
+        if (search) {
+            query.$and.push({
+                $or: [
+                    { name: { $regex: search, $options: "i" } },
+                    { brand: { $regex: search, $options: "i" } }
+                ]
+            });
+        } else {
+            query.$and.push({});
+        }
 
 
         if (categoryFilter && categoryFilter !== "all") {
-            const categoryData = await Category.findOne({ name: categoryFilter });
+            const categoryData = await Category.findOne({ name: categoryFilter }).catch(err => {
+                console.error("Category fetch error:", err);
+                return null;
+            });
             if (categoryData) {
                 query.$and.push({ categoryId: categoryData._id });
             } else {
-                console.error(`Category not found: ${categoryFilter}`);
+                console.warn(`Category "${categoryFilter}" not found`);
             }
         }
 
-        
+
         if (brandFilter) {
-            query.$and.push({ brand: { $regex: ".*" + brandFilter + ".*", $options: "i" } });
+            query.$and.push({ brand: { $regex: brandFilter, $options: "i" } });
         }
 
-        const count = await Product.countDocuments(query);
 
-        const totalPages = Math.ceil(count / limit);
-        const safePage = Math.min(page, totalPages);
+        if (minPrice || maxPrice) {
+            const priceQuery = {};
+            if (minPrice) priceQuery.$gte = minPrice;
+            if (maxPrice) priceQuery.$lte = maxPrice;
+            query.$and.push({ "variants.salePrice": priceQuery });
+        }
+
+
+        if (query.$and.length === 0) {
+            query = {};
+        }
+
+
+        let sortOption = {};
+        switch (sort) {
+            case "desc":
+                sortOption = { "variants.salePrice": -1 };
+                break;
+            case "asc":
+                sortOption = { "variants.salePrice": 1 };
+                break;
+            case "latest":
+                sortOption = { createdAt: -1 };
+                break;
+            default:
+                sortOption = { createdAt: -1 };
+        }
+
+  
+        const count = await Product.countDocuments(query).catch(err => {
+            console.error("Count documents error:", err);
+            return 0;
+        });
+        const totalPages = Math.ceil(count / limit) || 1; 
+        const safePage = Math.min(Math.max(page, 1), totalPages);
         const skip = (safePage - 1) * limit;
 
+        
         const productData = await Product.find(query)
+            .sort(sortOption)
             .limit(limit)
             .skip(skip)
             .populate("categoryId")
-            .exec();
+            .catch(err => {
+                console.error("Product fetch error:", err);
+                return [];
+            });
 
-        const category = await Category.find({ isListed: true });
+        const category = await Category.find({ isListed: true }).catch(err => {
+            console.error("Category list fetch error:", err);
+            return [];
+        });
 
-        if (!category.length) {
-            return res.status(404).render("page-404");
-        }
 
         let message = "";
         if (!productData.length) {
@@ -66,6 +112,7 @@ const ProductManagement = async (req, res) => {
                 ? `Sorry, no products found for "${search}"`
                 : "Sorry, no products are available";
         }
+
 
         const formattedProductData = productData.map(product => {
             const firstVariant = product.variants[0] || {};
@@ -76,24 +123,45 @@ const ProductManagement = async (req, res) => {
                 varientquatity: totalStock 
             };
         });
+
         res.render("prodectManagment", {
             search,
             categoryFilter,
             brandFilter,
+            minPrice,
+            maxPrice,
+            sort,
             data: formattedProductData,
             currentPage: safePage,
             totalPage: totalPages,
             cat: category,
             sales: formattedProductData[0]?.salePrice || 0,
-            stock: formattedProductData[0]?.quantity || 0,
+            stock: formattedProductData[0]?.varientquatity || 0,
             message: message
         });
 
     } catch (error) {
-        console.error("Error fetching product management:", error);
-        res.status(500).send("Internal Server Error");
+        console.error("ProductManagement error:", error);
+
+        res.render("prodectManagment", {
+            search: req.query.search || "",
+            categoryFilter: req.query.category || "",
+            brandFilter: req.query.brand || "",
+            minPrice: req.query.minPrice || "",
+            maxPrice: req.query.maxPrice || "",
+            sort: req.query.sort || "",
+            data: [],
+            currentPage: 1,
+            totalPage: 1,
+            cat: [],
+            sales: 0,
+            stock: 0,
+            message: "An error occurred while fetching products. Please try again."
+        });
     }
 };
+
+
 const getaddproduct = async (req, res) => {
     try {
         const categories = await Category.find({ isListed: true });
@@ -142,9 +210,9 @@ const addproduct = async (req, res) => {
         }
 
         const images = [];
-        const imageSet = new Set(); // To track unique image URLs
+        const imageSet = new Set(); 
 
-        // Handle main image
+     
         if (req.files && req.files.mainImage && req.files.mainImage.length > 0) {
             const mainImagePath = req.files.mainImage[0].path;
             images.push({
@@ -160,7 +228,7 @@ const addproduct = async (req, res) => {
             });
         }
 
-        // Handle additional images
+        
         for (let i = 1; i <= 3; i++) {
             const fieldName = `additionalImage${i}`;
             if (req.files && req.files[fieldName] && req.files[fieldName].length > 0) {
@@ -304,29 +372,29 @@ const editProduct = async (req, res) => {
             });
         }
 
-        let images = [...product.images]; // Start with the current images array
+        let images = [...product.images]; 
 
-        // Handle image updates with Cloudinary
-        const cloudinaryDeletePromises = []; // To delete old images from Cloudinary
+      
+        const cloudinaryDeletePromises = []; 
 
-        // Replace main image if a new one is uploaded
+       
         if (req.files && req.files.mainImage) {
             const oldMainImage = images.find(img => img.isMain);
             if (oldMainImage) {
-                const publicId = oldMainImage.url.split('/').pop().split('.')[0]; // Extract public_id from URL
+                const publicId = oldMainImage.url.split('/').pop().split('.')[0];
                 cloudinaryDeletePromises.push(
                     cloudinary.uploader.destroy(`banners/${publicId}`)
                 );
-                images = images.filter(img => !img.isMain); // Remove old main image
+                images = images.filter(img => !img.isMain); 
             }
             images.push({
-                url: req.files.mainImage[0].path, // Cloudinary URL
+                url: req.files.mainImage[0].path, 
                 thumbnail: req.files.mainImage[0].path,
                 isMain: true
             });
         }
 
-        // Replace additional images if new ones are uploaded
+        
         for (let i = 1; i <= 3; i++) {
             const fieldName = `additionalImage${i}`;
             if (req.files && req.files[fieldName]) {
@@ -337,7 +405,7 @@ const editProduct = async (req, res) => {
                     cloudinaryDeletePromises.push(
                         cloudinary.uploader.destroy(`banners/${publicId}`)
                     );
-                    images.splice(oldImageIndex, 1); // Remove old additional image
+                    images.splice(oldImageIndex, 1); 
                 }
                 images.push({
                     url: req.files[fieldName][0].path,
@@ -347,7 +415,7 @@ const editProduct = async (req, res) => {
             }
         }
 
-        // Wait for all Cloudinary deletions to complete
+   
         await Promise.all(cloudinaryDeletePromises);
 
         if (images.length === 0) {
@@ -403,7 +471,7 @@ const editProduct = async (req, res) => {
             sku: sku || undefined,
             fabric: fabric.trim(),
             color: color.trim(),
-            images, // Updated images array
+            images,
             variants: parsedVariants
         };
 
@@ -524,150 +592,7 @@ const listProduct = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
-const filterProduct = async (req, res) => {
-    try {
-        const { category, minPrice, maxPrice, sort, search } = req.query;
-        const page = Math.max(parseInt(req.query.page) || 1, 1);
-        const limit = 6; 
 
-        
-        let query = {
-            $and: [
-                {
-                    $or: [
-                        { name: { $regex: ".*" + (search || "") + ".*", $options: "i" } },
-                        { brand: { $regex: ".*" + (search || "") + ".*", $options: "i" } }
-                    ]
-                },
-                { isActive: true }
-            ]
-        };
-
-       
-        if (category && category !== "all") {
-            const categoryData = await Category.findOne({ name: category });
-            if (categoryData) {
-                query.$and.push({ categoryId: categoryData._id });
-            }
-        }
-
-     
-        let pipeline = [{ $match: query }];
-
-        
-        pipeline.push({ $unwind: "$variants" });
-
-       
-        if (minPrice || maxPrice) {
-            let priceMatch = {};
-            if (minPrice) priceMatch["variants.salePrice"] = { $gte: parseFloat(minPrice) };
-            if (maxPrice) {
-                priceMatch["variants.salePrice"] = priceMatch["variants.salePrice"] || {};
-                priceMatch["variants.salePrice"].$lte = parseFloat(maxPrice);
-            }
-            pipeline.push({ $match: priceMatch });
-        }
-
-       
-        let sortStage = {};
-        switch (sort) {
-            case "desc":
-                sortStage = { $sort: { "variants.salePrice": -1 } };
-                break;
-            case "asc":
-                sortStage = { $sort: { "variants.salePrice": 1 } };
-                break;
-            case "latest":
-                sortStage = { $sort: { createdAt: -1 } };
-                break;
-            default:
-                sortStage = { $sort: { createdAt: -1 } };
-        }
-        pipeline.push(sortStage);
-
-       
-        pipeline.push({
-            $group: {
-                _id: "$_id",
-                doc: { $first: "$$ROOT" },
-                totalStock: { $sum: "$variants.varientquatity" }
-            }
-        });
-        pipeline.push({ $replaceRoot: { newRoot: { $mergeObjects: ["$doc", { totalStock: "$totalStock" }] } } });
-
-       
-        const countPipeline = [...pipeline];
-        countPipeline.push({ $count: "total" });
-        const countResult = await Product.aggregate(countPipeline);
-        const count = countResult.length > 0 ? countResult[0].total : 0;
-
-        
-        const totalPages = Math.ceil(count / limit);
-        const safePage = Math.min(page, totalPages || 1);
-        pipeline.push({ $skip: (safePage - 1) * limit });
-        pipeline.push({ $limit: limit });
-
-        
-        pipeline.push({
-            $lookup: {
-                from: "categories",
-                localField: "categoryId",
-                foreignField: "_id",
-                as: "categoryId"
-            }
-        });
-        pipeline.push({
-            $unwind: {
-                path: "$categoryId",
-                preserveNullAndEmptyArrays: true
-            }
-        });
-
-        
-        const productData = await Product.aggregate(pipeline);
-
-        const categoryList = await Category.find({ isListed: true });
-        if (!categoryList.length) {
-            return res.status(404).render("page-404");
-        }
-
-        const formattedProductData = productData.map(product => {
-            const firstVariant = product.variants[0] || {};
-            return {
-                ...product,
-                salePrice: firstVariant.salePrice || 0,
-                varientquatity: product.totalStock || 0 
-            };
-        });
-
-        let message = "";
-        if (!formattedProductData.length) {
-            message = search
-                ? `Sorry, no products found for "${search}"`
-                : "Sorry, no products are available";
-        }
-
-        res.render("prodectManagment", {
-            search: search || "",
-            categoryFilter: category || "",
-            brandFilter: "", 
-            data: formattedProductData,
-            currentPage: safePage,
-            totalPage: totalPages,
-            cat: categoryList,
-            sales: formattedProductData[0]?.salePrice || 0,
-            stock: formattedProductData[0]?.varientquatity || 0,
-            message
-        });
-    } catch (error) {
-        console.error("Error filtering products:", error);
-        res.status(500).json({
-            success: false,
-            message: "Internal Server Error",
-            error: error.message
-        });
-    }
-};
 module.exports = {
     ProductManagement,
     getaddproduct,
@@ -678,5 +603,4 @@ module.exports = {
     deleteProduct,
     UnlistProduct,
     listProduct,
-    filterProduct
 };

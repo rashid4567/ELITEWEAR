@@ -5,9 +5,7 @@ const productController = require("../controller/user/productControllers");
 const passport = require('../config/passport');
 const profileController = require("../controller/user/profileController");
 
-
 router.get('/', userControllers.loadHomepage);
-
 
 router.get('/signup', userControllers.loadUserSignup);
 router.post('/signup', userControllers.userSignup);
@@ -23,7 +21,6 @@ router.get('/login', userControllers.userLogin);
 router.post('/login', userControllers.login);
 router.get('/logout', userControllers.logout);
 
-
 router.get('/forgot-password', profileController.forgotPassword);
 router.post('/forgot-email-id', profileController.forgotemailValidations);
 router.get('/forgot-otp', (req, res) => {
@@ -35,7 +32,6 @@ router.post('/forgot-otp', profileController.passForgotten);
 router.post('/resend-forgot-otp', profileController.resendForgotOtp);
 router.get('/reset-password', profileController.resetPasswordPage);
 router.post('/reset-password', profileController.resetPassword);
-
 
 router.get('/auth/google', 
     passport.authenticate('google', { scope: ['profile', 'email'] })
@@ -49,12 +45,13 @@ router.get('/google/callback',
     }
 );
 
-
 router.get('/filterProducts', userControllers.filterProducts);
-router.get('/productdetails', productController.productdetails);
-router.get('/allproduct', userControllers.allproduct);
-router.get("/aboutUs", userControllers.aboutUs)
 
+router.get('/productdetails', productController.productdetails); 
+router.get('/productdetails/:id', productController.productdetails); 
+router.get('/allproduct', userControllers.allproduct);
+router.get("/aboutUs", userControllers.aboutUs);
+router.get("/search", userControllers.searchProducts);
 router.get('/page-not-found', userControllers.pageNotfound);
 router.use((req, res) => {
     res.status(404).redirect('/page-not-found');

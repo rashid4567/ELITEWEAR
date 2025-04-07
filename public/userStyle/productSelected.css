@@ -200,3 +200,27 @@ body {
 .btn {
     transition: all 0.3s ease;
 }
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+.card.similar-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 10px;
+    overflow: hidden;
+    border: none;
+}
+
+.card.similar-hover:hover {
+    transform: scale(1.03);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.card.similar-hover img {
+    height: 250px;
+    object-fit: cover;
+}
+
+.card.similar-hover .card-body {
+    text-align: center;
+}

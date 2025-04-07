@@ -337,13 +337,12 @@ const logout = async (req, res) => {
         res.redirect('/page-not-found');
     }
 };
-
 const allproduct = async (req, res) => {
     try {
         const user = req.session.user;
-        const userData = await User.findOne({ _id: user });
+        const userData = user ? await User.findOne({ _id: user }) : null;
         const categories = await Category.find({ isListed: true });
-        const categoryIds = categories.map(category => category._id.toString());
+        const categoryIds = categories.map(category => category._id);
 
         const page = parseInt(req.query.page) || 1;
         const limit = 9;
@@ -352,13 +351,18 @@ const allproduct = async (req, res) => {
         const products = await Product.find({
             isActive: true,
             categoryId: { $in: categoryIds },
-            'variants.quantity': { $gte: 0 }
-        }).sort({ createdAt: -1 }).skip(skip).limit(limit).lean();
+            'variants.varientquatity': { $gt: 0 }
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("categoryId")
+        .lean();
 
         const totalProducts = await Product.countDocuments({
             isActive: true,
             categoryId: { $in: categoryIds },
-            'variants.quantity': { $gte: 0 }
+            'variants.varientquatity': { $gt: 0 }
         });
 
         const totalPages = Math.ceil(totalProducts / limit);
@@ -371,9 +375,35 @@ const allproduct = async (req, res) => {
             sort: req.query.sort || 'latest'
         };
 
+
+        const formattedProducts = products.map(product => {
+            const firstVariant = product.variants?.[0] || {};
+            const mainImage = product.images?.find(img => img.isMain) || product.images?.[0] || { url: '/images/placeholder.jpg' };
+            
+     
+            const regularPrice = firstVariant.varientPrice || firstVariant.salePrice || 0;
+            
+
+            const salePrice = product.offer > 0 
+                ? regularPrice * (1 - product.offer / 100)
+                : regularPrice;
+
+            return {
+                _id: product._id,
+                name: product.name,
+                images: product.images || [],
+                ratings: product.ratings || { average: 0, count: 0 },
+                categoryId: product.categoryId,
+                offer: product.offer || 0,
+                regularPrice: regularPrice,
+                salePrice: salePrice,
+               
+            };
+        });
+
         res.render("allproduct", {
             user: userData,
-            products,
+            products: formattedProducts,
             categories,
             totalProducts,
             currentPage: page,
@@ -385,7 +415,6 @@ const allproduct = async (req, res) => {
         return res.redirect('/page-not-found');
     }
 };
-
 const filterProducts = async (req, res) => {
     try {
         const user = req.session.user;
@@ -430,9 +459,28 @@ const filterProducts = async (req, res) => {
             sort: sort || 'latest'
         };
 
+        const formattedProducts = products.map(product => {
+            const firstVariant = product.variants?.[0] || {};
+            
+          
+            const regularPrice = firstVariant.varientPrice || firstVariant.salePrice || 0;
+            
+           
+            const salePrice = product.offer > 0 
+                ? regularPrice * (1 - product.offer / 100)
+                : regularPrice;
+
+            return {
+                ...product,
+                salePrice: salePrice,
+                regularPrice: regularPrice,
+                offer: product.offer || 0
+            };
+        });
+
         res.render("allproduct", {
             user: userData,
-            products,
+            products: formattedProducts,
             categories,
             totalProducts,
             currentPage: parseInt(page),
@@ -453,6 +501,62 @@ const aboutUs = async (req,res)=>{
         res.status(500).render("page-404")
     }
 }
+const searchProducts = async (req, res) => {
+    try {
+        const query = req.query.query || '';
+        const user = req.session.user;
+        const userData = user ? await User.findOne({ _id: user }) : null;
+        const categories = await Category.find({ isListed: true });
+        
+      
+        const products = await Product.find({
+            isActive: true,
+            $or: [
+                { name: { $regex: query, $options: 'i' } },
+                { brand: { $regex: query, $options: 'i' } }
+            ]
+        })
+        .populate("categoryId")
+        .lean();
+        
+        const formattedProducts = products.map(product => {
+            const firstVariant = product.variants?.[0] || {};
+            
+           
+            const regularPrice = firstVariant.varientPrice || firstVariant.salePrice || 0;
+            const salePrice = product.offer > 0 
+                ? regularPrice * (1 - product.offer / 100)
+                : regularPrice;
+
+            return {
+                _id: product._id,
+                name: product.name,
+                images: product.images || [],
+                ratings: product.ratings || { average: 0, count: 0 },
+                categoryId: product.categoryId,
+                offer: product.offer || 0,
+                regularPrice: regularPrice,
+                salePrice: salePrice,
+            };
+        });
+
+        
+        res.render("allproduct", {
+            user: userData,
+            products: formattedProducts,
+            categories,
+            totalProducts: products.length,
+            currentPage: 1,
+            totalPages: 1,
+            filters: { category: 'all' },
+            searchQuery: query,
+            noProductsMessage: products.length === 0 ? `Sorry, no products found for "${query}"` : null
+        });
+    } catch (error) {
+        console.error("Error searching products:", error);
+        return res.redirect('/page-not-found');
+    }
+};
 module.exports = {
     loadHomepage,
     pageNotfound,
@@ -466,4 +570,5 @@ module.exports = {
     allproduct,
     filterProducts,
     aboutUs,
+    searchProducts
 };

@@ -49,7 +49,7 @@ router.post(
     ]),
     productManagment.editProduct
 );
-router.get('/filterProduct', adminAuth, productManagment.filterProduct);
+
 router.post("/editProductImage", adminAuth, productManagment.deleteImage);
 router.delete("/deleteProduct/:id", adminAuth, productManagment.deleteProduct);
 

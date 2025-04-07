@@ -4,22 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= product.name %> - Elite Wear</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/userStyle/productSelected.css">
 </head>
 <body>
     <%- include("../partials/user/header") %>
-    <!-- Main Content -->
     <main class="container my-5">
         <div class="row">
-            <!-- Product Images Section -->
             <div class="col-md-6 mb-4">
                 <div class="row">
                     <div class="col-2 product-thumbnails">
-
                         <% if (product.images && product.images.length > 0) { %>
                             <% product.images.forEach(function(image) { %>
                                 <img src="<%= image.url %>" alt="Thumbnail" onclick="changeMainImage(this.src)">
@@ -37,12 +32,9 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Product Information Section -->
             <div class="col-md-6">
                 <h1 class="mb-2"><%= product.name || 'Unnamed Product' %></h1>
                 <p class="text-muted">Product Code: <%= product.sku || 'N/A' %></p>
-                
                 <div class="mb-3">
                     <% for (let i = 0; i < 5; i++) { %>
                         <% if (i < (product.ratings?.average || 0)) { %>
@@ -55,7 +47,6 @@
                     <% } %>
                     <span class="ms-2">(<%= product.ratings?.count || 0 %> reviews)</span>
                 </div>
-                
                 <div class="mb-3">
                     <% if (product.variants && product.variants.length > 0) { %>
                         <span class="fs-4 fw-bold">₹<%= product.variants[0].salePrice || 0 %></span>
@@ -67,22 +58,16 @@
                         <span class="fs-4 fw-bold">Price not available</span>
                     <% } %>
                 </div>
-                
                 <div class="mb-3">
                     <% if (quantity > 0) { %>
-                        <span class="text-success">
-                            <i class="fas fa-check-circle"></i> In Stock
-                        </span>
+                        <span class="text-success"><i class="fas fa-check-circle"></i> In Stock</span>
                         <% if (quantity <= 5) { %>
                             <span class="low-stock ms-2">Only <%= quantity %> left!</span>
                         <% } %>
                     <% } else { %>
-                        <span class="text-danger">
-                            <i class="fas fa-times-circle"></i> Out of Stock
-                        </span>
+                        <span class="text-danger"><i class="fas fa-times-circle"></i> Out of Stock</span>
                     <% } %>
                 </div>
-                
                 <div class="mb-4">
                     <label class="form-label">Size:</label>
                     <div class="size-selector">
@@ -96,19 +81,18 @@
                         <% } %>
                     </div>
                 </div>
-                
                 <div class="mb-4">
                     <label class="form-label">Color:</label>
                     <div class="color-selector">
                         <% if (product.color) { %>
                             <input type="radio" name="color" id="color-<%= product.color %>" value="<%= product.color %>" checked>
                             <label for="color-<%= product.color %>" style="background-color: '<%= product.color %>'"></label>
+
                         <% } else { %>
                             <p>No color specified</p>
                         <% } %>
                     </div>
                 </div>
-                
                 <div class="mb-4">
                     <label class="form-label">Quantity:</label>
                     <div class="input-group quantity-selector">
@@ -117,73 +101,60 @@
                         <button class="btn btn-outline-secondary" type="button" onclick="incrementQuantity()">+</button>
                     </div>
                 </div>
-                
                 <div class="d-grid gap-2 d-md-flex mb-4">
                     <button class="btn add-to-cart-btn flex-fill">Add to Cart</button>
                     <button class="btn buy-now-btn flex-fill">Buy Now</button>
                 </div>
-                
                 <div class="mb-4">
-                    <button class="btn btn-link p-0">
-                        <i class="far fa-heart"></i> Add to Wishlist
-                    </button>
+                    <button class="btn btn-link p-0"><i class="far fa-heart"></i> Add to Wishlist</button>
                 </div>
-                
-   
                 <div class="product-specs">
                     <h3>DESCRIPTION</h3>
                     <p><%= product.description || 'No description available' %></p>
-                    
                     <h3>Size & Fit</h3>
                     <p><%= product.sizeFit || 'No size & fit information available' %></p>
-                    
                     <h3>Wash Care</h3>
                     <p><%= product.washCare || 'No wash care instructions available' %></p>
-                    
                     <h3>Specifications</h3>
                     <p><%= product.specifications || 'No specifications available' %></p>
-                    
                     <p class="text-muted fst-italic mt-4">Note: The actual colors of the product may vary slightly due to photographic lighting sources or your display settings.</p>
                 </div>
             </div>
         </div>
-        
-      
-        <div class="mt-5">
-            <h2 class="mb-4">YOU MAY ALSO LIKE</h2>
-            <div class="row">
-                <% if (product.similarProducts && product.similarProducts.length > 0) { %>
-                    <% product.similarProducts.forEach(function(similarProduct) { %>
-                        <div class="col-6 col-md-4 col-lg-3 mb-4">
-                            <div class="card similar-product">
-                                <img src="<%= similarProduct.images[0]?.url || '/images/placeholder.jpg' %>" class="card-img-top" alt="<%= similarProduct.name %>">
-                                <div class="card-body">
-                                    <div class="mb-1">
-                                        <% for (let i = 0; i < 5; i++) { %>
-                                            <% if (i < (similarProduct.ratings?.average || 0)) { %>
-                                                <i class="fas fa-star text-warning"></i>
-                                            <% } else if (i < (similarProduct.ratings?.average || 0) + 0.5) { %>
-                                                <i class="fas fa-star-half-alt text-warning"></i>
-                                            <% } else { %>
-                                                <i class="far fa-star text-warning"></i>
-                                            <% } %>
-                                        <% } %>
-                                    </div>
-                                    <h5 class="card-title"><%= similarProduct.name || 'Unnamed Product' %></h5>
-                                    <p class="card-text fw-bold">₹<%= similarProduct.price || 'N/A' %></p>
-                                    <a href="/productdetails?id=<%= similarProduct._id %>" class="btn btn-sm btn-outline-dark">View Details</a>
-                                </div>
+
+        <h3 class="mt-5 mb-4">Similar Products</h3>
+        <div class="row">
+            <% if (similarProducts && similarProducts.length > 0) { %>
+                <% similarProducts.forEach(function(item) { %>
+                    <div class="col-md-3 mb-4">
+                        <div class="card similar-hover">
+                            <a href="/productdetails/<%= item._id %>">
+                                <img src="<%= item.images && item.images.length > 0 ? item.images[0].url : '/images/placeholder.jpg' %>" class="card-img-top" alt="<%= item.name || 'Product Image' %>">
+                            </a>
+                            <div class="card-body">
+                                <h5 class="card-title"><%= item.name || 'Unnamed Product' %></h5>
+                                <p class="card-text fw-bold">
+                                    ₹<%= item.variants && item.variants.length > 0 ? (item.variants[0].salePrice || 0) : 'Price not available' %>
+                                </p>
+                                <% 
+                                    const itemOffer = item.offer || 0;
+                                    const categoryOffer = item.categoryId?.offer || 0;
+                                    const totalItemOffer = itemOffer + categoryOffer;
+                                %>
+                                <% if (totalItemOffer > 0) { %>
+                                    <p class="text-danger fw-semibold"><%= totalItemOffer %>% OFF</p>
+                                <% } %>
                             </div>
                         </div>
-                    <% }); %>
-                <% } else { %>
-                    <p>No similar products available.</p>
-                <% } %>
-            </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="col-12">
+                    <p class="text-muted">No similar products found.</p>
+                </div>
+            <% } %>
         </div>
     </main>
-    
-    <!-- Call to Action Section -->
     <section class="cta-section text-center">
         <div class="container">
             <div class="row justify-content-center">
@@ -198,25 +169,17 @@
             </div>
         </div>
     </section>
-
     <%- include("../partials/user/footer") %>
-   
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    
-   
     <script>
-        
         function changeMainImage(src) {
             document.getElementById('mainImage').src = src;
         }
-        
-       
         function incrementQuantity() {
             const quantityInput = document.getElementById('quantity');
             const currentValue = parseInt(quantityInput.value);
             quantityInput.value = currentValue + 1;
         }
-        
         function decrementQuantity() {
             const quantityInput = document.getElementById('quantity');
             const currentValue = parseInt(quantityInput.value);
@@ -224,8 +187,6 @@
                 quantityInput.value = currentValue - 1;
             }
         }
-        
-      
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
