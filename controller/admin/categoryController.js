@@ -126,6 +126,42 @@ const toggleCategory = async (req, res) => {
         });
     }
 };
+
+const deleteCategory = async (req, res) => {
+    try {
+        const { id } = req.body;
+
+        if (!id) {
+            return res.status(400).json({
+                success: false,
+                message: "Category ID is required"
+            });
+        }
+
+        const category = await Category.findById(id);
+        if (!category) {
+            return res.status(404).json({
+                success: false,
+                message: "Category not found"
+            });
+        }
+
+        await Category.findByIdAndDelete(id);
+
+        res.json({
+            success: true,
+            message: "Category deleted successfully"
+        });
+
+    } catch (error) {
+        console.error("Error deleting category:", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};
+
 const geteditCategory = async (req, res) => {
     try {
         const id = req.query.id;
@@ -146,6 +182,7 @@ const geteditCategory = async (req, res) => {
         res.redirect("/pageerror");
     }
 };
+
 const editCategory = async (req, res) => {
     try {
         
@@ -189,14 +226,11 @@ const editCategory = async (req, res) => {
     }
 };
 
-
-
-
-
 module.exports = {
     categoryInfo,
     addCategory,
     toggleCategory,
     geteditCategory,
-    editCategory
+    editCategory,
+    deleteCategory  
 };

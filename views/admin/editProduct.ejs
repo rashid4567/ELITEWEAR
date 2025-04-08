@@ -16,7 +16,7 @@
             </div>
         <% } %>
 
-        <!-- Loading Indicator -->
+
         <div id="loadingIndicator" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
             <div class="bg-white p-4 rounded-lg flex items-center space-x-3">
                 <svg class="animate-spin h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -28,15 +28,7 @@
         </div>
 
         <form id="productForm" method="post" action="/admin/editProduct/<%= product._id %>" enctype="multipart/form-data" novalidate>
-            <!-- Store existing image information -->
-            <% if (product.images && product.images.length > 0) { %>
-                <% product.images.forEach((img, index) => { %>
-                    <input type="hidden" name="existingImages[<%= index %>][url]" value="<%= img.url %>">
-                    <input type="hidden" name="existingImages[<%= index %>][isMain]" value="<%= img.isMain %>">
-                <% }); %>
-            <% } %>
-
-            <!-- General Information -->
+    
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">General Information</h2>
                 <div class="grid grid-cols-2 gap-4">
@@ -57,48 +49,52 @@
                         placeholder="Enter product description" required><%= product.description %></textarea>
                 </div>
             </div>
-<!-- Product Images -->
-<div class="mb-6">
-    <h2 class="text-xl font-semibold mb-4">Product Images</h2>
-    <div class="grid grid-cols-3 gap-4">
-        <div class="col-span-2">
-            <div class="upload-zone h-64 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
-                <% const mainImage = product.images && product.images.find(img => img.isMain); %>
-                <% console.log('Main Image:', mainImage); %> <!-- Log Main Image -->
-                <% if (mainImage) { %>
-                    <img src="<%= mainImage.url %>" class="h-full w-full object-cover" alt="Main Product Image" 
-                         onerror="this.onerror=null;this.src='/images/placeholder.jpg';">
-                    <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">×</button>
-                <% } else { %>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01"/>
-                    </svg>
-                    <p class="text-gray-500">Drag and drop main product image or click to upload</p>
-                <% } %>
-                <input type="file" name="mainImage" class="hidden" accept="image/*">
-            </div>
-        </div>
-        <div class="grid grid-rows-3 gap-4">
-            <% const additionalImages = product.images ? product.images.filter(img => !img.isMain) : []; %>
-            <% additionalImages.forEach((img, index) => { %> <!-- Log Additional Images -->
-                <% console.log(`Additional Image ${index + 1}:`, img); %>
-            <% }); %>
-            <% for (let i = 0; i < 3; i++) { %>
-                <div class="upload-zone h-20 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
-                    <% if (additionalImages[i]) { %>
-                        <img src="<%= additionalImages[i].url %>" class="h-full w-full object-cover" alt="Additional Product Image <%= i + 1 %>"
-                             onerror="this.onerror=null;this.src='/images/placeholder.jpg';">
-                        <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">×</button>
-                    <% } else { %>
-                        <p class="text-gray-500 text-sm">Additional Image <%= i + 1 %></p>
-                    <% } %>
-                    <input type="file" name="additionalImage<%= i + 1 %>" class="hidden" accept="image/*">
+
+    
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold mb-4">Product Images</h2>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-2">
+                        <div class="upload-zone h-64 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
+                            <% const mainImage = product.images && product.images.find(img => img.isMain); %>
+                            <% if (mainImage) { %>
+                                <img src="<%= mainImage.url %>" data-url="<%= mainImage.url %>" class="h-full w-full object-cover" alt="Main Product Image" 
+                                    onerror="this.onerror=null;this.src='/images/placeholder.jpg';">
+                                <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center" 
+                                        onclick="markImageForRemoval(this, 'mainImage')">×</button>
+                                <input type="hidden" name="existingImages[mainImage][url]" value="<%= mainImage.url %>">
+                                <input type="hidden" name="existingImages[mainImage][isMain]" value="true">
+                            <% } else { %>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01"/>
+                                </svg>
+                                <p class="text-gray-500">Drag and drop main product image or click to upload</p>
+                            <% } %>
+                            <input type="file" name="mainImage" class="hidden" accept="image/*">
+                        </div>
+                    </div>
+                    <div class="grid grid-rows-3 gap-4">
+                        <% const additionalImages = product.images ? product.images.filter(img => !img.isMain) : []; %>
+                        <% for (let i = 0; i < 3; i++) { %>
+                            <div class="upload-zone h-20 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
+                                <% if (additionalImages[i]) { %>
+                                    <img src="<%= additionalImages[i].url %>" data-url="<%= additionalImages[i].url %>" class="h-full w-full object-cover" 
+                                        alt="Additional Product Image <%= i + 1 %>" onerror="this.onerror=null;this.src='/images/placeholder.jpg';">
+                                    <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                                            onclick="markImageForRemoval(this, 'additionalImage<%= i + 1 %>')">×</button>
+                                    <input type="hidden" name="existingImages[additionalImage<%= i + 1 %>][url]" value="<%= additionalImages[i].url %>">
+                                    <input type="hidden" name="existingImages[additionalImage<%= i + 1 %>][isMain]" value="false">
+                                <% } else { %>
+                                    <p class="text-gray-500 text-sm">Additional Image <%= i + 1 %></p>
+                                <% } %>
+                                <input type="file" name="additionalImage<%= i + 1 %>" class="hidden" accept="image/*">
+                            </div>
+                        <% } %>
+                    </div>
                 </div>
-            <% } %>
-        </div>
-    </div>
-</div>      
-            <!-- Product Options -->
+            </div>
+            
+       
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">Product Options</h2>
                 <div class="grid grid-cols-3 gap-4">
@@ -120,7 +116,7 @@
                 </div>
             </div>
 
-            <!-- Product Variants -->
+
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">Product Variants</h2>
                 <div id="variantContainer" class="space-y-4">
@@ -148,7 +144,7 @@
                 <button type="button" id="addVariant" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg">Add Variant</button>
             </div>
 
-            <!-- Product Specifications -->
+
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">Product Specifications</h2>
                 <div class="grid grid-cols-2 gap-4">
@@ -180,7 +176,6 @@
                 </div>
             </div>
 
-            <!-- Form Buttons -->
             <div class="flex justify-end space-x-4">
                 <button type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg" 
                     onclick="window.location.href='/admin/productManagment'">Cancel</button>
@@ -189,7 +184,7 @@
         </form>
     </div>
 
-    <!-- Crop Modal -->
+
     <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
         <div class="bg-white p-4 rounded-lg max-w-2xl w-full">
             <h3 class="text-lg font-semibold mb-4">Crop Image</h3>
@@ -204,6 +199,32 @@
     </div>
 
     <script>
+
+        function markImageForRemoval(button, fieldName) {
+            const zone = button.closest('.upload-zone');
+            const img = zone.querySelector('img');
+            
+            if (img) {
+
+                const removeInput = document.createElement('input');
+                removeInput.type = 'hidden';
+                removeInput.name = 'removeImages[]';
+                removeInput.value = fieldName;
+                document.getElementById('productForm').appendChild(removeInput);
+                
+
+                img.remove();
+                button.remove();
+                
+                const p = document.createElement('p');
+                p.className = 'text-gray-500 text-sm';
+                p.textContent = fieldName === 'mainImage' ? 
+                    'Drag and drop main product image or click to upload' : 
+                    `Additional Image ${fieldName.replace('additionalImage', '')}`;
+                zone.appendChild(p);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const uploadZones = document.querySelectorAll('.upload-zone');
             const cropModal = document.getElementById('cropModal');
@@ -218,7 +239,7 @@
             let currentFileInput;
             let variantCount = <%= product.variants.length %>;
 
-           
+          
             uploadZones.forEach(zone => {
                 const fileInput = zone.querySelector('input[type="file"]');
                 const clearBtn = zone.querySelector('button');
@@ -257,30 +278,6 @@
                     };
                     reader.readAsDataURL(file);
                 });
-
-                if (clearBtn) {
-                    clearBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const img = zone.querySelector('img');
-                        if (img) {
-                            const imageUrl = img.src.split('/').pop();
-                            const hiddenField = document.createElement('input');
-                            hiddenField.type = 'hidden';
-                            hiddenField.name = `removeImage`;
-                            hiddenField.value = fileInput.name;
-                            productForm.appendChild(hiddenField);
-                            img.remove();
-                            const p = document.createElement('p');
-                            p.className = 'text-gray-500 text-sm';
-                            p.textContent = fileInput.name === 'mainImage' ? 
-                                'Drag and drop main product image or click to upload' : 
-                                `Additional Image ${fileInput.name.replace('additionalImage', '')}`;
-                            zone.appendChild(p);
-                        }
-                        fileInput.value = '';
-                        clearBtn.classList.add('hidden');
-                    });
-                }
             });
 
             cancelCrop.addEventListener('click', () => {
@@ -311,8 +308,19 @@
                         img.className = 'h-full w-full object-cover';
                         img.onerror = function() { this.src = '/images/placeholder.jpg'; };
                         zone.appendChild(img);
-                        const clearBtn = zone.querySelector('button');
-                        if (clearBtn) clearBtn.classList.remove('hidden');
+                        
+              
+                        if (!zone.querySelector('button')) {
+                            const fieldName = currentFileInput.name;
+                            const removeBtn = document.createElement('button');
+                            removeBtn.type = 'button';
+                            removeBtn.className = fieldName === 'mainImage' ? 
+                                'absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center' : 
+                                'absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs';
+                            removeBtn.innerHTML = '×';
+                            removeBtn.onclick = () => markImageForRemoval(removeBtn, fieldName);
+                            zone.appendChild(removeBtn);
+                        }
                     };
                     reader.readAsDataURL(file);
 
@@ -321,7 +329,7 @@
                 }, 'image/webp', 0.8);
             });
 
-            // Dynamic Variant Handling
+           
             function addVariantRow(size = '', price = '', stock = '') {
                 const variantDiv = document.createElement('div');
                 variantDiv.className = 'variant-row flex space-x-4 items-end';
@@ -359,7 +367,7 @@
 
             addVariantBtn.addEventListener('click', () => addVariantRow());
 
-            // Form Validation and Submission
+           
             productForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const requiredFields = productForm.querySelectorAll('[required]');
@@ -393,6 +401,14 @@
                         isValid = false;
                     }
                 });
+
+                const hasMainImage = document.querySelector('input[name="existingImages[mainImage][url]"]') || 
+                                     document.querySelector('input[name="mainImage"]')?.files.length > 0;
+                
+                if (!hasMainImage) {
+                    alert('Please upload at least one main product image');
+                    isValid = false;
+                }
 
                 if (!isValid) {
                     alert('Please fill in all required fields');

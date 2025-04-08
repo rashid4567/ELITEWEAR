@@ -8,7 +8,6 @@ const { count } = require("console");
 const { unlink } = require("fs");
 const cloudinary = require('cloudinary').v2;
 
-
 const ProductManagement = async (req, res) => {
     try {
         const search = req.query.search || "";
@@ -33,24 +32,16 @@ const ProductManagement = async (req, res) => {
             query.$and.push({});
         }
 
-
         if (categoryFilter && categoryFilter !== "all") {
-            const categoryData = await Category.findOne({ name: categoryFilter }).catch(err => {
-                console.error("Category fetch error:", err);
-                return null;
-            });
+            const categoryData = await Category.findOne({ name: categoryFilter });
             if (categoryData) {
                 query.$and.push({ categoryId: categoryData._id });
-            } else {
-                console.warn(`Category "${categoryFilter}" not found`);
             }
         }
-
 
         if (brandFilter) {
             query.$and.push({ brand: { $regex: brandFilter, $options: "i" } });
         }
-
 
         if (minPrice || maxPrice) {
             const priceQuery = {};
@@ -59,11 +50,9 @@ const ProductManagement = async (req, res) => {
             query.$and.push({ "variants.salePrice": priceQuery });
         }
 
-
         if (query.$and.length === 0) {
             query = {};
         }
-
 
         let sortOption = {};
         switch (sort) {
@@ -80,31 +69,18 @@ const ProductManagement = async (req, res) => {
                 sortOption = { createdAt: -1 };
         }
 
-  
-        const count = await Product.countDocuments(query).catch(err => {
-            console.error("Count documents error:", err);
-            return 0;
-        });
-        const totalPages = Math.ceil(count / limit) || 1; 
+        const count = await Product.countDocuments(query);
+        const totalPages = Math.ceil(count / limit) || 1;
         const safePage = Math.min(Math.max(page, 1), totalPages);
         const skip = (safePage - 1) * limit;
 
-        
         const productData = await Product.find(query)
             .sort(sortOption)
             .limit(limit)
             .skip(skip)
-            .populate("categoryId")
-            .catch(err => {
-                console.error("Product fetch error:", err);
-                return [];
-            });
+            .populate("categoryId");
 
-        const category = await Category.find({ isListed: true }).catch(err => {
-            console.error("Category list fetch error:", err);
-            return [];
-        });
-
+        const category = await Category.find({ isListed: true });
 
         let message = "";
         if (!productData.length) {
@@ -112,7 +88,6 @@ const ProductManagement = async (req, res) => {
                 ? `Sorry, no products found for "${search}"`
                 : "Sorry, no products are available";
         }
-
 
         const formattedProductData = productData.map(product => {
             const firstVariant = product.variants[0] || {};
@@ -142,7 +117,6 @@ const ProductManagement = async (req, res) => {
 
     } catch (error) {
         console.error("ProductManagement error:", error);
-
         res.render("prodectManagment", {
             search: req.query.search || "",
             categoryFilter: req.query.category || "",
@@ -160,7 +134,6 @@ const ProductManagement = async (req, res) => {
         });
     }
 };
-
 
 const getaddproduct = async (req, res) => {
     try {
@@ -187,6 +160,14 @@ const addproduct = async (req, res) => {
         console.log('Incoming files:', req.files);
         console.log('Incoming body:', req.body);
 
+        if (!req.body || Object.keys(req.body).length === 0) {
+            console.error('No form data received');
+            return res.status(400).render("addproduct", {
+                error: "No form data received. Please try again.",
+                categories: await Category.find({ isListed: true }),
+            });
+        }
+
         const {
             productName,
             productPrice,
@@ -200,85 +181,95 @@ const addproduct = async (req, res) => {
             brand
         } = req.body;
 
-        // Validate required fields
         const requiredFields = ['productName', 'productDescription', 'productCategory', 'color', 'fabric'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
         if (missingFields.length > 0) {
             console.error('Missing required fields:', missingFields);
             return res.status(400).render("addproduct", {
                 error: `Missing required fields: ${missingFields.join(', ')}`,
-                categories: await Category.find({ isListed: true })
+                categories: await Category.find({ isListed: true }),
             });
         }
 
-        // Handle image uploads with duplicate prevention
         const images = [];
         const imageSet = new Set();
 
-        const imageFields = [
-            { name: 'mainImage', isMain: true },
-            { name: 'additionalImage1', isMain: false },
-            { name: 'additionalImage2', isMain: false },
-            { name: 'additionalImage3', isMain: false }
-        ];
+        if (req.files && req.files.mainImage && req.files.mainImage.length > 0) {
+            const mainImagePath = req.files.mainImage[0].path;
+            images.push({
+                url: mainImagePath,
+                thumbnail: mainImagePath,
+                isMain: true
+            });
+            imageSet.add(mainImagePath);
+        } else {
+            return res.status(400).render("addproduct", {
+                error: "Please upload a main product image",
+                categories: await Category.find({ isListed: true }),
+            });
+        }
 
-        for (const field of imageFields) {
-            if (req.files && req.files[field.name] && req.files[field.name][0]) {
-                const imageUrl = req.files[field.name][0].path;
-                if (!imageSet.has(imageUrl)) {
+        for (let i = 1; i <= 3; i++) {
+            const fieldName = `additionalImage${i}`;
+            if (req.files && req.files[fieldName] && req.files[fieldName].length > 0) {
+                const additionalImagePath = req.files[fieldName][0].path;
+                if (!imageSet.has(additionalImagePath)) {
                     images.push({
-                        url: imageUrl,
-                        thumbnail: imageUrl,
-                        isMain: field.isMain
+                        url: additionalImagePath,
+                        thumbnail: additionalImagePath,
+                        isMain: false
                     });
-                    imageSet.add(imageUrl);
+                    imageSet.add(additionalImagePath);
                 }
             }
         }
 
-        if (!images.some(img => img.isMain)) {
-            console.error('No main image provided');
-            return res.status(400).render("addproduct", {
-                error: "Please upload a main product image",
-                categories: await Category.find({ isListed: true })
-            });
-        }
-
-        // Category validation
         const categoryData = await Category.findOne({ name: productCategory });
         if (!categoryData) {
-            console.error('Invalid category:', productCategory);
             return res.status(400).render("addproduct", {
                 error: "Invalid category",
-                categories: await Category.find({ isListed: true })
+                categories: await Category.find({ isListed: true }),
             });
         }
 
-        // Parse variants
         let parsedVariants = [];
         if (variants) {
             if (Array.isArray(variants)) {
                 parsedVariants = variants.map(variant => ({
                     size: variant.size,
-                    varientPrice: parseFloat(variant.varientPrice) || 0,
-                    salePrice: parseFloat(variant.varientPrice || 0) * (1 - parseFloat(productOffer || 0) / 100),
+                    varientPrice: parseInt(variant.varientPrice) || 0,
+                    salePrice: parseInt(variant.varientPrice || 0) * (1 - parseInt(productOffer || 0) / 100),
                     varientquatity: parseInt(variant.varientquatity) || 0
                 }));
             } else if (typeof variants === 'object') {
-                parsedVariants = Object.values(variants).map(variant => ({
-                    size: variant.size,
-                    varientPrice: parseFloat(variant.varientPrice) || 0,
-                    salePrice: parseFloat(variant.varientPrice || 0) * (1 - parseFloat(productOffer || 0) / 100),
-                    varientquatity: parseInt(variant.varientquatity) || 0
-                }));
+                if (Object.keys(variants).some(key => !isNaN(parseInt(key)))) {
+                    for (const key in variants) {
+                        if (variants.hasOwnProperty(key)) {
+                            const variant = variants[key];
+                            parsedVariants.push({
+                                size: variant.size,
+                                varientPrice: parseInt(variant.varientPrice) || 0,
+                                salePrice: parseInt(variant.varientPrice || 0) * (1 - parseInt(productOffer || 0) / 100),
+                                varientquatity: parseInt(variant.varientquatity) || 0
+                            });
+                        }
+                    }
+                } else if (variants.size && variants.varientPrice && variants.varientquatity) {
+                    parsedVariants.push({
+                        size: variants.size,
+                        varientPrice: parseInt(variants.varientPrice) || 0,
+                        salePrice: parseInt(variants.varientPrice || 0) * (1 - parseInt(productOffer || 0) / 100),
+                        varientquatity: parseInt(variants.varientquatity) || 0
+                    });
+                }
             } else if (req.body['variants[0][size]']) {
                 let index = 0;
                 while (req.body[`variants[${index}][size]`]) {
                     parsedVariants.push({
                         size: req.body[`variants[${index}][size]`],
-                        varientPrice: parseFloat(req.body[`variants[${index}][varientPrice]`]) || 0,
+                        varientPrice: parseInt(req.body[`variants[${index}][varientPrice]`]) || 0,
                         salePrice: parseFloat(req.body[`variants[${index}][varientPrice]`] || 0) * 
-                                (1 - parseFloat(productOffer || 0) / 100),
+                                  (1 - parseInt(productOffer || 0) / 100),
                         varientquatity: parseInt(req.body[`variants[${index}][varientquatity]`]) || 0
                     });
                     index++;
@@ -287,14 +278,12 @@ const addproduct = async (req, res) => {
         }
 
         if (parsedVariants.length === 0) {
-            console.error('No variants provided');
             return res.status(400).render("addproduct", {
                 error: "Please add at least one variant",
-                categories: await Category.find({ isListed: true })
+                categories: await Category.find({ isListed: true }),
             });
         }
 
-        // Create and save new product
         const newProduct = new Product({
             name: productName,
             description: productDescription,
@@ -312,17 +301,16 @@ const addproduct = async (req, res) => {
         });
 
         await newProduct.save();
-        console.log('Product saved successfully:', newProduct._id);
         return res.redirect("/admin/productManagment");
-
     } catch (error) {
         console.error('Product Add Error:', error);
         return res.status(500).render("addproduct", {
             error: "Failed to add product: " + error.message,
-            categories: await Category.find({ isListed: true })
+            categories: await Category.find({ isListed: true }),
         });
     }
 };
+
 const geteditProduct = async (req, res) => {
     try {
         const id = req.params.id;
@@ -349,7 +337,6 @@ const geteditProduct = async (req, res) => {
         res.redirect("/pageerror");
     }
 };
-
 const editProduct = async (req, res) => {
     console.log('Edit product request started');
     try {
@@ -375,9 +362,11 @@ const editProduct = async (req, res) => {
             color,
             fabric,
             sku,
-            brand
+            brand,
+            removeImages
         } = req.body;
 
+   
         const requiredFields = ['productName', 'productDescription', 'productCategory', 'color', 'fabric'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
         if (missingFields.length > 0) {
@@ -387,6 +376,7 @@ const editProduct = async (req, res) => {
                 categories: await Category.find({ isListed: true })
             });
         }
+
 
         const existProduct = await Product.findOne({
             name: productName,
@@ -400,59 +390,123 @@ const editProduct = async (req, res) => {
             });
         }
 
-        let images = [...product.images]; 
+ 
+        let images = [...product.images];
+        console.log('Initial images:', images);
 
-      
-        const cloudinaryDeletePromises = []; 
 
-       
-        if (req.files && req.files.mainImage) {
-            const oldMainImage = images.find(img => img.isMain);
-            if (oldMainImage) {
-                const publicId = oldMainImage.url.split('/').pop().split('.')[0];
+        let removeImagesArray = Array.isArray(removeImages) ? removeImages : (removeImages ? [removeImages] : []);
+        console.log('Images marked for removal:', removeImagesArray);
+
+
+        const cloudinaryDeletePromises = [];
+        for (const fieldName of removeImagesArray) {
+            const indexToRemove = images.findIndex(img => 
+                (fieldName === 'mainImage' && img.isMain) ||
+                (fieldName !== 'mainImage' && !img.isMain && fieldName === `additionalImage${images.filter(i => !i.isMain).indexOf(img) + 1}`)
+            );
+            if (indexToRemove !== -1) {
+                const imageToRemove = images[indexToRemove];
+                const publicId = imageToRemove.public_id || `products/${id}-${fieldName}`;
                 cloudinaryDeletePromises.push(
-                    cloudinary.uploader.destroy(`banners/${publicId}`)
+                    cloudinary.uploader.destroy(publicId)
+                        .then(result => console.log(`Deleted image: ${publicId}`, result))
+                        .catch(err => console.error(`Failed to delete image: ${publicId}`, err))
                 );
-                images = images.filter(img => !img.isMain); 
+                images.splice(indexToRemove, 1);
             }
-            images.push({
-                url: req.files.mainImage[0].path, 
-                thumbnail: req.files.mainImage[0].path,
-                isMain: true
-            });
         }
 
-        
-        for (let i = 1; i <= 3; i++) {
-            const fieldName = `additionalImage${i}`;
-            if (req.files && req.files[fieldName]) {
-                const oldImageIndex = images.findIndex(img => !img.isMain && img.url === (images[i]?.url || '')); 
-                if (oldImageIndex !== -1) {
-                    const oldImage = images[oldImageIndex];
-                    const publicId = oldImage.url.split('/').pop().split('.')[0];
-                    cloudinaryDeletePromises.push(
-                        cloudinary.uploader.destroy(`banners/${publicId}`)
+ 
+        const imageFields = [
+            { name: 'mainImage', isMain: true },
+            { name: 'additionalImage1', isMain: false },
+            { name: 'additionalImage2', isMain: false },
+            { name: 'additionalImage3', isMain: false }
+        ];
+
+        for (const field of imageFields) {
+            if (req.files && req.files[field.name] && req.files[field.name][0]) {
+                const newImagePath = req.files[field.name][0].path;
+                const publicId = `products/${id}-${field.name}`;
+                console.log(`Processing upload for ${field.name}: ${newImagePath}`);
+
+    
+                if (!newImagePath.startsWith('http')) {
+                    console.error(`Expected Cloudinary URL but got local path: ${newImagePath}`);
+                   
+                    const uploadResult = await cloudinary.uploader.upload(newImagePath, {
+                        public_id: publicId,
+                        folder: 'products',
+                        format: 'webp',
+                        transformation: [
+                            { width: 800, height: 800, crop: 'fill' },
+                            { quality: 80 }
+                        ],
+                        overwrite: true
+                    });
+                    console.log(`Uploaded to Cloudinary: ${uploadResult.secure_url}`);
+                    const newImageUrl = uploadResult.secure_url;
+                    const existingIndex = images.findIndex(img => 
+                        (field.isMain && img.isMain) || 
+                        (!field.isMain && !img.isMain && field.name === `additionalImage${images.filter(i => !i.isMain).indexOf(img) + 1}`)
                     );
-                    images.splice(oldImageIndex, 1); 
+
+                    if (existingIndex !== -1) {
+                        images[existingIndex] = {
+                            url: newImageUrl,
+                            thumbnail: newImageUrl,
+                            isMain: field.isMain,
+                            public_id: publicId
+                        };
+                    } else {
+                        images.push({
+                            url: newImageUrl,
+                            thumbnail: newImageUrl,
+                            isMain: field.isMain,
+                            public_id: publicId
+                        });
+                    }
+                } else {
+           
+                    const existingIndex = images.findIndex(img => 
+                        (field.isMain && img.isMain) || 
+                        (!field.isMain && !img.isMain && field.name === `additionalImage${images.filter(i => !i.isMain).indexOf(img) + 1}`)
+                    );
+
+                    if (existingIndex !== -1) {
+                        images[existingIndex] = {
+                            url: newImagePath,
+                            thumbnail: newImagePath,
+                            isMain: field.isMain,
+                            public_id: publicId
+                        };
+                    } else {
+                        images.push({
+                            url: newImagePath,
+                            thumbnail: newImagePath,
+                            isMain: field.isMain,
+                            public_id: publicId
+                        });
+                    }
                 }
-                images.push({
-                    url: req.files[fieldName][0].path,
-                    thumbnail: req.files[fieldName][0].path,
-                    isMain: false
-                });
             }
         }
 
-   
+
         await Promise.all(cloudinaryDeletePromises);
 
-        if (images.length === 0) {
+   
+        if (!images.some(img => img.isMain)) {
             return res.status(400).render("editProduct", {
-                error: "At least one product image is required",
+                error: "At least one main product image is required",
                 product,
                 categories: await Category.find({ isListed: true })
             });
         }
+
+        console.log('Final images array:', images);
+
 
         const categoryData = await Category.findOne({ name: productCategory });
         if (!categoryData) {
@@ -463,23 +517,16 @@ const editProduct = async (req, res) => {
             });
         }
 
+
         let parsedVariants = [];
         if (variants) {
-            if (Array.isArray(variants)) {
-                parsedVariants = variants.map(variant => ({
-                    size: variant.size,
-                    varientPrice: parseFloat(variant.varientPrice),
-                    salePrice: parseFloat(variant.varientPrice) * (1 - parseFloat(productOffer || 0) / 100),
-                    varientquatity: parseInt(variant.varientquatity)
-                }));
-            } else if (typeof variants === 'object') {
-                parsedVariants = Object.values(variants).map(variant => ({
-                    size: variant.size,
-                    varientPrice: parseFloat(variant.varientPrice),
-                    salePrice: parseFloat(variant.varientPrice) * (1 - parseFloat(productOffer || 0) / 100),
-                    varientquatity: parseInt(variant.varientquatity)
-                }));
-            }
+            const variantArray = Array.isArray(variants) ? variants : Object.values(variants);
+            parsedVariants = variantArray.map(variant => ({
+                size: variant.size,
+                varientPrice: parseFloat(variant.varientPrice) || 0,
+                salePrice: parseFloat(variant.varientPrice || 0) * (1 - parseFloat(productOffer || 0) / 100),
+                varientquatity: parseInt(variant.varientquatity) || 0
+            }));
         }
 
         if (parsedVariants.length === 0) {
@@ -490,6 +537,7 @@ const editProduct = async (req, res) => {
             });
         }
 
+     
         const updateFields = {
             name: productName,
             description: productDescription,
@@ -534,7 +582,6 @@ const editProduct = async (req, res) => {
         }
     }
 };
-
 const deleteProduct = async (req, res) => {
     try {
         const productId = req.params.id;

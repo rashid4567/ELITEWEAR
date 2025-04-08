@@ -12,20 +12,17 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: async (req, file) => {
-        const productName = req.body.productName
-            ? req.body.productName.toLowerCase().replace(/\s+/g, '-')
-            : 'unnamed';
-        // Use fieldname and a random suffix for uniqueness
-        const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-        const publicId = `${file.fieldname}-${productName}-${uniqueSuffix}`;
+        const productId = req.params.id; 
+        const fieldName = file.fieldname; 
         return {
             folder: 'products',
-            public_id: publicId,
+            public_id: `${productId}-${fieldName}`, 
             format: 'webp',
             transformation: [
                 { width: 800, height: 800, crop: 'fill' },
                 { quality: 80 }
-            ]
+            ],
+            overwrite: true 
         };
     }
 });
@@ -40,7 +37,7 @@ const upload = multer({
         }
     },
     limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB limit
+        fileSize: 5 * 1024 * 1024 
     }
 });
 

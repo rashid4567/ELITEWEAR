@@ -23,6 +23,7 @@ router.post("/addcategory", adminAuth, CategoryController.addCategory);
 router.post("/toggle-category", adminAuth, CategoryController.toggleCategory);
 router.get('/editCategory', adminAuth, CategoryController.geteditCategory);
 router.post('/editCategory', adminAuth, CategoryController.editCategory);
+router.post('/delete-category', adminAuth, CategoryController.deleteCategory);
 
 router.get('/productManagment', adminAuth, productManagment.ProductManagement);
 router.get("/addProduct", adminAuth, productManagment.getaddproduct);
