@@ -43,24 +43,24 @@ const addBanner = async (req, res) => {
     }
 };
 
-const deleteBanner = async (req,res)=>{
+const deleteBanner = async (req, res) => {
     try {
         const id = req.query.id;
-       const deleteBanner =  await Banner.deleteOne({_id:id}).then((data)=>console.log(data))
-        if(!deleteBanner){
+        const deleteBanner = await Banner.deleteOne({ _id: id }).then((data) => console.log(data))
+        if (!deleteBanner) {
             console.log("unable to delete the banner")
-            res.status(404).status({message: "Banner not found"})
-        }else{
+            res.status(404).status({ message: "Banner not found" })
+        } else {
             console.log("Banner deleted succesfully")
             res.redirect("/banner")
         }
-       
+
     } catch (error) {
-        console.log("error on delting the banner, try again",error)
-    res.redirect("/pageerror")
+        console.log("error on delting the banner, try again", error)
+        res.redirect("/pageerror")
     }
 }
- 
+
 module.exports = {
     getbannerPage,
     getaddBanner,

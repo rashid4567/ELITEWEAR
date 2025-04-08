@@ -109,13 +109,19 @@ const loadHomepage = async (req, res) => {
 const loadUserSignup = async (req, res) => {
     try {
         console.log('Loading signup page');
-        res.render("signup", { user: null, message: null, formData: null });
+        console.log('All flash messages:', req.flash());
+        const errorMessage = req.flash('error').length > 0 ? req.flash('error')[0] : null;
+        console.log('Retrieved flash error:', errorMessage);
+        res.render("signup", { 
+            user: null, 
+            message: errorMessage || null, 
+            formData: null 
+        });
     } catch (error) {
         console.error("Signup page error:", error);
         res.status(500).send("Server issue");
     }
 };
-
 const userSignup = async (req, res) => {
     try {
         console.log('Signup request received:', req.body);

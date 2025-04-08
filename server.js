@@ -10,6 +10,7 @@ const userRouter = require('./routers/userRoute');
 const adminRouter = require('./routers/adminRoute');
 const { Server } = require('http');
 const passport = require('./config/passport');
+const flash = require("connect-flash")
 
 connectDB();
 
@@ -18,7 +19,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(flash())
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -29,6 +30,13 @@ app.use(session({
         maxAge: 72 * 60 * 60 * 1000 
     }
 }));
+
+app.use((req,res, next)=>{
+    res.locals.success_msg = req.flash("success_msg")
+    res.locals.error_msg = req.flash("error_msg")
+    res.locals.error = req.flash("error")
+    next()
+})
 
 
 app.use((req, res, next) => {

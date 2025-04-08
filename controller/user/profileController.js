@@ -104,7 +104,7 @@ const passForgotten = async (req, res) => {
             return res.status(400).json({ success: false, message: "OTP expired. Please request a new one." });
         }
 
-      
+
         const storedOtp = String(req.session.userOtp);
         const enteredOtp = String(otp);
 
@@ -159,7 +159,7 @@ const resetPassword = async (req, res) => {
         const hashedPassword = await securePassword(newPassword);
         console.log("Hashed password:", hashedPassword);
 
-     
+
         const findUser = await User.findOne({ email: email });
         if (!findUser) {
             console.log("User not found for email:", email);

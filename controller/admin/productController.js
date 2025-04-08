@@ -13,10 +13,11 @@ const ProductManagement = async (req, res) => {
         const search = req.query.search || "";
         const categoryFilter = req.query.category || "";
         const brandFilter = req.query.brand || "";
-        const minPrice = req.query.minPrice ? parseFloat(req.query.minPrice) : "";
-        const maxPrice = req.query.maxPrice ? parseFloat(req.query.maxPrice) : "";
+        const minPrice = req.query.minPrice ? parseInt(req.query.minPrice) : "";
+
+        const maxPrice = req.query.maxPrice ? parseInt(req.query.maxPrice) : "";
         const sort = req.query.sort || "";
-        const page = Math.max(parseInt(req.query.page) || 1, 1); 
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
         const limit = 6;
 
         let query = { $and: [] };
@@ -84,7 +85,7 @@ const ProductManagement = async (req, res) => {
 
         let message = "";
         if (!productData.length) {
-            message = search 
+            message = search
                 ? `Sorry, no products found for "${search}"`
                 : "Sorry, no products are available";
         }
@@ -95,7 +96,7 @@ const ProductManagement = async (req, res) => {
             return {
                 ...product.toObject(),
                 salePrice: firstVariant.salePrice || 0,
-                varientquatity: totalStock 
+                varientquatity: totalStock
             };
         });
 
@@ -268,8 +269,8 @@ const addproduct = async (req, res) => {
                     parsedVariants.push({
                         size: req.body[`variants[${index}][size]`],
                         varientPrice: parseInt(req.body[`variants[${index}][varientPrice]`]) || 0,
-                        salePrice: parseFloat(req.body[`variants[${index}][varientPrice]`] || 0) * 
-                                  (1 - parseInt(productOffer || 0) / 100),
+                        salePrice: parseInt(req.body[`variants[${index}][varientPrice]`] || 0) *
+                            (1 - parseInt(productOffer || 0) / 100),
                         varientquatity: parseInt(req.body[`variants[${index}][varientquatity]`]) || 0
                     });
                     index++;
@@ -289,7 +290,7 @@ const addproduct = async (req, res) => {
             description: productDescription,
             categoryId: categoryData._id,
             brand: brand || undefined,
-            offer: parseFloat(productOffer || 0),
+            offer: parseInt(productOffer || 0),
             images,
             variants: parsedVariants,
             sku: sku || undefined,
@@ -366,7 +367,7 @@ const editProduct = async (req, res) => {
             removeImages
         } = req.body;
 
-   
+
         const requiredFields = ['productName', 'productDescription', 'productCategory', 'color', 'fabric'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
         if (missingFields.length > 0) {
@@ -390,7 +391,7 @@ const editProduct = async (req, res) => {
             });
         }
 
- 
+
         let images = [...product.images];
         console.log('Initial images:', images);
 
@@ -401,7 +402,7 @@ const editProduct = async (req, res) => {
 
         const cloudinaryDeletePromises = [];
         for (const fieldName of removeImagesArray) {
-            const indexToRemove = images.findIndex(img => 
+            const indexToRemove = images.findIndex(img =>
                 (fieldName === 'mainImage' && img.isMain) ||
                 (fieldName !== 'mainImage' && !img.isMain && fieldName === `additionalImage${images.filter(i => !i.isMain).indexOf(img) + 1}`)
             );
@@ -417,7 +418,7 @@ const editProduct = async (req, res) => {
             }
         }
 
- 
+
         const imageFields = [
             { name: 'mainImage', isMain: true },
             { name: 'additionalImage1', isMain: false },
@@ -431,10 +432,10 @@ const editProduct = async (req, res) => {
                 const publicId = `products/${id}-${field.name}`;
                 console.log(`Processing upload for ${field.name}: ${newImagePath}`);
 
-    
+
                 if (!newImagePath.startsWith('http')) {
                     console.error(`Expected Cloudinary URL but got local path: ${newImagePath}`);
-                   
+
                     const uploadResult = await cloudinary.uploader.upload(newImagePath, {
                         public_id: publicId,
                         folder: 'products',
@@ -447,8 +448,8 @@ const editProduct = async (req, res) => {
                     });
                     console.log(`Uploaded to Cloudinary: ${uploadResult.secure_url}`);
                     const newImageUrl = uploadResult.secure_url;
-                    const existingIndex = images.findIndex(img => 
-                        (field.isMain && img.isMain) || 
+                    const existingIndex = images.findIndex(img =>
+                        (field.isMain && img.isMain) ||
                         (!field.isMain && !img.isMain && field.name === `additionalImage${images.filter(i => !i.isMain).indexOf(img) + 1}`)
                     );
 
@@ -468,9 +469,9 @@ const editProduct = async (req, res) => {
                         });
                     }
                 } else {
-           
-                    const existingIndex = images.findIndex(img => 
-                        (field.isMain && img.isMain) || 
+
+                    const existingIndex = images.findIndex(img =>
+                        (field.isMain && img.isMain) ||
                         (!field.isMain && !img.isMain && field.name === `additionalImage${images.filter(i => !i.isMain).indexOf(img) + 1}`)
                     );
 
@@ -496,7 +497,7 @@ const editProduct = async (req, res) => {
 
         await Promise.all(cloudinaryDeletePromises);
 
-   
+
         if (!images.some(img => img.isMain)) {
             return res.status(400).render("editProduct", {
                 error: "At least one main product image is required",
@@ -523,8 +524,8 @@ const editProduct = async (req, res) => {
             const variantArray = Array.isArray(variants) ? variants : Object.values(variants);
             parsedVariants = variantArray.map(variant => ({
                 size: variant.size,
-                varientPrice: parseFloat(variant.varientPrice) || 0,
-                salePrice: parseFloat(variant.varientPrice || 0) * (1 - parseFloat(productOffer || 0) / 100),
+                varientPrice: parseInt(variant.varientPrice) || 0,
+                salePrice: parseInt(variant.varientPrice || 0) * (1 - parseInt(productOffer || 0) / 100),
                 varientquatity: parseInt(variant.varientquatity) || 0
             }));
         }
@@ -537,13 +538,13 @@ const editProduct = async (req, res) => {
             });
         }
 
-     
+
         const updateFields = {
             name: productName,
             description: productDescription,
             brand: brand || undefined,
             categoryId: categoryData._id,
-            offer: parseFloat(productOffer || 0),
+            offer: parseInt(productOffer || 0),
             sku: sku || undefined,
             fabric: fabric.trim(),
             color: color.trim(),
@@ -555,8 +556,8 @@ const editProduct = async (req, res) => {
         console.log("Updated product details:", updatedProduct);
 
         if (req.xhr) {
-            return res.json({ 
-                success: true, 
+            return res.json({
+                success: true,
                 message: "Product updated successfully",
                 redirectUrl: "/admin/productManagment"
             });
@@ -573,9 +574,9 @@ const editProduct = async (req, res) => {
         };
 
         if (req.xhr) {
-            return res.status(500).json({ 
-                success: false, 
-                error: error.message 
+            return res.status(500).json({
+                success: false,
+                error: error.message
             });
         } else {
             return res.status(500).render("editProduct", errorResponse);
