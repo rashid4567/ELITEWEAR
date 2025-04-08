@@ -38,7 +38,7 @@
                 </div>
             </div>
 
-            <!-- Product Images -->
+     
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">Product Images</h2>
                 <div class="grid grid-cols-3 gap-4">
@@ -68,7 +68,7 @@
                 </div>
             </div>
 
-            <!-- Product Options -->
+  
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">Product Options</h2>
                 <div class="grid grid-cols-3 gap-4">
@@ -84,16 +84,16 @@
                 </div>
             </div>
 
-            <!-- Product Variants -->
+
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">Product Variants</h2>
                 <div id="variantContainer" class="space-y-4">
-                    <!-- Dynamic variant rows will be added here -->
+               
                 </div>
                 <button type="button" id="addVariant" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg">Add Variant</button>
             </div>
 
-            <!-- Product Specifications -->
+            
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">Product Specifications</h2>
                 <div class="grid grid-cols-2 gap-4">
@@ -120,7 +120,7 @@
                 </div>
             </div>
 
-            <!-- Form Buttons -->
+
             <div class="flex justify-end space-x-4">
                 <button type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg" onclick="window.location.href='/admin/productManagment'">Cancel</button>
                 <button type="button" id="submitBtn" class="px-4 py-2 bg-black text-white rounded-lg">Add Product</button>
@@ -128,7 +128,7 @@
         </form>
     </div>
 
-    <!-- Crop Modal -->
+
     <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
         <div class="bg-white p-6 rounded-lg max-w-4xl w-full">
             <img id="imageToCrop" class="max-w-full max-h-[80vh]">
@@ -156,9 +156,9 @@
             let cropper;
             let currentFileInput;
             let variantCount = 0;
-            const uploadedFiles = new Set(); // Track uploaded file hashes to prevent duplicates
+            const uploadedFiles = new Set(); 
 
-            // Function to create error message elements
+            
             function createErrorElement(message) {
                 const errorElement = document.createElement('p');
                 errorElement.className = 'text-red-500 text-xs mt-1 hidden error-message';
@@ -166,7 +166,7 @@
                 return errorElement;
             }
 
-            // Add error messages for fields
+   
             const nameErrorElement = createErrorElement('Please enter the product name');
             productName.insertAdjacentElement('afterend', nameErrorElement);
 
@@ -181,7 +181,7 @@
             const mainImageErrorElement = createErrorElement('Please upload a main product image');
             mainImageZone.insertAdjacentElement('afterend', mainImageErrorElement);
 
-            // Validation functions
+         
             function validateField(field, errorElement) {
                 if (!field.value.trim()) {
                     errorElement.classList.remove('hidden');
@@ -211,12 +211,27 @@
                 const priceInput = row.querySelector('input[name$="[varientPrice]"]');
                 const stockInput = row.querySelector('input[name$="[varientquatity]"]');
 
-                const sizeError = createErrorElement('Please enter the size');
-                if (!row.querySelector('.size-error')) sizeInput.insertAdjacentElement('afterend', sizeError.addClass('size-error'));
-                const priceError = createErrorElement('Please enter the price');
-                if (!row.querySelector('.price-error')) priceInput.insertAdjacentElement('afterend', priceError.addClass('price-error'));
-                const stockError = createErrorElement('Please enter the stock');
-                if (!row.querySelector('.stock-error')) stockInput.insertAdjacentElement('afterend', stockError.addClass('stock-error'));
+            
+                let sizeError = row.querySelector('.size-error');
+                if (!sizeError) {
+                    sizeError = createErrorElement('Please enter the size');
+                    sizeError.classList.add('size-error');
+                    sizeInput.insertAdjacentElement('afterend', sizeError);
+                }
+
+                let priceError = row.querySelector('.price-error');
+                if (!priceError) {
+                    priceError = createErrorElement('Please enter the price');
+                    priceError.classList.add('price-error');
+                    priceInput.insertAdjacentElement('afterend', priceError);
+                }
+
+                let stockError = row.querySelector('.stock-error');
+                if (!stockError) {
+                    stockError = createErrorElement('Please enter the stock');
+                    stockError.classList.add('stock-error');
+                    stockInput.insertAdjacentElement('afterend', stockError);
+                }
 
                 const sizeValid = validateField(sizeInput, sizeError);
                 const priceValid = validateField(priceInput, priceError);
@@ -225,7 +240,7 @@
                 return sizeValid && priceValid && stockValid;
             }
 
-            // Form validation
+       
             function validateForm() {
                 const nameValid = validateField(productName, nameErrorElement);
                 const priceValid = validateField(productPrice, priceErrorElement);
@@ -234,22 +249,23 @@
 
                 const variantRows = document.querySelectorAll('.variant-row');
                 let allVariantsValid = variantRows.length > 0;
+                
                 variantRows.forEach(row => {
                     if (!validateVariantRow(row)) allVariantsValid = false;
                 });
 
-                if (!allVariantsValid && variantRows.length === 0) {
+                if (variantRows.length === 0) {
                     const tempError = document.createElement('p');
                     tempError.className = 'text-red-500 text-sm mt-2';
                     tempError.textContent = 'Please add at least one variant';
                     variantContainer.insertAdjacentElement('afterend', tempError);
                     setTimeout(() => tempError.remove(), 3000);
+                    allVariantsValid = false;
                 }
 
                 return nameValid && priceValid && categoryValid && mainImageValid && allVariantsValid;
             }
 
-            // Upload zone functionality
             uploadZones.forEach(zone => {
                 const fileInput = zone.querySelector('input[type="file"]');
                 const clearBtn = document.createElement('button');
@@ -266,7 +282,7 @@
                     const file = e.target.files[0];
                     if (!file) return;
 
-                    // Generate a unique hash for the file (name + size)
+                   
                     const fileHash = `${file.name}-${file.size}`;
                     if (uploadedFiles.has(fileHash)) {
                         const errorMsg = createErrorElement('This image has already been uploaded');
@@ -281,6 +297,7 @@
                         const errorMsg = createErrorElement('Please upload a valid image file');
                         zone.insertAdjacentElement('afterend', errorMsg);
                         errorMsg.classList.remove('hidden');
+                        setTimeout(() => errorMsg.remove(), 3000);
                         fileInput.value = '';
                         return;
                     }
@@ -288,6 +305,7 @@
                         const errorMsg = createErrorElement('File size should not exceed 5MB');
                         zone.insertAdjacentElement('afterend', errorMsg);
                         errorMsg.classList.remove('hidden');
+                        setTimeout(() => errorMsg.remove(), 3000);
                         fileInput.value = '';
                         return;
                     }
@@ -311,6 +329,7 @@
 
                 clearBtn.addEventListener('click', (e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     const file = fileInput.files[0];
                     if (file) uploadedFiles.delete(`${file.name}-${file.size}`);
                     fileInput.value = '';
@@ -367,7 +386,6 @@
                 }, 'image/webp', 0.8);
             });
 
-            // Variant row functionality
             function addVariantRow(size = '', price = '', stock = '') {
                 const variantDiv = document.createElement('div');
                 variantDiv.className = 'variant-row flex space-x-4 items-start';
@@ -387,6 +405,8 @@
                     <button type="button" class="remove-variant px-3 py-2 bg-red-500 text-white rounded-lg mt-6">Remove</button>
                 `;
                 variantContainer.appendChild(variantDiv);
+                
+            
                 validateVariantRow(variantDiv);
 
                 variantDiv.querySelector('.remove-variant').addEventListener('click', () => {
@@ -405,48 +425,88 @@
             }
 
             addVariantBtn.addEventListener('click', () => addVariantRow());
-            addVariantRow(); // Initial variant row
+            
+      
+            addVariantRow();
 
             submitBtn.addEventListener('click', function(e) {
                 e.preventDefault();
+                
+        
+                console.log('Form validation started');
+                
                 if (validateForm()) {
+                    console.log('Form validation passed, submitting product');
                     submitProductForm();
                 } else {
+                    console.log('Form validation failed');
                     const firstError = document.querySelector('.error-message:not(.hidden)');
-                    if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        console.log('Scrolled to first error');
+                    }
                 }
             });
 
             async function submitProductForm() {
-                const formData = new FormData(productForm);
                 try {
+                    console.log('Preparing form data for submission');
+                    const formData = new FormData(productForm);
+                    
+                  
+                    const variantInputs = document.querySelectorAll('.variant-row');
+                    console.log('Variant count:', variantInputs.length);
+                    variantInputs.forEach((row, index) => {
+                        const size = row.querySelector('input[name$="[size]"]').value;
+                        const price = row.querySelector('input[name$="[varientPrice]"]').value;
+                        const stock = row.querySelector('input[name$="[varientquatity]"]').value;
+                        console.log(`Variant ${index}:`, { size, price, stock });
+                    });
+                    
+                    console.log('Submitting form to:', productForm.action);
                     const response = await fetch(productForm.action, {
                         method: 'POST',
-                        body: formData
+                        body: formData,
+                
                     });
 
+                    console.log('Response received:', response.status);
+                    
                     if (response.ok) {
                         const notification = document.createElement('div');
                         notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded shadow-lg z-50';
                         notification.textContent = 'Product added successfully! Redirecting...';
                         document.body.appendChild(notification);
+                        
                         setTimeout(() => {
                             window.location.href = '/admin/productManagment';
                         }, 1500);
                     } else {
-                        const errorText = await response.text();
+                        let errorText;
+                        try {
+                          
+                            const errorData = await response.json();
+                            errorText = errorData.message || errorData.error || 'Unknown error occurred';
+                        } catch {
+                  
+                            errorText = await response.text();
+                        }
+                        
+                        console.error('Error response from server:', errorText);
+                        
                         const notification = document.createElement('div');
                         notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg z-50';
                         notification.textContent = 'Error adding product: ' + errorText;
                         document.body.appendChild(notification);
-                        setTimeout(() => notification.remove(), 3000);
+                        setTimeout(() => notification.remove(), 5000);
                     }
                 } catch (error) {
+                    console.error('Exception during form submission:', error);
                     const notification = document.createElement('div');
                     notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg z-50';
                     notification.textContent = 'An error occurred: ' + error.message;
                     document.body.appendChild(notification);
-                    setTimeout(() => notification.remove(), 3000);
+                    setTimeout(() => notification.remove(), 5000);
                 }
             }
         });

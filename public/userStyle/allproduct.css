@@ -241,6 +241,19 @@ body {
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
+.breadcrumb {
+    background-color: #f8f9fa; /* Light gray background */
+    padding: 10px 15px;
+    border-radius: 5px;
+}
+
+.breadcrumb-item a {
+    color: #007bff; /* Blue links */
+}
+
+.breadcrumb-item.active {
+    color: #6c757d; /* Gray for active item */
+}
 
 .product-card:hover .product-img {
     transform: scale(1.05);

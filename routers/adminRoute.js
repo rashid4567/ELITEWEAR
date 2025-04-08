@@ -50,7 +50,7 @@ router.post(
     productManagment.editProduct
 );
 
-router.post("/editProductImage", adminAuth, productManagment.deleteImage);
+
 router.delete("/deleteProduct/:id", adminAuth, productManagment.deleteProduct);
 
 

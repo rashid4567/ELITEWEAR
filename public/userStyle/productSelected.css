@@ -224,3 +224,16 @@ body {
 .card.similar-hover .card-body {
     text-align: center;
 }
+.breadcrumb {
+    background-color: #f8f9fa; /* Light gray background */
+    padding: 10px 15px;
+    border-radius: 5px;
+}
+
+.breadcrumb-item a {
+    color: #007bff; /* Blue links */
+}
+
+.breadcrumb-item.active {
+    color: #6c757d; /* Gray for active item */
+}

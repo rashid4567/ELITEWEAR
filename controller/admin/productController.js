@@ -200,74 +200,101 @@ const addproduct = async (req, res) => {
             brand
         } = req.body;
 
+        // Validate required fields
         const requiredFields = ['productName', 'productDescription', 'productCategory', 'color', 'fabric'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
         if (missingFields.length > 0) {
+            console.error('Missing required fields:', missingFields);
             return res.status(400).render("addproduct", {
                 error: `Missing required fields: ${missingFields.join(', ')}`,
-                categories: await Category.find({ isListed: true }),
+                categories: await Category.find({ isListed: true })
             });
         }
 
+        // Handle image uploads with duplicate prevention
         const images = [];
-        const imageSet = new Set(); 
+        const imageSet = new Set();
 
-     
-        if (req.files && req.files.mainImage && req.files.mainImage.length > 0) {
-            const mainImagePath = req.files.mainImage[0].path;
-            images.push({
-                url: mainImagePath,
-                thumbnail: mainImagePath,
-                isMain: true
-            });
-            imageSet.add(mainImagePath);
-        } else {
-            return res.status(400).render("addproduct", {
-                error: "Please upload a main product image",
-                categories: await Category.find({ isListed: true }),
-            });
-        }
+        const imageFields = [
+            { name: 'mainImage', isMain: true },
+            { name: 'additionalImage1', isMain: false },
+            { name: 'additionalImage2', isMain: false },
+            { name: 'additionalImage3', isMain: false }
+        ];
 
-        
-        for (let i = 1; i <= 3; i++) {
-            const fieldName = `additionalImage${i}`;
-            if (req.files && req.files[fieldName] && req.files[fieldName].length > 0) {
-                const additionalImagePath = req.files[fieldName][0].path;
-                if (!imageSet.has(additionalImagePath)) {
+        for (const field of imageFields) {
+            if (req.files && req.files[field.name] && req.files[field.name][0]) {
+                const imageUrl = req.files[field.name][0].path;
+                if (!imageSet.has(imageUrl)) {
                     images.push({
-                        url: additionalImagePath,
-                        thumbnail: additionalImagePath,
-                        isMain: false
+                        url: imageUrl,
+                        thumbnail: imageUrl,
+                        isMain: field.isMain
                     });
-                    imageSet.add(additionalImagePath);
+                    imageSet.add(imageUrl);
                 }
             }
         }
 
-        console.log('Processed images:', images);
+        if (!images.some(img => img.isMain)) {
+            console.error('No main image provided');
+            return res.status(400).render("addproduct", {
+                error: "Please upload a main product image",
+                categories: await Category.find({ isListed: true })
+            });
+        }
 
+        // Category validation
         const categoryData = await Category.findOne({ name: productCategory });
         if (!categoryData) {
+            console.error('Invalid category:', productCategory);
             return res.status(400).render("addproduct", {
                 error: "Invalid category",
-                categories: await Category.find({ isListed: true }),
+                categories: await Category.find({ isListed: true })
             });
         }
 
-        const parsedVariants = Array.isArray(variants) ? variants.map(variant => ({
-            size: variant.size,
-            varientPrice: parseFloat(variant.varientPrice),
-            salePrice: parseInt(variant.varientPrice) * (1 - parseInt(productOffer || 0) / 100),
-            varientquatity: parseInt(variant.varientquatity)
-        })) : [];
+        // Parse variants
+        let parsedVariants = [];
+        if (variants) {
+            if (Array.isArray(variants)) {
+                parsedVariants = variants.map(variant => ({
+                    size: variant.size,
+                    varientPrice: parseFloat(variant.varientPrice) || 0,
+                    salePrice: parseFloat(variant.varientPrice || 0) * (1 - parseFloat(productOffer || 0) / 100),
+                    varientquatity: parseInt(variant.varientquatity) || 0
+                }));
+            } else if (typeof variants === 'object') {
+                parsedVariants = Object.values(variants).map(variant => ({
+                    size: variant.size,
+                    varientPrice: parseFloat(variant.varientPrice) || 0,
+                    salePrice: parseFloat(variant.varientPrice || 0) * (1 - parseFloat(productOffer || 0) / 100),
+                    varientquatity: parseInt(variant.varientquatity) || 0
+                }));
+            } else if (req.body['variants[0][size]']) {
+                let index = 0;
+                while (req.body[`variants[${index}][size]`]) {
+                    parsedVariants.push({
+                        size: req.body[`variants[${index}][size]`],
+                        varientPrice: parseFloat(req.body[`variants[${index}][varientPrice]`]) || 0,
+                        salePrice: parseFloat(req.body[`variants[${index}][varientPrice]`] || 0) * 
+                                (1 - parseFloat(productOffer || 0) / 100),
+                        varientquatity: parseInt(req.body[`variants[${index}][varientquatity]`]) || 0
+                    });
+                    index++;
+                }
+            }
+        }
 
         if (parsedVariants.length === 0) {
+            console.error('No variants provided');
             return res.status(400).render("addproduct", {
                 error: "Please add at least one variant",
-                categories: await Category.find({ isListed: true }),
+                categories: await Category.find({ isListed: true })
             });
         }
 
+        // Create and save new product
         const newProduct = new Product({
             name: productName,
             description: productDescription,
@@ -285,13 +312,14 @@ const addproduct = async (req, res) => {
         });
 
         await newProduct.save();
-        console.log("Saved product images:", newProduct.images);
+        console.log('Product saved successfully:', newProduct._id);
         return res.redirect("/admin/productManagment");
+
     } catch (error) {
         console.error('Product Add Error:', error);
         return res.status(500).render("addproduct", {
             error: "Failed to add product: " + error.message,
-            categories: await Category.find({ isListed: true }),
+            categories: await Category.find({ isListed: true })
         });
     }
 };
@@ -398,7 +426,7 @@ const editProduct = async (req, res) => {
         for (let i = 1; i <= 3; i++) {
             const fieldName = `additionalImage${i}`;
             if (req.files && req.files[fieldName]) {
-                const oldImageIndex = images.findIndex(img => !img.isMain && img.url === (images[i]?.url || '')); // Find by position or URL
+                const oldImageIndex = images.findIndex(img => !img.isMain && img.url === (images[i]?.url || '')); 
                 if (oldImageIndex !== -1) {
                     const oldImage = images[oldImageIndex];
                     const publicId = oldImage.url.split('/').pop().split('.')[0];
@@ -506,28 +534,6 @@ const editProduct = async (req, res) => {
         }
     }
 };
-const deleteImage = async (req, res) => {
-    try {
-        const { imageToserver, productToserver } = req.body;
-        const product = await Product.findByIdAndUpdate(productToserver, { $pull: { images: { url: imageToserver } } });
-        if (!product) {
-            return res.status(404).json({ status: false, message: 'Product not found' });
-        }
-
-        const imagePath = path.join('public', 'uploads', 're-images', path.basename(imageToserver));
-        if (await fs.access(imagePath).then(() => true).catch(() => false)) {
-            await fs.unlink(imagePath);
-            console.log(`The ${imageToserver} is deleted successfully`);
-        } else {
-            console.log(`The image ${imageToserver} is not found`);
-        }
-
-        res.json({ status: true });
-    } catch (error) {
-        console.error('Error deleting image:', error);
-        res.redirect('/pageerror');
-    }
-};
 
 const deleteProduct = async (req, res) => {
     try {
@@ -599,7 +605,6 @@ module.exports = {
     addproduct,
     geteditProduct,
     editProduct,
-    deleteImage,
     deleteProduct,
     UnlistProduct,
     listProduct,

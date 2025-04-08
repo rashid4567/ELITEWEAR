@@ -12,12 +12,15 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: async (req, file) => {
-        const productName = req.body.title
-            ? req.body.title.toLowerCase().replace(/\s+/g, '-')
+        const productName = req.body.productName
+            ? req.body.productName.toLowerCase().replace(/\s+/g, '-')
             : 'unnamed';
+        // Use fieldname and a random suffix for uniqueness
+        const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+        const publicId = `${file.fieldname}-${productName}-${uniqueSuffix}`;
         return {
-            folder: 'banners',
-            public_id: `${productName}-${Date.now()}`,
+            folder: 'products',
+            public_id: publicId,
             format: 'webp',
             transformation: [
                 { width: 800, height: 800, crop: 'fill' },
@@ -35,6 +38,9 @@ const upload = multer({
         } else {
             cb(new Error('Only image files are allowed!'), false);
         }
+    },
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit
     }
 });
 
