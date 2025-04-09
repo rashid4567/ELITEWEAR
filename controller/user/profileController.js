@@ -205,7 +205,23 @@ const resendForgotOtp = async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server issue, please try again' });
     }
 };
-
+const loadProfile = async (req, res) => {
+    try {
+        console.log("session data : ",req.session)
+        if(!req.session.user || !req.session.user.fullname){
+            console.log("No user or fullname in the session")
+            return res.redirect("/login")
+        }
+        const fullname = req.session.user.fullname;
+        console.log("Rendering the user name of the User",fullname)
+        return res.render("profile", {
+            fullname:fullname
+        });
+    } catch (error) {
+        console.error("Error in loading profile:", error);
+        res.redirect('/page-404/');
+    }
+}
 module.exports = {
     forgotPassword,
     forgotemailValidations,
@@ -213,4 +229,5 @@ module.exports = {
     resetPasswordPage,
     resetPassword,
     resendForgotOtp,
+    loadProfile,
 };

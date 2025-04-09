@@ -214,7 +214,7 @@ body {
     color: white;
 }
 
-/* Responsive styles */
+
 @media (max-width: 992px) {
     .sidebar {
         width: 70px;

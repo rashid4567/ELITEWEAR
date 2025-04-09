@@ -13,6 +13,17 @@ body {
     background-color: #f5f5f5;
 }
 
+.error-message {
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+.input-wrapper.invalid input {
+    border-color: #dc3545;
+}
+
 .login-container {
     width: 100%;
     max-width: 400px;
@@ -22,32 +33,17 @@ body {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-h1 {
-    text-align: center;
-    margin-bottom: 2rem;
-    font-size: 1.75rem;
-    font-weight: 600;
-}
-
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
-    color: #333;
-}
-
 .input-wrapper {
     position: relative;
+    display: flex;
+    align-items: center;
     width: 100%;
 }
 
-input {
+.input-wrapper input {
     width: 100%;
     padding: 0.75rem;
+    padding-right: 2rem; /* Added to reserve space for the icon */
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 1rem;
@@ -64,12 +60,30 @@ input:focus {
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    color: #666;
     cursor: pointer;
-    color: #555;
+    z-index: 1; /* Ensure icon is above input */
+}
+
+.eye-icon {
+    display: block; /* Ensure visibility */
 }
 
 .check-icon {
     color: #4CAF50;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: #333;
 }
 
 .forgot-password {
@@ -154,7 +168,8 @@ input:focus {
     transition: background-color 0.2s;
     text-decoration: none;
 }
-.google-time{
+
+.google-time {
     text-decoration: none;
 }
 
@@ -181,4 +196,7 @@ input:focus {
     .form-group {
         margin-bottom: 1rem;
     }
+}
+.Login{
+    transform: translateX(107px);
 }

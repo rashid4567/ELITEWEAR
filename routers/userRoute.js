@@ -28,6 +28,7 @@ router.get('/forgot-otp', (req, res) => {
     console.log('GET /forgot-otp - Session data:', req.session);
     res.render("forgotOtp", { email });
 });
+router.get("/LoadProfile", profileController.loadProfile)
 router.post('/forgot-otp', profileController.passForgotten);
 router.post('/resend-forgot-otp', profileController.resendForgotOtp);
 router.get('/reset-password', profileController.resetPasswordPage);
@@ -58,5 +59,8 @@ router.get('/page-not-found', userControllers.pageNotfound);
 router.use((req, res) => {
     res.status(404).redirect('/page-not-found');
 });
+
+
+
 
 module.exports = router;

@@ -287,11 +287,10 @@ const resendOtp = async (req, res) => {
         });
     }
 };
-
 const userLogin = async (req, res) => {
     try {
         if (!req.session.user) {
-            return res.render("login", { user: null });
+            return res.render("login", { user: null, message: null });
         }
         res.redirect('/');
     } catch (error) {
@@ -303,32 +302,50 @@ const userLogin = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
+
+       
         if (!email || !password) {
-            return res.render("login", { message: "Email and password required", user: null });
+            return res.render("login", { 
+                user: null, 
+                message: "Email and password are required" 
+            });
         }
 
         const findUser = await User.findOne({ isAdmin: 0, email });
         if (!findUser) {
-            return res.render("login", { message: "User not found", user: null });
+            return res.render("login", { 
+                user: null, 
+                message: "User not found" 
+            });
         }
 
         if (findUser.isBlocked) {
-            return res.render("login", { message: "User blocked", user: null });
+            return res.render("login", { 
+                user: null, 
+                message: "User blocked" 
+            });
         }
 
         const passwordMatch = await bcrypt.compare(password, findUser.password);
         if (!passwordMatch) {
-            return res.render("login", { message: "Incorrect password", user: null });
+            return res.render("login", { 
+                user: null, 
+                message: "Incorrect password" 
+            });
         }
 
         req.session.user = findUser._id;
         return res.redirect('/');
     } catch (error) {
         console.error("Login error:", error);
-        return res.render("login", { message: "Login failed", user: null });
+        return res.render("login", { 
+            user: null, 
+            message: "Login failed due to server error" 
+        });
     }
 };
 
+module.exports = { userLogin, login };
 const logout = async (req, res) => {
     try {
         req.session.destroy((err) => {
@@ -511,17 +528,19 @@ const searchProducts = async (req, res) => {
     try {
         const query = req.query.query || '';
         const user = req.session.user;
+      
         const userData = user ? await User.findOne({ _id: user }) : null;
         const categories = await Category.find({ isListed: true });
         
-      
+        const listCategories = categories.map(cat => cat._id)
         const products = await Product.find({
             isActive: true,
+            categoryId: { $in: listCategories},
             $or: [
                 { name: { $regex: query, $options: 'i' } },
                 { brand: { $regex: query, $options: 'i' } }
             ]
-        })
+        })     
         .populate("categoryId")
         .lean();
         
@@ -578,3 +597,4 @@ module.exports = {
     aboutUs,
     searchProducts
 };
+

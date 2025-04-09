@@ -38,7 +38,43 @@ body {
     color: white;
     border: none;
     border-radius: 0 4px 4px 0;
-    /* transform: translateY(-41px); */
+ 
+}
+.search-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+
+.clear-btn {
+    position: absolute;
+    right: 110px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: none;
+}
+
+.reset-btn {
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.3s;
+    transform: translateX(90px);
+}
+
+.reset-btn:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+.reset-btn i {
+    font-size: 14px;
 }
 .search-container {
     position: relative;
@@ -48,17 +84,17 @@ body {
 
 .search-input {
     flex: 1;
-    padding-right: 30px; /* Space for cancel button */
+    padding-right: 30px; 
 }
 
 .clear-btn {
     position: absolute;
-    right: 90px; /* Adjust based on layout */
+    right: 90px;
     background: transparent;
     border: none;
     font-size: 18px;
     cursor: pointer;
-    display: none; /* Initially hidden */
+    display: none;
     color: red;
 }
 

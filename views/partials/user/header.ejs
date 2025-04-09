@@ -7,12 +7,15 @@
     <title>ELITE WEAR - Premium Men's Shirts</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/userStyle/home.css">
+    
 </head>
 
 <body>
     <header>
         <div class="container nav-container">
-          <a id="hellowow" href="/"><div class="logo">ELITE WEAR</div></a>
+            <a id="hellowow" href="/">
+                <div class="logo">ELITE WEAR</div>
+            </a>
             <div class="menu-toggle">
                 <i class="fas fa-bars"></i>
             </div>
@@ -23,17 +26,23 @@
                 <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
             </ul>
 
-           
-
             <div class="auth-buttons">
                 <% if (user) { %>
-                    <div class="dropdown">
-                        <a href="#" class="sign-in-link">
-                            <%= user.fullname || user.displayName %>
+                    <div class="nav-buttons">
+                        <a href="#" class="nav-link">
+                            <i class="far fa-heart"></i>
                         </a>
-                        <div class="dropdown-content">
-                            <a href="/userprofile">Profile</a>
-                            <a href="/logout">Logout</a>
+                        <a href="#" class="nav-link">
+                            <i class="fas fa-shopping-cart"></i>
+                        </a>
+                        <div class="dropdown" id="profileDropdown">
+                            <a href="#" class="nav-link" id="profileIcon">
+                                <i class="fas fa-user-circle"></i>
+                            </a>
+                            <div class="dropdown-content">
+                                <a href="/LoadProfile">Profile</a>
+                                <a href="/logout">Logout</a>
+                            </div>
                         </div>
                     </div>
                 <% } else { %>
@@ -41,32 +50,44 @@
                     <a href="/signup" class="auth-button signup-button">Sign Up</a>
                 <% } %>
             </div>
-            <a href="#" class="cart-icon">
-                <i class="fas fa-shopping-cart"></i>
-            </a>
         </div>
     </header>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener("DOMContentLoaded", function () {
+            const profileIcon = document.getElementById("profileIcon");
+            const profileDropdown = document.getElementById("profileDropdown");
+
+            profileIcon.addEventListener("click", function (e) {
+                e.preventDefault();
+                profileDropdown.classList.toggle("show");
+            });
+
+            window.addEventListener("click", function (e) {
+                if (!profileDropdown.contains(e.target)) {
+                    profileDropdown.classList.remove("show");
+                }
+            });
+
+         
             const searchInput = document.getElementById('searchInput');
             const clearButton = document.getElementById('clearSearch');
-            
-            
-            searchInput.addEventListener('input', function() {
-                clearButton.style.display = this.value ? 'block' : 'none';
-            });
-            
-         
-            clearButton.addEventListener('click', function() {
-                searchInput.value = '';
-                clearButton.style.display = 'none';
-                searchInput.focus();
-            });
-            
 
-            clearButton.style.display = searchInput.value ? 'block' : 'none';
+            if (searchInput && clearButton) {
+                searchInput.addEventListener('input', function () {
+                    clearButton.style.display = this.value ? 'block' : 'none';
+                });
+
+                clearButton.addEventListener('click', function () {
+                    searchInput.value = '';
+                    clearButton.style.display = 'none';
+                    searchInput.focus();
+                });
+
+                clearButton.style.display = searchInput.value ? 'block' : 'none';
+            }
         });
     </script>
 </body>
+
 </html>

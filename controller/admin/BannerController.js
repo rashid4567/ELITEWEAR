@@ -28,7 +28,7 @@ const addBanner = async (req, res) => {
             throw new Error("Image upload failed");
         }
         const newBanner = new Banner({
-            image: imageFile.path, // Cloudinary URL
+            image: imageFile.path, 
             title: data.title,
             startingDate: new Date(data.startingDate + "T00:00:00"),
             endingDate: new Date(data.endingDate + "T00:00:00"),

@@ -1,4 +1,4 @@
-/* Custom CSS */
+
 body {
     font-family: 'Inter', sans-serif;
 }
@@ -189,14 +189,12 @@ body {
     }
 }
 
-/* Low stock warning */
 .low-stock {
     color: #dc3545;
     font-size: 0.9rem;
     margin-top: 5px;
 }
 
-/* Animation for hover effects */
 .btn {
     transition: all 0.3s ease;
 }
@@ -225,15 +223,15 @@ body {
     text-align: center;
 }
 .breadcrumb {
-    background-color: #f8f9fa; /* Light gray background */
+    background-color: #f8f9fa; 
     padding: 10px 15px;
     border-radius: 5px;
 }
 
 .breadcrumb-item a {
-    color: #007bff; /* Blue links */
+    color: #007bff; 
 }
 
 .breadcrumb-item.active {
-    color: #6c757d; /* Gray for active item */
+    color: #6c757d; 
 }

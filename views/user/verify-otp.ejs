@@ -29,7 +29,7 @@
             <div class="form-footer">
                 <div class="resend-container">
                     <span>Send code again</span>
-                    <span class="timer">00:30</span>
+                    <span class="timer">00:60</span>
                 </div>
 
                 <div class="resend-container">
@@ -51,6 +51,8 @@
         const resendBtn = document.getElementById('resendBtn');
         const timerElement = document.querySelector('.timer');
         const otpError = document.getElementById('otpError');
+        const TOTAL_TIME = 60;
+
 
         otpInputs.forEach((input, index) => {
             input.addEventListener('input', () => {
@@ -68,15 +70,13 @@
 
         function validateOtpForm() {
             let otpCode = "";
-            otpInputs.forEach(input => {
-                otpCode += input.value;
-            });
+            otpInputs.forEach(input => otpCode += input.value);
 
             if (otpCode.length !== 5) {
                 otpError.style.display = "block";
                 return false;
             }
-            
+
             fullOtpInput.value = otpCode;
             otpError.style.display = "none";
 
@@ -90,6 +90,8 @@
                 success: function (response) {
                     console.log("Verification success:", response);
                     if (response.success) {
+                        localStorage.removeItem('otpTimer');
+                        localStorage.removeItem('otpStartTime');
                         Swal.fire({
                             icon: 'success',
                             title: 'Verification Successful',
@@ -127,15 +129,25 @@
             return false;
         }
 
-        let timeLeft = 60;
 
         function updateTimer() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            const startTime = localStorage.getItem('otpStartTime');
+            let timeLeft;
+
+            if (startTime) {
+                const elapsed = Math.floor((Date.now() - parseInt(startTime)) / 1000);
+                timeLeft = Math.max(TOTAL_TIME - elapsed, 0);
+            } else {
+                timeLeft = TOTAL_TIME;
+                localStorage.setItem('otpStartTime', Date.now());
+            }
+
+            displayTime(timeLeft);
 
             if (timeLeft > 0) {
-                timeLeft--;
+                resendBtn.disabled = true;
+                resendBtn.style.opacity = '0.5';
+                resendBtn.style.cursor = 'not-allowed';
                 setTimeout(updateTimer, 1000);
             } else {
                 resendBtn.disabled = false;
@@ -144,12 +156,31 @@
             }
         }
 
-        updateTimer();
+        function displayTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+
+        function initializeTimer() {
+            const savedStartTime = localStorage.getItem('otpStartTime');
+            if (!savedStartTime) {
+              
+                console.log("Starting fresh timer");
+                localStorage.setItem('otpStartTime', Date.now());
+                updateTimer();
+            } else {
+
+                console.log("Resuming timer from saved state");
+                updateTimer();
+            }
+        }
+
 
         resendBtn.addEventListener('click', function () {
             if (!this.disabled) {
                 console.log("Requesting OTP resend");
-                
                 $.ajax({
                     type: 'POST',
                     url: '/resend-otp',
@@ -168,7 +199,7 @@
                             otpInputs.forEach(input => input.value = '');
                             otpInputs[0].focus();
 
-                            timeLeft = 60;
+                            localStorage.setItem('otpStartTime', Date.now());
                             updateTimer();
                             resendBtn.disabled = true;
                             resendBtn.style.opacity = '0.5';
@@ -198,6 +229,12 @@
                     }
                 });
             }
+        });
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log("DOM loaded, initializing timer");
+            initializeTimer();
         });
     </script>
 </body>

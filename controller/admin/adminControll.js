@@ -21,7 +21,6 @@ const login = async (req, res) => {
 
 
             console.log("Password attempt:", password.substring(0, 1) + "*****");
-
             const passwordMatch = await bcrypt.compare(password, admin.password);
             console.log("Password match result:", passwordMatch);
 

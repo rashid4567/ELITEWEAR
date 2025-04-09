@@ -10,11 +10,8 @@
     <link rel="stylesheet" href="/userStyle/allproduct.css">
 </head>
 
-
 <body>
     <%- include("../partials/user/header") %>
-
- 
 
     <section class="hero">
         <div class="hero-content">
@@ -29,12 +26,10 @@
     <div class="container shop-section">
         <div class="row">
             <div class="col-lg-3">
-  
                 <form id="filterForm" action="/filterProducts" method="GET">
                     <div class="filter-section">
                         <h5 class="filter-title">Filter By</h5>
 
-                        <!-- Category Filter -->
                         <div class="filter-group">
                             <span class="filter-label">Categories</span>
                             <select class="form-select" name="category" id="categorySelect">
@@ -45,7 +40,6 @@
                             </select>
                         </div>
 
-                        <!-- Size Filter -->
                         <div class="filter-group">
                             <span class="filter-label">Size</span>
                             <div class="d-flex flex-wrap gap-2">
@@ -56,7 +50,6 @@
                             <input type="hidden" name="size" id="selectedSize" value="<%= filters ? filters.size : '' %>">
                         </div>
 
-                       
                         <div class="filter-group">
                             <span class="filter-label">Price Range</span>
                             <div class="row">
@@ -81,11 +74,12 @@
                 <div class="products-header d-flex justify-content-between align-items-center mb-4">
                     <h4>Products (<%= totalProducts %>)</h4>
                     <div class="search-container">
-                        <form action="/search" method="GET" class="d-flex">
+                        <form action="/search" method="GET" class="d-flex" id="searchForm">
                             <input type="text" name="query" placeholder="Search products or brands..." class="search-input" value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>">
-                            <button type="submit" class="search-button">
+                            <button type="submit"class="search-button">
                                 <i class="fas fa-search"></i>
                             </button>
+                            <button type="button" class="btn btn-outline-secondary ms-2" id="resetSearch">Reset</button>
                         </form>
                     </div>
         
@@ -99,7 +93,6 @@
                     </div>
                 </div>
 
-                <!-- Product Grid -->
                 <div class="row">
                     <% if (products && products.length > 0) { %>
                         <% products.forEach(product => { %>
@@ -118,7 +111,6 @@
                                             <% if (product.offer > 0) { %>
                                                 <span class="product-price">₹<%= (product.salePrice || 0).toFixed(2) %></span>
                                                 <span class="product-original-price">₹<%= (product.regularPrice || 0).toFixed(2) %></span>
-
                                             <% } else { %>
                                                 <span class="product-price">₹<%= (product.regularPrice || 0).toFixed(2) %></span>
                                             <% } %>
@@ -178,7 +170,7 @@
 
                             <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
                                 <a class="page-link" href="<%= buildPageUrl(currentPage - 1) %>" aria-label="Previous">
-                                    <span aria-hidden="true">&laquo;</span>
+                                    <span aria-hidden="true">«</span>
                                 </a>
                             </li>
 
@@ -190,7 +182,7 @@
 
                             <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
                                 <a class="page-link" href="<%= buildPageUrl(currentPage + 1) %>" aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
+                                    <span aria-hidden="true">»</span>
                                 </a>
                             </li>
                         </ul>
@@ -204,74 +196,42 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const filters = `<%- JSON.stringify(filters || { category: 'all', size: '', color: '', minPrice: '', maxPrice: '', sort: 'latest' }) %>;`
+        const filters = <%- JSON.stringify(filters || { category: 'all', size: '', color: '', minPrice: '', maxPrice: '', sort: 'latest' }) %>;
 
         document.addEventListener('DOMContentLoaded', function () {
-  
             document.getElementById('categorySelect').addEventListener('change', function () {
-        
                 this.form.submit();
             });
 
-          
             document.querySelectorAll('.size-btn').forEach(btn => {
                 btn.addEventListener('click', function () {
                     const size = this.dataset.size;
                     const sizeInput = document.getElementById('selectedSize');
-
-       
                     document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-
                     if (sizeInput.value === size) {
-     
                         sizeInput.value = '';
                     } else {
                         this.classList.add('active');
                         sizeInput.value = size;
                     }
-
-                    
-                });
-            });
-
-     
-            document.querySelectorAll('.color-option').forEach(option => {
-                option.addEventListener('click', function () {
-                    const color = this.dataset.color;
-                    const colorInput = document.getElementById('selectedColor');
-
-               
-                    document.querySelectorAll('.color-option').forEach(o => o.classList.remove('active'));
-
-                    if (colorInput.value === color) {
-                        
-                        colorInput.value = '';
-                    } else {
-                        this.classList.add('active');
-                        colorInput.value = color;
-                    }
-
-       
                 });
             });
 
             document.getElementById('sortOption').addEventListener('change', function () {
-              
                 this.form.submit();
             });
 
-       
+           
+            document.getElementById('resetSearch').addEventListener('click', function () {
+                const searchInput = document.querySelector('.search-input');
+                searchInput.value = '';
+                window.location.href = '/allproduct'; 
+            });
+
             function initActiveStates() {
-         
                 if (filters.size) {
                     const sizeBtn = document.querySelector(`.size-btn[data-size="${filters.size}"]`);
                     if (sizeBtn) sizeBtn.classList.add('active');
-                }
-
-               
-                if (filters.color) {
-                    const colorOption = document.querySelector(`.color-option[data-color="${filters.color}"]`);
-                    if (colorOption) colorOption.classList.add('active');
                 }
             }
 

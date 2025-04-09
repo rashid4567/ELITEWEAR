@@ -168,6 +168,7 @@ const addproduct = async (req, res) => {
                 categories: await Category.find({ isListed: true }),
             });
         }
+  
 
         const {
             productName,

@@ -21,7 +21,7 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
 }
 
-/* Navbar */
+
 .navbar {
     padding: 15px 0;
     transition: all 0.3s ease;
@@ -45,7 +45,6 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--accent-color) !important;
 }
 
-/* Hero Section */
 .hero-section {
     position: relative;
     background-color: #f5f5f5;
@@ -117,7 +116,7 @@ h1, h2, h3, h4, h5, h6 {
     color: var(--accent-color);
 }
 
-/* Section Titles */
+
 .section-title {
     font-size: 2.5rem;
     text-align: center;
@@ -126,7 +125,7 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
 }
 
-/* Product Cards */
+
 .product-card {
     border-radius: 8px;
     overflow: hidden;
@@ -171,7 +170,7 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 5px;
 }
 
-/* Trending Section */
+
 .trending-section {
     position: relative;
     margin: 60px 0;
@@ -196,7 +195,7 @@ h1, h2, h3, h4, h5, h6 {
     color: #333;
 }
 
-/* Formal Banner */
+
 .formal-banner {
     position: relative;
     background-color: #1c1c1c;
@@ -234,7 +233,7 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 300;
 }
 
-/* Footer */
+
 footer {
     background-color: #111;
     color: white;
@@ -294,7 +293,7 @@ footer {
     color: #999;
 }
 
-/* Animations */
+
 .fade-in {
     opacity: 0;
     transition: opacity 1s ease-in-out;
@@ -304,7 +303,7 @@ footer {
     opacity: 1;
 }
 
-/* Media Queries */
+
 @media (max-width: 991px) {
     .hero-title {
         font-size: 4rem;
@@ -552,7 +551,51 @@ header {
     left: 12px;
     color: #777;
 }
+.nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
 
+.nav-buttons .nav-link {
+    color: #c5c2c2;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+.nav-buttons .nav-link:hover {
+    color: #007bff;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #fff;
+    min-width: 120px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.dropdown-content a {
+    display: block;
+    padding: 10px 15px;
+    color: #333;
+    text-decoration: none;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.dropdown.show .dropdown-content {
+    display: block;
+}
 
 .search-input.with-icon {
     padding-left: 35px;

@@ -31,7 +31,7 @@
             
             <div class="resend-container">
                 <span class="resend-text">I didn't receive a code</span>
-                <button type="button" class="resend-button" id="resendBtn">Resend</button>
+                <button type="button" class="resend-button" id="resendBtn" disabled>Resend</button>
             </div>
             
             <button type="submit" class="verify-button">Verify</button>
@@ -47,6 +47,7 @@
         const resendBtn = document.getElementById('resendBtn');
         const timerElement = document.getElementById('countdown');
         const otpError = document.getElementById('otpError');
+        const TOTAL_TIME = 60;
 
         otpInputs.forEach((input, index) => {
             input.addEventListener('input', () => {
@@ -61,7 +62,7 @@
                 }
             });
         });
-        
+
         function validateOtpForm() {
             let otpCode = "";
             otpInputs.forEach(input => {
@@ -80,12 +81,13 @@
 
             $.ajax({
                 type: 'POST',
-                url: '/forgot-otp', 
+                url: '/forgot-otp',
                 contentType: 'application/json',
                 data: JSON.stringify({ otp: otpCode }),
                 success: function (response) {
                     console.log("Verification success:", response);
                     if (response.success) {
+                        localStorage.removeItem('forgotOtpStartTime');
                         Swal.fire({
                             icon: 'success',
                             title: 'Verification Successful',
@@ -122,16 +124,25 @@
 
             return false;
         }
-        
-        let timeLeft = 60;
-        
+
         function updateTimer() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            const startTime = localStorage.getItem('forgotOtpStartTime');
+            let timeLeft;
+
+            if (startTime) {
+                const elapsed = Math.floor((Date.now() - parseInt(startTime)) / 1000);
+                timeLeft = Math.max(TOTAL_TIME - elapsed, 0);
+            } else {
+                timeLeft = TOTAL_TIME;
+                localStorage.setItem('forgotOtpStartTime', Date.now());
+            }
+
+            displayTime(timeLeft);
 
             if (timeLeft > 0) {
-                timeLeft--;
+                resendBtn.disabled = true;
+                resendBtn.style.opacity = '0.5';
+                resendBtn.style.cursor = 'not-allowed';
                 setTimeout(updateTimer, 1000);
             } else {
                 resendBtn.disabled = false;
@@ -139,16 +150,33 @@
                 resendBtn.style.cursor = 'pointer';
             }
         }
-        
-        updateTimer();
-        
+
+        function displayTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function initializeTimer() {
+            const savedStartTime = localStorage.getItem('forgotOtpStartTime');
+            if (!savedStartTime) {
+                console.log("Starting fresh timer for forgot OTP");
+                localStorage.setItem('forgotOtpStartTime', Date.now());
+                updateTimer();
+            } else {
+                console.log("Resuming timer from saved state for forgot OTP");
+                updateTimer();
+            }
+        }
+
+  
         resendBtn.addEventListener('click', function () {
             if (!this.disabled) {
                 console.log("Requesting OTP resend");
                 
                 $.ajax({
                     type: 'POST',
-                    url: '/resend-forgot-otp', 
+                    url: '/resend-forgot-otp',
                     contentType: 'application/json',
                     data: JSON.stringify({}),
                     success: function (response) {
@@ -164,7 +192,7 @@
                             otpInputs.forEach(input => input.value = '');
                             otpInputs[0].focus();
 
-                            timeLeft = 60;
+                            localStorage.setItem('forgotOtpStartTime', Date.now());
                             updateTimer();
                             resendBtn.disabled = true;
                             resendBtn.style.opacity = '0.5';
@@ -194,6 +222,12 @@
                     }
                 });
             }
+        });
+
+      
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log("DOM loaded, initializing timer for forgot OTP");
+            initializeTimer();
         });
     </script>
 </body>
