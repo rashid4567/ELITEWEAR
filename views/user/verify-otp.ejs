@@ -53,7 +53,7 @@
         const otpError = document.getElementById('otpError');
         const TOTAL_TIME = 60;
 
-
+    
         otpInputs.forEach((input, index) => {
             input.addEventListener('input', () => {
                 if (input.value.length === 1 && index < otpInputs.length - 1) {
@@ -68,6 +68,7 @@
             });
         });
 
+        
         function validateOtpForm() {
             let otpCode = "";
             otpInputs.forEach(input => otpCode += input.value);
@@ -129,17 +130,41 @@
             return false;
         }
 
+        function getStartTime() {
+            try {
+                const time = localStorage.getItem('otpStartTime');
+                return time && !isNaN(parseInt(time)) ? parseInt(time) : null;
+            } catch (e) {
+                console.error("LocalStorage access error:", e);
+                return null;
+            }
+        }
 
-        function updateTimer() {
-            const startTime = localStorage.getItem('otpStartTime');
+        function setStartTime(time) {
+            try {
+                localStorage.setItem('otpStartTime', time);
+            } catch (e) {
+                console.error("LocalStorage write error:", e);
+            }
+        }
+
+
+        function displayTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            const startTime = getStartTime();
             let timeLeft;
 
             if (startTime) {
-                const elapsed = Math.floor((Date.now() - parseInt(startTime)) / 1000);
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
                 timeLeft = Math.max(TOTAL_TIME - elapsed, 0);
             } else {
                 timeLeft = TOTAL_TIME;
-                localStorage.setItem('otpStartTime', Date.now());
+                setStartTime(Date.now());
             }
 
             displayTime(timeLeft);
@@ -148,7 +173,7 @@
                 resendBtn.disabled = true;
                 resendBtn.style.opacity = '0.5';
                 resendBtn.style.cursor = 'not-allowed';
-                setTimeout(updateTimer, 1000);
+                setTimeout(startTimer, 1000);
             } else {
                 resendBtn.disabled = false;
                 resendBtn.style.opacity = '1';
@@ -156,24 +181,16 @@
             }
         }
 
-        function displayTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = seconds % 60;
-            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-        }
-
-
         function initializeTimer() {
-            const savedStartTime = localStorage.getItem('otpStartTime');
-            if (!savedStartTime) {
-              
+            const savedStartTime = getStartTime();
+            if (!savedStartTime || (Date.now() - savedStartTime) / 1000 > TOTAL_TIME) {
                 console.log("Starting fresh timer");
-                localStorage.setItem('otpStartTime', Date.now());
-                updateTimer();
+                setStartTime(Date.now());
+                displayTime(TOTAL_TIME);
+                startTimer();
             } else {
-
                 console.log("Resuming timer from saved state");
-                updateTimer();
+                startTimer();
             }
         }
 
@@ -199,8 +216,9 @@
                             otpInputs.forEach(input => input.value = '');
                             otpInputs[0].focus();
 
-                            localStorage.setItem('otpStartTime', Date.now());
-                            updateTimer();
+                            setStartTime(Date.now());
+                            displayTime(TOTAL_TIME);
+                            startTimer();
                             resendBtn.disabled = true;
                             resendBtn.style.opacity = '0.5';
                             resendBtn.style.cursor = 'not-allowed';
@@ -231,7 +249,7 @@
             }
         });
 
-
+        
         document.addEventListener('DOMContentLoaded', function () {
             console.log("DOM loaded, initializing timer");
             initializeTimer();

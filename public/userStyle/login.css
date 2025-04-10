@@ -43,7 +43,7 @@ body {
 .input-wrapper input {
     width: 100%;
     padding: 0.75rem;
-    padding-right: 2rem; /* Added to reserve space for the icon */
+    padding-right: 2rem; 
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 1rem;

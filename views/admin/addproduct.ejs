@@ -99,13 +99,20 @@
 
             <div class="mb-6">
                 <h2 class="text-xl font-semibold mb-4">Product Variants</h2>
+                <div class="mb-4 flex flex-wrap gap-2">
+                    <button type="button" class="size-btn px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200" data-size="S">Add Size S</button>
+                    <button type="button" class="size-btn px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200" data-size="M">Add Size M</button>
+                    <button type="button" class="size-btn px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200" data-size="L">Add Size L</button>
+                    <button type="button" class="size-btn px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200" data-size="XL">Add Size XL</button>
+                    <button type="button" class="size-btn px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200" data-size="XXL">Add Size XXL</button>
+                </div>
                 <div id="variantContainer" class="space-y-4">
                     <% if (typeof variants !== 'undefined' && variants.length > 0) { %>
                         <% variants.forEach((variant, index) => { %>
                             <div class="variant-row flex space-x-4 items-start">
                                 <div class="flex-1 relative">
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Size</label>
-                                    <input type="text" name="variants[<%= index %>][size]" value="<%= variant.size %>" class="form-input w-full border rounded px-3 py-2" placeholder="e.g., S, M, L">
+                                    <input type="text" name="variants[<%= index %>][size]" value="<%= variant.size %>" class="form-input w-full border rounded px-3 py-2" placeholder="e.g., S, M, L" readonly>
                                     <p class="error-message text-red-500 text-xs mt-1 hidden">Size is required</p>
                                 </div>
                                 <div class="flex-1 relative">
@@ -123,7 +130,6 @@
                         <% }); %>
                     <% } %>
                 </div>
-                <button type="button" id="addVariant" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg">Add Variant</button>
             </div>
 
         
@@ -182,11 +188,19 @@
             const productForm = document.getElementById('productForm');
             const submitBtn = document.getElementById('submitBtn');
             const variantContainer = document.getElementById('variantContainer');
-            const addVariantBtn = document.getElementById('addVariant');
+            const sizeButtons = document.querySelectorAll('.size-btn');
             let cropper;
             let currentFileInput;
             let variantCount = <%= typeof variants !== 'undefined' && variants.length > 0 ? variants.length : 0 %>;
             const uploadedFiles = new Set();
+            const addedSizes = new Set();
+
+
+            <% if (typeof variants !== 'undefined' && variants.length > 0) { %>
+                <% variants.forEach(variant => { %>
+                    addedSizes.add('<%= variant.size %>');
+                <% }); %>
+            <% } %>
 
             const debounce = (func, delay) => {
                 let timeoutId;
@@ -266,9 +280,9 @@
                 return isValid;
             }
 
-            function showTemporaryMessage(message) {
+            function showTemporaryMessage(message, bgColor = 'bg-red-500') {
                 const msg = document.createElement('div');
-                msg.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded shadow-lg z-50 animate-fade-in';
+                msg.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded shadow-lg z-50 animate-fade-in`;
                 msg.textContent = message;
                 document.body.appendChild(msg);
                 setTimeout(() => msg.classList.add('opacity-0'), 2000);
@@ -382,13 +396,22 @@
             });
 
           
-            function addVariantRow(size = '', price = '', stock = '') {
+            function addVariantRow(size, price = '', stock = '') {
+                if (addedSizes.has(size)) {
+                    showTemporaryMessage(`Size ${size} already added`, 'bg-yellow-500');
+                    return false;
+                }
+
+                addedSizes.add(size);
+                updateSizeButtons();
+
                 const variantDiv = document.createElement('div');
                 variantDiv.className = 'variant-row flex space-x-4 items-start animate-slide-in';
+                variantDiv.dataset.size = size;
                 variantDiv.innerHTML = `
                     <div class="flex-1 relative">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Size</label>
-                        <input type="text" name="variants[${variantCount}][size]" value="${size}" class="form-input w-full border rounded px-3 py-2" placeholder="e.g., S, M, L">
+                        <input type="text" name="variants[${variantCount}][size]" value="${size}" class="form-input w-full border rounded px-3 py-2 bg-gray-100" readonly>
                         <p class="error-message text-red-500 text-xs mt-1 hidden">Size is required</p>
                     </div>
                     <div class="flex-1 relative">
@@ -412,6 +435,10 @@
                 });
 
                 variantDiv.querySelector('.remove-variant').addEventListener('click', () => {
+                    const sizeToRemove = variantDiv.dataset.size;
+                    addedSizes.delete(sizeToRemove);
+                    updateSizeButtons();
+                    
                     variantDiv.classList.add('animate-slide-out');
                     setTimeout(() => variantDiv.remove(), 300);
                     setTimeout(() => {
@@ -422,12 +449,35 @@
                 });
 
                 variantCount++;
+                return true;
             }
 
-            addVariantBtn.addEventListener('click', () => addVariantRow());
-            if (variantCount === 0) addVariantRow();
+            function updateSizeButtons() {
+                sizeButtons.forEach(btn => {
+                    const size = btn.dataset.size;
+                    if (addedSizes.has(size)) {
+                        btn.classList.add('bg-gray-200', 'text-gray-500', 'cursor-not-allowed');
+                        btn.classList.remove('bg-blue-100', 'text-blue-700', 'hover:bg-blue-200');
+                    } else {
+                        btn.classList.remove('bg-gray-200', 'text-gray-500', 'cursor-not-allowed');
+                        btn.classList.add('bg-blue-100', 'text-blue-700', 'hover:bg-blue-200');
+                    }
+                });
+            }
 
-       
+           
+            updateSizeButtons();
+
+          
+            sizeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const size = btn.dataset.size;
+                    if (!addedSizes.has(size)) {
+                        addVariantRow(size);
+                    }
+                });
+            });
+
             submitBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 submitBtn.disabled = true;

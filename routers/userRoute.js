@@ -5,7 +5,9 @@ const productController = require("../controller/user/productControllers");
 const passport = require('../config/passport');
 const profileController = require("../controller/user/profileController");
 
-router.get('/', userControllers.loadHomepage);
+
+const { checkBlockedStatus } = userControllers;
+
 
 router.get('/signup', userControllers.loadUserSignup);
 router.post('/signup', userControllers.userSignup);
@@ -19,7 +21,10 @@ router.post('/resend-otp', userControllers.resendOtp);
 
 router.get('/login', userControllers.userLogin);
 router.post('/login', userControllers.login);
-router.get('/logout', userControllers.logout);
+
+
+router.get('/', checkBlockedStatus, userControllers.loadHomepage);
+router.get('/logout', checkBlockedStatus, userControllers.logout);
 
 router.get('/forgot-password', profileController.forgotPassword);
 router.post('/forgot-email-id', profileController.forgotemailValidations);
@@ -28,7 +33,7 @@ router.get('/forgot-otp', (req, res) => {
     console.log('GET /forgot-otp - Session data:', req.session);
     res.render("forgotOtp", { email });
 });
-router.get("/LoadProfile", profileController.loadProfile)
+router.get("/LoadProfile", checkBlockedStatus, profileController.loadProfile);
 router.post('/forgot-otp', profileController.passForgotten);
 router.post('/resend-forgot-otp', profileController.resendForgotOtp);
 router.get('/reset-password', profileController.resetPasswordPage);
@@ -39,28 +44,28 @@ router.get('/auth/google',
 );
 
 router.get('/google/callback', 
-    passport.authenticate('google', { failureRedirect: '/signup',
-        failureFlash:true
-     }), 
+    passport.authenticate('google', { 
+        failureRedirect: '/signup',
+        failureFlash: true
+    }), 
     (req, res) => {
         req.session.user = req.user._id;
         res.redirect('/');
     }
 );
 
-router.get('/filterProducts', userControllers.filterProducts);
+router.get('/filterProducts', checkBlockedStatus, userControllers.filterProducts);
 
-router.get('/productdetails', productController.productdetails); 
-router.get('/productdetails/:id', productController.productdetails); 
-router.get('/allproduct', userControllers.allproduct);
-router.get("/aboutUs", userControllers.aboutUs);
-router.get("/search", userControllers.searchProducts);
+router.get('/productdetails', checkBlockedStatus, productController.productdetails); 
+router.get('/productdetails/:id', checkBlockedStatus, productController.productdetails); 
+router.get('/allproduct', checkBlockedStatus, userControllers.allproduct);
+router.get("/aboutUs", checkBlockedStatus, userControllers.aboutUs);
+router.get("/search", checkBlockedStatus, userControllers.searchProducts);
+
+
 router.get('/page-not-found', userControllers.pageNotfound);
 router.use((req, res) => {
     res.status(404).redirect('/page-not-found');
 });
-
-
-
 
 module.exports = router;

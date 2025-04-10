@@ -22,7 +22,7 @@ const categoryInfo = async (req, res) => {
         });
 
     } catch (error) {
-        console.log("Error fetching category data:", error);
+        console.error("Error fetching category data:", error);
         res.status(500).redirect("/pageerror");
     }
 };

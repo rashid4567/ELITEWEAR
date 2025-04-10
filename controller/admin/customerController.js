@@ -37,7 +37,7 @@ const customerInfo = async (req, res) => {
     const hasNextPage = page < totalPages;
     const hasPrevPage = page > 1;
 
-    return res.render('userManagement', {
+    return res.render("userManagement", {
       search: search,
       users: userData,
       pagination: {
@@ -46,39 +46,35 @@ const customerInfo = async (req, res) => {
         currentPage: page,
         hasNextPage: hasNextPage,
         hasPrevPage: hasPrevPage,
-        limit: limit
-      }
+        limit: limit,
+      },
     });
-
   } catch (error) {
     console.error("Error in customerInfo controller:", error);
-    res.status(500).render('error', {
+    res.status(500).render("error", {
       message: "Internal server error",
-      error: error.message
+      error: error.message,
     });
   }
 };
 
 const customerBlocked = async (req, res) => {
   try {
-
     let id = req.query.id;
     await User.updateOne({ _id: id }, { $set: { isBlocked: true } });
     res.json({ success: true, isBlocked: true });
   } catch (error) {
-    console.log("Admin unable to block customer:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
 const customerUnblocked = async (req, res) => {
   try {
-
     let id = req.query.id;
     await User.updateOne({ _id: id }, { $set: { isBlocked: false } });
     res.json({ success: true, isBlocked: false });
   } catch (error) {
-    console.log("Admin unable to unblock customer:", error);
+    console.error("Admin unable to unblock customer:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
@@ -86,5 +82,5 @@ const customerUnblocked = async (req, res) => {
 module.exports = {
   customerBlocked,
   customerUnblocked,
-  customerInfo
+  customerInfo,
 };
