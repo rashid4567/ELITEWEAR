@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Address</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/userStyle/addAddress.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="form-container">
+                    <div class="row mb-4">
+                        <div class="col">
+                            <h4 class="section-title">Add New Address</h4>
+                        </div>
+                        <div class="col-auto">
+                            <h5 class="information-header text-end">Personal Information</h5>
+                        </div>
+                    </div>
+                    
+                    <form id="addAddressForm">
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="fullName" class="form-label">Full name</label>
+                                <input type="text" class="form-control" id="fullName" name="fullname" placeholder="LastName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="mobile" class="form-label">Mobile</label>
+                                <input type="tel" class="form-control" id="mobile" name="mobile" placeholder="Enter mobile number" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" name="address" placeholder="House Name, House Number, Locality" required></textarea>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="district" class="form-label">District</label>
+                                <input type="text" class="form-control" id="district" name="district" placeholder="eg : Ernakulam" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="state" class="form-label">State</label>
+                                <input type="text" class="form-control" id="state" name="state" placeholder="eg : Kerala" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="city" class="form-label">City</label>
+                                <input type="text" class="form-control" id="city" name="city" placeholder="eg : Kochi" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="pinCode" class="form-label">Pin Code</label>
+                                <input type="text" class="form-control" id="pinCode" name="pincode" placeholder="eg : 689230" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="landmark" class="form-label">Landmark (optional)</label>
+                            <input type="text" class="form-control" id="landmark" name="landmark" placeholder="eg : Hospital">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="type" class="form-label">Address Type</label>
+                            <select class="form-control" id="type" name="type">
+                                <option value="Home">Home</option>
+                                <option value="Office">Office</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end gap-3 mt-5">
+                            <button type="button" class="btn btn-cancel" onclick="window.history.back()">Cancel</button>
+                            <button type="submit" class="btn btn-update">Add Address</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('addAddressForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+    
+            const formData = new FormData(e.target);
+            const addressData = {
+                fullname: formData.get('fullname'),
+                mobile: formData.get('mobile'),
+                address: formData.get('address'),
+                district: formData.get('district'),
+                city: formData.get('city'),
+                state: formData.get('state'),
+                pincode: formData.get('pincode'),
+                landmark: formData.get('landmark'),
+                type: formData.get('type')
+            };
+    
+            try {
+                const response = await fetch('/api/address/add', { // Adjust to match your route
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Add JWT token if using authentication
+                        // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(addressData)
+                });
+    
+                const result = await response.json();
+    
+                if (response.ok && result.success) {
+                    alert('Address added successfully!');
+                    window.location.href = '/address'; // Redirect to address listing page
+                } else {
+                    alert(`Error: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('Failed to add address. Please try again.');
+            }
+        });
+    </script>   
+</body>
+</html>

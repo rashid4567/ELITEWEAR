@@ -7,101 +7,52 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="/userStyle/profile.css">
+
 </head>
 <body>
+  
     <div class="container-fluid p-0">
         <div class="row g-0">
             <button class="sidebar-toggle d-md-none" id="sidebarToggle">
                 <i class="fas fa-bars"></i>
             </button>
             
-    
-            <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
-                <div class="profile-avatar"><%= fullname ? fullname.charAt(0).toUpperCase() : 'U' %></div>
-                <div class="user-name"><%= fullname || 'unknown User'%></div>
-                <nav class="nav flex-column">
-                    <a class="nav-link active" href="#"><i class="fas fa-user"></i> My Profile</a>
-                    <a class="nav-link" href="#"><i class="fas fa-map-marker-alt"></i> My Address</a>
-                    <a class="nav-link" href="#"><i class="fas fa-shopping-bag"></i> My Order</a>
-                    <a class="nav-link" href="#"><i class="fas fa-heart"></i> My Wishlist (4)</a>
-                    <a class="nav-link" href="#"><i class="fas fa-wallet"></i> My Wallet</a>
-                    <a class="nav-link" href="#"><i class="fas fa-ticket-alt"></i> My Coupon</a>
-                    <a class="nav-link" href="#"><i class="fas fa-lock"></i> Change password</a>
-                    <a class="nav-link" href="#"><i class="fas fa-sign-out-alt"></i> Log out</a>
-                    <a class="nav-link" href="#"><i class="fas fa-share-alt"></i> Referral Code</a>
-                </nav>
-            </div>
-            
 
+            <%- include("../partials/user/profileSidebar") %>
+    
             <div class="col-md-9 col-lg-10 main-content">
-                <h5 class="welcome-text">Welcome <%= fullname %>!</h5>
+                <h5 class="welcome-text">Welcome <%= fullname || 'Unknown User' %>!</h5>
                 
-        
+         
                 <div class="profile-card">
                     <form>
                         <div class="mb-3">
                             <label for="fullName" class="form-label">Full name</label>
-                            <input type="text" class="form-control" id="fullName" value="Rashid" readonly>
+                            <input type="text" class="form-control" id="fullName" value="<%= fullname %>" disabled>
                         </div>
                         
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" value="rashid@gmail.com" readonly>
+                            <input type="email" class="form-control" id="email" value="<%= email %>" disabled>
                         </div>
                         
                         <div class="mb-3">
                             <label for="phone" class="form-label">Phone</label>
-                            <input type="tel" class="form-control" id="phone" value="+91(245) 6.7890" readonly>
+                            <input type="tel" class="form-control" id="phone" value="<%= mobile || 'User doest have a mobile number' %>" disabled>
                         </div>
-                        
+                      
                         <div class="text-end">
-                            <button type="button" class="edit-btn" id="editBtn">EDIT</button>
+                            <a type="button" href="/getprofileEdit" class="edit-btn" id="editBtn">EDIT</a>
                         </div>
                     </form>
                 </div>
-                
-       
                 <div class="message-btn-container">
                     <button class="message-btn">Your Message</button>
                 </div>
             </div>
         </div>
     </div>
-    
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-   
-        $('#sidebarToggle').on('click', function() {
-            $('#sidebar').toggleClass('show');
-        });
-        
-
-        $('#editBtn').on('click', function() {
-            const inputs = $('#fullName, #email, #phone');
-            const isReadOnly = inputs.prop('readonly');
-            
-            if (isReadOnly) {
-                inputs.prop('readonly', false);
-                $(this).text('SAVE');
-                inputs.first().focus();
-            } else {
-                inputs.prop('readonly', true);
-                $(this).text('EDIT');
-       
-            }
-        });
-        
-
-        $(document).on('click', function(e) {
-            if ($(window).width() < 768) {
-                if (!$(e.target).closest('#sidebar').length && !$(e.target).closest('#sidebarToggle').length) {
-                    $('#sidebar').removeClass('show');
-                }
-            }
-        });
-    </script>
 </body>
 </html>

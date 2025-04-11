@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Address</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/userStyle/addAddress.css">
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+          
+            <div class="col-lg-8">
+                <div class="form-container">
+                    <div class="row mb-4">
+                        <div class="col">
+                            <h4 class="section-title">Add New Address</h4>
+                        </div>
+                        <div class="col-auto">
+                            <h5 class="information-header text-end">Personal Information</h5>
+                        </div>
+                    </div>
+                    
+                    <form>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="fullName" class="form-label">Full name</label>
+                                <input type="text" class="form-control" id="fullName" placeholder="LastName">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" placeholder="example@gmail.com">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="address" class="form-label">Address</label>
+                            <textarea class="form-control" id="address" placeholder="House Name, House Number, Locality"></textarea>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="district" class="form-label">District</label>
+                                <input type="text" class="form-control" id="district" placeholder="eg : Ernakulam">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="state" class="form-label">State</label>
+                                <input type="text" class="form-control" id="state" placeholder="eg : Kerala">
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="city" class="form-label">City</label>
+                                <input type="text" class="form-control" id="city" placeholder="eg : Hospital">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="pinCode" class="form-label">Pin Code</label>
+                                <input type="text" class="form-control" id="pinCode" placeholder="eg : 689230">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="landmark" class="form-label">Landmark ( optional )</label>
+                            <input type="text" class="form-control" id="landmark" placeholder="eg : Hospital">
+                        </div>
+                        
+                        <div class="d-flex justify-content-end gap-3 mt-5">
+                            <button type="button" class="btn btn-cancel">Cancel</button>
+                            <button type="submit" class="btn btn-update">Update Address</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

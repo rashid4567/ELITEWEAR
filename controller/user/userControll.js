@@ -308,50 +308,48 @@ const userLogin = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
+    try {
+      const { email, password } = req.body;
+  
+      if (!email || !password) {
+        return res.render("login", {
+          user: null,
+          message: "Email and password are required",
+        });
+      }
+  
+      const findUser = await User.findOne({ isAdmin: 0, email });
+      if (!findUser) {
+        return res.render("login", {
+          user: null,
+          message: "User not found",
+        });
+      }
+  
+      if (findUser.isBlocked) {
+        return res.render("login", {
+          user: null,
+          message: "User blocked",
+        });
+      }
+  
+      const passwordMatch = await bcrypt.compare(password, findUser.password);
+      if (!passwordMatch) {
+        return res.render("login", {
+          user: null,
+          message: "Incorrect password",
+        });
+      }
+      req.session.user = findUser; 
+      return res.redirect("/");
+    } catch (error) {
+      console.error("Login error:", error);
       return res.render("login", {
         user: null,
-        message: "Email and password are required",
+        message: "Login failed due to server error",
       });
     }
-
-    const findUser = await User.findOne({ isAdmin: 0, email });
-    if (!findUser) {
-      return res.render("login", {
-        user: null,
-        message: "User not found",
-      });
-    }
-
-    if (findUser.isBlocked) {
-      return res.render("login", {
-        user: null,
-        message: "User blocked",
-      });
-    }
-
-    const passwordMatch = await bcrypt.compare(password, findUser.password);
-    if (!passwordMatch) {
-      return res.render("login", {
-        user: null,
-        message: "Incorrect password",
-      });
-    }
-
-    req.session.user = findUser._id;
-    return res.redirect("/");
-  } catch (error) {
-    console.error("Login error:", error);
-    return res.render("login", {
-      user: null,
-      message: "Login failed due to server error",
-    });
-  }
-};
-
+  };
 module.exports = { userLogin, login };
 const logout = async (req, res) => {
   try {
@@ -583,7 +581,7 @@ const searchProducts = async (req, res) => {
       const categories = await Category.find({ isListed: true });
       const listCategories = categories.map((cat) => cat._id);
   
-      // Build the search query
+
       let searchQuery = {
         isActive: true,
         categoryId: { $in: listCategories },

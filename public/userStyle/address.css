@@ -1,0 +1,98 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.container-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.breadcrumb-container {
+    margin: 20px 0;
+}
+.breadcrumb-item a {
+    color: #6c757d;
+    text-decoration: none;
+}
+.breadcrumb-item.active {
+    color: #212529;
+}
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+}
+.address-container {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 30px;
+    margin-bottom: 30px;
+}
+.section-title {
+    font-weight: 600;
+    margin-bottom: 30px;
+}
+.address-card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    position: relative;
+}
+.address-name {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+.address-type {
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+.address-details {
+    font-size: 14px;
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+.edit-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: #212529;
+    font-size: 18px;
+}
+.btn-group {
+    margin-top: 10px;
+}
+.btn-default {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    color: #212529;
+    padding: 5px 15px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+.btn-delete {
+    background-color: #212529;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 4px;
+    border: none;
+    font-size: 14px;
+}
+.btn-add-address {
+    background-color: #212529;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    display: inline-block;
+    text-decoration: none;
+    font-weight: 500;
+}
+.btn-add-address:hover {
+    background-color: #000;
+    color: white;
+}
+.address-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+}

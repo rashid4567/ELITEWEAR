@@ -2,24 +2,23 @@ const User = require('../model/userSChema');
 
 const UserAuth = (req, res, next) => {
     if (req.session.user) {
-        User.findById(req.session.user._id)
-            .then(user => {
-                if (user && !user.isBlocked) {
-                    next();
-                } else {
-                    req.session.destroy(); 
-                    res.redirect("/login");
-                }
-            })
-            .catch(error => {
-                console.error("Error in userAuth middleware:", error);
-                res.status(500).send("Internal server issue");
-            });
+      User.findById(req.session.user._id)
+        .then((user) => {
+          if (user && !user.isBlocked) {
+            next();
+          } else {
+            req.session.destroy();
+            res.redirect("/login");
+          }
+        })
+        .catch((error) => {
+          console.error("Error in userAuth middleware:", error);
+          res.status(500).send("Internal server issue");
+        });
     } else {
-        res.redirect('/login');
+      res.redirect("/login");
     }
-};
-
+  };
 const adminAuth = (req, res, next) => {
     if (req.session.admin) { 
         User.findById(req.session.admin) 

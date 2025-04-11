@@ -4,7 +4,8 @@ const userControllers = require('../controller/user/userControll');
 const productController = require("../controller/user/productControllers");
 const passport = require('../config/passport');
 const profileController = require("../controller/user/profileController");
-
+const AddressController = require("../controller/user/addressController")
+const {UserAuth, adminAuth} = require("../middleware/auth")
 
 const { checkBlockedStatus } = userControllers;
 
@@ -33,7 +34,7 @@ router.get('/forgot-otp', (req, res) => {
     console.log('GET /forgot-otp - Session data:', req.session);
     res.render("forgotOtp", { email });
 });
-router.get("/LoadProfile", checkBlockedStatus, profileController.loadProfile);
+router.get("/LoadProfile", UserAuth, profileController.loadProfile);
 router.post('/forgot-otp', profileController.passForgotten);
 router.post('/resend-forgot-otp', profileController.resendForgotOtp);
 router.get('/reset-password', profileController.resetPasswordPage);
@@ -62,6 +63,15 @@ router.get('/allproduct', checkBlockedStatus, userControllers.allproduct);
 router.get("/aboutUs", checkBlockedStatus, userControllers.aboutUs);
 router.get("/search", checkBlockedStatus, userControllers.searchProducts);
 
+
+router.get("/getprofileEdit", UserAuth, profileController.loadProfileEdit)
+router.post("/send-email-update-otp",UserAuth, profileController.sendemilUpdateOtp)
+router.post("/verify-email-update-otp", UserAuth, profileController.verifyUpdateOtp)
+router.post("/update-profile", UserAuth,profileController.updateProfile);
+
+router.get("/address", UserAuth, AddressController.address)
+router.get("/getaddAddress", UserAuth, AddressController.getaddAddress)
+router.post("/add-address", UserAuth, AddressController.addAddress)
 
 router.get('/page-not-found', userControllers.pageNotfound);
 router.use((req, res) => {
