@@ -199,9 +199,97 @@ body {
     height: 100%;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
+.wishlist-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    width: 24px;
+    height: 24px;
+    transform: translate(-20px, 28px);
+}
+.heart {
+    fill: transparent;
+    stroke: #888;
+    stroke-width: 1.5;
+    transform-origin: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .heart:hover {
+    stroke: #ff3366;
+    transform: scale(1.1);
+  }
+  
+  .heart.active {
+    fill: #ff3366;
+    stroke: #ff3366;
+    animation: pulse 0.6s ease-out;
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
 .col-md-3 {
     padding: 0 15px;
+}
+.product-item {
+    position: relative;
+    display: block; /* Ensures the container behaves like a block */
+}
+
+.product-link {
+    display: block; /* Ensures the link covers the card for navigation */
+    text-decoration: none;
+    color: inherit;
+}
+
+.product-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.product-img-container {
+    position: relative;
+}
+
+/* .product-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #dc3545;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+} */
+
+/* .wishlist-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    cursor: pointer;
+    z-index: 1;
+} */
+
+.wishlist-heart {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: #000;
+}
+
+.wishlist-heart .heart {
+    transition: fill 0.3s;
+    fill: #ccc;
+}
+
+.wishlist-heart .heart.active {
+    fill: #ff0000; /* Red when active */
 }
 
 .product-img-container {

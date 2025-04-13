@@ -96,8 +96,8 @@
                 <div class="row" id="products-container">
                     <% if (products && products.length > 0) { %>
                         <% products.forEach(product => { %>
-                            <div class="col-md-4 col-sm-6 mb-4">
-                                <a href="/productdetails?id=<%= product._id %>" class="text-decoration-none text-dark">
+                            <div class="col-md-4 col-sm-6 mb-4 product-item">
+                                <a href="/productdetails?id=<%= product._id %>" class="text-decoration-none text-dark product-link">
                                     <div class="product-card">
                                         <div class="product-img-container">
                                             <% const mainImage = product.images && product.images.find(img => img.isMain) || (product.images && product.images[0]) || { url: '/images/placeholder.jpg' }; %>
@@ -130,6 +130,11 @@
                                         </div>
                                     </div>
                                 </a>
+                                <div class="wishlist-icon">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart" data-product-id="<%= product._id %>">
+                                        <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                    </svg>
+                                </div>
                             </div>
                         <% }); %>
                     <% } else { %>
@@ -187,12 +192,23 @@
                             </li>
                         </ul>
                     </nav>
-                Reun<% } %>
+                <% } %>
             </div>
         </div>
     </div>
 
     <%- include("../partials/user/footer") %>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="wishlistToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">Wishlist</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastBody"></div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -200,7 +216,67 @@
         let currentPage = <%= currentPage || 1 %>;
 
         document.addEventListener('DOMContentLoaded', function () {
-           
+            // Initialize toast
+            const wishlistToast = new bootstrap.Toast(document.getElementById('wishlistToast'));
+
+            // Load wishlist state
+            async function loadWishlistState() {
+                try {
+                    const response = await fetch('/wishlist/ids');
+                    const data = await response.json();
+                    console.log('Wishlist IDs:', data);
+                    document.querySelectorAll('.wishlist-heart').forEach(heart => {
+                        const productId = heart.getAttribute('data-product-id');
+                        if (data.products.includes(productId)) {
+                            heart.querySelector('.heart').classList.add('active');
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error loading wishlist state:', error);
+                }
+            }
+            loadWishlistState();
+
+            // Handle wishlist toggle
+            document.querySelectorAll('.wishlist-heart').forEach(heart => {
+                heart.addEventListener('click', async function(event) {
+                    // No need for stopPropagation since the icon is outside the <a> tag
+                    const productId = this.getAttribute('data-product-id');
+                    const heartPath = this.querySelector('.heart');
+                    const isActive = heartPath.classList.contains('active');
+                    const url = isActive ? '/wishlist/remove' : '/addTowhislist';
+
+                    console.log(`${isActive ? 'Removing' : 'Adding'} product ID:`, productId);
+
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ productId: productId }),
+                        });
+                        console.log('Response status:', response.status);
+                        const data = await response.json();
+                        console.log('Response data:', data);
+                        const toastBody = document.getElementById('toastBody');
+                        toastBody.textContent = data.message;
+                        toastBody.style.color = data.success ? 'green' : 'red';
+                        wishlistToast.show();
+                        if (data.success) {
+                            heartPath.classList.toggle('active');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        const toastBody = document.getElementById('toastBody');
+                        toastBody.textContent = 'Operation failed';
+                        toastBody.style.color = 'red';
+                        wishlistToast.show();
+                    }
+                });
+            });
+
+            // Existing filter and pagination logic
             function fetchProducts(isSearch = false) {
                 const filterData = {
                     category: document.getElementById('categorySelect').value,
@@ -227,19 +303,19 @@
                 .then(data => {
                     updateProducts(data);
                     updatePagination(data);
+                    // Reload wishlist state after updating products
+                    loadWishlistState();
                 })
                 .catch(error => {
                     console.error('Error fetching products:', error);
                 });
             }
 
-          
             document.getElementById('categorySelect').addEventListener('change', function () {
                 currentPage = 1;
                 fetchProducts();
             });
 
-        
             document.querySelectorAll('.size-btn').forEach(btn => {
                 btn.addEventListener('click', function (e) {
                     e.preventDefault();
@@ -258,34 +334,29 @@
                 });
             });
 
-            
             document.getElementById('applyFilters').addEventListener('click', function (e) {
                 e.preventDefault();
                 currentPage = 1;
                 fetchProducts();
             });
 
-          
             document.getElementById('sortOption').addEventListener('change', function () {
                 currentPage = 1;
                 fetchProducts();
             });
 
-         
             document.getElementById('searchBtn').addEventListener('click', function (e) {
                 e.preventDefault();
                 currentPage = 1;
                 fetchProducts(true); 
             });
 
-    
             document.getElementById('resetSearch').addEventListener('click', function () {
                 document.getElementById('searchQuery').value = '';
                 currentPage = 1;
                 fetchProducts(); 
             });
 
-      
             document.getElementById('pagination')?.addEventListener('click', function (e) {
                 e.preventDefault();
                 const pageLink = e.target.closest('.page-link');
@@ -302,8 +373,8 @@
                 if (data.products && data.products.length > 0) {
                     data.products.forEach(product => {
                         const productHtml = `
-                            <div class="col-md-4 col-sm-6 mb-4">
-                                <a href="/productdetails?id=${product._id}" class="text-decoration-none text-dark">
+                            <div class="col-md-4 col-sm-6 mb-4 product-item">
+                                <a href="/productdetails?id=${product._id}" class="text-decoration-none text-dark product-link">
                                     <div class="product-card">
                                         <div class="product-img-container">
                                             <img src="${product.images[0]?.url || '/images/placeholder.jpg'}" class="product-img" alt="${product.name}">
@@ -324,9 +395,52 @@
                                         </div>
                                     </div>
                                 </a>
+                                <div class="wishlist-icon">
+                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart" data-product-id="${product._id}">
+                                        <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                    </svg>
+                                </div>
                             </div>
                         `;
                         productsContainer.insertAdjacentHTML('beforeend', productHtml);
+                    });
+                    // Reattach event listeners to new wishlist icons
+                    document.querySelectorAll('.wishlist-heart').forEach(heart => {
+                        heart.addEventListener('click', async function(event) {
+                            // No need for stopPropagation since the icon is outside the <a> tag
+                            const productId = this.getAttribute('data-product-id');
+                            const heartPath = this.querySelector('.heart');
+                            const isActive = heartPath.classList.contains('active');
+                            const url = isActive ? '/wishlist/remove' : '/addTowhislist';
+
+                            console.log(`${isActive ? 'Removing' : 'Adding'} product ID:`, productId);
+
+                            try {
+                                const response = await fetch(url, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({ productId: productId }),
+                                });
+                                console.log('Response status:', response.status);
+                                const data = await response.json();
+                                console.log('Response data:', data);
+                                const toastBody = document.getElementById('toastBody');
+                                toastBody.textContent = data.message;
+                                toastBody.style.color = data.success ? 'green' : 'red';
+                                wishlistToast.show();
+                                if (data.success) {
+                                    heartPath.classList.toggle('active');
+                                }
+                            } catch (error) {
+                                console.error('Error:', error);
+                                const toastBody = document.getElementById('toastBody');
+                                toastBody.textContent = 'Operation failed';
+                                toastBody.style.color = 'red';
+                                wishlistToast.show();
+                            }
+                        });
                     });
                 } else {
                     productsContainer.innerHTML = `
@@ -344,7 +458,6 @@
                 document.getElementById('productCount').textContent = `Products (${data.totalProducts})`;
             }
 
-      
             function updatePagination(data) {
                 const pagination = document.getElementById('pagination');
                 if (!pagination) return;
@@ -378,7 +491,6 @@
                 }
             }
 
-
             function generateStars(rating) {
                 let stars = '';
                 for (let i = 1; i <= 5; i++) {
@@ -393,7 +505,6 @@
                 return stars;
             }
 
-    
             function initActiveStates() {
                 if (filters.size) {
                     const sizeBtn = document.querySelector(`.size-btn[data-size="${filters.size}"]`);
@@ -402,7 +513,11 @@
             }
 
             initActiveStates();
+
+            // Initial fetch to load products
+            fetchProducts();
         });
+        
     </script>
 </body>
 

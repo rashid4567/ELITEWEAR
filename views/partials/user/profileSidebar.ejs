@@ -1,45 +1,338 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>.</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/userStyle/profile.css">
-</head>
-<body>
-    
-    <div class="col-md-3 col-lg-2 sidebar" id="sidebar">
-        <div class="profile-avatar"><%= fullname ? fullname.charAt(0).toUpperCase() : 'U' %></div>
-        <div class="user-name"><%= fullname || 'Unknown User' %></div>
-        <nav class="nav flex-column">
-            <a class="nav-link active" href="#"><i class="fas fa-user"></i> My Profile</a>
-            <a class="nav-link" href="/address"><i class="fas fa-map-marker-alt"></i> My Address</a>
-            <a class="nav-link" href="#"><i class="fas fa-shopping-bag"></i> My Order</a>
-            <a class="nav-link" href="#"><i class="fas fa-heart"></i> My Wishlist (4)</a>
-            <a class="nav-link" href="#"><i class="fas fa-wallet"></i> My Wallet</a>
-            <a class="nav-link" href="#"><i class="fas fa-ticket-alt"></i> My Coupon</a>
-            <a class="nav-link" href="#"><i class="fas fa-lock"></i> Change password</a>
-            <a class="nav-link" href="#"><i class="fas fa-sign-out-alt"></i> Log out</a>
-            <a class="nav-link" href="#"><i class="fas fa-share-alt"></i> Referral Code</a>
-        </nav>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Profile Sidebar</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 20px;
+        color: #333;
+      }
+
+      /* Enhanced Sidebar Styles */
+      .sidebar {
+        width: 240px;
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px 15px;
+        /* Removed black border */
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* Profile Section Styles */
+      .profile-info {
+        text-align: center;
+        padding-bottom: 18px;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 18px;
+        position: relative;
+      }
+
+      .profile-info::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 30%;
+        right: 30%;
+        height: 2px;
+        background-color: #000;
+        border-radius: 1px;
+      }
+
+      .profile-avatar {
+        margin-bottom: 14px;
+        position: relative;
+        display: inline-block;
+      }
+
+      .avatar-circle {
+        width: 70px;
+        height: 70px;
+        background-color: #000;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .avatar-circle:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .initials {
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        letter-spacing: 1px;
+      }
+
+      .profile-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-top: 8px;
+        color: #222;
+        letter-spacing: 0.3px;
+      }
+
+      /* Menu Styles */
+      .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .menu-item:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+      }
+
+      .menu-item.active {
+        background-color: #000;
+        color: white;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .menu-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 3px;
+        background-color: #000;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .menu-item:hover::before {
+        opacity: 0.5;
+      }
+
+      .menu-item.active::before {
+        opacity: 1;
+      }
+
+      .icon {
+        margin-right: 12px;
+        width: 22px;
+        text-align: center;
+        font-size: 15px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        transition: transform 0.2s ease;
+      }
+
+      .menu-item:hover .icon {
+        transform: translateX(2px);
+      }
+
+      .item-text {
+        letter-spacing: 0.2px;
+        font-size: 14px;
+        transition: transform 0.2s ease;
+      }
+
+      .menu-item:hover .item-text {
+        transform: translateX(2px);
+      }
+
+      .count {
+        margin-left: 6px;
+        font-size: 0.8rem;
+        opacity: 0.9;
+        background-color: rgba(0, 0, 0, 0.1);
+        padding: 1px 6px;
+        border-radius: 10px;
+        transition: background-color 0.2s ease;
+      }
+
+      .menu-item.active .count {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      /* Divider styles */
+      .menu-divider {
+        height: 1px;
+        background-color: #e0e0e0;
+        margin: 8px 0;
+        opacity: 0.6;
+      }
+
+      /* Responsive styles */
+      @media (max-width: 768px) {
+        .sidebar {
+          width: 100%;
+          max-width: 260px;
+          margin: 0 auto;
+        }
+      }
+      .menu-item .item-text {
+        text-decoration: none;
+        color: inherit;
+        display: inline-block;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="sidebar">
+      <div class="profile-info">
+        <div class="profile-avatar">
+          <div class="avatar-circle">
+            <span class="initials"
+              ><%= user && user.name && user.name.trim() !== '' ?
+              user.name.trim().charAt(0).toUpperCase() : 'U' %></span
+            >
+          </div>
+        </div>
+        <%= user && user.name && user.name.trim() !== '' ? user.name : 'Unknown User' %>!
+      </div>
+
+      <div class="sidebar-menu">
+        <div class="menu-item active">
+          <span class="icon"><i class="fas fa-user"></i></span>
+          <a href="/profile" class="item-text">My Profile</a>
+        </div>
+
+        <div class="menu-item">
+          <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
+          <a href="/address" class="item-text">My Address</a>
+        </div>
+
+        <div class="menu-item">
+          <span class="icon"><i class="fas fa-shopping-bag"></i></span>
+          <a href="/orders" class="item-text">My Order</a>
+        </div>
+
+        <div class="menu-item">
+          <span class="icon"><i class="fas fa-heart"></i></span>
+          <a href="/wishlist" class="item-text"
+            >My Wishlist </a
+          >
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-item">
+          <span class="icon"><i class="fas fa-wallet"></i></span>
+          <a href="/wallet" class="item-text">My Wallet</a>
+        </div>
+
+        <div class="menu-item">
+          <span class="icon"><i class="fas fa-tag"></i></span>
+          <a href="/coupon" class="item-text">My Coupon</a>
+        </div>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-item">
+          <span class="icon"><i class="fas fa-lock"></i></span>
+          <a href="/change-password" class="item-text">Change Password</a>
+        </div>
+
+        <div class="menu-item">
+          <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+          <a href="/logout" class="item-text">Log out</a>
+        </div>
+
+        <div class="menu-item">
+          <span class="icon"><i class="fas fa-gift"></i></span>
+          <a href="/referral" class="item-text">Referral Code</a>
+        </div>
+      </div>
     </div>
-    
-</body>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    
-<script>
-      $('#sidebarToggle').on('click', function() {
-            $('#sidebar').toggleClass('show');
+
+    <script>
+      // Enhanced interaction for menu items
+      document.querySelectorAll(".menu-item").forEach((item) => {
+        item.addEventListener("click", function () {
+          // Remove active class from all items
+          document.querySelectorAll(".menu-item").forEach((i) => {
+            i.classList.remove("active");
+          });
+
+          // Add active class to clicked item with a subtle animation
+          this.classList.add("active");
+
+          // Add a subtle animation effect
+          this.style.transform = "scale(0.98)";
+          setTimeout(() => {
+            this.style.transform = "scale(1)";
+          }, 150);
         });
- $(document).on('click', function(e) {
-            if ($(window).width() < 768) {
-                if (!$(e.target).closest('#sidebar').length && !$(e.target).closest('#sidebarToggle').length) {
-                    $('#sidebar').removeClass('show');
-                }
-            }
+      });
+
+      // Add ripple effect on click
+      document.querySelectorAll(".menu-item").forEach((item) => {
+        item.addEventListener("mousedown", function (e) {
+          const ripple = document.createElement("span");
+          const rect = this.getBoundingClientRect();
+
+          const size = Math.max(rect.width, rect.height);
+          const x = e.clientX - rect.left - size / 2;
+          const y = e.clientY - rect.top - size / 2;
+
+          ripple.style.width = ripple.style.height = `${size}px`;
+          ripple.style.left = `${x}px`;
+          ripple.style.top = `${y}px`;
+          ripple.classList.add("ripple");
+
+          // Add ripple style
+          const style = document.createElement("style");
+          style.textContent = `
+                    .ripple {
+                        position: absolute;
+                        border-radius: 50%;
+                        transform: scale(0);
+                        background-color: rgba(255, 255, 255, 0.4);
+                        pointer-events: none;
+                        animation: rippleEffect 0.6s linear;
+                    }
+                    
+                    @keyframes rippleEffect {
+                        to {
+                            transform: scale(2);
+                            opacity: 0;
+                        }
+                    }
+                `;
+          document.head.appendChild(style);
+
+          this.appendChild(ripple);
+
+          setTimeout(() => {
+            ripple.remove();
+          }, 600);
         });
-</script>
+      });
+    </script>
+  </body>
 </html>

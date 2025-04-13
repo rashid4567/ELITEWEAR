@@ -268,7 +268,7 @@ const sendemilUpdateOtp = async (req, res) => {
 
     validateEmail(newEmail);
 
-    // Check if the new email is already in use by another user
+
     const existingUser = await User.findOne({ email: newEmail });
     if (existingUser && existingUser.email !== currentEmail) {
       return res.status(400).json({ success: false, message: "This email is already in use by another user" });
