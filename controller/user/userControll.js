@@ -2,7 +2,7 @@ const { render } = require("ejs");
 const session = require("express-session");
 const bcrypt = require("bcrypt");
 require("dotenv").config();
-const User = require("../../model/userSChema");
+const User = require("../../model/userSchema");
 const validator = require("validator");
 const crypto = require("crypto");
 const Category = require("../../model/categoryScheema");
@@ -78,6 +78,7 @@ const loadHomepage = async (req, res) => {
         categoryId: { $in: categoryIds },
       })
         .sort({ createdAt: -1 })
+        .limit(12)
         .populate("categoryId")
         .exec();
   

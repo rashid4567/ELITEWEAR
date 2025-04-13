@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Elite Wear</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/userStyle/checkoutPayment.css">
+</head>
+<body>
+    
+    <%- include("../partials/user/header") %>
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-5 mb-4 mb-lg-0">
+                <div class="payment-card">
+                    <h4 class="payment-title">Payment Methods</h4>
+                    <p class="text-muted">Select any payment methods</p>
+                    
+                    <div class="payment-methods">
+                        <div class="payment-option">
+                            <input type="radio" name="payment" id="card" checked>
+                            <label for="card">Debit Card / Credit Card</label>
+                            <div class="payment-icons ms-2">
+                                <img src="/api/placeholder/50/30" alt="Visa">
+                                <img src="/api/placeholder/50/30" alt="Mastercard">
+                                <img src="/api/placeholder/50/30" alt="RuPay">
+                            </div>
+                        </div>
+                        
+                        <div class="payment-option">
+                            <input type="radio" name="payment" id="bank">
+                            <label for="bank">Bank</label>
+                        </div>
+                        
+                        <div class="payment-option">
+                            <input type="radio" name="payment" id="upi">
+                            <label for="upi">UPI Method</label>
+                        </div>
+                        
+                        <div class="payment-option">
+                            <input type="radio" name="payment" id="cod">
+                            <label for="cod">Cash on delivery</label>
+                        </div>
+                        
+                        <div class="payment-option">
+                            <input type="radio" name="payment" id="wallet">
+                            <label for="wallet">Wallet</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+         
+            <div class="col-lg-7">
+                <div class="payment-card">
+                 
+                    <div class="product-item">
+                        <img src="/api/placeholder/70/70" alt="Mint Green Shirt" class="product-img">
+                        <div class="product-details">
+                            <h6 class="product-title">Mint Green Slim Fit Shirt</h6>
+                            <div class="product-qty">Quantity: 1</div>
+                        </div>
+                        <div class="product-price">₹1120</div>
+                    </div>
+                    
+                    <div class="product-item">
+                        <img src="/api/placeholder/70/70" alt="Mint Green Shirt with Stripes" class="product-img">
+                        <div class="product-details">
+                            <h6 class="product-title">Mint Green Slim Fit Shirt</h6>
+                            <div class="product-qty">Quantity: 1</div>
+                        </div>
+                        <div class="product-price">₹1120</div>
+                    </div>
+                    
+                    <!-- Summary -->
+                    <div class="order-summary mt-4">
+                        <div class="summary-row">
+                            <div class="summary-label">Subtotal:</div>
+                            <div class="summary-value">₹1750</div>
+                        </div>
+                        
+                        <div class="summary-row">
+                            <div class="summary-label">Delivery charge:</div>
+                            <div class="summary-value">Free</div>
+                        </div>
+                        
+                        <div class="summary-row">
+                            <div class="summary-label">Coupon discount:</div>
+                            <div class="summary-value">FLAT15 applied</div>
+                        </div>
+                        
+                        <div class="summary-row">
+                            <div class="summary-label"></div>
+                            <div class="summary-value discount-value">- ₹339.40</div>
+                        </div>
+                        
+                        <div class="summary-row total-row">
+                            <div class="summary-label">Total:</div>
+                            <div class="summary-value">₹3800</div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-order">Place Order</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <%- include("../partials/user/header") %>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

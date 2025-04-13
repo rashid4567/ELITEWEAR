@@ -82,7 +82,7 @@ const addToCart = async (req, res) => {
       if (selectedVariant.variantQuantity < quantity) {
         return res.status(400).json({
           success: false,
-          message: `Only ${selectedVariant.variantQuantity} items available for this size`,
+          message: `Only ${selectedVariant.varientquatity} items available for this size`,
         });
       }
     }
@@ -123,7 +123,7 @@ const addToCart = async (req, res) => {
         ) {
           return res.status(400).json({
             success: false,
-            message: `Only ${selectedVariant.variantQuantity} items available for this size`,
+            message: `Only ${selectedVariant.varientquatity} items available for this size`,
           });
         }
       } else {

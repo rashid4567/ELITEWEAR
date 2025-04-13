@@ -167,3 +167,31 @@ body {
     color: white;
     text-decoration: none;
 }
+.loading-btn {
+    opacity: 0.6;
+    pointer-events: none;
+}
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1050;
+}
+.swal-custom {
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  .swal-custom .swal2-confirm {
+    background-color: #dc3545 !important;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 4px;
+  }
+  .swal-custom .swal2-cancel {
+    background-color: #6c757d !important;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 4px;
+  }

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add New Address</title>
+  <link rel="stylesheet" href="/userStyle/addAddress.css">
+</head>
+<body>
+    <%- include("../partials/user/header") %>
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">Add New Address</h1>
+      <a href="/checkOut" class="back-button">
+        <span>← Back to Checkout</span>
+      </a>
+    </div>
+    
+    <div class="form-container">
+      <h2 class="form-title">Contact Details</h2>
+      <form id="addAddressForm" action="/add-address" method="POST">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="fullName" class="form-label">Full Name</label>
+            <input type="text" id="fullName" name="fullname" class="form-control" placeholder="Enter your full name" maxlength="50">
+          </div>
+          
+          <div class="form-group">
+            <label for="mobile" class="form-label">Mobile Number</label>
+            <input type="tel" id="mobile" name="mobile" class="form-control" placeholder="Enter 10-digit mobile number">
+          </div>
+        </div>
+        
+        <h2 class="form-title">Address</h2>
+        <div class="form-group">
+          <label for="address" class="form-label">Address (House No, Building, Street, Area)</label>
+          <textarea id="address" name="address" class="form-control" rows="3" placeholder="Enter your complete address"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="landmark" class="form-label">Landmark (Optional)</label>
+          <input type="text" id="landmark" name="landmark" class="form-control" placeholder="Nearby landmark (optional)">
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="district" class="form-label">District</label>
+            <input type="text" id="district" name="district" class="form-control" placeholder="Enter district">
+          </div>
+          
+          <div class="form-group">
+            <label for="city" class="form-label">City</label>
+            <input type="text" id="city" name="city" class="form-control" placeholder="Enter city">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="state" class="form-label">State</label>
+            <input type="text" id="state" name="state" class="form-control" placeholder="Enter state">
+          </div>
+          
+          <div class="form-group">
+            <label for="pinCode" class="form-label">PIN Code</label>
+            <input type="text" id="pinCode" name="pincode" class="form-control" placeholder="Enter 6-digit PIN code">
+          </div>
+        </div>
+        
+        <h2 class="form-title">Address Type</h2>
+        <div class="address-type-container">
+          <div class="address-type-option">
+            <input type="radio" id="typeHome" name="type" value="home" class="address-type-radio" checked>
+            <label for="typeHome" class="address-type-label">Home</label>
+          </div>
+          
+          <div class="address-type-option">
+            <input type="radio" id="typeWork" name="type" value="work" class="address-type-radio">
+            <label for="typeWork" class="address-type-label">Office</label>
+          </div>
+          
+          <div class="address-type-option">
+            <input type="radio" id="typeOther" name="type" value="other" class="address-type-radio">
+            <label for="typeOther" class="address-type-label">Other</label>
+          </div>
+        </div>
+        
+        <button type="submit" class="submit-btn">Save Address</button>
+      </form>
+    </div>
+  </div>
+  <%- include("../partials/user/footer") %>
+  <script>
+    
+    function showCustomAlert(options) {
+      const { title, message, buttonText, isSuccess, onButtonClick } = options;
+      
+
+      const alertOverlay = document.createElement('div');
+      alertOverlay.className = 'custom-alert-overlay';
+      
+ 
+      alertOverlay.innerHTML = `
+        <div class="custom-alert">
+          <div class="custom-alert-header">
+            <div class="custom-alert-title">${isSuccess ? 'SUCCESS!!' : 'SORRY!!'}</div>
+            <div class="custom-alert-close">✕</div>
+          </div>
+          <div class="custom-alert-message">${message}</div>
+          <button class="custom-alert-button ${!isSuccess ? 'retry' : ''}">${buttonText}</button>
+        </div>
+      `;
+      
+      document.body.appendChild(alertOverlay);
+      
+      const closeButton = alertOverlay.querySelector('.custom-alert-close');
+      const actionButton = alertOverlay.querySelector('.custom-alert-button');
+      
+      closeButton.addEventListener('click', () => {
+        document.body.removeChild(alertOverlay);
+      });
+      
+      actionButton.addEventListener('click', () => {
+        document.body.removeChild(alertOverlay);
+        if (typeof onButtonClick === 'function') {
+          onButtonClick();
+        }
+      });
+    }
+
+    
+    document.getElementById('addAddressForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fullName = document.getElementById('fullName').value.trim();
+      const mobile = document.getElementById('mobile').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const district = document.getElementById('district').value.trim();
+      const city = document.getElementById('city').value.trim();
+      const state = document.getElementById('state').value.trim();
+      const pinCode = document.getElementById('pinCode').value.trim();
+      
+      // Client-side validation
+      if (!fullName || fullName.length < 2) {
+        showCustomAlert({
+          title: 'VALIDATION ERROR',
+          message: "Full name must be at least 2 characters long.",
+          buttonText: "OK",
+          isSuccess: false
+        });
+        return;
+      }
+      
+      if (!mobile || !/^\d{10}$/.test(mobile)) {
+        showCustomAlert({
+          title: 'VALIDATION ERROR',
+          message: "Please enter a valid 10-digit mobile number.",
+          buttonText: "OK",
+          isSuccess: false
+        });
+        return;
+      }
+      
+      if (!address) {
+        showCustomAlert({
+          title: 'VALIDATION ERROR',
+          message: "Address cannot be empty.",
+          buttonText: "OK",
+          isSuccess: false
+        });
+        return;
+      }
+      
+      if (!district) {
+        showCustomAlert({
+          title: 'VALIDATION ERROR',
+          message: "District cannot be empty.",
+          buttonText: "OK",
+          isSuccess: false
+        });
+        return;
+      }
+      
+      if (!city) {
+        showCustomAlert({
+          title: 'VALIDATION ERROR',
+          message: "City cannot be empty.",
+          buttonText: "OK",
+          isSuccess: false
+        });
+        return;
+      }
+      
+      if (!state) {
+        showCustomAlert({
+          title: 'VALIDATION ERROR',
+          message: "State cannot be empty.",
+          buttonText: "OK",
+          isSuccess: false
+        });
+        return;
+      }
+      
+      if (!pinCode || !/^\d{6}$/.test(pinCode)) {
+        showCustomAlert({
+          title: 'VALIDATION ERROR',
+          message: "Please enter a valid 6-digit pin code.",
+          buttonText: "OK",
+          isSuccess: false
+        });
+        return;
+      }
+      
+      const formData = new FormData(e.target);
+      const addressData = {
+        fullname: formData.get('fullname'),
+        mobile: formData.get('mobile'),
+        address: formData.get('address'),
+        district: formData.get('district'),
+        city: formData.get('city'),
+        state: formData.get('state'),
+        pincode: formData.get('pincode'),
+        landmark: formData.get('landmark'),
+        type: formData.get('type')
+      };
+      
+      console.log('Sending addressData:', addressData); 
+      
+      try {
+        const response = await fetch('/add-address', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(addressData)
+        });
+        
+        const result = await response.json();
+        console.log('Server response:', result); // Debug log
+        
+        if (result.success) {
+          showCustomAlert({
+            title: 'SUCCESS!!',
+            message: 'Your address has been added successfully!',
+            buttonText: "OK",
+            isSuccess: true,
+            onButtonClick: () => {
+              window.location.href = '/checkOut';
+            }
+          });
+        } else {
+          showCustomAlert({
+            title: 'SORRY!!',
+            message: `Your address is unable to save: ${result.message}`,
+            buttonText: "RETRY",
+            isSuccess: false
+          });
+        }
+      } catch (error) {
+        console.error('Error submitting form:', error);
+        showCustomAlert({
+          title: 'SORRY!!',
+          message: `Your address is unable to save: ${error.message}`,
+          buttonText: "RETRY",
+          isSuccess: false
+        });
+      }
+    });
+  </script>
+</body>
+</html>
