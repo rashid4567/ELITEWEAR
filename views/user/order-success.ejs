@@ -110,9 +110,9 @@
                     <div class="detail-row">
                         <span>Shipping Address</span>
                         <span>
-                            <%= order.address?.name || 'N/A' %>, 
-                            <%= order.address?.houseName || '' %>, 
-                            <%= order.address?.place || '' %>, 
+                            <%= order.address?.fullname || 'N/A' %>, 
+                            <%= order.address?.address || '' %>, 
+                            <%= order.address?.city || '' %>, 
                             <%= order.address?.district || '' %>, 
                             <%= order.address?.state || '' %> - <%= order.address?.pincode || '' %>
                         </span>

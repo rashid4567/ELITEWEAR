@@ -41,4 +41,5 @@ const cartSchema = new mongoose.Schema(
 
 cartSchema.index({ 'items.productId': 1 });
 
+
 module.exports = mongoose.model('Cart', cartSchema);

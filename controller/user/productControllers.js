@@ -21,7 +21,7 @@ const productdetails = async (req, res) => {
     const quantity =
       product.variants && product.variants.length > 0
         ? product.variants.reduce(
-            (acc, variant) => acc + (variant.quantity || 0),
+            (acc, variant) => acc + (variant.varientquatity || 0),
             0
           )
         : 0;
@@ -45,6 +45,7 @@ const productdetails = async (req, res) => {
     return res.redirect("/page-not-found");
   }
 };
+
 module.exports = {
   productdetails,
 };

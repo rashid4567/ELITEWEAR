@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Wear - Track Order</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/userStyle/orderTracking.css">
+</head>
+<body>
+    <%- include("../partials/user/header") %>
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-container">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#">profile</a></li>
+                    <li class="breadcrumb-item"><a href="#">orders</a></li>
+                    <li class="breadcrumb-item active">track orders</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <%- include("../partials/user/profileSidebar") %>
+            
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <div class="track-order-container">
+                    <div class="track-order-header mb-4">
+                        <h4>Track Order</h4>
+                    </div>
+                    
+                    <div class="order-info mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-0">Ordered on 15 September 2024</p>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <p class="mb-0">Order# 407-3553833-2456531</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-details">
+                        <div class="order-image">
+                            <img src="/api/placeholder/200/250" alt="Order product" class="mb-3">
+                            <div class="status">
+                                <p class="mb-1">Status :</p>
+                                <p class="status-label mb-0">PROCESSING</p>
+                            </div>
+                        </div>
+                        
+                        <div class="shipping-details">
+                            <h6 class="mb-3">Shipping Address</h6>
+                            <p class="mb-1">Customer Name,</p>
+                            <p class="mb-1">House Name,</p>
+                            <p class="mb-1">Place, District</p>
+                            <p class="mb-1">State - Pin Code</p>
+                            <p class="mb-0">Contact Number</p>
+                        </div>
+                        
+                        <div class="order-summary">
+                            <h6 class="mb-3">Order Summary</h6>
+                            <div class="summary-item">
+                                <span>Items Total</span>
+                                <span>₹249.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>Shipping Charge</span>
+                                <span>₹40.00</span>
+                            </div>
+                            <div class="summary-item">
+                                <span>Total</span>
+                                <span>₹289.00</span>
+                            </div>
+                            <div class="summary-item grand-total">
+                                <span>Grand Total</span>
+                                <span>₹289.00</span>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button class="cancel-btn">Cancel Order</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tracking Progress -->
+                    <div class="tracking-progress">
+                        <div class="progress-track">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div class="progress-steps">
+                            <div class="step active">
+                                <div class="step-icon">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div class="step-text">Order Confirmed</div>
+                                <div class="step-date">15 September, 2024</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-icon">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                                <div class="step-text">Shipped</div>
+                                <div class="step-date">-</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-icon">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                                <div class="step-text">Out for Delivery</div>
+                                <div class="step-date">-</div>
+                            </div>
+                            <div class="step">
+                                <div class="step-icon">
+                                    <i class="fas fa-home"></i>
+                                </div>
+                                <div class="step-text">Delivered</div>
+                                <div class="step-date">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include("../partials/user/footer") %>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Animation for progress bar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover animation for menu items
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(5px)';
+                });
+                item.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.transform = 'translateX(0)';
+                    }
+                });
+            });
+            
+            // Simulate loading progress
+            setTimeout(() => {
+                const progressFill = document.querySelector('.progress-fill');
+                progressFill.style.width = '33%';
+            }, 500);
+            
+            // Add animation when scrolling to elements
+            const animateOnScroll = function() {
+                const elements = document.querySelectorAll('.track-order-container, .profile-section, .menu-section');
+                
+                elements.forEach(element => {
+                    const elementPosition = element.getBoundingClientRect().top;
+                    const windowHeight = window.innerHeight;
+                    
+                    if (elementPosition < windowHeight - 100) {
+                        if (element.classList.contains('track-order-container')) {
+                            element.style.animation = 'fadeIn 0.5s ease-in-out forwards';
+                        } else if (element.classList.contains('profile-section')) {
+                            element.style.animation = 'fadeIn 0.5s ease-in-out forwards';
+                        } else if (element.classList.contains('menu-section')) {
+                            element.style.animation = 'slideUp 0.5s ease-in-out forwards';
+                        }
+                    }
+                });
+            };
+            
+            window.addEventListener('scroll', animateOnScroll);
+            animateOnScroll(); // Run once on page load
+            
+            // Add hover effect on product image
+            const productImage = document.querySelector('.order-image img');
+            productImage.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.05)';
+            });
+            productImage.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+            
+ X
+            const cancelBtn = document.querySelector('.cancel-btn');
+            cancelBtn.addEventListener('mousedown', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 2px 5px rgba(220,53,69,0.3)';
+            });
+            cancelBtn.addEventListener('mouseup', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = '0 5px 15px rgba(220,53,69,0.3)';
+            });
+        });
+    </script>
+</body>
+</html>

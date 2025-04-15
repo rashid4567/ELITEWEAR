@@ -55,8 +55,8 @@
                                             <div class="row g-4 align-items-center">
                                                 <div class="col-lg-2 col-md-3 col-sm-3">
                                                     <img 
-                                                        src="<%= item.productId.images && item.productId.images.length > 0 ? item.productId.images[0] : '/Uploads/placeholder.jpg' %>" 
-                                                        alt="<%= item.productId.name %>" 
+                                                        src="<%= item.productId && item.productId.images && item.productId.images.length > 0 ? item.productId.images[0].url : '/api/placeholder/300/300' %>" 
+                                                        alt="<%= item.productId ? item.productId.name : 'Unnamed Product' %>" 
                                                         class="product-image img-fluid rounded"
                                                     >
                                                 </div>
@@ -70,8 +70,8 @@
                                                             <div 
                                                                 class="progress-bar bg-<%= order.status.toLowerCase() === 'delivered' ? 'success' : order.status.toLowerCase() === 'cancelled' ? 'danger' : 'primary' %>" 
                                                                 role="progressbar" 
-                                                                style="width: <%= getProgressWidth(order.status) %>%" 
-                                                                aria-valuenow="<%= getProgressWidth(order.status) %>" 
+                                                                style="width: <%= order.progressWidth %>%" 
+                                                                aria-valuenow="<%= order.progressWidth %>" 
                                                                 aria-valuemin="0" 
                                                                 aria-valuemax="100"
                                                             ></div>
@@ -147,13 +147,6 @@
     <%- include("../partials/user/footer") %>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        function getProgressWidth(status) {
-            const steps = ['Pending', 'Processing', 'Confirmed', 'Shipped', 'Delivered'];
-            if (status === 'Cancelled' || status === 'Return Requested') return 100;
-            const index = steps.indexOf(status);
-            return index >= 0 ? ((index + 1) / steps.length) * 100 : 20;
-        }
-
         function initiateReturn(orderId) {
             if (confirm("Are you sure you want to initiate a return for this order?")) {
                 fetch(`/return-order/${orderId}`, { method: 'POST' })

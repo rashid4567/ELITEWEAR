@@ -1,4 +1,4 @@
-const User = require("../../model/userSChema");
+const User = require("../../model/userSchema");
 
 const customerInfo = async (req, res) => {
   try {

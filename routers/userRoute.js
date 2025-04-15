@@ -120,6 +120,9 @@ router.post("/cart/add", UserAuth, cartController.addToCart);
 router.post("/cart/update", UserAuth, cartController.updateCartQuantity);
 router.post("/cart/remove", UserAuth, cartController.removeFromCart);
 router.post("/cart/empty", UserAuth, cartController.emptyCart);
+router.post("/add-to-cart-remove-wishlist", UserAuth, cartController.addToCartAndRemoveFromWishlist)
+router.post("/block-product", UserAuth, cartController.blockProduct)
+
 
 // Checkout routes
 router.get("/checkOut", UserAuth, checkOutController.loadcheckOut);

@@ -9,37 +9,57 @@ const PDFDocument = require("pdfkit");
 
 const placeOrder = async (req, res) => {
   try {
-    const userId = req.user?.id || req.session.user;
-    const { paymentMethod } = req.body;
-
-    if (!userId) {
-      throw new Error("User not found");
+    let userId;
+    if (req.user) {
+      userId = req.user._id.toString();
+    } else if (req.session.user && req.session.user._id) {
+      userId = req.session.user._id.toString();
+    } else {
+      console.error("placeOrder: No authenticated user found");
+      return res.status(401).json({
+        success: false,
+        message: "Please log in to place an order",
+      });
     }
 
+    const { paymentMethod } = req.body;
     if (!paymentMethod || paymentMethod !== "COD") {
       throw new Error("Invalid payment method");
     }
 
     const userCart = await Cart.findOne({ userId }).populate("items.productId");
-
     if (!userCart || !userCart.items.length) {
       throw new Error("Cart is empty");
     }
 
     for (const item of userCart.items) {
+      if (!item.productId) {
+        throw new Error("Invalid product in cart");
+      }
       const productItem = await Product.findById(item.productId._id);
-
-      if (!productItem || productItem.variants[0].stock < item.quantity) {
-        throw new Error(`Insufficient stock for ${item.productId.name}`);
+      if (!productItem) {
+        throw new Error(`Product not found: ${item.productId._id}`);
+      }
+      if (!productItem.variants || !productItem.variants[0]) {
+        throw new Error(`No variants available for ${productItem.name}`);
+      }
+      if (productItem.variants[0].stock < item.quantity) {
+        throw new Error(`Insufficient stock for ${productItem.name}`);
       }
     }
 
     const addressId = req.session.checkout?.addressId;
 
+    if (!mongoose.Types.ObjectId.isValid(addressId)) {
+      console.error("placeOrder: Invalid addressId:", addressId);
+      throw new Error("Invalid address ID");
+    }
+
     const selectedAddress = await Address.findOne({
       _id: addressId,
       userId,
     });
+
     if (!selectedAddress) {
       throw new Error("Invalid or missing address");
     }
@@ -47,6 +67,7 @@ const placeOrder = async (req, res) => {
     const cartItems = userCart.items;
     const totalPrice = cartItems.reduce((total, item) => {
       const productPrice = item.productId.variants?.[0]?.salePrice || 0;
+
       return total + productPrice * item.quantity;
     }, 0);
 
@@ -70,16 +91,24 @@ const placeOrder = async (req, res) => {
 
     const orderItems = [];
     for (const item of cartItems) {
+      if (!item.productId.variants || !item.productId.variants[0]) {
+        console.error(
+          "placeOrder: No variants for order item:",
+          item.productId
+        );
+        throw new Error(`No variants for ${item.productId.name}`);
+      }
       const orderItem = new OrderItem({
         product_name: item.productId.name,
         productId: item.productId._id,
         orderId: newOrder._id,
-        size: item.productId.variants?.[0]?.size || "M",
-        price: item.productId.variants?.[0]?.salePrice || 0,
+        size: item.productId.variants[0].size || "M",
+        price: item.productId.variants[0].salePrice || 0,
         quantity: item.quantity,
         total_amount:
-          (item.productId.variants?.[0]?.salePrice || 0) * item.quantity,
+          (item.productId.variants[0].salePrice || 0) * item.quantity,
       });
+
       await orderItem.save();
       orderItems.push(orderItem._id);
 
@@ -89,6 +118,7 @@ const placeOrder = async (req, res) => {
     }
 
     newOrder.order_items = orderItems;
+
     await newOrder.save();
 
     await Cart.findOneAndUpdate({ userId }, { items: [] });
@@ -101,49 +131,86 @@ const placeOrder = async (req, res) => {
       redirect: `/order-success?orderId=${newOrder._id}`,
     });
   } catch (error) {
-    console.error("Error placing order:", error);
+    console.error("placeOrder: Error:", error.message, error.stack);
     return res.status(400).json({ success: false, message: error.message });
   }
 };
-
 const loadOrderSuccess = async (req, res) => {
   try {
     const orderId = req.query.orderId;
-    const userId = req.user?.id || req.session.user;
-    const order = await Order.findById(orderId)
-      .populate("address")
-      .populate({
-        path: "order_items",
-        populate: {
-          path: "productId",
-          model: "Product",
-          select: "name",
-        },
-      });
-    const user = await User.findById(userId);
-
-    if (!order || !user || order.userId.toString() !== userId) {
-      return res.redirect("/page-not-found");
+    if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
+      console.error("loadOrderSuccess: Invalid order ID:", orderId);
+      throw new Error("Invalid order ID");
     }
 
-    res.render("order-success", { order, user });
+    const order = await Order.findById(orderId)
+      .populate("order_items")
+      .populate("address")
+      .lean();
+
+    if (!order) {
+      console.error("loadOrderSuccess: Order not found:", orderId);
+      throw new Error("Order not found");
+    }
+
+    const userId = req.user?._id.toString() || req.session.user?._id;
+    if (order.userId.toString() !== userId) {
+      console.error("loadOrderSuccess: Unauthorized access:", {
+        orderId,
+        userId,
+      });
+      throw new Error("Unauthorized access");
+    }
+
+    res.render("order-success", {
+      order,
+      user: req.user || req.session.user,
+    });
   } catch (error) {
-    console.error("Error loading order success page:", error);
+    console.error("loadOrderSuccess: Error:", error.message, error.stack);
     res.redirect("/page-not-found");
   }
 };
+
 const getUserOrders = async (req, res) => {
   try {
-    const userId = req.user?.id || req.session.user;
-    if (!userId) {
+    let userId;
+    if (req.user) {
+      userId = req.user._id.toString();
+    } else if (req.session.user && req.session.user._id) {
+      userId = req.session.user._id.toString();
+    } else {
+      console.error("getUserOrders: No authenticated user found");
+      return res.redirect("/login");
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.error("getUserOrders: Invalid user ID:", userId);
       return res
-        .status(401)
-        .json({ success: false, message: "User not authenticated" });
+        .status(400)
+        .json({ success: false, message: "Invalid user ID" });
+    }
+
+
+
+    const user = await User.findById(userId);
+    if (!user) {
+      console.error("getUserOrders: User not found for ID:", userId);
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = 5;
     const skip = (page - 1) * limit;
+
+    if (isNaN(page)) {
+      console.error("getUserOrders: Invalid page number:", req.query.page);
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid page number" });
+    }
 
     const orders = await Order.find({ userId })
       .populate({
@@ -162,30 +229,45 @@ const getUserOrders = async (req, res) => {
     const totalOrders = await Order.countDocuments({ userId });
     const totalPages = Math.ceil(totalOrders / limit);
 
-    const user = await User.findById(userId);
+    const getProgressWidth = (status) => {
+      const steps = [
+        "Pending",
+        "Processing",
+        "Confirmed",
+        "Shipped",
+        "Delivered",
+      ];
+      if (status === "Cancelled" || status === "Return Requested") return 100;
+      const index = steps.indexOf(status);
+      return index >= 0 ? ((index + 1) / steps.length) * 100 : 20;
+    };
+
+    const ordersWithProgress = orders.map((order) => ({
+      ...order._doc,
+      progressWidth: getProgressWidth(order.status),
+    }));
 
     res.render("Orders", {
-      orders,
-      user: user || {},
+      orders: ordersWithProgress,
+      user,
       currentPage: page,
       totalPages,
       hasOrders: orders.length > 0,
     });
   } catch (error) {
-    console.error("Error fetching user orders:", error);
+    console.error("getUserOrders: Error fetching user orders:", error.message);
     res.redirect("/page-not-found");
   }
 };
 
 const cancelOrder = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
   try {
     const orderId = req.params.id;
     const userId = req.user?.id || req.session.user;
-    const order = await Order.findOne({ _id: orderId, userId })
-      .populate("order_items")
-      .session(session);
+
+    const order = await Order.findOne({ _id: orderId, userId }).populate(
+      "order_items"
+    );
 
     if (!order) {
       throw new Error("Order not found");
@@ -196,26 +278,18 @@ const cancelOrder = async (req, res) => {
     }
 
     order.status = "Cancelled";
-    await order.save({ session });
+    await order.save();
 
     for (const item of order.order_items) {
-      await Product.findByIdAndUpdate(
-        item.productId,
-        {
-          $inc: { "variants.0.stock": item.quantity },
-        },
-        { session }
-      );
+      await Product.findByIdAndUpdate(item.productId, {
+        $inc: { "variants.0.stock": item.quantity },
+      });
     }
 
-    await session.commitTransaction();
     res.redirect("/orders");
   } catch (error) {
-    await session.abortTransaction();
     console.error("Error cancelling order:", error);
-    res.status(400).json({ success: false, message: error.message });
-  } finally {
-    session.endSession();
+    return res.status(400).json({ success: false, message: error.message });
   }
 };
 
@@ -232,7 +306,7 @@ const initiateReturn = async (req, res) => {
     }
 
     const deliveryDate = new Date(
-      order.orderDate.getTime() + 3 * 24 * 60 * 60 * 1000
+      order.orderDate.getTime() + 2 * 24 * 60 * 60 * 1000
     );
     if (order.status !== "Delivered" || new Date() > deliveryDate) {
       return res
@@ -251,14 +325,11 @@ const initiateReturn = async (req, res) => {
 };
 
 const reOrder = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
   try {
     const orderId = req.params.id;
     const userId = req.user?.id || req.session.user;
-    const order = await Order.findOne({ _id: orderId, userId })
-      .populate("order_items")
-      .session(session);
+
+    const order = await Order.findOne({ _id: orderId, userId }).populate("order_items");
 
     if (!order) {
       throw new Error("Order not found");
@@ -275,11 +346,11 @@ const reOrder = async (req, res) => {
       orderNumber: `ORD${Date.now().toString().slice(-6)}`,
     });
 
-    await newOrder.save({ session });
+    await newOrder.save();
 
     const orderItems = [];
     for (const item of order.order_items) {
-      const product = await Product.findById(item.productId).session(session);
+      const product = await Product.findById(item.productId);
       if (!product || product.variants[0].stock < item.quantity) {
         throw new Error(`Insufficient stock for ${item.product_name}`);
       }
@@ -293,29 +364,25 @@ const reOrder = async (req, res) => {
         quantity: item.quantity,
         total_amount: item.total_amount,
       });
-      await orderItem.save({ session });
+
+      await orderItem.save();
       orderItems.push(orderItem._id);
 
       await Product.findByIdAndUpdate(
         item.productId,
         {
           $inc: { "variants.0.stock": -item.quantity },
-        },
-        { session }
+        }
       );
     }
 
     newOrder.order_items = orderItems;
-    await newOrder.save({ session });
+    await newOrder.save();
 
-    await session.commitTransaction();
     res.redirect(`/order-success?orderId=${newOrder._id}`);
   } catch (error) {
-    await session.abortTransaction();
     console.error("Error reordering:", error);
     res.status(400).json({ success: false, message: error.message });
-  } finally {
-    session.endSession();
   }
 };
 
@@ -337,9 +404,12 @@ const getOrderDetails = async (req, res) => {
     if (!order) {
       return res.redirect("/page-not-found");
     }
-
     const user = await User.findById(userId);
-    res.render("order-details", { order, user: user || {} });
+    if(!order.order_items || order.order_items.length === 0){
+      return res.render("orderDetails", { order, user: user || {} });
+    }
+    const product = order.order_items[0].productId;
+    res.render("orderDetails", { order, product, user: user || {} });
   } catch (error) {
     console.error("Error fetching order details:", error);
     res.redirect("/page-not-found");

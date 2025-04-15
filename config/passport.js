@@ -1,11 +1,48 @@
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const User = require('../model/userSchema')
+const LocalStrategy = require("passport-local").Strategy;
+const bcrypt = require("bcrypt");
+const User = require("../model/userSchema");
 require("dotenv").config();
 
 const clientID = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
+
+passport.use(
+  new LocalStrategy(
+    { usernameField: "email", passwordField: "password" },
+    async (email, password, done) => {
+      try {
+        const user = await User.findOne({ email });
+        if (!user) {
+          return done(null, false, { message: "Invalid email or password" });
+        }
+
+        if (user.googleId && !user.password) {
+          return done(null, false, { message: "Please use Google to log in" });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          return done(null, false, { message: "Invalid email or password" });
+        }
+
+        if (user.isBlocked) {
+          return done(null, false, {
+            message: "Sorry, your account is blocked by the admin.",
+          });
+        }
+
+        return done(null, user);
+      } catch (error) {
+        return done(error);
+      }
+    }
+  )
+);
+
+// Google Strategy
 passport.use(
   new GoogleStrategy(
     {
@@ -25,6 +62,7 @@ passport.use(
           }
           return done(null, user);
         }
+
         user = await User.findOne({ email: profile.emails[0].value });
 
         if (user) {
@@ -56,14 +94,13 @@ passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-passport.deserializeUser((id, done) => {
-  User.findById(id)
-    .then((user) => {
-      done(null, user);
-    })
-    .catch((error) => {
-      done(error, null);
-    });
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (error) {
+    done(error, null);
+  }
 });
 
 module.exports = passport;

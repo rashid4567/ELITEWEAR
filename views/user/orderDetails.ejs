@@ -7,24 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/userStyle/orderDetails.css">
-    <style>
-        .order-details-card { border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; background: #fff; }
-        .product-img { width: 100%; max-width: 200px; border-radius: 8px; }
-        .status-tag { padding: 5px 10px; border-radius: 12px; font-size: 0.9em; }
-        .status-pending { background: #6c757d; color: #fff; }
-        .status-processing { background: #ffc107; color: #000; }
-        .status-confirmed { background: #17a2b8; color: #fff; }
-        .status-shipped { background: #007bff; color: #fff; }
-        .status-delivered { background: #28a745; color: #fff; }
-        .status-cancelled { background: #dc3545; color: #fff; }
-        .status-return-requested { background: #fd7e14; color: #fff; }
-        .section-title { font-size: 1.2em; margin-bottom: 10px; }
-        .order-summary .summary-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .grand-total { font-weight: bold; border-top: 1px solid #e9ecef; padding-top: 10px; }
-        .btn-action { transition: all 0.3s; }
-        .btn-action:hover { transform: translateY(-2px); }
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1050; }
-    </style>
+
 </head>
 <body>
     <div class="page-loader loader-active">
@@ -43,8 +26,7 @@
     </div>
 
     <%- include("../partials/user/header") %>
-    <%- include("../partials/user/profileSidebar") %>
-
+  
     <div class="main-content">
         <div class="container">
             <nav aria-label="breadcrumb" class="breadcrumb-custom my-3">
@@ -54,53 +36,15 @@
                     <li class="breadcrumb-item active" aria-current="page">Order Details</li>
                 </ol>
             </nav>
-
-            <div class="row">
-                <div class="col-lg-3 d-none d-lg-block">
-                    <div class="user-sidebar">
-                        <div class="user-profile">
-                            <div class="profile-img">
-                                <img src="<%= user.profileImage || '/Uploads/placeholder.jpg' %>" alt="Profile">
-                            </div>
-                            <h6 class="mt-2 mb-0"><%= user.name %></h6>
-                        </div>
-                        <ul class="nav flex-column nav-sidebar">
-                            <li class="nav-item">
-                                <a class="nav-link" href="/profile"><i class="bi bi-person"></i> My Profile</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/addresses"><i class="bi bi-geo-alt"></i> My Address</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link active" href="/orders"><i class="bi bi-box"></i> My Order</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/wishlist"><i class="bi bi-heart"></i> My Wishlist</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/wallet"><i class="bi bi-wallet2"></i> My Wallet</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/coupons"><i class="bi bi-ticket-perforated"></i> My Coupon</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/change-password"><i class="bi bi-lock"></i> Change Password</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/logout"><i class="bi bi-box-arrow-right"></i> Log Out</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
+            <%- include("../partials/user/profileSidebar") %>
                 <div class="col-lg-9">
                     <div class="order-details-card">
-                        <h4 class="order-title">Order #<%= order.orderNumber %></h4>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <% if (order.order_items.length > 0) { %>
+                        <h4 class="order-title">Order Details</h4>
+                        <div class="order-layout">
+                            <div class="order-image-container">
+                                <% if (order.order_items.length > 0 && product) { %>
                                     <img 
-                                        src="<%= order.order_items[0].productId.images && order.order_items[0].productId.images.length > 0 ? order.order_items[0].productId.images[0] : '/Uploads/placeholder.jpg' %>" 
+                                        src="<%= product.images && product.images.length > 0 ? product.images[0].url : '/api/placeholder/300/300' %>" 
                                         alt="<%= order.order_items[0].productId.name %>" 
                                         class="product-img"
                                     >
@@ -109,87 +53,91 @@
                                 <% } %>
                                 <div class="mt-3">
                                     <div class="d-flex align-items-center">
-                                        <span class="me-2">Status:</span>
+                                        <span class="me-2">Status: </span>
                                         <span class="status-tag status-<%= order.status.toLowerCase().replace(' ', '-') %>">
-                                            <%= order.status.toUpperCase() %>
+                                            <%= order.status %>
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="col-md-8 order-info">
+                            <div class="order-details-container">
                                 <div class="row">
-                                    <div class="col-md-6 mb-4">
-                                        <h5 class="section-title">Shipping Address</h5>
-                                        <div class="shipping-info">
-                                            <p class="mb-1"><%= order.address.name %></p>
-                                            <p class="mb-1"><%= order.address.houseName %></p>
-                                            <p class="mb-1"><%= order.address.place %>, <%= order.address.district %></p>
-                                            <p class="mb-1"><%= order.address.state %>, <%= order.address.pincode %></p>
-                                            <p class="mb-1"><%= order.address.contactNumber %></p>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="details-section">
+                                            <h5>Shipping Address</h5>
+                                            <div class="details-row">
+                                                <div class="details-value"><%= order.address.fullname %></div>
+                                            </div>
+                                            <div class="details-row">
+                                                <div class="details-value"><%= order.address.address %></div>
+                                            </div>
+                                            <div class="details-row">
+                                                <div class="details-value"><%= order.address.city %>, <%= order.address.district %></div>
+                                            </div>
+                                            <div class="details-row">
+                                                <div class="details-value"><%= order.address.state %>, <%= order.address.pincode %></div>
+                                            </div>
+                                            <div class="details-row">
+                                                <div class="details-value">Contact: <%= order.address.contactNumber %></div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div class="col-md-6 mb-4">
-                                        <h5 class="section-title">Payment Method</h5>
-                                        <div class="payment-info">
-                                            <p class="mb-1"><%= order.paymentMethod %></p>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="details-section">
+                                            <h5>Payment Method</h5>
+                                            <div class="details-row">
+                                                <div class="details-value"><%= order.paymentMethod %></div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div class="col-md-12">
-                                        <h5 class="section-title">Order Items</h5>
-                                        <div class="order-items">
-                                            <% order.order_items.forEach(item => { %>
-                                                <div class="summary-row">
-                                                    <span><%= item.product_name %> (Size: <%= item.size %>) x <%= item.quantity %></span>
-                                                    <span>₹<%= item.total_amount.toFixed(2) %></span>
-                                                </div>
-                                            <% }) %>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6 mt-4">
-                                        <h5 class="section-title">Order Summary</h5>
-                                        <div class="order-summary">
-                                            <div class="summary-row">
-                                                <span>Items Total</span>
-                                                <span>₹<%= (order.total - (order.total > 8000 ? 0 : 200)).toFixed(2) %></span>
-                                            </div>
-                                            <div class="summary-row">
-                                                <span>Shipping Charge</span>
-                                                <span>₹<%= order.total > 8000 ? 0 : 200 %></span>
-                                            </div>
-                                            <div class="summary-row grand-total">
-                                                <span>Grand Total</span>
-                                                <span>₹<%= order.total.toFixed(2) %></span>
-                                            </div>
+                                    <div class="col-md-6">
+                                        <div class="details-section">
+                                            <h5>Order Summary</h5>
+                                            <table class="order-summary-table">
+                                                <tr>
+                                                    <td>Items Total</td>
+                                                    <td>₹<%= (order.total - (order.total > 8000 ? 0 : 200)).toFixed(2) %></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Shipping Charge</td>
+                                                    <td>₹<%= order.total > 8000 ? 0 : 200 %></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Total</td>
+                                                    <td>₹<%= (order.total - (order.total > 8000 ? 0 : 200) + (order.total > 8000 ? 0 : 200)).toFixed(2) %></td>
+                                                </tr>
+                                                <tr class="grand-total-row">
+                                                    <td>Grand Total</td>
+                                                    <td>₹<%= order.total.toFixed(2) %></td>
+                                                </tr>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="row mt-3">
-                                    <div class="col-12">
-                                        <% if (order.status === 'Delivered') { %>
-                                            <button class="btn btn-outline-dark btn-action me-2" onclick="initiateReturn('<%= order._id %>')">
-                                                <i class="bi bi-arrow-return-left"></i> Return Order
-                                            </button>
-                                            <button class="btn btn-outline-dark btn-action me-2" onclick="downloadInvoice('<%= order._id %>')">
-                                                <i class="bi bi-file-earmark-text"></i> Download Invoice
-                                            </button>
-                                        <% } else if (order.status === 'Pending' || order.status === 'Processing') { %>
-                                            <button class="btn btn-outline-dark btn-action me-2" onclick="cancelOrder('<%= order._id %>')">
-                                                <i class="bi bi-x-circle"></i> Cancel Order
-                                            </button>
-                                        <% } else if (order.status === 'Cancelled') { %>
-                                            <button class="btn btn-outline-dark btn-action me-2" onclick="reOrder('<%= order._id %>')">
-                                                <i class="bi bi-arrow-repeat"></i> Re Order
-                                            </button>
-                                        <% } %>
-                                        <button class="btn btn-dark btn-action" onclick="trackOrder()">
-                                            <i class="bi bi-truck"></i> Track Order
+                                <div class="action-buttons">
+                                    <% if (order.status === 'Delivered') { %>
+                                        <button class="btn btn-outline-dark btn-action me-2" onclick="initiateReturn('<%= order._id %>')">
+                                            <i class="bi bi-arrow-return-left"></i> Return Order
                                         </button>
-                                    </div>
+                                        <button class="btn btn-outline-dark btn-action me-2" onclick="downloadInvoice('<%= order._id %>')">
+                                            <i class="bi bi-file-earmark-text"></i> Download Invoice
+                                        </button>
+                                    <% } else if (order.status === 'Pending' || order.status === 'Processing') { %>
+                                        <button class="btn btn-cancel btn-action me-2" onclick="cancelOrder('<%= order._id %>')">
+                                            Cancel Order
+                                        </button>
+                                    <% } else if (order.status === 'Cancelled') { %>
+                                        <button class="btn btn-outline-dark btn-action me-2" onclick="reOrder('<%= order._id %>')">
+                                            <i class="bi bi-arrow-repeat"></i> Re Order
+                                        </button>
+                                    <% } %>
+                                    <button class="btn btn-track btn-action" onclick="trackOrder()">
+                                        Track Order
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -239,7 +187,69 @@
         }
 
         function cancelOrder(orderId) {
-            if (confirm("Are you sure you want to cancel this order?")) {
+            // Create modal overlay
+            const modalOverlay = document.createElement('div');
+            modalOverlay.style.position = 'fixed';
+            modalOverlay.style.top = '0';
+            modalOverlay.style.left = '0';
+            modalOverlay.style.width = '100%';
+            modalOverlay.style.height = '100%';
+            modalOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            modalOverlay.style.zIndex = '1000';
+            modalOverlay.style.display = 'flex';
+            modalOverlay.style.justifyContent = 'center';
+            modalOverlay.style.alignItems = 'center';
+            
+            // Create modal content
+            const modalContent = document.createElement('div');
+            modalContent.style.backgroundColor = 'white';
+            modalContent.style.borderRadius = '8px';
+            modalContent.style.padding = '20px';
+            modalContent.style.width = '350px';
+            modalContent.style.maxWidth = '90%';
+            modalContent.style.textAlign = 'center';
+            modalContent.style.position = 'relative';
+            
+            // Add close button
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = '×';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '10px';
+            closeButton.style.right = '15px';
+            closeButton.style.border = 'none';
+            closeButton.style.background = 'none';
+            closeButton.style.fontSize = '24px';
+            closeButton.style.cursor = 'pointer';
+            closeButton.style.fontWeight = 'bold';
+            closeButton.onclick = function() {
+                document.body.removeChild(modalOverlay);
+            };
+            
+            // Add header
+            const header = document.createElement('h5');
+            header.textContent = 'ARE YOU SURE!!';
+            header.style.marginBottom = '20px';
+            header.style.fontWeight = 'bold';
+            
+            // Add message
+            const message = document.createElement('p');
+            message.textContent = 'Do you want to Cancel the order?';
+            message.style.marginBottom = '20px';
+            
+            // Add buttons container
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.style.display = 'flex';
+            buttonsContainer.style.justifyContent = 'center';
+            buttonsContainer.style.gap = '10px';
+            
+            // Add "Yes, cancel" button
+            const yesButton = document.createElement('button');
+            yesButton.textContent = 'Yes, cancel';
+            yesButton.className = 'btn btn-dark';
+            yesButton.style.minWidth = '100px';
+            yesButton.onclick = function() {
+                document.body.removeChild(modalOverlay);
+                
                 fetch(`/cancel-order/${orderId}`, { method: 'POST' })
                     .then(res => res.json())
                     .then(data => {
@@ -251,11 +261,96 @@
                         }
                     })
                     .catch(err => showToast("Error cancelling order", false));
-            }
+            };
+            
+            // Add "No" button
+            const noButton = document.createElement('button');
+            noButton.textContent = 'No';
+            noButton.className = 'btn btn-outline-dark';
+            noButton.style.minWidth = '100px';
+            noButton.onclick = function() {
+                document.body.removeChild(modalOverlay);
+            };
+            
+            // Assemble the modal
+            buttonsContainer.appendChild(yesButton);
+            buttonsContainer.appendChild(noButton);
+            
+            modalContent.appendChild(closeButton);
+            modalContent.appendChild(header);
+            modalContent.appendChild(message);
+            modalContent.appendChild(buttonsContainer);
+            
+            modalOverlay.appendChild(modalContent);
+            
+            // Add to document
+            document.body.appendChild(modalOverlay);
         }
 
         function reOrder(orderId) {
-            if (confirm("Do you want to place this order again?")) {
+            // Create modal overlay
+            const modalOverlay = document.createElement('div');
+            modalOverlay.style.position = 'fixed';
+            modalOverlay.style.top = '0';
+            modalOverlay.style.left = '0';
+            modalOverlay.style.width = '100%';
+            modalOverlay.style.height = '100%';
+            modalOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            modalOverlay.style.zIndex = '1000';
+            modalOverlay.style.display = 'flex';
+            modalOverlay.style.justifyContent = 'center';
+            modalOverlay.style.alignItems = 'center';
+            
+            // Create modal content
+            const modalContent = document.createElement('div');
+            modalContent.style.backgroundColor = 'white';
+            modalContent.style.borderRadius = '8px';
+            modalContent.style.padding = '20px';
+            modalContent.style.width = '350px';
+            modalContent.style.maxWidth = '90%';
+            modalContent.style.textAlign = 'center';
+            modalContent.style.position = 'relative';
+            
+            // Add close button
+            const closeButton = document.createElement('button');
+            closeButton.innerHTML = '×';
+            closeButton.style.position = 'absolute';
+            closeButton.style.top = '10px';
+            closeButton.style.right = '15px';
+            closeButton.style.border = 'none';
+            closeButton.style.background = 'none';
+            closeButton.style.fontSize = '24px';
+            closeButton.style.cursor = 'pointer';
+            closeButton.style.fontWeight = 'bold';
+            closeButton.onclick = function() {
+                document.body.removeChild(modalOverlay);
+            };
+            
+            // Add header
+            const header = document.createElement('h5');
+            header.textContent = 'ARE YOU SURE!!';
+            header.style.marginBottom = '20px';
+            header.style.fontWeight = 'bold';
+            
+            // Add message
+            const message = document.createElement('p');
+            message.textContent = 'Do you want to reorder this order?';
+            message.style.marginBottom = '20px';
+            
+            // Add buttons container
+            const buttonsContainer = document.createElement('div');
+            buttonsContainer.style.display = 'flex';
+            buttonsContainer.style.justifyContent = 'center';
+            buttonsContainer.style.gap = '10px';
+            
+            // Add "Yes, reorder" button
+            const yesButton = document.createElement('button');
+            yesButton.textContent = 'Yes, reorder';
+            yesButton.className = 'btn btn-dark';
+            yesButton.style.minWidth = '100px';
+            yesButton.onclick = function() {
+                document.body.removeChild(modalOverlay);
+                
                 fetch(`/reorder/${orderId}`, { method: 'POST' })
                     .then(res => res.json())
                     .then(data => {
@@ -266,7 +361,30 @@
                         }
                     })
                     .catch(err => showToast("Error reordering", false));
-            }
+            };
+            
+            // Add "No" button
+            const noButton = document.createElement('button');
+            noButton.textContent = 'No';
+            noButton.className = 'btn btn-outline-dark';
+            noButton.style.minWidth = '100px';
+            noButton.onclick = function() {
+                document.body.removeChild(modalOverlay);
+            };
+            
+            // Assemble the modal
+            buttonsContainer.appendChild(yesButton);
+            buttonsContainer.appendChild(noButton);
+            
+            modalContent.appendChild(closeButton);
+            modalContent.appendChild(header);
+            modalContent.appendChild(message);
+            modalContent.appendChild(buttonsContainer);
+            
+            modalOverlay.appendChild(modalContent);
+            
+            // Add to document
+            document.body.appendChild(modalOverlay);
         }
 
         function downloadInvoice(orderId) {

@@ -218,32 +218,32 @@ const resendForgotOtp = async (req, res) => {
 const loadProfile = async (req, res) => {
   try {
     if (!req.session || !req.session.user) {
-      console.log("No session or user found, redirecting to login");
+    
       return res.redirect("/login");
     }
 
-    let userData = req.session.user; // Start with session user
+    let userData = req.session.user; 
 
-    // If user is an ID (string or ObjectId), fetch from database
+  
     if (typeof userData === 'string' || userData instanceof mongoose.Types.ObjectId) {
       userData = await User.findById(userData);
       if (!userData) {
-        console.log("User not found in database, redirecting to login");
+        
         return res.redirect("/login");
       }
-      req.session.user = userData; // Update session with full object
+      req.session.user = userData; 
     } else if (typeof userData !== 'object' || userData === null) {
-      console.log("Invalid user data in session, redirecting to login");
+    
       return res.redirect("/login");
     }
 
-    const { fullname, email, mobile = null } = userData; // Allow mobile to be null
+    const { fullname, email, mobile = null } = userData; 
     if (!fullname) {
-      console.log("No fullname found, redirecting to login");
+     
       return res.redirect("/login");
     }
 
-    console.log("Rendering profile with:", { fullname, email, mobile });
+   
     return res.render("profile", { fullname, email, mobile });
   } catch (error) {
     console.error("Error in loadProfile function:", error);
