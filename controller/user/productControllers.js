@@ -1,5 +1,5 @@
 const Product = require("../../model/productScheema");
-const User = require("../../model/userSChema");
+const User = require("../../model/userSchema");
 const Category = require("../../model/categoryScheema");
 
 const productdetails = async (req, res) => {

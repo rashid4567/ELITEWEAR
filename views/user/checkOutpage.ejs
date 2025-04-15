@@ -16,10 +16,8 @@
     
     <%- include("../partials/user/header") %>
 
- 
     <div class="overlay" id="overlay"></div>
 
- 
     <div class="order-summary-sidebar" id="orderSummarySidebar">
         <div class="sidebar-close" id="closeSidebar">
             <i class="fas fa-times"></i>
@@ -54,7 +52,6 @@
             </div>
             <div class="price-row">
                 <div>No coupon available</div>
-                <!-- <div>- ₹<%= (totalPrice * 0.15).toFixed(2) %></div> -->
             </div>
             <div class="divider"></div>
             <div class="price-row grand-total">
@@ -64,17 +61,13 @@
         </div>
     </div>
 
-   
     <div class="main-container">
         <div class="row g-4 mt-3">
-           
             <div class="col-lg-5 mb-4">
                 <div class="checkout-card order-summary">
-             
                     <div class="arrow-button" id="openSidebar">
                         <i class="fas fa-chevron-right"></i>
                     </div>
-                    
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="mb-0">Order summary • <%= cartItems.length %> items</h5>
                         <div class="text-end">
@@ -82,7 +75,6 @@
                             <div class="order-price">₹<%= totalPrice.toFixed(2) %></div>
                         </div>
                     </div>
-                    
                     <div class="item-thumbnails">
                         <% cartItems.forEach(item => { %>
                             <div class="item-thumbnail bg-light">
@@ -90,21 +82,14 @@
                             </div>
                         <% }); %>
                     </div>
-                    
-                 
                     <div class="coupon-applied">
                         <span class="coupon-Code"><strong>Apply CODE</strong></span>
-                        
                     </div>
-                    
-                    <!-- Brand image -->
                     <div class="brand-image-container mt-4">
-                        <img src="/uploads/ChatGPT Image Apr 13, 2025, 06_50_48 PM.png" alt="ELITE WEAR Brand" class="img-fluid brand-logo">
+                        <img src="/Uploads/ChatGPT Image Apr 13, 2025, 06_50_48 PM.png" alt="ELITE WEAR Brand" class="img-fluid brand-logo">
                     </div>
                 </div>
             </div>
-            
-            <!-- Right Column: Delivery Points -->
             <div class="col-lg-7 delivery-section">
                 <h5 class="mb-4">CHOOSE DELIVERY POINT</h5>
                 <div class="row g-3">
@@ -121,11 +106,10 @@
                                     <%= addr.pincode || 'N/A' %><br>
                                     <%= addr.state || 'N/A' %>, <%= addr.country || '' %>
                                 </p>
-                                <button class="deliver-btn">DELIVER HERE</button>
+                                <button class="deliver-btn" onclick="selectAddress('<%= addr._id %>')">DELIVER HERE</button>
                             </div>
                         </div>
                     <% }); %>
-                    
                     <div class="col-md-6 mb-3">
                         <div class="add-address">
                             <div class="text-center">
@@ -146,7 +130,7 @@
     <!-- Bootstrap JS and Popper.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Custom JavaScript for sidebar functionality -->
+    <!-- Custom JavaScript for sidebar and address selection -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const openSidebar = document.getElementById('openSidebar');
@@ -172,6 +156,28 @@
                 document.body.style.overflow = 'auto';
             });
         });
+
+        function selectAddress(addressId) {
+            fetch('/select-delivery-address', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ addressId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/checkout-payment';
+                } else {
+                    alert(data.message || 'Failed to select address');
+                }
+            })
+            .catch(error => {
+                console.error('Error selecting address:', error);
+                alert('Server issue');
+            });
+        }
     </script>
 </body>
-</html>
+</html> 

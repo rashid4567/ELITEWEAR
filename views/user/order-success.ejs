@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Success - ELITE WEAR</title>
+    <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+        rel="stylesheet"
+    />
+    <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        rel="stylesheet"
+    />
+    <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+        rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/userStyle/orderSuccess.css" />
+    <style>
+        .order-content { padding: 50px 0; min-height: 80vh; }
+        .success-card { border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; background: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .success-icon { font-size: 2rem; color: #28a745; background: #e8f5e9; border-radius: 50%; padding: 10px; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #f1f1f1; transition: all 0.3s; }
+        .detail-row:hover { background: #f8f9fa; }
+        .btn-view, .btn-continue { transition: all 0.3s; }
+        .btn-view:hover, .btn-continue:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); }
+        .order-illustration img { max-width: 300px; }
+        .confetti {
+            position: fixed;
+            top: -10px;
+            animation: fall linear forwards;
+            z-index: 1000;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1050; }
+    </style>
+</head>
+<body>
+    <%- include("../partials/user/header") %>
+
+    <div class="toast-container">
+        <div class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+            <div class="toast-header">
+                <strong class="me-auto">Order Confirmation</strong>
+                <small>Just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body"></div>
+        </div>
+    </div>
+
+    <div class="container order-content animate__animated animate__fadeIn">
+        <div class="row">
+            <div class="col-lg-6 mb-4 animate__animated animate__fadeInLeft">
+                <h2 class="fw-bold mb-3 thank-you-message">Thank You for Your Order!</h2>
+                <p class="mb-4">
+                    Your order has been successfully placed. You'll receive a confirmation email at
+                    <strong><%= user.email || 'your registered email' %></strong> soon.
+                </p>
+
+                <div class="text-center order-illustration animate__animated animate__bounceIn animate__delay-1s">
+                    <img
+                        src="/Uploads/payment_success.png"
+                        alt="Payment Success"
+                        class="img-fluid"
+                        onerror="this.src='/Uploads/placeholder.jpg'"
+                    />
+                </div>
+
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <a href="/orders" class="btn btn-dark btn-view animate__animated animate__fadeInUp animate__delay-1s">
+                        <i class="fas fa-history me-2"></i>View Orders
+                    </a>
+                    <a href="/" class="btn btn-outline-dark btn-continue animate__animated animate__fadeInUp animate__delay-1s">
+                        <i class="fas fa-shopping-bag me-2"></i>Continue Shopping
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-6 animate__animated animate__fadeInRight">
+                <div class="success-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold">Order #<%= order.orderNumber %></h4>
+                        <div class="success-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Order Time</span>
+                        <span><%= order.orderDate.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %></span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Payment Method</span>
+                        <span><%= order.paymentMethod %></span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Sender Name</span>
+                        <span><%= user.name || 'N/A' %></span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Shipping Address</span>
+                        <span>
+                            <%= order.address?.name || 'N/A' %>, 
+                            <%= order.address?.houseName || '' %>, 
+                            <%= order.address?.place || '' %>, 
+                            <%= order.address?.district || '' %>, 
+                            <%= order.address?.state || '' %> - <%= order.address?.pincode || '' %>
+                        </span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Order Items</span>
+                        <span>
+                            <% order.order_items.forEach((item, index) => { %>
+                                <%= item.product_name %> (Size: <%= item.size %>) x <%= item.quantity %>
+                                <%= index < order.order_items.length - 1 ? ', ' : '' %>
+                            <% }) %>
+                        </span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Subtotal</span>
+                        <span>₹<%= (order.total - (order.total > 8000 ? 0 : 200)).toFixed(2) %></span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Delivery Charge</span>
+                        <span>₹<%= order.total > 8000 ? 0 : 200 %></span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Grand Total</span>
+                        <span class="fw-bold">₹<%= order.total.toFixed(2) %></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include("../partials/user/footer") %>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function createConfetti() {
+            const colors = ['#e9c46a', '#f4a261', '#e76f51', '#2a9d8f', '#264653', '#4CAF50', '#e53935'];
+            const confettiCount = 100;
+
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.width = Math.random() * 8 + 4 + 'px';
+                confetti.style.height = Math.random() * 8 + 4 + 'px';
+                confetti.style.opacity = Math.random() * 0.5 + 0.5;
+                confetti.style.animationDuration = Math.random() * 2 + 2 + 's';
+                confetti.style.animationDelay = Math.random() * 1 + 's';
+
+                if (Math.random() > 0.5) {
+                    confetti.style.borderRadius = '50%';
+                } else {
+                    confetti.style.transform = 'rotate(45deg)';
+                }
+
+                document.body.appendChild(confetti);
+
+                confetti.addEventListener('animationend', () => {
+                    confetti.remove();
+                });
+            }
+        }
+
+        function showToast(message, isSuccess = true) {
+            const toastEl = document.querySelector('.toast');
+            const toastBody = toastEl.querySelector('.toast-body');
+            toastBody.innerHTML = `<i class="fas ${isSuccess ? 'fa-check-circle text-success' : 'fa-exclamation-triangle text-danger'} me-2"></i>${message}`;
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            createConfetti();
+            showToast("Order placed successfully!");
+
+            const detailRows = document.querySelectorAll('.detail-row');
+            detailRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    detailRows.forEach(r => r.style.opacity = '0.6');
+                    this.style.opacity = '1';
+                });
+                row.addEventListener('mouseleave', function() {
+                    detailRows.forEach(r => r.style.opacity = '1');
+                });
+            });
+
+            const successIcon = document.querySelector('.success-icon');
+            if (successIcon) {
+                successIcon.addEventListener('click', function() {
+                    const audio = new Audio('/Uploads/success-sound.mp3');
+                    audio.play().catch(err => console.log('Audio playback failed:', err));
+
+                    this.classList.add('animate__animated', 'animate__rubberBand');
+                    setTimeout(() => {
+                        this.classList.remove('animate__animated', 'animate__rubberBand');
+                    }, 1000);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

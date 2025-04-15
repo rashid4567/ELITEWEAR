@@ -313,10 +313,12 @@ const emptyCart = async (req, res) => {
   }
 };
 
+
 module.exports = {
   loadCart,
   addToCart,
   updateCartQuantity,
   removeFromCart,
   emptyCart,
+  
 };

@@ -98,10 +98,10 @@
                 </div>
 
                 <div class="mb-3" id="stockDisplay">
-                    <% if (product.variants && product.variants.length > 0 && product.variants[0].variantQuantity > 0) { %>
+                    <% if (product.variants && product.variants.length > 0 && product.variants[0].varientquatity > 0) { %>
                         <span class="text-success" id="stockStatus"><i class="fas fa-check-circle"></i> In Stock</span>
                         <% if (product.variants[0].variantQuantity <= 3) { %>
-                            <span class="low-stock ms-2" id="stockQuantity">Only <%= product.variants[0].variantQuantity %> left!</span>
+                            <span class="low-stock ms-2" id="stockQuantity">Only <%= product.variants[0].varientquatity %> left!</span>
                         <% } %>
                     <% } else { %>
                         <span class="text-danger" id="stockStatus"><i class="fas fa-times-circle"></i> Out of Stock</span>
