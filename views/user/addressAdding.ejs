@@ -15,19 +15,21 @@
         <span>← Back to Addresses</span>
       </a>
     </div>
-    <%- include("../partials/user/profileSidebar") %>
+    
     <div class="form-container">
       <h2 class="form-title">Contact Details</h2>
-      <form id="addAddressForm" action="/add-address" method="POST">
+      <form id="addAddressForm" action="/add-address" method="POST" novalidate>
         <div class="form-row">
           <div class="form-group">
             <label for="fullName" class="form-label">Full Name</label>
             <input type="text" id="fullName" name="fullname" class="form-control" placeholder="Enter your full name" maxlength="50">
+            <div id="fullNameError" class="error-message">Full name must be at least 2 characters long.</div>
           </div>
           
           <div class="form-group">
             <label for="mobile" class="form-label">Mobile Number</label>
             <input type="tel" id="mobile" name="mobile" class="form-control" placeholder="Enter 10-digit mobile number">
+            <div id="mobileError" class="error-message">Please enter a valid 10-digit mobile number.</div>
           </div>
         </div>
         
@@ -35,6 +37,7 @@
         <div class="form-group">
           <label for="address" class="form-label">Address (House No, Building, Street, Area)</label>
           <textarea id="address" name="address" class="form-control" rows="3" placeholder="Enter your complete address"></textarea>
+          <div id="addressError" class="error-message">Address cannot be empty.</div>
         </div>
         
         <div class="form-group">
@@ -46,11 +49,13 @@
           <div class="form-group">
             <label for="district" class="form-label">District</label>
             <input type="text" id="district" name="district" class="form-control" placeholder="Enter district">
+            <div id="districtError" class="error-message">District cannot be empty.</div>
           </div>
           
           <div class="form-group">
             <label for="city" class="form-label">City</label>
             <input type="text" id="city" name="city" class="form-control" placeholder="Enter city">
+            <div id="cityError" class="error-message">City cannot be empty.</div>
           </div>
         </div>
         
@@ -58,11 +63,13 @@
           <div class="form-group">
             <label for="state" class="form-label">State</label>
             <input type="text" id="state" name="state" class="form-control" placeholder="Enter state">
+            <div id="stateError" class="error-message">State cannot be empty.</div>
           </div>
           
           <div class="form-group">
             <label for="pinCode" class="form-label">PIN Code</label>
             <input type="text" id="pinCode" name="pincode" class="form-control" placeholder="Enter 6-digit PIN code">
+            <div id="pinCodeError" class="error-message">Please enter a valid 6-digit PIN code.</div>
           </div>
         </div>
         
@@ -90,10 +97,8 @@
   </div>
   <%- include("../partials/user/footer") %>
   <script>
-    // Function to show custom alert
-    function showCustomAlert(options) {
-      const { title, message, buttonText, isSuccess, onButtonClick } = options;
-      
+    // Function to show success alert (keeping this for success messages only)
+    function showSuccessAlert(message, onButtonClick) {
       // Create alert container
       const alertOverlay = document.createElement('div');
       alertOverlay.className = 'custom-alert-overlay';
@@ -102,11 +107,11 @@
       alertOverlay.innerHTML = `
         <div class="custom-alert">
           <div class="custom-alert-header">
-            <div class="custom-alert-title">${isSuccess ? 'SUCCESS!!' : 'SORRY!!'}</div>
+            <div class="custom-alert-title">SUCCESS!!</div>
             <div class="custom-alert-close">✕</div>
           </div>
           <div class="custom-alert-message">${message}</div>
-          <button class="custom-alert-button ${!isSuccess ? 'retry' : ''}">${buttonText}</button>
+          <button class="custom-alert-button">OK</button>
         </div>
       `;
       
@@ -127,9 +132,48 @@
       });
     }
 
+    // Function to show validation error
+    function showValidationError(fieldId, show = true) {
+      const field = document.getElementById(fieldId);
+      const errorElement = document.getElementById(`${fieldId}Error`);
+      
+      if (show) {
+        field.classList.add('error');
+        errorElement.style.display = 'block';
+      } else {
+        field.classList.remove('error');
+        errorElement.style.display = 'none';
+      }
+    }
+    
+    // Function to clear all validation errors
+    function clearValidationErrors() {
+      const errorElements = document.querySelectorAll('.error-message');
+      const inputElements = document.querySelectorAll('.form-control');
+      
+      errorElements.forEach(element => {
+        element.style.display = 'none';
+      });
+      
+      inputElements.forEach(element => {
+        element.classList.remove('error');
+      });
+    }
+    
+    // Add input event listeners to clear errors when user starts typing
+    document.querySelectorAll('.form-control').forEach(input => {
+      input.addEventListener('input', function() {
+        const fieldId = this.id;
+        showValidationError(fieldId, false);
+      });
+    });
+
     // Form submission handler
     document.getElementById('addAddressForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      clearValidationErrors();
+      
+      let isValid = true;
       const fullName = document.getElementById('fullName').value.trim();
       const mobile = document.getElementById('mobile').value.trim();
       const address = document.getElementById('address').value.trim();
@@ -138,74 +182,50 @@
       const state = document.getElementById('state').value.trim();
       const pinCode = document.getElementById('pinCode').value.trim();
       
-      // Client-side validation
+      // Client-side validation with inline errors
       if (!fullName || fullName.length < 2) {
-        showCustomAlert({
-          title: 'VALIDATION ERROR',
-          message: "Full name must be at least 2 characters long.",
-          buttonText: "OK",
-          isSuccess: false
-        });
-        return;
+        showValidationError('fullName');
+        isValid = false;
       }
       
       if (!mobile || !/^\d{10}$/.test(mobile)) {
-        showCustomAlert({
-          title: 'VALIDATION ERROR',
-          message: "Please enter a valid 10-digit mobile number.",
-          buttonText: "OK",
-          isSuccess: false
-        });
-        return;
+        showValidationError('mobile');
+        isValid = false;
       }
       
       if (!address) {
-        showCustomAlert({
-          title: 'VALIDATION ERROR',
-          message: "Address cannot be empty.",
-          buttonText: "OK",
-          isSuccess: false
-        });
-        return;
+        showValidationError('address');
+        isValid = false;
       }
       
       if (!district) {
-        showCustomAlert({
-          title: 'VALIDATION ERROR',
-          message: "District cannot be empty.",
-          buttonText: "OK",
-          isSuccess: false
-        });
-        return;
+        showValidationError('district');
+        isValid = false;
       }
       
       if (!city) {
-        showCustomAlert({
-          title: 'VALIDATION ERROR',
-          message: "City cannot be empty.",
-          buttonText: "OK",
-          isSuccess: false
-        });
-        return;
+        showValidationError('city');
+        isValid = false;
       }
       
       if (!state) {
-        showCustomAlert({
-          title: 'VALIDATION ERROR',
-          message: "State cannot be empty.",
-          buttonText: "OK",
-          isSuccess: false
-        });
-        return;
+        showValidationError('state');
+        isValid = false;
       }
       
       if (!pinCode || !/^\d{6}$/.test(pinCode)) {
-        showCustomAlert({
-          title: 'VALIDATION ERROR',
-          message: "Please enter a valid 6-digit pin code.",
-          buttonText: "OK",
-          isSuccess: false
-        });
+        showValidationError('pinCode');
+        isValid = false;
+      }
+      
+      // If any validation failed, stop form submission
+      if (!isValid) {
+        // Scroll to the first error field
+        const firstErrorField = document.querySelector('.form-control.error');
+        if (firstErrorField) {
+          firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstErrorField.focus();
+        }
         return;
       }
       
@@ -222,8 +242,6 @@
         type: formData.get('type')
       };
       
-      console.log('Sending addressData:', addressData); // Debug log
-      
       try {
         const response = await fetch('/add-address', {
           method: 'POST',
@@ -234,34 +252,39 @@
         });
         
         const result = await response.json();
-        console.log('Server response:', result); // Debug log
         
         if (result.success) {
-          showCustomAlert({
-            title: 'SUCCESS!!',
-            message: 'Your address has been added successfully!',
-            buttonText: "OK",
-            isSuccess: true,
-            onButtonClick: () => {
-              window.location.href = '/address';
-            }
+          showSuccessAlert('Your address has been added successfully!', () => {
+            window.location.href = '/address';
           });
         } else {
-          showCustomAlert({
-            title: 'SORRY!!',
-            message: `Your address is unable to save: ${result.message}`,
-            buttonText: "RETRY",
-            isSuccess: false
-          });
+          // Show server validation errors if any
+          if (result.errors && typeof result.errors === 'object') {
+            // If server returns specific field errors
+            for (const [field, message] of Object.entries(result.errors)) {
+              const errorElement = document.getElementById(`${field}Error`);
+              if (errorElement) {
+                errorElement.textContent = message;
+                showValidationError(field);
+              }
+            }
+          } else {
+            // Generic error at the top of the form
+            const formContainer = document.querySelector('.form-container');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'alert-error';
+            errorDiv.textContent = result.message || 'Failed to save address. Please try again.';
+            formContainer.insertBefore(errorDiv, formContainer.firstChild);
+          }
         }
       } catch (error) {
         console.error('Error submitting form:', error);
-        showCustomAlert({
-          title: 'SORRY!!',
-          message: `Your address is unable to save: ${error.message}`,
-          buttonText: "RETRY",
-          isSuccess: false
-        });
+        // Generic error at the top of the form
+        const formContainer = document.querySelector('.form-container');
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert-error';
+        errorDiv.textContent = 'Failed to save address. Please try again.';
+        formContainer.insertBefore(errorDiv, formContainer.firstChild);
       }
     });
   </script>

@@ -93,7 +93,9 @@ router.post(
   profileController.verifyUpdateOtp
 );
 router.post("/update-profile", UserAuth, profileController.updateProfile);
-
+router.get("/getupdatepassword", UserAuth, profileController.loadupdatePassword)
+router.post("/updatePassword", UserAuth, profileController.updatePassword)
+router.get("/logoutpage", UserAuth, profileController.loadLogout)
 // Address routes
 router.get("/address", UserAuth, AddressController.address);
 router.get("/getaddAddress", UserAuth, AddressController.getaddAddress);
@@ -141,12 +143,12 @@ router.get(
 router.post("/place-order", orderController.placeOrder);
 router.get("/order-success", orderController.loadOrderSuccess);
 router.get("/orders", orderController.getUserOrders);
-router.post("/cancel-order/:id", orderController.cancelOrder);
+router.post("/orders/cancel/:id", orderController.cancelOrder);
 router.post("/return-order/:id", orderController.initiateReturn);
 router.post("/reorder/:id", orderController.reOrder);
 router.get("/order-details/:id", orderController.getOrderDetails);
 router.get("/invoice/:id", orderController.downloadInvoice);
-
+router.get('/orders/track/:id', orderController.trackOrder);
 
 // Error handling
 router.get("/page-not-found", userControllers.pageNotfound);

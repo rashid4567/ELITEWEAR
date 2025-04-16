@@ -182,6 +182,75 @@
   .custom-alert-message {
     margin-bottom: 20px;
   }
+   /* Add styles for validation messages */
+   .error-message {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
+    display: none;
+  }
+  
+  .form-control.error {
+    border-color: #e74c3c;
+  }
+  
+  /* Custom alert styles (only for success) */
+  .custom-alert-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .custom-alert {
+    background-color: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+  }
+  
+  .custom-alert-header {
+    background-color: #27ae60;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .custom-alert-title {
+    font-weight: bold;
+    font-size: 18px;
+  }
+  
+  .custom-alert-close {
+    cursor: pointer;
+    font-size: 20px;
+  }
+  
+  .custom-alert-message {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .custom-alert-button {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+  }
   
   .custom-alert-button {
     background-color: #000;

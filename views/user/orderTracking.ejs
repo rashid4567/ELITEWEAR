@@ -15,15 +15,16 @@
         <div class="container">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="#">profile</a></li>
-                    <li class="breadcrumb-item"><a href="#">orders</a></li>
-                    <li class="breadcrumb-item active">track orders</li>
+                    <li class="breadcrumb-item"><a href="/profile">Profile</a></li>
+                    <li class="breadcrumb-item"><a href="/orders">Orders</a></li>
+                    <li class="breadcrumb-item active">Track Order</li>
                 </ol>
             </nav>
         </div>
     </div>
-    <%- include("../partials/user/profileSidebar") %>
-            
+    <div class="container">
+        <div class="row">
+            <%- include("../partials/user/profileSidebar") %>
             <!-- Main Content -->
             <div class="col-lg-9">
                 <div class="track-order-container">
@@ -31,94 +32,93 @@
                         <h4>Track Order</h4>
                     </div>
                     
+                    <!-- Toast Notification -->
+                    <div class="toast-container position-fixed top-0 end-0 p-3">
+                        <div id="orderToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+                            <div class="toast-header">
+                                <strong class="me-auto">Order Action</strong>
+                                <small>Just now</small>
+                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body"></div>
+                        </div>
+                    </div>
+
                     <div class="order-info mb-4">
                         <div class="row">
                             <div class="col-md-6">
-                                <p class="mb-0">Ordered on 15 September 2024</p>
+                                <p class="mb-0">Ordered on <%= order.orderDate.toLocaleDateString() %></p>
                             </div>
                             <div class="col-md-6 text-md-end">
-                                <p class="mb-0">Order# 407-3553833-2456531</p>
+                                <p class="mb-0">Order# <%= order.orderNumber %></p>
                             </div>
                         </div>
                     </div>
                     
                     <div class="order-details">
                         <div class="order-image">
-                            <img src="/api/placeholder/200/250" alt="Order product" class="mb-3">
+                            <% if (order.order_items.length > 0) { %>
+                                <img src="<%= order.order_items[0]?.productId?.images[0]?.url || '/api/placeholder/200/250' %>" alt="<%= order.order_items[0]?.productId?.name || 'Product' %>" class="mb-3">
+                            <% } else { %>
+                                <img src="/api/placeholder/200/250" alt="No Product" class="mb-3">
+                            <% } %>
                             <div class="status">
-                                <p class="mb-1">Status :</p>
-                                <p class="status-label mb-0">PROCESSING</p>
+                                <p class="mb-1">Status:</p>
+                                <p class="status-label mb-0"><%= order.status.toUpperCase() %></p>
                             </div>
                         </div>
                         
                         <div class="shipping-details">
                             <h6 class="mb-3">Shipping Address</h6>
-                            <p class="mb-1">Customer Name,</p>
-                            <p class="mb-1">House Name,</p>
-                            <p class="mb-1">Place, District</p>
-                            <p class="mb-1">State - Pin Code</p>
-                            <p class="mb-0">Contact Number</p>
+                            <p class="mb-1"><%= order.address.fullname %></p>
+                            <p class="mb-1"><%= order.address.address %></p>
+                            <p class="mb-1"><%= order.address.city %>, <%= order.address.district %></p>
+                            <p class="mb-1"><%= order.address.state %> - <%= order.address.pincode %></p>
+                            <p class="mb-0">Phone: <%= order.address.mobile %></p>
                         </div>
                         
                         <div class="order-summary">
                             <h6 class="mb-3">Order Summary</h6>
                             <div class="summary-item">
                                 <span>Items Total</span>
-                                <span>₹249.00</span>
+                                <span>₹<%= (order.total - (order.total > 8000 ? 0 : 200)).toFixed(2) %></span>
                             </div>
                             <div class="summary-item">
                                 <span>Shipping Charge</span>
-                                <span>₹40.00</span>
+                                <span>₹<%= order.total > 8000 ? '0.00' : '200.00' %></span>
                             </div>
                             <div class="summary-item">
                                 <span>Total</span>
-                                <span>₹289.00</span>
+                                <span>₹<%= order.total.toFixed(2) %></span>
                             </div>
                             <div class="summary-item grand-total">
                                 <span>Grand Total</span>
-                                <span>₹289.00</span>
+                                <span>₹<%= order.total.toFixed(2) %></span>
                             </div>
                             
+                            <% if (order.status === 'Pending' || order.status === 'Processing') { %>
                             <div class="text-center mt-4">
-                                <button class="cancel-btn">Cancel Order</button>
+                                <button class="cancel-btn" data-bs-toggle="modal" data-bs-target="#cancelModal" data-order-id="<%= order._id %>">Cancel Order</button>
                             </div>
+                            <% } %>
                         </div>
                     </div>
                     
                     <!-- Tracking Progress -->
                     <div class="tracking-progress">
                         <div class="progress-track">
-                            <div class="progress-fill"></div>
+                            <div class="progress-fill" style="width: <%= progressWidth %>%;"></div>
                         </div>
                         <div class="progress-steps">
-                            <div class="step active">
+                            <% trackingSteps.forEach(step => { %>
+                            <div class="step <%= step.active ? 'active' : '' %>">
                                 <div class="step-icon">
-                                    <i class="fas fa-check"></i>
+                                    <i class="fas <%= step.icon %>"></i>
                                 </div>
-                                <div class="step-text">Order Confirmed</div>
-                                <div class="step-date">15 September, 2024</div>
+                                <div class="step-text"><%= step.status %></div>
+                                <div class="step-date"><%= step.date %></div>
                             </div>
-                            <div class="step">
-                                <div class="step-icon">
-                                    <i class="fas fa-box"></i>
-                                </div>
-                                <div class="step-text">Shipped</div>
-                                <div class="step-date">-</div>
-                            </div>
-                            <div class="step">
-                                <div class="step-icon">
-                                    <i class="fas fa-truck"></i>
-                                </div>
-                                <div class="step-text">Out for Delivery</div>
-                                <div class="step-date">-</div>
-                            </div>
-                            <div class="step">
-                                <div class="step-icon">
-                                    <i class="fas fa-home"></i>
-                                </div>
-                                <div class="step-text">Delivered</div>
-                                <div class="step-date">-</div>
-                            </div>
+                            <% }) %>
                         </div>
                     </div>
                 </div>
@@ -126,13 +126,72 @@
         </div>
     </div>
 
+    <!-- Cancel Order Modal -->
+    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cancelModalLabel">Confirm Cancellation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to cancel this order?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
+                    <button type="button" class="btn btn-dark" id="confirmCancelBtn">Yes, cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <%- include("../partials/user/footer") %>
 
-    <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Animation for progress bar
+        function showToast(message, isSuccess = true) {
+            const toastEl = document.getElementById('orderToast');
+            const toastBody = toastEl.querySelector('.toast-body');
+            toastBody.innerHTML = `<i class="bi ${isSuccess ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-danger'} me-2"></i>${message}`;
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+
+        function cancelOrder(orderId) {
+            console.log('Cancelling order:', orderId);
+            fetch(`/orders/cancel/${orderId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(res => {
+                    console.log('Cancel response status:', res.status);
+                    return res.json();
+                })
+                .then(data => {
+                    console.log('Cancel response data:', data);
+                    if (data.success) {
+                        showToast("Order cancelled successfully");
+                        setTimeout(() => window.location.reload(), 2000);
+                    } else {
+                        showToast(data.message || "Failed to cancel order", false);
+                    }
+                })
+                .catch(err => {
+                    console.error('Cancel error:', err);
+                    showToast("Error cancelling order", false);
+                });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, setting up event listeners');
+            // Simulate loading progress
+            setTimeout(() => {
+                const progressFill = document.querySelector('.progress-fill');
+                progressFill.style.width = '<%= progressWidth %>%';
+            }, 500);
+
             // Add hover animation for menu items
             const menuItems = document.querySelectorAll('.menu-item');
             menuItems.forEach(item => {
@@ -145,21 +204,13 @@
                     }
                 });
             });
-            
-            // Simulate loading progress
-            setTimeout(() => {
-                const progressFill = document.querySelector('.progress-fill');
-                progressFill.style.width = '33%';
-            }, 500);
-            
-            // Add animation when scrolling to elements
+
+            // Animate elements on scroll
             const animateOnScroll = function() {
                 const elements = document.querySelectorAll('.track-order-container, .profile-section, .menu-section');
-                
                 elements.forEach(element => {
                     const elementPosition = element.getBoundingClientRect().top;
                     const windowHeight = window.innerHeight;
-                    
                     if (elementPosition < windowHeight - 100) {
                         if (element.classList.contains('track-order-container')) {
                             element.style.animation = 'fadeIn 0.5s ease-in-out forwards';
@@ -171,29 +222,49 @@
                     }
                 });
             };
-            
+
             window.addEventListener('scroll', animateOnScroll);
-            animateOnScroll(); // Run once on page load
-            
-            // Add hover effect on product image
+            animateOnScroll();
+
+            // Product image hover effect
             const productImage = document.querySelector('.order-image img');
-            productImage.addEventListener('mouseenter', function() {
-                this.style.transform = 'scale(1.05)';
-            });
-            productImage.addEventListener('mouseleave', function() {
-                this.style.transform = 'scale(1)';
-            });
-            
- X
+            if (productImage) {
+                productImage.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.05)';
+                });
+                productImage.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            }
+
+            // Cancel button effects
             const cancelBtn = document.querySelector('.cancel-btn');
-            cancelBtn.addEventListener('mousedown', function() {
-                this.style.transform = 'translateY(0)';
-                this.style.boxShadow = '0 2px 5px rgba(220,53,69,0.3)';
-            });
-            cancelBtn.addEventListener('mouseup', function() {
-                this.style.transform = 'translateY(-2px)';
-                this.style.boxShadow = '0 5px 15px rgba(220,53,69,0.3)';
-            });
+            if (cancelBtn) {
+                cancelBtn.addEventListener('mousedown', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 2px 5px rgba(220,53,69,0.3)';
+                });
+                cancelBtn.addEventListener('mouseup', function() {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 5px 15px rgba(220,53,69,0.3)';
+                });
+            }
+
+            // Modal event listener
+            const cancelModal = document.getElementById('cancelModal');
+            if (cancelModal) {
+                cancelModal.addEventListener('show.bs.modal', function(event) {
+                    console.log('Cancel modal shown');
+                    const button = event.relatedTarget;
+                    const orderId = button.getAttribute('data-order-id');
+                    console.log('Order ID for cancel:', orderId);
+                    const confirmBtn = cancelModal.querySelector('#confirmCancelBtn');
+                    confirmBtn.onclick = () => {
+                        console.log('Confirm cancel button clicked for order:', orderId);
+                        cancelOrder(orderId);
+                    };
+                });
+            }
         });
     </script>
 </body>

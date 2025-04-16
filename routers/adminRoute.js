@@ -5,6 +5,7 @@ const customerController = require("../controller/admin/customerController");
 const CategoryController = require("../controller/admin/categoryController");
 const productManagment = require('../controller/admin/productController');
 const BannerController = require('../controller/admin/BannerController');
+const adminorderController = require("../controller/admin/adminOrderController")
 const upload = require('../middleware/cluadinaryConfig'); 
 const { userAuth, adminAuth } = require('../middleware/auth');
 
@@ -62,4 +63,8 @@ router.get('/getbannerPage', adminAuth, BannerController.getbannerPage);
 router.get("/addBanner", adminAuth, BannerController.getaddBanner);
 router.post("/addBanner", adminAuth, upload.single('posterImage'), BannerController.addBanner);
 
+
+router.get("/adminorder", adminAuth, adminorderController.getorderController);
+router.post("/orders/update-status", adminAuth, adminorderController.updateOrderStatus);
+router.get("/orders/:id", adminAuth, adminorderController.getOrderDetails);
 module.exports = router;

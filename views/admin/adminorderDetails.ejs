@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pure Threads - Order Details</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/adminStyle/adminOrderdetails.css">
+    
+</head>
+<body>
+    <%- include("../partials/admin/header") %>
+    <div class="main-content p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="mb-1">Order Details</h4>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="/admin">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/admin/adminorder">Order List</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Order Details</li>
+                    </ol>
+                </nav>
+            </div>
+            <button class="btn btn-dark rounded" onclick="downloadInvoice('<%= order.orderId %>')">
+                <i class="fa-solid fa-file-invoice me-2"></i>Invoice
+            </button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <span>Order #<%= order.orderId || 'N/A' %></span>
+                            <span class="badge badge-<%= order.status.toLowerCase().replace(' ', '-') %> ms-2"><%= order.status %></span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="order-info-item">
+                            <div class="order-info-label">
+                                <i class="fa-regular fa-calendar me-2"></i>Added
+                            </div>
+                            <div class="order-info-value">
+                                <%= order.formattedDate || 'N/A' %>
+                            </div>
+                        </div>
+                        <div class="order-info-item">
+                            <div class="order-info-label">
+                                <i class="fa-solid fa-credit-card me-2"></i>Payment Method
+                            </div>
+                            <div class="order-info-value"><%= order.payment || 'N/A' %></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <span>Customer</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="order-info-item">
+                            <div class="order-info-label">
+                                <i class="fa-solid fa-user me-2"></i>Customer
+                            </div>
+                            <div class="order-info-value"><%= order.customer?.fullname || 'Unknown' %></div>
+                        </div>
+                        <div class="order-info-item">
+                            <div class="order-info-label">
+                                <i class="fa-solid fa-envelope me-2"></i>Email
+                            </div>
+                            <div class="order-info-value"><%= order.customer?.email || 'N/A' %></div>
+                        </div>
+                        <div class="order-info-item">
+                            <div class="order-info-label">
+                                <i class="fa-solid fa-phone me-2"></i>Phone
+                            </div>
+                            <div class="order-info-value"><%= order.address?.mobile || 'N/A' %></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <span>Address</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="order-info-item">
+                            <div class="order-info-label">
+                                <i class="fa-solid fa-location-dot me-2"></i>Deliver to
+                            </div>
+                            <div class="order-info-value">
+                                <%= order.address?.fullname || 'N/A' %>, <%= order.address?.address || '' %>, <%= order.address?.city || '' %>, <%= order.address?.state || '' %> <%= order.address?.pincode || '' %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Order List</span>
+                        <span class="badge bg-light text-dark"><%= order.products?.length || 0 %> Products</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table order-list-table">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>SKU</th>
+                                        <th>QTY</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% order.products?.forEach(product => { %>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="<%= product.image || '/api/placeholder/50/50' %>" alt="<%= product.name || 'Product' %>" class="img-fluid me-2" style="width: 50px; height: 50px;" />
+                                                    <%= product.name || 'Unknown Product' %>
+                                                </div>
+                                            </td>
+                                            <td><%= order.orderId || 'N/A' %></td>
+                                            <td><%= product.quantity || 0 %> pcs</td>
+                                            <td>₹<%= product.price || '0.00' %></td>
+                                            <td>₹<%= product.total || '0.00' %></td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-6 offset-md-6">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Subtotal</span>
+                                    <span>₹<%= order.total || '0.00' %></span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Delivery charge</span>
+                                    <span>₹0</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Coupon<br><small class="text-muted">N/A</small></span>
+                                    <span>₹0</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between fw-bold">
+                                    <span>Grand Total</span>
+                                    <span>₹<%= order.total || '0.00' %></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 mt-4">
+                    <a href="/admin/adminorder" class="btn btn-go-back btn-outline-secondary">Go Back</a>
+                    <% if (order.status !== 'Cancelled' && order.status !== 'Delivered') { %>
+                        <button class="btn btn-cancel btn-danger" onclick="updateOrderStatus('<%= order._id %>', 'Cancelled')">Cancel Order</button>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Order Status</span>
+                        <% if (order.status !== 'Cancelled') { %>
+                            <select class="form-select status-select w-auto" data-order-id="<%= order._id %>">
+                                <option value="Pending" <%= order.status === 'Pending' ? 'selected' : '' %>>Pending</option>
+                                <option value="Processing" <%= order.status === 'Processing' ? 'selected' : '' %>>Processing</option>
+                                <option value="Confirmed" <%= order.status === 'Confirmed' ? 'selected' : '' %>>Confirmed</option>
+                                <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                                <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                                <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                <option value="Return Requested" <%= order.status === 'Return Requested' ? 'selected' : '' %>>Return Requested</option>
+                            </select>
+                        <% } else { %>
+                            <span class="badge badge-cancelled">Cancelled</span>
+                        <% } %>
+                    </div>
+                    <div class="card-body">
+                        <div class="order-status-tracker">
+                            <div class="status-line"></div>
+                            <% 
+                                const statusSteps = order.status === 'Cancelled' ? [
+                                    { title: 'Cancelled', icon: 'fa-times', date: order.date, completed: true, current: false }
+                                ] : [
+                                    { title: 'Order Placed', icon: 'fa-check', date: order.date, completed: ['Pending', 'Processing', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested'].includes(order.status) },
+                                    { title: 'Processing', icon: 'fa-spinner', date: order.date, completed: ['Processing', 'Confirmed', 'Shipped', 'Delivered'].includes(order.status), current: order.status === 'Processing' },
+                                    { title: 'Packed', icon: 'fa-box', date: null, completed: ['Confirmed', 'Shipped', 'Delivered'].includes(order.status), current: order.status === 'Confirmed' },
+                                    { title: 'Shipping', icon: 'fa-truck', date: null, completed: ['Shipped', 'Delivered'].includes(order.status), current: order.status === 'Shipped' },
+                                    { title: 'Delivered', icon: 'fa-check-double', date: null, completed: order.status === 'Delivered', current: order.status === 'Delivered' },
+                                ];
+                            %>
+                            <% statusSteps.forEach(step => { %>
+                                <div class="status-step">
+                                    <div class="status-icon <%= step.completed ? 'completed' : step.current ? 'current' : 'pending' %>">
+                                        <i class="fa-solid <%= step.icon %>"></i>
+                                    </div>
+                                    <div class="status-content">
+                                        <h6 class="status-title"><%= step.title %></h6>
+                                        <p class="status-date">
+                                            <% if (step.completed && step.date) { %>
+                                                <%= new Date(step.date).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: 'numeric' }) %>
+                                            <% } else if (step.current) { %>
+                                                In progress
+                                            <% } else { %>
+                                                Pending
+                                            <% } %>
+                                        </p>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="orderToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+            <div class="toast-header">
+                <strong class="me-auto">Order Action</strong>
+                <small>Just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showToast(message, isSuccess = true) {
+            const toastEl = document.getElementById("orderToast");
+            const toastBody = toastEl.querySelector(".toast-body");
+            toastBody.innerHTML = `<i class="fas ${isSuccess ? 'fa-check-circle text-success' : 'fa-exclamation-triangle text-danger'} me-2"></i>${message}`;
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+
+        function updateOrderStatus(orderId, status) {
+            if (!confirm(`Are you sure you want to change the status to ${status}?`)) {
+                return;
+            }
+
+          fetch("/admin/orders/update-status", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ orderId, status }),
+            })
+                .then((res) => {
+                   
+                    return res.json();
+                })
+                .then((data) => {
+                   
+                    if (data.success) {
+                        showToast("Order status updated successfully");
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast(data.message || "Failed to update status", false);
+                    }
+                })
+                .catch((err) => {
+                    console.error("Error updating status:", err);
+                    showToast("Error updating status", false);
+                });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const statusSelect = document.querySelector(".status-select");
+            if (statusSelect) {
+                statusSelect.addEventListener("change", function () {
+                    const orderId = this.getAttribute("data-order-id");
+                    const newStatus = this.value;
+                    updateOrderStatus(orderId, newStatus);
+                });
+            }
+        });
+
+        function downloadInvoice(orderId) {
+            showToast("Invoice download not implemented yet", false);
+        }
+    </script>
+</body>
+</html>

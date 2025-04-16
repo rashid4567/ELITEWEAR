@@ -458,7 +458,9 @@ body {
     transform: translate(21.9375rem, -38.4375rem);
 
 }
-
+.mainOne{
+    transform: translate(10px, 10px);
+}
 .order-details-card::before {
     content: '';
     position: absolute;

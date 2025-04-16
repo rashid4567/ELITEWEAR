@@ -351,6 +351,13 @@ const updateProfile = async (req, res) => {
   try {
     const { fullname, mobile } = req.body;
     const currentEmail = req.session.user.email;
+    const currentFullname = req.session.user.fullname;
+    const currentMobile = req.session.user.mobile || null;
+
+    
+    if (fullname === currentFullname && mobile === currentMobile) {
+      return res.json({ success: false, message: "No changes made" });
+    }
 
     const updateFields = { fullname, mobile };
 
@@ -364,13 +371,79 @@ const updateProfile = async (req, res) => {
       req.session.user.mobile = mobile;
       return res.json({ success: true, message: "Profile updated successfully" });
     }
+
     return res.status(400).json({ success: false, message: "Update failed" });
   } catch (error) {
     console.error("Error updating profile:", error);
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
+const loadupdatePassword = async (req,res)=>{
+  try {
+    if(!req.session || !req.session.user || !req.session.user._id){
+      return res.redirect("/login")
+    }
+    res.render("passwordChange",{ error: null, success: null })
+  } catch (error){
+   console.error("unable to load the passwordUpdate")
+   res.redirect("/page-404/")
+  }
+}
+const updatePassword = async (req, res) => {
+  try {
+    if (!req.session || !req.session.user || !req.session.user._id) {
+      return res.redirect("/login");
+    }
 
+    const userId = req.session.user._id;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return res.render("passwordChange", { error: "All fields are required", success: null });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.redirect("/login");
+    }
+if(currentPassword === newPassword){
+  return res.render('passwordChange', {error:"new password and the current password are same", success:null})
+}
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.render("passwordChange", { error: "Current password is incorrect", success: null });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.render("passwordChange", { error: "New passwords do not match", success: null });
+    }
+
+    if (newPassword.length < 8) {
+      return res.render("passwordChange", { error: "New password must be at least 8 characters long", success: null });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.render("passwordChange", { success: "Password changed successfully", error: null });
+  } catch (error) {
+    console.error("Error on changing the password:", error);
+    return res.render("passwordChange", { error: "An error occurred, please try again", success: null });
+  }
+};
+const loadLogout = async (req,res)=>{
+  try {
+    if (!req.session || !req.session.user || !req.session.user._id) {
+      return res.redirect("/login");
+    }
+
+    res.render("logout")
+  } catch (error) {
+    console.error("error to load logout page")
+    res.status(500).json({success: true, messagr:"server issue"})
+  }
+}
 module.exports = {
   forgotPassword,
   forgotemailValidations,
@@ -383,4 +456,7 @@ module.exports = {
   sendemilUpdateOtp,
   verifyUpdateOtp,
   updateProfile,
+  loadupdatePassword,
+  updatePassword,
+  loadLogout,
 };

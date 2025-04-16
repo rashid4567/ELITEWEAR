@@ -255,12 +255,12 @@
 
         <div class="menu-item">
           <span class="icon"><i class="fas fa-lock"></i></span>
-          <a href="/change-password" class="item-text">Change Password</a>
+          <a href="/getupdatePassword" class="item-text">Change Password</a>
         </div>
 
         <div class="menu-item">
           <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
-          <a href="/logout" class="item-text">Log out</a>
+          <a href="/logoutpage" class="item-text">Log out</a>
         </div>
 
         <div class="menu-item">
@@ -271,18 +271,17 @@
     </div>
 
     <script>
-      // Enhanced interaction for menu items
+
       document.querySelectorAll(".menu-item").forEach((item) => {
         item.addEventListener("click", function () {
-          // Remove active class from all items
+
           document.querySelectorAll(".menu-item").forEach((i) => {
             i.classList.remove("active");
           });
 
-          // Add active class to clicked item with a subtle animation
           this.classList.add("active");
 
-          // Add a subtle animation effect
+        
           this.style.transform = "scale(0.98)";
           setTimeout(() => {
             this.style.transform = "scale(1)";
@@ -290,7 +289,7 @@
         });
       });
 
-      // Add ripple effect on click
+ 
       document.querySelectorAll(".menu-item").forEach((item) => {
         item.addEventListener("mousedown", function (e) {
           const ripple = document.createElement("span");
@@ -305,7 +304,6 @@
           ripple.style.top = `${y}px`;
           ripple.classList.add("ripple");
 
-          // Add ripple style
           const style = document.createElement("style");
           style.textContent = `
                     .ripple {

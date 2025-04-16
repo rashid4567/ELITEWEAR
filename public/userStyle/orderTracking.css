@@ -324,3 +324,122 @@ body {
         margin-top: 1.5rem;
     }
 }
+/* orderTracking.css */
+.track-order-container {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .order-details {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .order-image img {
+    max-width: 200px;
+    border-radius: 8px;
+  }
+  
+  .status-label {
+    font-weight: bold;
+    color: #dc3545;
+  }
+  
+  .shipping-details, .order-summary {
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  
+  .grand-total {
+    font-weight: bold;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+  }
+  
+  .cancel-btn {
+    background: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .cancel-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+  }
+  
+  .progress-track {
+    height: 10px;
+    background: #e9ecef;
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 20px 0;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: #28a745;
+    transition: width 0.5s ease-in-out;
+  }
+  
+  .progress-steps {
+    display: flex;
+    justify-content: space-between;
+    text-align: center;
+  }
+  
+  .step {
+    flex: 1;
+  }
+  
+  .step.active .step-icon {
+    background: #28a745;
+    color: #fff;
+  }
+  
+  .step-icon {
+    width: 40px;
+    height: 40px;
+    background: #e9ecef;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+  }
+  
+  .step-text {
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .step-date {
+    font-size: 12px;
+    color: #6c757d;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  #mainOne{
+    transform: translate(16.6875rem, -36.5rem);
+
+  }

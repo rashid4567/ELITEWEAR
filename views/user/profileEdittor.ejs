@@ -6,7 +6,14 @@
     <title>Edit Profile</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-   <link rel="stylesheet" href="/userStyle/editProfile.css">
+    <link rel="stylesheet" href="/userStyle/editProfile.css">
+    <style>
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-color: #bee5eb;
+        }
+    </style>
 </head>
 <body>
     <%- include("../partials/user/header") %>
@@ -18,7 +25,7 @@
         <div class="main-content">
             <h1 class="page-title">EDIT YOUR PROFILE</h1>
             
-            <div id="alertContainer" class="form-alert" role="alert">
+            <div id="alertContainer" class="form-alert" role="alert" style="display: none;">
                 <span id="alertMessage"></span>
             </div>
             
@@ -27,12 +34,12 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <label for="fullName" class="form-label">Full Name</label>
-                            <input type="text" class="form-control" id="fullName" value="jeeva" required>
-                            <div class="invalid-feedback" id="fullNameFeedback">Please enter a valid full name </div>
+                            <input type="text" class="form-control" id="fullName" value="<%= fullname %>" required>
+                            <div class="invalid-feedback" id="fullNameFeedback">Please enter a valid full name</div>
                         </div>
                         <div class="col-md-6">
                             <label for="phoneNumber" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phoneNumber" value="9562553423" required>
+                            <input type="tel" class="form-control" id="phoneNumber" value="<%= mobile %>" required>
                             <div class="invalid-feedback">Please enter a valid 10-digit phone number</div>
                         </div>
                     </div>
@@ -40,7 +47,7 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <label for="currentEmail" class="form-label">Current Email</label>
-                            <input type="email" class="form-control" id="currentEmail" value="suresh432@gmail.com" readonly>
+                            <input type="email" class="form-control" id="currentEmail" value="<%= email %>" readonly>
                         </div>
                         <div class="col-md-6">
                             <label for="newEmail" class="form-label">New Email (Optional)</label>
@@ -60,7 +67,7 @@
                     </div>
                 </form>
                 
-                <a href="#" class="change-password-link">Change Password</a>
+                <a href="/change-password" class="change-password-link">Change Password</a>
             </div>
         </div>
     </div>
@@ -81,11 +88,9 @@
         // Add click event listeners to menu items
         document.querySelectorAll('.menu-item').forEach(item => {
             item.addEventListener('click', function() {
-                // Remove active class from all items
                 document.querySelectorAll('.menu-item').forEach(i => {
                     i.classList.remove('active');
                 });
-                // Add active class to clicked item
                 this.classList.add('active');
             });
         });
@@ -124,7 +129,7 @@
             }, 5000);
         }
 
-        form.addEventListener('submit', function(event) {
+        form.addEventListener('submit', async function(event) {
             event.preventDefault();
             
             let isValid = true;
@@ -138,17 +143,40 @@
                 }
             }
 
-            if (isValid) {
-                showAlert('Profile updated successfully!', 'success');
-                setTimeout(() => {
-                    form.classList.remove('was-validated');
-                }, 1000);
-            } else {
+            if (!isValid) {
                 showAlert('Please correct the errors in the form', 'danger');
+                return;
+            }
+
+            try {
+                const response = await fetch('/update-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        fullname: fullName.value.trim(),
+                        mobile: phoneNumber.value.trim(),
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    setTimeout(() => {
+                        form.classList.remove('was-validated');
+                    }, 1000);
+                } else {
+                    showAlert(result.message, result.message === 'No changes made' ? 'info' : 'danger');
+                }
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showAlert('An error occurred, please try again', 'danger');
             }
         });
 
-        sendOtpBtn.addEventListener('click', function() {
+        sendOtpBtn.addEventListener('click', async function() {
             const emailValue = newEmail.value.trim();
             
             if (!emailValue) {
@@ -163,8 +191,22 @@
                 newEmail.focus();
                 return;
             }
-            
-            showAlert('OTP has been sent to your new email address', 'success');
+
+            try {
+                const response = await fetch('/send-email-update-otp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ newEmail: emailValue }),
+                });
+
+                const result = await response.json();
+                showAlert(result.message, result.success ? 'success' : 'danger');
+            } catch (error) {
+                console.error('Error sending OTP:', error);
+                showAlert('An error occurred, please try again', 'danger');
+            }
         });
 
         fullName.addEventListener('input', function() {
