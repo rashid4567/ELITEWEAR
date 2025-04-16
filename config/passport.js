@@ -42,7 +42,6 @@ passport.use(
   )
 );
 
-// Google Strategy
 passport.use(
   new GoogleStrategy(
     {
@@ -52,6 +51,7 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+
         let user = await User.findOne({ googleId: profile.id });
 
         if (user) {
@@ -66,6 +66,14 @@ passport.use(
         user = await User.findOne({ email: profile.emails[0].value });
 
         if (user) {
+     
+          if (user.password) {
+            return done(null, false, {
+              message:
+                "Account already exists. Please log in with your email and password.",
+            });
+          }
+
           if (user.isBlocked) {
             return done(null, false, {
               message: "Sorry, your account is blocked by the admin.",
@@ -75,6 +83,7 @@ passport.use(
           await user.save();
           return done(null, user);
         }
+
 
         user = new User({
           fullname: profile.displayName,
