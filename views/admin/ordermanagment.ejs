@@ -7,12 +7,12 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="/adminStyle/ordermanagment.css">
+
 </head>
 <body>
     <div class="container-fluid p-0">
         <div class="row g-0">
-    
-            <%- include("../partials/admin/header") %> 
+            <%- include("../partials/admin/header") %>
             <div class="col">
                 <div class="main-content">
                     <div class="page-header">
@@ -49,6 +49,9 @@
                                     <li><a class="dropdown-item" href="?status=Delivered">Delivered</a></li>
                                     <li><a class="dropdown-item" href="?status=Cancelled">Cancelled</a></li>
                                     <li><a class="dropdown-item" href="?status=Return Requested">Return Requested</a></li>
+                                    <li><a class="dropdown-item" href="?status=Return Approved">Return Approved</a></li>
+                                    <li><a class="dropdown-item" href="?status=Returned">Returned</a></li>
+                                    <li><a class="dropdown-item" href="?status=Return Rejected">Return Rejected</a></li>
                                 </ul>
                             </div>
                             <div class="search-input">
@@ -91,51 +94,69 @@
                                 <tbody>
                                     <% orders.forEach(order => { %>
                                         <tr>
-                                            <td class="text-primary"><%= order.orderId %></td>
+                                            <td class="text-primary"><%= order.orderNumber %></td>
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <div class="product-img me-2">
-                                                        <img src="<%= order.products[0]?.image || '/api/placeholder/50/50' %>" alt="Product" class="img-fluid" style="width: 50px; height: 50px;" />
+                                                        <% if (order.order_items && order.order_items.length > 0 && order.order_items[0]?.productId?.images?.length > 0) { %>
+                                                            <img src="<%= order.order_items[0].productId.images[0].url %>" alt="Product" class="img-fluid" style="width: 50px; height: 50px;" />
+                                                        <% } else { %>
+                                                            <img src="/api/placeholder/50/50" alt="No Product" class="img-fluid" style="width: 50px; height: 50px;" />
+                                                        <% } %>
                                                     </div>
                                                     <div>
-                                                        <div><%= order.products[0]?.name %></div>
-                                                        <% if (order.products.length > 1) { %>
-                                                            <small class="text-muted">+ <%= order.products.length - 1 %> other products</small>
+                                                        <% if (order.order_items && order.order_items.length > 0 && order.order_items[0]?.productId?.name) { %>
+                                                            <div><%= order.order_items[0].productId.name %></div>
+                                                            <% if (order.order_items.length > 1) { %>
+                                                                <small class="text-muted">+ <%= order.order_items.length - 1 %> other products</small>
+                                                            <% } %>
+                                                        <% } else { %>
+                                                            <div>No Product Available</div>
                                                         <% } %>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td><%= new Date(order.date).toLocaleString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) %></td>
+                                            <td><%= new Date(order.orderDate).toLocaleString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) %></td>
                                             <td>
-                                                <div><%= order.customer.name %></div>
-                                                <small class="text-muted"><%= order.customer.email %></small>
+                                                <div><%= order.userId?.name || 'Unknown User' %></div>
+                                                <small class="text-muted"><%= order.userId?.email || 'No email' %></small>
                                             </td>
-                                            <td>₹<%= order.total %></td>
-                                            <td><%= order.payment %></td>
+                                            <td>₹<%= order.total.toFixed(2) %></td>
+                                            <td><%= order.paymentMethod %></td>
                                             <td>
-                                                <% 
-                                                let statusClass = "";
-                                                switch(order.status) {
-                                                    case "Pending": statusClass = "status-pending"; break;
-                                                    case "Processing": statusClass = "status-processing"; break;
-                                                    case "Confirmed": statusClass = "status-confirmed"; break;
-                                                    case "Shipped": statusClass = "status-shipped"; break;
-                                                    case "Delivered": statusClass = "status-delivered"; break;
-                                                    case "Cancelled": statusClass = "status-cancelled"; break;
-                                                    case "Return Requested": statusClass = "status-return-requested"; break;
-                                                    default: statusClass = "status-pending";
-                                                }
-                                                %>
-                                                <span class="status-badge <%= statusClass %>">
+                                                <span class="status-badge status-<%= order.status.toLowerCase().replace(' ', '-') %>">
                                                     <%= order.status %>
                                                 </span>
+                                                <% if (order.cancelReason) { %>
+                                                    <div class="text-muted small mt-1">
+                                                        Cancel Reason: <%= order.cancelReason %>
+                                                    </div>
+                                                <% } %>
+                                                <% if (order.returnReason) { %>
+                                                    <div class="text-muted small mt-1">
+                                                        Return Reason: <%= order.returnReason %>
+                                                    </div>
+                                                <% } %>
+                                                <% if (order.returnRejectionReason) { %>
+                                                    <div class="text-muted small mt-1">
+                                                        Rejection Reason: <%= order.returnRejectionReason %>
+                                                    </div>
+                                                <% } %>
                                             </td>
                                             <td>
                                                 <div class="d-flex">
                                                     <a href="/admin/orders/<%= order._id %>" class="action-btn" title="View Details">
                                                         <i class="far fa-eye"></i>
                                                     </a>
-                                                   
+                                                
+                                                    <% if (order.status === 'Return Requested') { %>
+                                                        <button class="action-btn btn-approve-return ms-2" data-bs-toggle="modal" data-bs-target="#approveReturnModal" data-order-id="<%= order._id %>" title="Approve Return">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                        <button class="action-btn btn-reject-return ms-2" data-bs-toggle="modal" data-bs-target="#rejectReturnModal" data-order-id="<%= order._id %>" title="Reject Return">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    <% } %>
                                                 </div>
                                             </td>
                                         </tr>
@@ -176,18 +197,49 @@
         </div>
     </div>
 
-
-    <div style="position: fixed; top: 15px; right: 15px; display: flex; align-items: center;">
-        <div class="avatar me-2">
-            <img src="/api/placeholder/32/32" alt="avatar" />
-        </div>
-        <div>
-            <div class="fw-bold">Admin</div>
-            <div class="text-muted small">Admin</div>
+    
+    <div class="modal fade" id="approveReturnModal" tabindex="-1" aria-labelledby="approveReturnModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="approveReturnModalLabel">Approve Return</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to approve the return for this order? This will process a refund and credit the amount to the user's wallet.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="confirmApproveReturnBtn">Approve Return</button>
+                </div>
+            </div>
         </div>
     </div>
 
-  
+    <div class="modal fade" id="rejectReturnModal" tabindex="-1" aria-labelledby="rejectReturnModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rejectReturnModalLabel">Reject Return</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Please provide a reason for rejecting the return.</p>
+                    <div class="mb-3">
+                        <label for="rejectionReason" class="form-label">Reason for rejection (required)</label>
+                        <textarea class="form-control" id="rejectionReason" rows="3" maxlength="500" required></textarea>
+                        <div class="invalid-feedback">Please provide a reason for the rejection.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmRejectReturnBtn">Reject Return</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
     <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -208,6 +260,9 @@
                                 <option value="Delivered">Delivered</option>
                                 <option value="Cancelled">Cancelled</option>
                                 <option value="Return Requested">Return Requested</option>
+                                <option value="Return Approved">Return Approved</option>
+                                <option value="Returned">Returned</option>
+                                <option value="Return Rejected">Return Rejected</option>
                             </select>
                         </div>
                     </form>
@@ -220,9 +275,8 @@
         </div>
     </div>
 
-
     <div class="toast-container position-fixed top-0 end-0 p-3">
-        <div id="orderToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+        <div id="orderToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
             <div class="toast-header">
                 <strong class="me-auto">Order Action</strong>
                 <small>Just now</small>
@@ -243,70 +297,54 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-        
             const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
+            const approveReturnModal = new bootstrap.Modal(document.getElementById('approveReturnModal'));
+            const rejectReturnModal = new bootstrap.Modal(document.getElementById('rejectReturnModal'));
+
             const orderIdInput = document.getElementById('orderIdInput');
             const statusSelect = document.getElementById('statusSelect');
             const saveStatusBtn = document.getElementById('saveStatusBtn');
-            
-      
+            const confirmApproveReturnBtn = document.getElementById('confirmApproveReturnBtn');
+            const confirmRejectReturnBtn = document.getElementById('confirmRejectReturnBtn');
+
+            // Status Edit Buttons
             const editStatusBtns = document.querySelectorAll('.btn-edit-status');
             editStatusBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
                     const orderId = this.getAttribute('data-order-id');
                     const currentStatus = this.getAttribute('data-current-status');
-                    
                     orderIdInput.value = orderId;
                     statusSelect.value = currentStatus;
                     statusModal.show();
                 });
             });
-            
-       
+
+            // Save Status
             saveStatusBtn.addEventListener('click', function() {
                 const orderId = orderIdInput.value;
                 const newStatus = statusSelect.value;
-                
+
                 fetch("/admin/orders/update-status", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ orderId, status: newStatus }),
                 })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                   
                         const statusBadge = document.querySelector(`button[data-order-id="${orderId}"]`)
                             .closest('tr')
                             .querySelector('.status-badge');
-                        
-                    
                         statusBadge.classList.forEach(className => {
                             if (className.startsWith('status-') && className !== 'status-badge') {
                                 statusBadge.classList.remove(className);
                             }
                         });
-                     
-                        let statusClass = "";
-                        switch(newStatus) {
-                            case "Pending": statusClass = "status-pending"; break;
-                            case "Processing": statusClass = "status-processing"; break;
-                            case "Confirmed": statusClass = "status-confirmed"; break;
-                            case "Shipped": statusClass = "status-shipped"; break;
-                            case "Delivered": statusClass = "status-delivered"; break;
-                            case "Cancelled": statusClass = "status-cancelled"; break;
-                            case "Return Requested": statusClass = "status-return-requested"; break;
-                            default: statusClass = "status-pending";
-                        }
+                        const statusClass = `status-${newStatus.toLowerCase().replace(' ', '-')}`;
                         statusBadge.classList.add(statusClass);
-                    
                         statusBadge.textContent = newStatus;
-                  
                         document.querySelector(`button[data-order-id="${orderId}"]`)
                             .setAttribute('data-current-status', newStatus);
-                        
                         showToast("Order status updated successfully");
                         statusModal.hide();
                     } else {
@@ -315,18 +353,106 @@
                 })
                 .catch(err => {
                     console.error("Error updating status:", err);
-                    showToast("Error updating status", false);
+                    showToast("Error updating status: " + err.message, false);
                 });
             });
+
             
+            const approveReturnBtns = document.querySelectorAll('.btn-approve-return');
+            approveReturnBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    confirmApproveReturnBtn.setAttribute('data-order-id', orderId);
+                    approveReturnModal.show();
+                });
+            });
+
+            // Confirm Approve Return
+            confirmApproveReturnBtn.addEventListener('click', function() {
+                const orderId = this.getAttribute('data-order-id');
+                fetch(`/admin/orders/return/${orderId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'approve' })
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showToast("Return approved and refund processed successfully");
+                        setTimeout(() => window.location.reload(), 2000);
+                    } else {
+                        showToast(data.message || "Failed to approve return", false);
+                    }
+                })
+                .catch(err => {
+                    console.error("Error approving return:", err);
+                    showToast("Error approving return: " + err.message, false);
+                });
+                approveReturnModal.hide();
+            });
+
+    
+            const rejectReturnBtns = document.querySelectorAll('.btn-reject-return');
+            rejectReturnBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    confirmRejectReturnBtn.setAttribute('data-order-id', orderId);
+                    rejectReturnModal.show();
+                });
+            });
+
+            // Confirm Reject Return
+            confirmRejectReturnBtn.addEventListener('click', function() {
+                const orderId = this.getAttribute('data-order-id');
+                const rejectionReason = document.getElementById('rejectionReason').value.trim();
+                if (!rejectionReason) {
+                    document.getElementById('rejectionReason').classList.add('is-invalid');
+                    return;
+                }
+                fetch(`/admin/orders/return/${orderId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'reject', rejectionReason })
+                })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showToast("Return rejected successfully");
+                        setTimeout(() => window.location.reload(), 2000);
+                    } else {
+                        showToast(data.message || "Failed to reject return", false);
+                    }
+                })
+                .catch(err => {
+                    console.error("Error rejecting return:", err);
+                    showToast("Error rejecting return: " + err.message, false);
+                });
+                rejectReturnModal.hide();
+                document.getElementById('rejectionReason').value = ''; 
+            });
+
             
+            document.getElementById('rejectionReason')?.addEventListener('input', function() {
+                this.classList.remove('is-invalid');
+            });
+
+
             const tableRows = document.querySelectorAll('tbody tr');
             tableRows.forEach(row => {
                 row.addEventListener('mouseenter', function() {
                     this.style.backgroundColor = '#f8f9fa';
                     this.style.transition = 'background-color 0.3s ease';
                 });
-                
                 row.addEventListener('mouseleave', function() {
                     this.style.backgroundColor = '';
                 });

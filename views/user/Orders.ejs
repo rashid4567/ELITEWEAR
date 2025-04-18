@@ -1,373 +1,443 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Orders | Elite Wear</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/userStyle/getOrder.css">
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/userStyle/getOrder.css" />
     <style>
-        .order-progress .progress {
-            height: 10px;
-            background-color: #e9ecef;
-        }
-        .order-progress .progress-bar {
-            transition: width 0.5s ease-in-out;
-        }
-        .status-pending { color: #6c757d; }
-        .status-processing { color: #ffc107; }
-        .status-confirmed { color: #17a2b8; }
-        .status-shipped { color: #007bff; }
-        .status-delivered { color: #28a745; }
-        .status-cancelled { color: #dc3545; }
-        .status-return-requested { color: #fd7e14; }
-        .action-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
+      .order-progress .progress {
+        height: 10px;
+        background-color: #e9ecef;
+      }
+      .order-progress .progress-bar {
+        transition: width 0.5s ease-in-out;
+      }
+      .status-pending { color: #6c757d; }
+      .status-processing { color: #ffc107; }
+      .status-confirmed { color: #17a2b8; }
+      .status-shipped { color: #007bff; }
+      .status-delivered { color: #28a745; }
+      .status-cancelled { color: #dc3545; }
+      .status-return-requested { color: #fd7e14; }
+      .status-return-approved { color: #28a745; }
+      .status-returned { color: #28a745; }
+      .status-return-rejected { color: #dc3545; }
+      .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+      .refund-info {
+        color: #28a745;
+        font-size: 0.9rem;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <%- include("../partials/user/header") %>
 
     <div class="container my-5 animate__animated animate__fadeIn">
-        <div class="row">
-            <%- include("../partials/user/profileSidebar") %>
+      <div class="row">
+        <%- include("../partials/user/profileSidebar") %>
 
-            <div class="col-md-9">
-                <div class="card main-content-card animate__animated animate__fadeInUp">
-                    <div class="card-body p-4">
-                        <h4 class="card-title mb-4 fw-bold animate__animated animate__fadeInLeft">My Orders</h4>
+        <div class="col-md-9">
+          <div class="card main-content-card animate__animated animate__fadeInUp">
+            <div class="card-body p-4">
+              <h4 class="card-title mb-4 fw-bold animate__animated animate__fadeInLeft">
+                My Orders
+              </h4>
 
-                        <!-- Toast Notification -->
-                        <div class="toast-container position-fixed top-0 end-0 p-3">
-                            <div id="orderToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
-                                <div class="toast-header">
-                                    <strong class="me-auto">Order Action</strong>
-                                    <small>Just now</small>
-                                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                                </div>
-                                <div class="toast-body"></div>
-                            </div>
-                        </div>
-
-                        <% if (!hasOrders) { %>
-                            <div class="text-center py-5 animate__animated animate__fadeIn">
-                                <img src="/Uploads/empty-orders.png" alt="No Orders" class="img-fluid mb-4" style="max-width: 200px;">
-                                <p class="text-muted">You have no orders yet. <a href="/" class="fw-bold">Start shopping!</a></p>
-                            </div>
-                        <% } else { %>
-                            <% orders.forEach((order, index) => { %>
-                                <% order.order_items.forEach((item, itemIndex) => { %>
-                                    <div class="order-card card mb-4 shine-effect animate__animated animate__fadeInUp" style="animation-delay: <%= (index + itemIndex) * 0.1 %>s;">
-                                        <div class="card-body p-4">
-                                            <div class="row g-4 align-items-center">
-                                                <div class="col-lg-2 col-md-3 col-sm-3">
-                                                    <img 
-                                                        src="<%= item.productId && item.productId.images && item.productId.images.length > 0 ? item.productId.images[0].url : '/api/placeholder/300/300' %>" 
-                                                        alt="<%= item.productId ? item.productId.name : 'Unnamed Product' %>" 
-                                                        class="product-image img-fluid rounded"
-                                                    >
-                                                </div>
-                                                <div class="col-lg-7 col-md-6 col-sm-9">
-                                                    <h5 class="card-title fw-bold"><%= item.productId.name %></h5>
-                                                    <p class="card-text mb-2 fs-5 fw-semibold">₹<%= item.price.toFixed(2) %></p>
-                                                    <p class="card-text mb-2">Quantity: <%= item.quantity %> | Size: <%= item.size %></p>
-                                                    <p class="card-text mb-0 text-muted">Order Id: <%= order.orderNumber %></p>
-                                                    <div class="order-progress mt-2">
-                                                        <div class="progress">
-                                                            <div 
-                                                                class="progress-bar bg-<%= order.status.toLowerCase() === 'delivered' ? 'success' : order.status.toLowerCase() === 'cancelled' ? 'danger' : 'primary' %>" 
-                                                                role="progressbar" 
-                                                                style="width: <%= order.progressWidth %>%" 
-                                                                aria-valuenow="<%= order.progressWidth %>" 
-                                                                aria-valuemin="0" 
-                                                                aria-valuemax="100"
-                                                            ></div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-3 col-md-3 col-sm-12 text-lg-end text-md-end text-start mt-sm-3 mt-lg-0">
-                                                    <p class="status-<%= order.status.toLowerCase().replace(' ', '-') %> mb-1 fs-6">Status: <%= order.status.toUpperCase() %></p>
-                                                    <p class="mb-3">
-                                                        <% if (order.status === 'Delivered') { %>
-                                                            <i class="bi bi-check-circle-fill me-1 text-success"></i> Delivered on <%= order.orderDate.toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
-                                                        <% } else if (order.status === 'Processing' || order.status === 'Confirmed' || order.status === 'Shipped') { %>
-                                                            <i class="bi bi-truck me-1 text-primary"></i> Expected by <%= new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
-                                                        <% } else if (order.status === 'Cancelled') { %>
-                                                            <i class="bi bi-x-circle-fill me-1 text-danger"></i> Cancelled
-                                                        <% } %>
-                                                    </p>
-                                                    <% if (order.status === 'Delivered') { %>
-                                                        <button class="btn btn-sm btn-outline-dark action-btn mb-2" data-bs-toggle="modal" data-bs-target="#returnModal" data-order-id="<%= order._id %>">
-                                                            <i class="bi bi-arrow-return-left me-1"></i>Return
-                                                        </button>
-                                                        <button class="btn btn-sm btn-outline-dark action-btn mb-2" onclick="downloadInvoice('<%= order._id %>')">
-                                                            <i class="bi bi-file-earmark-text me-1"></i>Invoice
-                                                        </button>
-                                                    <% } else if (order.status === 'Pending' || order.status === 'Processing') { %>
-                                                        <button class="btn btn-sm btn-outline-dark action-btn mb-2" data-bs-toggle="modal" data-bs-target="#cancelModal" data-order-id="<%= order._id %>">
-                                                            <i class="bi bi-x-circle me-1"></i>Cancel Order
-                                                        </button>
-                                                    <% } else if (order.status === 'Cancelled') { %>
-                                                        <button class="btn btn-sm btn-outline-dark action-btn mb-2" data-bs-toggle="modal" data-bs-target="#reorderModal" data-order-id="<%= order._id %>">
-                                                            <i class="bi bi-arrow-repeat me-1"></i>Re Order
-                                                        </button>
-                                                    <% } %>
-                                                    <button class="btn btn-sm btn-dark action-btn" onclick="viewDetails('<%= order._id %>')">
-                                                        <i class="bi bi-eye me-1"></i>View Details
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                <% }) %>
-                            <% }) %>
-                        <% } %>
-
-                        <!-- Pagination -->
-                        <% if (hasOrders && totalPages > 1) { %>
-                            <nav aria-label="Order pagination" class="mt-4 animate__animated animate__fadeInUp">
-                                <ul class="pagination justify-content-center">
-                                    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                                        <a class="page-link" href="?page=<%= currentPage - 1 %>" aria-label="Previous">
-                                            <span aria-hidden="true">«</span>
-                                        </a>
-                                    </li>
-                                    <% for (let i = 1; i <= totalPages; i++) { %>
-                                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                            <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-                                        </li>
-                                    <% } %>
-                                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                                        <a class="page-link" href="?page=<%= currentPage + 1 %>" aria-label="Next">
-                                            <span aria-hidden="true">»</span>
-                                        </a>
-                                    </li>
-                                </ul>
-                            </nav>
-                        <% } %>
-                    </div>
+              <!-- Toast Notification -->
+              <div class="toast-container position-fixed top-0 end-0 p-3">
+                <div
+                  id="orderToast"
+                  class="toast"
+                  role="alert"
+                  aria-live="assertive"
+                  aria-atomic="true"
+                  data-bs-delay="3000"
+                >
+                  <div class="toast-header">
+                    <strong class="me-auto">Order Action</strong>
+                    <small>Just now</small>
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="toast"
+                      aria-label="Close"
+                    ></button>
+                  </div>
+                  <div class="toast-body"></div>
                 </div>
+              </div>
+
+              <% if (!hasOrders) { %>
+              <div class="text-center py-5 animate__animated animate__fadeIn">
+                <img
+                  src="/Uploads/empty-orders.png"
+                  alt="No Orders"
+                  class="img-fluid mb-4"
+                  style="max-width: 200px"
+                />
+                <p class="text-muted">
+                  You have no orders yet.
+                  <a href="/" class="fw-bold">Start shopping!</a>
+                </p>
+              </div>
+              <% } else { %>
+                <% orders.forEach((order, index) => { %>
+                  <% order.order_items.forEach((item, itemIndex) => { %>
+                    <div
+                      class="order-card card mb-4 shine-effect animate__animated animate__fadeInUp"
+                      style="animation-delay: <%= (index + itemIndex) * 0.1 %>s"
+                    >
+                      <div class="card-body p-4">
+                        <div class="row g-4 align-items-center">
+                          <div class="col-lg-2 col-md-3 col-sm-3">
+                            <img
+                              src="<%= (item.productId && item.productId.images && item.productId.images.length > 0) ? item.productId.images[0].url : '/api/placeholder/300/300' %>"
+                              alt="<%= item.productId && item.productId.name ? item.productId.name : 'Unnamed Product' %>"
+                              class="product-image img-fluid rounded"
+                            />
+                          </div>
+                          <div class="col-lg-7 col-md-6 col-sm-9">
+                            <h5 class="card-title fw-bold">
+                              <%= item.productId && item.productId.name ? item.productId.name : 'Unnamed Product' %>
+                            </h5>
+                            <p class="card-text mb-2 fs-5 fw-semibold">
+                              ₹<%= item.price ? item.price.toFixed(2) : '0.00' %>
+                            </p>
+                            <p class="card-text mb-2">
+                              Quantity: <%= item.quantity || 1 %> | Size: <%= item.size || 'N/A' %>
+                            </p>
+                            <p class="card-text mb-0 text-muted">
+                              Order Id: <%= order.orderNumber || 'N/A' %>
+                            </p>
+                            <div class="order-progress mt-2">
+                              <div class="progress">
+                                <div
+                                  class="progress-bar bg-<%= order.status && (order.status.toLowerCase() === 'delivered' || order.status.toLowerCase() === 'returned') ? 'success' : (order.status.toLowerCase() === 'cancelled' || order.status.toLowerCase() === 'return-rejected') ? 'danger' : 'primary' %>"
+                                  role="progressbar"
+                                  style="width: <%= order.progressWidth || 0 %>%"
+                                  aria-valuenow="<%= order.progressWidth || 0 %>"
+                                  aria-valuemin="0"
+                                  aria-valuemax="100"
+                                ></div>
+                              </div>
+                            </div>
+                            <% if (order.refunded && order.status === 'Returned') { %>
+                              <p class="refund-info mt-2">
+                                <i class="bi bi-wallet2 me-1"></i>
+                                Refund of ₹<%= order.total ? order.total.toFixed(2) : '0.00' %> credited to wallet
+                              </p>
+                            <% } %>
+                          </div>
+                          <div class="col-lg-3 col-md-3 col-sm-12 text-lg-end text-md-end text-start mt-sm-3 mt-lg-0">
+                            <p class="status-<%= order.status ? order.status.toLowerCase().replace(/\s+/g, '-') : 'pending' %> mb-1 fs-6">
+                              Status: <%= order.status ? order.status.toUpperCase() : 'PENDING' %>
+                            </p>
+                            <p class="mb-3">
+                              <% if (order.status === 'Delivered') { %>
+                                <i class="bi bi-check-circle-fill me-1 text-success"></i>
+                                Delivered on <%= order.deliveryDate ? new Date(order.deliveryDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) : new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+                              <% } else if (order.status === 'Processing' || order.status === 'Confirmed' || order.status === 'Shipped') { %>
+                                <i class="bi bi-truck me-1 text-primary"></i>
+                                Expected by <%= new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+                              <% } else if (order.status === 'Cancelled') { %>
+                                <i class="bi bi-x-circle-fill me-1 text-danger"></i>
+                                Cancelled
+                              <% } else if (order.status === 'Return Rejected') { %>
+                                <i class="bi bi-x-circle-fill me-1 text-danger"></i>
+                                Return Rejected
+                              <% } else if (order.status === 'Returned') { %>
+                                <i class="bi bi-check-circle-fill me-1 text-success"></i>
+                                Returned
+                              <% } else if (order.status === 'Return Requested' || order.status === 'Return Approved') { %>
+                                <i class="bi bi-arrow-return-left me-1 text-warning"></i>
+                                <%= order.status %>
+                              <% } %>
+                            </p>
+                            <% if (order.status === 'Delivered' && !order.refunded) { %>
+                              <button
+                                class="btn btn-sm btn-outline-dark action-btn mb-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#returnModal"
+                                data-order-id="<%= order._id %>"
+                              >
+                                <i class="bi bi-arrow-return-left me-1"></i>Return
+                              </button>
+                              <button
+                                class="btn btn-sm btn-outline-dark action-btn mb-2"
+                                onclick="downloadInvoice('<%= order._id %>')"
+                              >
+                                <i class="bi bi-file-earmark-text me-1"></i>Invoice
+                              </button>
+                            <% } else if (order.status === 'Pending' || order.status === 'Processing') { %>
+                              <button
+                                class="btn btn-sm btn-outline-dark action-btn mb-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#cancelModal"
+                                data-order-id="<%= order._id %>"
+                              >
+                                <i class="bi bi-x-circle me-1"></i>Cancel Order
+                              </button>
+                            <% } else if (order.status === 'Cancelled' || order.status === 'Return Rejected') { %>
+                              <button
+                                class="btn btn-sm btn-outline-dark action-btn mb-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#reorderModal"
+                                data-order-id="<%= order._id %>"
+                              >
+                                <i class="bi bi-arrow-repeat me-1"></i>Re Order
+                              </button>
+                            <% } %>
+                            <button
+                              class="btn btn-sm btn-dark action-btn"
+                              onclick="viewDetails('<%= order._id %>')"
+                            >
+                              <i class="bi bi-eye me-1"></i>View Details
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  <% }); %>
+                <% }); %>
+              <% } %>
+
+              <!-- Pagination -->
+              <% if (hasOrders && totalPages > 1) { %>
+                <nav aria-label="Order pagination" class="mt-4 animate__animated animate__fadeInUp">
+                  <ul class="pagination justify-content-center">
+                    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                      <a class="page-link" href="?page=<%= currentPage - 1 %>" aria-label="Previous">
+                        <span aria-hidden="true">«</span>
+                      </a>
+                    </li>
+                    <% for (let i = 1; i <= totalPages; i++) { %>
+                      <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                        <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                      </li>
+                    <% } %>
+                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                      <a class="page-link" href="?page=<%= currentPage + 1 %>" aria-label="Next">
+                        <span aria-hidden="true">»</span>
+                      </a>
+                    </li>
+                  </ul>
+                </nav>
+              <% } %>
             </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- Cancel Order Modal -->
     <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="cancelModalLabel">Confirm Cancellation</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to cancel this order?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
-                    <button type="button" class="btn btn-dark" id="confirmCancelBtn">Yes, cancel</button>
-                </div>
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="cancelModalLabel">Cancel Order</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to cancel this order?</p>
+            <div class="mb-3">
+              <label for="cancelReason" class="form-label">Reason for cancellation (optional)</label>
+              <textarea class="form-control" id="cancelReason" rows="3" maxlength="500"></textarea>
             </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
+            <button type="button" class="btn btn-dark" id="confirmCancelBtn">Yes, cancel</button>
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- Return Order Modal -->
     <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="returnModalLabel">Confirm Return</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to initiate a return for this order?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
-                    <button type="button" class="btn btn-dark" id="confirmReturnBtn">Yes, return</button>
-                </div>
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="returnModalLabel">Return Order</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to initiate a return for this order?</p>
+            <div class="mb-3">
+              <label for="returnReason" class="form-label">Reason for return (required)</label>
+              <textarea class="form-control" id="returnReason" rows="3" maxlength="500" required></textarea>
+              <div class="invalid-feedback">Please provide a reason for the return.</div>
             </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
+            <button type="button" class="btn btn-dark" id="confirmReturnBtn">Yes, return</button>
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- Reorder Modal -->
     <div class="modal fade" id="reorderModal" tabindex="-1" aria-labelledby="reorderModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="reorderModalLabel">Confirm Reorder</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Do you want to place this order again?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
-                    <button type="button" class="btn btn-dark" id="confirmReorderBtn">Yes, reorder</button>
-                </div>
-            </div>
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="reorderModalLabel">Confirm Reorder</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">Do you want to place this order again?</div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
+            <button type="button" class="btn btn-dark" id="confirmReorderBtn">Yes, reorder</button>
+          </div>
         </div>
+      </div>
     </div>
 
     <%- include("../partials/user/footer") %>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        function showToast(message, isSuccess = true) {
-            const toastEl = document.getElementById('orderToast');
-            const toastBody = toastEl.querySelector('.toast-body');
-            toastBody.innerHTML = `<i class="bi ${isSuccess ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-danger'} me-2"></i>${message}`;
-            const toast = new bootstrap.Toast(toastEl);
-            toast.show();
-        }
+      // Debounce utility to prevent multiple rapid clicks
+      function debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+      }
 
-        function initiateReturn(orderId) {
-            console.log('Initiating return for order:', orderId);
-            fetch(`/orders/return/${orderId}`, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    console.log('Return response:', data);
-                    if (data.success) {
-                        showToast("Return initiated successfully");
-                        setTimeout(() => window.location.reload(), 2000);
-                    } else {
-                        showToast(data.message || "Failed to initiate return", false);
-                    }
-                })
-                .catch(err => {
-                    console.error('Return error:', err);
-                    showToast("Error initiating return", false);
-                });
-        }
-
-        function cancelOrder(orderId) {
-            console.log('Cancelling order:', orderId);
-            fetch(`/orders/cancel/${orderId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-                .then(res => {
-                    console.log('Cancel response status:', res.status);
-                    return res.json();
-                })
-                .then(data => {
-                    console.log('Cancel response data:', data);
-                    if (data.success) {
-                        showToast("Order cancelled successfully");
-                        setTimeout(() => window.location.reload(), 2000);
-                    } else {
-                        showToast(data.message || "Failed to cancel order", false);
-                    }
-                })
-                .catch(err => {
-                    console.error('Cancel error:', err);
-                    showToast("Error cancelling order", false);
-                });
-        }
-
-        function reOrder(orderId) {
-            console.log('Reordering order:', orderId);
-            fetch(`/orders/reorder/${orderId}`, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    console.log('Reorder response:', data);
-                    if (data.success) {
-                        window.location.href = data.redirect;
-                    } else {
-                        showToast(data.message || "Failed to reorder", false);
-                    }
-                })
-                .catch(err => {
-                    console.error('Reorder error:', err);
-                    showToast("Error reordering", false);
-                });
-        }
-
-        function viewDetails(orderId) {
-            console.log('Viewing details for order:', orderId);
-            window.location.href = `/order-details/${orderId}`;
-        }
-
-        function downloadInvoice(orderId) {
-            console.log('Downloading invoice for order:', orderId);
-            window.location.href = `/invoice/${orderId}`;
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, setting up event listeners');
-            const orderCards = document.querySelectorAll('.order-card');
-            orderCards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.zIndex = "5";
-                });
-                card.addEventListener('mouseleave', function() {
-                    this.style.zIndex = "1";
-                });
-            });
-
-            const actionButtons = document.querySelectorAll('.action-btn');
-            actionButtons.forEach(button => {
-                button.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-3px)';
-                    this.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.1)';
-                });
-                button.addEventListener('mouseleave', function() {
-                    this.style.transform = '';
-                    this.style.boxShadow = '';
-                });
-            });
-
-            // Modal event listeners
-            const cancelModal = document.getElementById('cancelModal');
-            if (cancelModal) {
-                cancelModal.addEventListener('show.bs.modal', function(event) {
-                    console.log('Cancel modal shown');
-                    const button = event.relatedTarget;
-                    const orderId = button.getAttribute('data-order-id');
-                    console.log('Order ID for cancel:', orderId);
-                    const confirmBtn = cancelModal.querySelector('#confirmCancelBtn');
-                    confirmBtn.onclick = () => {
-                        console.log('Confirm cancel button clicked for order:', orderId);
-                        cancelOrder(orderId);
-                    };
-                });
-            }
-
-            const returnModal = document.getElementById('returnModal');
-            if (returnModal) {
-                returnModal.addEventListener('show.bs.modal', function(event) {
-                    console.log('Return modal shown');
-                    const button = event.relatedTarget;
-                    const orderId = button.getAttribute('data-order-id');
-                    console.log('Order ID for return:', orderId);
-                    const confirmBtn = returnModal.querySelector('#confirmReturnBtn');
-                    confirmBtn.onclick = () => {
-                        console.log('Confirm return button clicked for order:', orderId);
-                        initiateReturn(orderId);
-                    };
-                });
-            }
-
-            const reorderModal = document.getElementById('reorderModal');
-            if (reorderModal) {
-                reorderModal.addEventListener('show.bs.modal', function(event) {
-                    console.log('Reorder modal shown');
-                    const button = event.relatedTarget;
-                    const orderId = button.getAttribute('data-order-id');
-                    console.log('Order ID for reorder:', orderId);
-                    const confirmBtn = reorderModal.querySelector('#confirmReorderBtn');
-                    confirmBtn.onclick = () => {
-                        console.log('Confirm reorder button clicked for order:', orderId);
-                        reOrder(orderId);
-                    };
-                });
-            }
+      document.addEventListener("DOMContentLoaded", function () {
+        const cancelModal = document.getElementById("cancelModal");
+        cancelModal.addEventListener("show.bs.modal", function (event) {
+          const button = event.relatedTarget;
+          const orderId = button.getAttribute("data-order-id");
+          const confirmBtn = cancelModal.querySelector("#confirmCancelBtn");
+          const reasonInput = cancelModal.querySelector("#cancelReason");
+          confirmBtn.onclick = () => cancelOrder(orderId, reasonInput.value.trim());
         });
+
+        const returnModal = document.getElementById("returnModal");
+        returnModal.addEventListener("show.bs.modal", function (event) {
+          const button = event.relatedTarget;
+          const orderId = button.getAttribute("data-order-id");
+          const confirmBtn = returnModal.querySelector("#confirmReturnBtn");
+          const reasonInput = returnModal.querySelector("#returnReason");
+          confirmBtn.onclick = debounce(() => {
+            if (!reasonInput.value.trim()) {
+              reasonInput.classList.add("is-invalid");
+              return;
+            }
+            console.log("Initiating return for order:", orderId, "Reason:", reasonInput.value.trim());
+            initiateReturn(orderId, reasonInput.value.trim());
+          }, 1000); // 1-second debounce
+          reasonInput.addEventListener("input", () => {
+            reasonInput.classList.remove("is-invalid");
+          });
+        });
+
+        const reorderModal = document.getElementById("reorderModal");
+        reorderModal.addEventListener("show.bs.modal", function (event) {
+          const button = event.relatedTarget;
+          const orderId = button.getAttribute("data-order-id");
+          const confirmBtn = reorderModal.querySelector("#confirmReorderBtn");
+          confirmBtn.onclick = () => reOrder(orderId);
+        });
+      });
+
+      function showToast(message, isSuccess = true) {
+        const toastEl = document.getElementById("orderToast");
+        const toastBody = toastEl.querySelector(".toast-body");
+        toastBody.innerHTML = `<i class="bi ${
+          isSuccess ? "bi-check-circle-fill text-success" : "bi-exclamation-triangle-fill text-danger"
+        } me-2"></i>${message}`;
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+      }
+
+      function initiateReturn(orderId, returnReason) {
+        fetch(`/return-order/${orderId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ returnReason }),
+        })
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error(`HTTP error! Status: ${res.status}`);
+            }
+            return res.json();
+          })
+          .then((data) => {
+            if (data.success) {
+              showToast("Return initiated successfully. Await admin approval.");
+              setTimeout(() => window.location.reload(), 2000);
+            } else {
+              showToast(data.message, false);
+            }
+          })
+          .catch((err) => {
+            console.error("Error in initiateReturn:", err);
+            showToast(`Failed to initiate return: ${err.message}`, false);
+          });
+      }
+
+      function cancelOrder(orderId, cancelReason) {
+        fetch(`/orders/cancel/${orderId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cancelReason }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              showToast("Order cancelled successfully");
+              setTimeout(() => window.location.reload(), 2000);
+            } else {
+              showToast(data.message, false);
+            }
+          })
+          .catch((err) => showToast("Error cancelling order", false));
+      }
+
+      function reOrder(orderId) {
+        fetch(`/orders/reorder/${orderId}`, { method: "POST" })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              window.location.href = data.redirect;
+            } else {
+              showToast(data.message, false);
+            }
+          })
+          .catch((err) => showToast("Error reordering", false));
+      }
+
+      function viewDetails(orderId) {
+        window.location.href = `/order-details/${orderId}`;
+      }
+
+      function downloadInvoice(orderId) {
+        window.location.href = `/invoice/${orderId}`;
+      }
     </script>
-</body>
+  </body>
 </html>

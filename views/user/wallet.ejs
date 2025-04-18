@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elite Wear - Wallet</title>
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/userStyle/wallet.css" />
+  </head>
+  <body>
+    <%- include("../partials/user/header") %> <%-
+    include("../partials/user/profileSidebar") %>
+
+    <div class="container mt-4 fulloption">
+      <div class="wallet-section">
+        <div class="breadcrumb">
+          <a href="/profile" class="breadcrumb-item">Profile</a>
+          <a href="/wallet" class="breadcrumb-item active">Wallet</a>
+        </div>
+
+        <div class="wallet-card">
+          <h3>My Wallet</h3>
+
+          <div class="balance-container">
+            <p>Available wallet balance: ₹<%= wallet.amount.toFixed(2) %></p>
+          </div>
+
+          <table class="transaction-table table table-striped">
+            <thead>
+              <tr>
+                <th>Transaction ID</th>
+                <th>Transaction Date</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Debit / Credit</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (wallet.transactions.length > 0) { %> <%
+              wallet.transactions.forEach(transaction => { %>
+              <tr>
+                <td><%= transaction.transactionRef %></td>
+                <td><%= transaction.formattedDate %></td>
+                <td>₹<%= transaction.amount.toFixed(2) %></td>
+                <td><%= transaction.description %></td>
+                <td
+                  class="<%= transaction.type === 'credit' ? 'amount-credited' : 'amount-debited' %>"
+                >
+                  <%= transaction.typeDisplay %>
+                </td>
+              </tr>
+              <% }) %> <% } else { %>
+              <tr>
+                <td colspan="5" class="text-center">No transactions found</td>
+              </tr>
+              <% } %>
+            </tbody>
+          </table>
+
+          <button
+            class="add-money-btn btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#addMoneyModal"
+          >
+            Add Money
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal fade"
+      id="addMoneyModal"
+      tabindex="-1"
+      aria-labelledby="addMoneyModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addMoneyModalLabel">
+              Add Money to Wallet
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="addMoneyForm">
+              <div class="mb-3">
+                <label for="amount" class="form-label">Amount (₹)</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="amount"
+                  name="amount"
+                  min="1"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="description"
+                  name="description"
+                  value="Added money to wallet"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-primary">Add Money</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%- include("../partials/user/footer") %>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document
+        .getElementById("addMoneyForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const amount = document.getElementById("amount").value;
+          const description = document.getElementById("description").value;
+
+          try {
+            const response = await fetch("/wallet/credit", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ amount, description }),
+            });
+            const result = await response.json();
+            if (result.success) {
+              alert("Money added successfully!");
+              window.location.reload();
+            } else {
+              alert("Error: " + result.message);
+            }
+          } catch (error) {
+            alert("Server error. Please try again later.");
+          }
+        });
+    </script>
+  </body>
+</html>

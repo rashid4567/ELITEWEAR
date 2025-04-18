@@ -9,6 +9,7 @@ const whishlistController = require("../controller/user/whishlistController");
 const checkOutController = require("../controller/user/checkOutController");
 const orderController = require("../controller/user/orderController");
 const cartController = require("../controller/user/cartController");
+const walletController = require("../controller/user/walletController")
 const { UserAuth } = require("../middleware/auth");
 
 const { checkBlockedStatus } = userControllers;
@@ -140,15 +141,21 @@ router.get(
 );
 
 // Order routes
-router.post("/place-order", orderController.placeOrder);
-router.get("/order-success", orderController.loadOrderSuccess);
-router.get("/orders", orderController.getUserOrders);
-router.post("/orders/cancel/:id", orderController.cancelOrder);
-router.post("/return-order/:id", orderController.initiateReturn);
-router.post("/reorder/:id", orderController.reOrder);
-router.get("/order-details/:id", orderController.getOrderDetails);
-router.get("/invoice/:id", orderController.downloadInvoice);
-router.get('/orders/track/:id', orderController.trackOrder);
+router.post("/place-order",UserAuth, orderController.placeOrder);
+router.get("/order-success",UserAuth, orderController.loadOrderSuccess);
+router.get("/orders",UserAuth, orderController.getUserOrders);
+router.post("/orders/cancel/:id",UserAuth, orderController.cancelOrder);
+router.post("/return-order/:id",UserAuth, orderController.initiateReturn);
+router.post("/reorder/:id",UserAuth, orderController.reOrder);
+router.get("/order-details/:id",UserAuth, orderController.getOrderDetails);
+router.get("/invoice/:id",UserAuth, orderController.downloadInvoice);
+router.get('/orders/track/:id',UserAuth, orderController.trackOrder)
+
+
+//wallet routes 
+router.get("/wallet", UserAuth, walletController.getwallet)
+router.post("/credit", UserAuth, walletController.creditWallet);
+router.post("/debit", UserAuth, walletController.debitWallet);
 
 // Error handling
 router.get("/page-not-found", userControllers.pageNotfound);

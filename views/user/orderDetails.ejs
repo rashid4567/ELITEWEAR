@@ -7,6 +7,13 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/userStyle/orderDetails.css">
+    <style>
+        .status-return-rejected { color: #dc3545; }
+        .status-returned { color: #28a745; }
+        .status-return-approved { color: #28a745; }
+        .status-return-requested { color: #fd7e14; }
+        .refund-info { background-color: #e9f7ef; padding: 10px; border-radius: 5px; }
+    </style>
 </head>
 <body>
     <div class="page-loader loader-active">
@@ -50,16 +57,16 @@
                                                 <div class="col-4 col-md-2">
                                                     <img 
                                                         src="<%= item.productId && item.productId.images && item.productId.images.length > 0 ? item.productId.images[0].url : '/api/placeholder/300/300' %>" 
-                                                        alt="<%= item.productId ? item.productId.name : 'Unnamed Product' %>" 
+                                                        alt="<%= item.productId && item.productId.name ? item.productId.name : 'Unnamed Product' %>" 
                                                         class="product-img img-fluid rounded"
                                                     >
                                                 </div>
                                                 <div class="col-8 col-md-10">
-                                                    <h6><%= item.productId.name %></h6>
-                                                    <p class="mb-1">Price: ₹<%= item.price.toFixed(2) %></p>
-                                                    <p class="mb-1">Quantity: <%= item.quantity %></p>
-                                                    <p class="mb-1">Size: <%= item.size %></p>
-                                                    <p class="mb-0">Total: ₹<%= item.total_amount.toFixed(2) %></p>
+                                                    <h6><%= item.productId && item.productId.name ? item.productId.name : 'Unnamed Product' %></h6>
+                                                    <p class="mb-1">Price: ₹<%= item.price ? item.price.toFixed(2) : '0.00' %></p>
+                                                    <p class="mb-1">Quantity: <%= item.quantity || 1 %></p>
+                                                    <p class="mb-1">Size: <%= item.size || 'N/A' %></p>
+                                                    <p class="mb-0">Total: ₹<%= item.total_amount ? item.total_amount.toFixed(2) : '0.00' %></p>
                                                 </div>
                                             </div>
                                         </div>
@@ -70,10 +77,22 @@
                                 <div class="mt-3">
                                     <div class="d-flex align-items-center">
                                         <span class="me-2">Status: </span>
-                                        <span class="status-tag status-<%= order.status.toLowerCase().replace(' ', '-') %>">
-                                            <%= order.status %>
+                                        <span class="status-tag status-<%= order.status ? order.status.toLowerCase().replace(/\s+/g, '-') : 'pending' %>">
+                                            <%= order.status || 'Pending' %>
                                         </span>
                                     </div>
+                                    <% if (order.returnReason) { %>
+                                        <p class="mt-2"><strong>Return Reason:</strong> <%= order.returnReason %></p>
+                                    <% } %>
+                                    <% if (order.returnRejectionReason) { %>
+                                        <p class="mt-2"><strong>Rejection Reason:</strong> <%= order.returnRejectionReason %></p>
+                                    <% } %>
+                                    <% if (order.refunded && order.status === 'Returned') { %>
+                                        <div class="refund-info mt-2">
+                                            <p><strong>Refund Processed:</strong> ₹<%= order.total ? order.total.toFixed(2) : '0.00' %> credited to your wallet.</p>
+                                            <a href="/wallet" class="btn btn-sm btn-outline-success">View Wallet</a>
+                                        </div>
+                                    <% } %>
                                 </div>
                             </div>
 
@@ -83,19 +102,27 @@
                                         <div class="details-section">
                                             <h5>Shipping Address</h5>
                                             <div class="details-row">
-                                                <div class="details-value"><%= order.address.fullname %></div>
+                                                <div class="details-value"><%= order.address && order.address.fullname ? order.address.fullname : 'N/A' %></div>
                                             </div>
                                             <div class="details-row">
-                                                <div class="details-value"><%= order.address.address %></div>
+                                                <div class="details-value"><%= order.address && order.address.address ? order.address.address : 'N/A' %></div>
                                             </div>
                                             <div class="details-row">
-                                                <div class="details-value"><%= order.address.city %>, <%= order.address.district %></div>
+                                                <div class="details-value">
+                                                    <%= order.address && order.address.city ? order.address.city : 'N/A' %>, 
+                                                    <%= order.address && order.address.district ? order.address.district : 'N/A' %>
+                                                </div>
                                             </div>
                                             <div class="details-row">
-                                                <div class="details-value"><%= order.address.state %>, <%= order.address.pincode %></div>
+                                                <div class="details-value">
+                                                    <%= order.address && order.address.state ? order.address.state : 'N/A' %>, 
+                                                    <%= order.address && order.address.pincode ? order.address.pincode : 'N/A' %>
+                                                </div>
                                             </div>
                                             <div class="details-row">
-                                                <div class="details-value">Contact: <%= order.address.contactNumber %></div>
+                                                <div class="details-value">
+                                                    Contact: <%= order.address && order.address.contactNumber ? order.address.contactNumber : 'N/A' %>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -104,7 +131,7 @@
                                         <div class="details-section">
                                             <h5>Payment Method</h5>
                                             <div class="details-row">
-                                                <div class="details-value"><%= order.paymentMethod %></div>
+                                                <div class="details-value"><%= order.paymentMethod || 'N/A' %></div>
                                             </div>
                                         </div>
                                     </div>
@@ -115,7 +142,7 @@
                                             <table class="order-summary-table">
                                                 <tr>
                                                     <td>Items Total</td>
-                                                    <td>₹<%= (order.total - (order.total > 8000 ? 0 : 200)).toFixed(2) %></td>
+                                                    <td>₹<%= order.total ? (order.total - (order.total > 8000 ? 0 : 200)).toFixed(2) : '0.00' %></td>
                                                 </tr>
                                                 <tr>
                                                     <td>Shipping Charge</td>
@@ -123,11 +150,11 @@
                                                 </tr>
                                                 <tr>
                                                     <td>Total</td>
-                                                    <td>₹<%= (order.total - (order.total > 8000 ? 0 : 200) + (order.total > 8000 ? 0 : 200)).toFixed(2) %></td>
+                                                    <td>₹<%= order.total ? (order.total - (order.total > 8000 ? 0 : 200) + (order.total > 8000 ? 0 : 200)).toFixed(2) : '0.00' %></td>
                                                 </tr>
                                                 <tr class="grand-total-row">
                                                     <td>Grand Total</td>
-                                                    <td>₹<%= order.total.toFixed(2) %></td>
+                                                    <td>₹<%= order.total ? order.total.toFixed(2) : '0.00' %></td>
                                                 </tr>
                                             </table>
                                         </div>
@@ -135,7 +162,7 @@
                                 </div>
 
                                 <div class="action-buttons">
-                                    <% if (order.status === 'Delivered') { %>
+                                    <% if (order.status === 'Delivered' && !order.refunded) { %>
                                         <button class="btn btn-outline-dark btn-action me-2" data-bs-toggle="modal" data-bs-target="#returnModal" data-order-id="<%= order._id %>">
                                             <i class="bi bi-arrow-return-left"></i> Return Order
                                         </button>
@@ -146,7 +173,7 @@
                                         <button class="btn btn-cancel btn-action me-2" data-bs-toggle="modal" data-bs-target="#cancelModal" data-order-id="<%= order._id %>">
                                             Cancel Order
                                         </button>
-                                    <% } else if (order.status === 'Cancelled') { %>
+                                    <% } else if (order.status === 'Cancelled' || order.status === 'Return Rejected') { %>
                                         <button class="btn btn-outline-dark btn-action me-2" data-bs-toggle="modal" data-bs-target="#reorderModal" data-order-id="<%= order._id %>">
                                             <i class="bi bi-arrow-repeat"></i> Re Order
                                         </button>
@@ -168,11 +195,15 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="cancelModalLabel">Confirm Cancellation</h5>
+                    <h5 class="modal-title" id="cancelModalLabel">Cancel Order</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to cancel this order?
+                    <p>Are you sure you want to cancel this order?</p>
+                    <div class="mb-3">
+                        <label for="cancelReason" class="form-label">Reason for cancellation (optional)</label>
+                        <textarea class="form-control" id="cancelReason" rows="3" maxlength="500"></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
@@ -187,11 +218,16 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="returnModalLabel">Confirm Return</h5>
+                    <h5 class="modal-title" id="returnModalLabel">Return Order</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to initiate a return for this order?
+                    <p>Are you sure you want to initiate a return for this order?</p>
+                    <div class="mb-3">
+                        <label for="returnReason" class="form-label">Reason for return (required)</label>
+                        <textarea class="form-control" id="returnReason" rows="3" maxlength="500" required></textarea>
+                        <div class="invalid-feedback">Please provide a reason for the return.</div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
@@ -224,23 +260,27 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Debounce utility to prevent multiple rapid clicks
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             setTimeout(function() {
                 document.querySelector('.page-loader').classList.remove('loader-active');
             }, 800);
 
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
-
-            // Modal event listeners
             const cancelModal = document.getElementById('cancelModal');
             cancelModal.addEventListener('show.bs.modal', function(event) {
                 const button = event.relatedTarget;
                 const orderId = button.getAttribute('data-order-id');
                 const confirmBtn = cancelModal.querySelector('#confirmCancelBtn');
-                confirmBtn.onclick = () => cancelOrder(orderId);
+                const reasonInput = cancelModal.querySelector('#cancelReason');
+                confirmBtn.onclick = () => cancelOrder(orderId, reasonInput.value.trim());
             });
 
             const returnModal = document.getElementById('returnModal');
@@ -248,7 +288,18 @@
                 const button = event.relatedTarget;
                 const orderId = button.getAttribute('data-order-id');
                 const confirmBtn = returnModal.querySelector('#confirmReturnBtn');
-                confirmBtn.onclick = () => initiateReturn(orderId);
+                const reasonInput = returnModal.querySelector('#returnReason');
+                confirmBtn.onclick = debounce(() => {
+                    if (!reasonInput.value.trim()) {
+                        reasonInput.classList.add('is-invalid');
+                        return;
+                    }
+                    console.log(`Frontend: Initiating return for order ${orderId} with reason: ${reasonInput.value.trim()}`);
+                    initiateReturn(orderId, reasonInput.value.trim());
+                }, 1000); // 1-second debounce
+                reasonInput.addEventListener('input', () => {
+                    reasonInput.classList.remove('is-invalid');
+                });
             });
 
             const reorderModal = document.getElementById('reorderModal');
@@ -268,22 +319,41 @@
             toast.show();
         }
 
-        function initiateReturn(orderId) {
-            fetch(`/orders/return/${orderId}`, { method: 'POST' })
-                .then(res => res.json())
+        function initiateReturn(orderId, returnReason) {
+            console.log(`Frontend: Sending return request for order ${orderId} with reason: ${returnReason}`);
+            fetch(`/return-order/${orderId}`, { // Corrected endpoint
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ returnReason })
+            })
+                .then(res => {
+                    console.log(`Frontend: Response status for return request: ${res.status}`);
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! Status: ${res.status}`);
+                    }
+                    return res.json();
+                })
                 .then(data => {
+                    console.log(`Frontend: Response data:`, data);
                     if (data.success) {
-                        showToast("Return initiated successfully");
+                        showToast("Return initiated successfully. Await admin approval.");
                         setTimeout(() => window.location.reload(), 2000);
                     } else {
-                        showToast(data.message, false);
+                        showToast(`Failed to initiate return: ${data.message}`, false);
                     }
                 })
-                .catch(err => showToast("Error initiating return", false));
+                .catch(err => {
+                    console.error(`Frontend: Fetch error:`, err);
+                    showToast(`Error initiating return: ${err.message}`, false);
+                });
         }
 
-        function cancelOrder(orderId) {
-            fetch(`/orders/cancel/${orderId}`, { method: 'POST' })
+        function cancelOrder(orderId, cancelReason) {
+            fetch(`/orders/cancel/${orderId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cancelReason })
+            })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {

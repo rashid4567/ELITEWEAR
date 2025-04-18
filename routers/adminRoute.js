@@ -5,7 +5,7 @@ const customerController = require("../controller/admin/customerController");
 const CategoryController = require("../controller/admin/categoryController");
 const productManagment = require('../controller/admin/productController');
 const BannerController = require('../controller/admin/BannerController');
-const adminorderController = require("../controller/admin/adminOrderController")
+const adminorderController = require("../controller/admin/adminOrderController");
 const upload = require('../middleware/cluadinaryConfig'); 
 const { userAuth, adminAuth } = require('../middleware/auth');
 
@@ -52,10 +52,7 @@ router.post(
     productManagment.editProduct
 );
 
-
 router.delete("/deleteProduct/:id", adminAuth, productManagment.deleteProduct);
-
-
 router.post('/listProduct/:id', adminAuth, productManagment.listProduct);
 router.post('/unlistProduct/:id', adminAuth, productManagment.UnlistProduct);
 
@@ -63,8 +60,9 @@ router.get('/getbannerPage', adminAuth, BannerController.getbannerPage);
 router.get("/addBanner", adminAuth, BannerController.getaddBanner);
 router.post("/addBanner", adminAuth, upload.single('posterImage'), BannerController.addBanner);
 
-
 router.get("/adminorder", adminAuth, adminorderController.getorderController);
 router.post("/orders/update-status", adminAuth, adminorderController.updateOrderStatus);
 router.get("/orders/:id", adminAuth, adminorderController.getOrderDetails);
+router.post("/orders/return/:id", adminAuth, adminorderController.manageReturn); // Updated route
+
 module.exports = router;

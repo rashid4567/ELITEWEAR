@@ -240,3 +240,30 @@
     height: 100%;
     object-fit: cover;
 }
+.status-pending { background-color: #6c757d; color: white; }
+.status-processing { background-color: #ffc107; color: black; }
+.status-confirmed { background-color: #17a2b8; color: white; }
+.status-shipped { background-color: #007bff; color: white; }
+.status-delivered { background-color: #28a745; color: white; }
+.status-cancelled { background-color: #dc3545; color: white; }
+.status-return-requested { background-color: #fd7e14; color: white; }
+.status-return-approved { background-color: #28a745; color: white; }
+.status-returned { background-color: #28a745; color: white; }
+.status-return-rejected { background-color: #dc3545; color: white; }
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+.action-btn {
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 5px;
+    margin-right: 5px;
+}
+.action-btn i {
+    font-size: 1.2rem;
+}
+.btn-approve-return { color: #28a745; }
+.btn-reject-return { color: #dc3545; }

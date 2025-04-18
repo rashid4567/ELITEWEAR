@@ -107,11 +107,11 @@
                     <!-- Tracking Progress -->
                     <div class="tracking-progress">
                         <div class="progress-track">
-                            <div class="progress-fill" style="width: <%= progressWidth %>%;"></div>
+                            <div class="progress-fill" id="progressBar"></div>
                         </div>
                         <div class="progress-steps">
-                            <% trackingSteps.forEach(step => { %>
-                            <div class="step <%= step.active ? 'active' : '' %>">
+                            <% trackingSteps.forEach((step, index) => { %>
+                            <div class="step <%= step.active ? 'active' : '' %>" data-status="<%= step.status %>">
                                 <div class="step-icon">
                                     <i class="fas <%= step.icon %>"></i>
                                 </div>
@@ -152,7 +152,7 @@
         function showToast(message, isSuccess = true) {
             const toastEl = document.getElementById('orderToast');
             const toastBody = toastEl.querySelector('.toast-body');
-            toastBody.innerHTML = `<i class="bi ${isSuccess ? 'bi-check-circle-fill text-success' : 'bi-exclamation-triangle-fill text-danger'} me-2"></i>${message}`;
+            toastBody.innerHTML = `<i class="fas ${isSuccess ? 'fa-check-circle text-success' : 'fa-exclamation-triangle text-danger'} me-2"></i>${message}`;
             const toast = new bootstrap.Toast(toastEl);
             toast.show();
         }
@@ -186,11 +186,13 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, setting up event listeners');
-            // Simulate loading progress
+            
+            // Fix for progress bar
+            const progressBar = document.getElementById('progressBar');
+            const progressWidth = <%= progressWidth %>;
             setTimeout(() => {
-                const progressFill = document.querySelector('.progress-fill');
-                progressFill.style.width = '<%= progressWidth %>%';
-            }, 500);
+                progressBar.style.width = `${progressWidth}%`;
+            }, 300);
 
             // Add hover animation for menu items
             const menuItems = document.querySelectorAll('.menu-item');
@@ -212,13 +214,8 @@
                     const elementPosition = element.getBoundingClientRect().top;
                     const windowHeight = window.innerHeight;
                     if (elementPosition < windowHeight - 100) {
-                        if (element.classList.contains('track-order-container')) {
-                            element.style.animation = 'fadeIn 0.5s ease-in-out forwards';
-                        } else if (element.classList.contains('profile-section')) {
-                            element.style.animation = 'fadeIn 0.5s ease-in-out forwards';
-                        } else if (element.classList.contains('menu-section')) {
-                            element.style.animation = 'slideUp 0.5s ease-in-out forwards';
-                        }
+                        element.style.opacity = '1';
+                        element.style.transform = 'translateY(0)';
                     }
                 });
             };
@@ -226,29 +223,22 @@
             window.addEventListener('scroll', animateOnScroll);
             animateOnScroll();
 
-            // Product image hover effect
-            const productImage = document.querySelector('.order-image img');
-            if (productImage) {
-                productImage.addEventListener('mouseenter', function() {
-                    this.style.transform = 'scale(1.05)';
-                });
-                productImage.addEventListener('mouseleave', function() {
-                    this.style.transform = 'scale(1)';
-                });
-            }
+            // Enhanced status step animation
+            const steps = document.querySelectorAll('.step');
+            steps.forEach((step, index) => {
+                setTimeout(() => {
+                    if (step.classList.contains('active')) {
+                        step.style.animation = `bounceStep 0.5s ease-out ${index * 0.2}s`;
+                    }
+                }, 500 + (index * 200));
+            });
 
-            // Cancel button effects
-            const cancelBtn = document.querySelector('.cancel-btn');
-            if (cancelBtn) {
-                cancelBtn.addEventListener('mousedown', function() {
-                    this.style.transform = 'translateY(0)';
-                    this.style.boxShadow = '0 2px 5px rgba(220,53,69,0.3)';
-                });
-                cancelBtn.addEventListener('mouseup', function() {
-                    this.style.transform = 'translateY(-2px)';
-                    this.style.boxShadow = '0 5px 15px rgba(220,53,69,0.3)';
-                });
-            }
+            // Add pulsing effect to active steps
+            const activeSteps = document.querySelectorAll('.step.active');
+            activeSteps.forEach((step, index) => {
+                const icon = step.querySelector('.step-icon');
+                icon.style.animation = `bounceStep 0.5s ease-out ${index * 0.2}s, pulse 2s infinite ${0.5 + (index * 0.2)}s`;
+            });
 
             // Modal event listener
             const cancelModal = document.getElementById('cancelModal');
