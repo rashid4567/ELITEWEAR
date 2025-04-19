@@ -79,7 +79,7 @@
                 contentType: 'application/json',
                 data: JSON.stringify({ newPassword: password, confirmPassword: confirmPassword }),
                 success: function(response) {
-                    console.log("Password reset success:", response);
+                  
                     if (response.success) {
                         Swal.fire({
                             icon: 'success',

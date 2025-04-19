@@ -207,7 +207,7 @@
             if (successIcon) {
                 successIcon.addEventListener('click', function() {
                     const audio = new Audio('/Uploads/success-sound.mp3');
-                    audio.play().catch(err => console.log('Audio playback failed:', err));
+                    audio.play().catch(err => console.log('Audio playback failed:', err)
 
                     this.classList.add('animate__animated', 'animate__rubberBand');
                     setTimeout(() => {

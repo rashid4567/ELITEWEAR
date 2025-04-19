@@ -63,6 +63,7 @@ router.post("/addBanner", adminAuth, upload.single('posterImage'), BannerControl
 router.get("/adminorder", adminAuth, adminorderController.getorderController);
 router.post("/orders/update-status", adminAuth, adminorderController.updateOrderStatus);
 router.get("/orders/:id", adminAuth, adminorderController.getOrderDetails);
-router.post("/orders/return/:id", adminAuth, adminorderController.manageReturn); // Updated route
+router.post("/orders/return/:id", adminAuth, adminorderController.manageReturn);
+router.get("/invoices/:id", adminAuth, adminorderController.admindownloadInvoice);
 
 module.exports = router;

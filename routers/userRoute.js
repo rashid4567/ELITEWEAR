@@ -9,7 +9,7 @@ const whishlistController = require("../controller/user/whishlistController");
 const checkOutController = require("../controller/user/checkOutController");
 const orderController = require("../controller/user/orderController");
 const cartController = require("../controller/user/cartController");
-const walletController = require("../controller/user/walletController")
+const walletController = require("../controller/user/walletController");
 const { UserAuth } = require("../middleware/auth");
 
 const { checkBlockedStatus } = userControllers;
@@ -18,9 +18,8 @@ const { checkBlockedStatus } = userControllers;
 router.get("/signup", userControllers.loadUserSignup);
 router.post("/signup", userControllers.userSignup);
 router.get("/verify-otp", (req, res) => {
-  const email =
-    req.session.registration?.userData?.email || "unknown@email.com";
-  res.render("verify-otp", { email });
+  const email = req.session.registration?.userData?.email || "unknown@email.com";
+  res.render("verify-otp", { email, context: "signup" });
 });
 router.post("/verify-otp", userControllers.verifyOtp);
 router.post("/resend-otp", userControllers.resendOtp);
@@ -88,15 +87,26 @@ router.post(
   UserAuth,
   profileController.sendemilUpdateOtp
 );
+router.get(
+  "/verify-email-update-otp",
+  UserAuth,
+  profileController.loadVerifyEmailUpdateOtp
+);
 router.post(
   "/verify-email-update-otp",
   UserAuth,
   profileController.verifyUpdateOtp
 );
+router.post(
+  "/resend-update-otp",
+  UserAuth,
+  profileController.resendUpdateOtp
+);
 router.post("/update-profile", UserAuth, profileController.updateProfile);
-router.get("/getupdatepassword", UserAuth, profileController.loadupdatePassword)
-router.post("/updatePassword", UserAuth, profileController.updatePassword)
-router.get("/logoutpage", UserAuth, profileController.loadLogout)
+router.get("/getupdatepassword", UserAuth, profileController.loadupdatePassword);
+router.post("/updatePassword", UserAuth, profileController.updatePassword);
+router.get("/logoutpage", UserAuth, profileController.loadLogout);
+
 // Address routes
 router.get("/address", UserAuth, AddressController.address);
 router.get("/getaddAddress", UserAuth, AddressController.getaddAddress);
@@ -123,9 +133,12 @@ router.post("/cart/add", UserAuth, cartController.addToCart);
 router.post("/cart/update", UserAuth, cartController.updateCartQuantity);
 router.post("/cart/remove", UserAuth, cartController.removeFromCart);
 router.post("/cart/empty", UserAuth, cartController.emptyCart);
-router.post("/add-to-cart-remove-wishlist", UserAuth, cartController.addToCartAndRemoveFromWishlist)
-router.post("/block-product", UserAuth, cartController.blockProduct)
-
+router.post(
+  "/add-to-cart-remove-wishlist",
+  UserAuth,
+  cartController.addToCartAndRemoveFromWishlist
+);
+router.post("/block-product", UserAuth, cartController.blockProduct);
 
 // Checkout routes
 router.get("/checkOut", UserAuth, checkOutController.loadcheckOut);
@@ -141,19 +154,18 @@ router.get(
 );
 
 // Order routes
-router.post("/place-order",UserAuth, orderController.placeOrder);
-router.get("/order-success",UserAuth, orderController.loadOrderSuccess);
-router.get("/orders",UserAuth, orderController.getUserOrders);
-router.post("/orders/cancel/:id",UserAuth, orderController.cancelOrder);
-router.post("/return-order/:id",UserAuth, orderController.initiateReturn);
-router.post("/reorder/:id",UserAuth, orderController.reOrder);
-router.get("/order-details/:id",UserAuth, orderController.getOrderDetails);
-router.get("/invoice/:id",UserAuth, orderController.downloadInvoice);
-router.get('/orders/track/:id',UserAuth, orderController.trackOrder)
+router.post("/place-order", UserAuth, orderController.placeOrder);
+router.get("/order-success", UserAuth, orderController.loadOrderSuccess);
+router.get("/orders", UserAuth, orderController.getUserOrders);
+router.post("/orders/cancel/:id", UserAuth, orderController.cancelOrder);
+router.post("/return-order/:id", UserAuth, orderController.initiateReturn);
+router.post("/reorder/:id", UserAuth, orderController.reOrder);
+router.get("/order-details/:id", UserAuth, orderController.getOrderDetails);
+router.get("/invoice/:id", UserAuth, orderController.downloadInvoice);
+router.get("/orders/track/:id", UserAuth, orderController.trackOrder);
 
-
-//wallet routes 
-router.get("/wallet", UserAuth, walletController.getwallet)
+// Wallet routes
+router.get("/wallet", UserAuth, walletController.getwallet);
 router.post("/credit", UserAuth, walletController.creditWallet);
 router.post("/debit", UserAuth, walletController.debitWallet);
 

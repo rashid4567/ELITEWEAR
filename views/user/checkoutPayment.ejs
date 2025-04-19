@@ -60,7 +60,7 @@
     <script>
         function placeOrder() {
           const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-          console.log("Placing order with paymentMethod:", paymentMethod);
+          
       
           fetch('/place-order', {
             method: 'POST',
@@ -70,13 +70,13 @@
             body: JSON.stringify({ paymentMethod }),
           })
             .then(response => {
-              console.log("Fetch response status:", response.status, response.statusText);
+            
               return response.json();
             })
             .then(data => {
-              console.log("Fetch response data:", data);
+            
               if (data.success) {
-                console.log("Order successful, redirecting to:", data.redirect);
+            
                 window.location.href = data.redirect;
               } else {
                 console.error("Order failed:", data.message);

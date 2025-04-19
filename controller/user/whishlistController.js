@@ -23,7 +23,21 @@ const getWishlist = async (req, res) => {
       populate: { path: "categoryId", model: "Category" },
     });
 
-    const products = wishlist ? wishlist.products : [];
+    let products = wishlist ? wishlist.products : [];
+
+
+    products = products.filter((product) => {
+      return (
+        product?.isActive &&
+        product?.categoryId &&
+        product.categoryId.isListed
+      );
+    });
+
+    if (!products.length) {
+      req.session.message = "Some wishlist products are unavailable.";
+      return res.redirect("/");
+    }
 
     res.render("wishlist", {
       user: user,
@@ -35,6 +49,7 @@ const getWishlist = async (req, res) => {
     return res.redirect("/page-not-found");
   }
 };
+
 
 const addToWishlist = async (req, res) => {
   try {

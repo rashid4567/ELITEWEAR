@@ -1,261 +1,349 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Elite Wear - Track Order</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/userStyle/orderTracking.css">
-</head>
-<body>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/userStyle/orderTracking.css" />
+  </head>
+  <body>
     <%- include("../partials/user/header") %>
-    <!-- Breadcrumb -->
+
     <div class="breadcrumb-container">
-        <div class="container">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/profile">Profile</a></li>
-                    <li class="breadcrumb-item"><a href="/orders">Orders</a></li>
-                    <li class="breadcrumb-item active">Track Order</li>
-                </ol>
-            </nav>
-        </div>
+      <div class="container">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/profile">Profile</a></li>
+            <li class="breadcrumb-item"><a href="/orders">Orders</a></li>
+            <li class="breadcrumb-item active">Track Order</li>
+          </ol>
+        </nav>
+      </div>
     </div>
+    
     <div class="container">
-        <div class="row">
-            <%- include("../partials/user/profileSidebar") %>
-            <!-- Main Content -->
-            <div class="col-lg-9">
-                <div class="track-order-container">
-                    <div class="track-order-header mb-4">
-                        <h4>Track Order</h4>
-                    </div>
-                    
-                    <!-- Toast Notification -->
-                    <div class="toast-container position-fixed top-0 end-0 p-3">
-                        <div id="orderToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
-                            <div class="toast-header">
-                                <strong class="me-auto">Order Action</strong>
-                                <small>Just now</small>
-                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                            </div>
-                            <div class="toast-body"></div>
-                        </div>
-                    </div>
+      <div class="row">
+        <%- include("../partials/user/profileSidebar") %>
 
-                    <div class="order-info mb-4">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p class="mb-0">Ordered on <%= order.orderDate.toLocaleDateString() %></p>
-                            </div>
-                            <div class="col-md-6 text-md-end">
-                                <p class="mb-0">Order# <%= order.orderNumber %></p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="order-details">
-                        <div class="order-image">
-                            <% if (order.order_items.length > 0) { %>
-                                <img src="<%= order.order_items[0]?.productId?.images[0]?.url || '/api/placeholder/200/250' %>" alt="<%= order.order_items[0]?.productId?.name || 'Product' %>" class="mb-3">
-                            <% } else { %>
-                                <img src="/api/placeholder/200/250" alt="No Product" class="mb-3">
-                            <% } %>
-                            <div class="status">
-                                <p class="mb-1">Status:</p>
-                                <p class="status-label mb-0"><%= order.status.toUpperCase() %></p>
-                            </div>
-                        </div>
-                        
-                        <div class="shipping-details">
-                            <h6 class="mb-3">Shipping Address</h6>
-                            <p class="mb-1"><%= order.address.fullname %></p>
-                            <p class="mb-1"><%= order.address.address %></p>
-                            <p class="mb-1"><%= order.address.city %>, <%= order.address.district %></p>
-                            <p class="mb-1"><%= order.address.state %> - <%= order.address.pincode %></p>
-                            <p class="mb-0">Phone: <%= order.address.mobile %></p>
-                        </div>
-                        
-                        <div class="order-summary">
-                            <h6 class="mb-3">Order Summary</h6>
-                            <div class="summary-item">
-                                <span>Items Total</span>
-                                <span>₹<%= (order.total - (order.total > 8000 ? 0 : 200)).toFixed(2) %></span>
-                            </div>
-                            <div class="summary-item">
-                                <span>Shipping Charge</span>
-                                <span>₹<%= order.total > 8000 ? '0.00' : '200.00' %></span>
-                            </div>
-                            <div class="summary-item">
-                                <span>Total</span>
-                                <span>₹<%= order.total.toFixed(2) %></span>
-                            </div>
-                            <div class="summary-item grand-total">
-                                <span>Grand Total</span>
-                                <span>₹<%= order.total.toFixed(2) %></span>
-                            </div>
-                            
-                            <% if (order.status === 'Pending' || order.status === 'Processing') { %>
-                            <div class="text-center mt-4">
-                                <button class="cancel-btn" data-bs-toggle="modal" data-bs-target="#cancelModal" data-order-id="<%= order._id %>">Cancel Order</button>
-                            </div>
-                            <% } %>
-                        </div>
-                    </div>
-                    
-                    <!-- Tracking Progress -->
-                    <div class="tracking-progress">
-                        <div class="progress-track">
-                            <div class="progress-fill" id="progressBar"></div>
-                        </div>
-                        <div class="progress-steps">
-                            <% trackingSteps.forEach((step, index) => { %>
-                            <div class="step <%= step.active ? 'active' : '' %>" data-status="<%= step.status %>">
-                                <div class="step-icon">
-                                    <i class="fas <%= step.icon %>"></i>
-                                </div>
-                                <div class="step-text"><%= step.status %></div>
-                                <div class="step-date"><%= step.date %></div>
-                            </div>
-                            <% }) %>
-                        </div>
-                    </div>
-                </div>
+        <div class="col-lg-9">
+          <div class="track-order-container">
+            <div class="track-order-header mb-4">
+              <h4>Track Order</h4>
             </div>
+
+            <div class="toast-container position-fixed top-0 end-0 p-3">
+              <div
+                id="orderToast"
+                class="toast"
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
+                data-bs-delay="3000"
+              >
+                <div class="toast-header">
+                  <strong class="me-auto">Order Action</strong>
+                  <small>Just now</small>
+                  <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="toast"
+                    aria-label="Close"
+                  ></button>
+                </div>
+                <div class="toast-body"></div>
+              </div>
+            </div>
+
+            <div class="order-info mb-4">
+              <div class="row">
+                <div class="col-md-6">
+                  <p class="mb-0">
+                    Ordered on <%= order.orderDate.toLocaleDateString() %>
+                  </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                  <p class="mb-0">Order# <%= order.orderNumber %></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="order-details">
+              <div class="order-image">
+                <% if (order.order_items.length > 0) { %>
+                <img
+                  src="<%= order.order_items[0]?.productId?.images[0]?.url || '/api/placeholder/200/250' %>"
+                  alt="<%= order.order_items[0]?.productId?.name || 'Product' %>"
+                  class="mb-3"
+                />
+                <% } else { %>
+                <img
+                  src="/api/placeholder/200/250"
+                  alt="No Product"
+                  class="mb-3"
+                />
+                <% } %>
+                <div class="status">
+                  <p class="mb-1">Status:</p>
+                  <p class="status-label status-<%= order.status.toLowerCase() %> mb-0">
+                    <%= order.status.toUpperCase() %>
+                  </p>
+                </div>
+              </div>
+
+              <div class="shipping-details">
+                <h6 class="mb-3">Shipping Address</h6>
+                <% if (order.address) { %>
+                  <p class="mb-1"><%= order.address.fullname || 'N/A' %></p>
+                  <p class="mb-1"><%= order.address.address || 'N/A' %></p>
+                  <p class="mb-1">
+                    <%= order.address.city || 'N/A' %>, <%= order.address.district || 'N/A' %>
+                  </p>
+                  <p class="mb-1">
+                    <%= order.address.state || 'N/A' %> - <%= order.address.pincode || 'N/A' %>
+                  </p>
+                  <p class="mb-0">Phone: <%= order.address.mobile || 'N/A' %></p>
+                <% } else { %>
+                  <p class="mb-0 text-danger">No address information available for this order.</p>
+                <% } %>
+              </div>
+
+              <div class="order-summary">
+                <h6 class="mb-3">Order Summary</h6>
+                <div class="summary-item">
+                  <span>Items Total</span>
+                  <span
+                    >₹<%= (order.total - (order.total > 8000 ? 0 :
+                    200)).toFixed(2) %></span
+                  >
+                </div>
+                <div class="summary-item">
+                  <span>Shipping Charge</span>
+                  <span>₹<%= order.total > 8000 ? '0.00' : '200.00' %></span>
+                </div>
+                <div class="summary-item">
+                  <span>Total</span>
+                  <span>₹<%= order.total.toFixed(2) %></span>
+                </div>
+                <div class="summary-item grand-total">
+                  <span>Grand Total</span>
+                  <span>₹<%= order.total.toFixed(2) %></span>
+                </div>
+
+                <% if (order.status === 'Pending' || order.status === 'Processing') { %>
+                <div class="text-center mt-4">
+                  <button
+                    class="cancel-btn"
+                    data-bs-toggle="modal"
+                    data-bs-target="#cancelModal"
+                    data-order-id="<%= order._id %>"
+                  >
+                    Cancel Order
+                  </button>
+                </div>
+                <% } %>
+              </div>
+            </div>
+
+            <div class="tracking-progress">
+              <div class="progress-track">
+                <div class="progress-fill <%= order.status.toLowerCase() === 'cancelled' || order.status.toLowerCase() === 'returned' ? 'progress-fill-' + order.status.toLowerCase() : '' %>" id="progressBar"></div>
+              </div>
+              <div class="progress-steps">
+                <% trackingSteps.forEach((step, index) => { %>
+                <div
+                  class="step <%= step.active ? 'active' : '' %>"
+                  data-status="<%= step.status %>"
+                >
+                  <div class="step-icon">
+                    <i class="fas <%= step.icon %>"></i>
+                  </div>
+                  <div class="step-text"><%= step.status %></div>
+                  <div class="step-date"><%= step.date %></div>
+                </div>
+                <% }) %>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
-    <!-- Cancel Order Modal -->
-    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="cancelModalLabel">Confirm Cancellation</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to cancel this order?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
-                    <button type="button" class="btn btn-dark" id="confirmCancelBtn">Yes, cancel</button>
-                </div>
-            </div>
+    <div
+      class="modal fade"
+      id="cancelModal"
+      tabindex="-1"
+      aria-labelledby="cancelModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="cancelModalLabel">
+              Confirm Cancellation
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to cancel this order?
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-dark"
+              data-bs-dismiss="modal"
+            >
+              No
+            </button>
+            <button type="button" class="btn btn-dark" id="confirmCancelBtn">
+              Yes, cancel
+            </button>
+          </div>
         </div>
+      </div>
     </div>
 
     <%- include("../partials/user/footer") %>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function showToast(message, isSuccess = true) {
-            const toastEl = document.getElementById('orderToast');
-            const toastBody = toastEl.querySelector('.toast-body');
-            toastBody.innerHTML = `<i class="fas ${isSuccess ? 'fa-check-circle text-success' : 'fa-exclamation-triangle text-danger'} me-2"></i>${message}`;
-            const toast = new bootstrap.Toast(toastEl);
-            toast.show();
-        }
+      function showToast(message, isSuccess = true) {
+          const toastEl = document.getElementById('orderToast');
+          const toastBody = toastEl.querySelector('.toast-body');
+          toastBody.innerHTML = `<i class="fas ${isSuccess ? 'fa-check-circle text-success' : 'fa-exclamation-triangle text-danger'} me-2"></i>${message}`;
+          const toast = new bootstrap.Toast(toastEl);
+          toast.show();
+      }
 
-        function cancelOrder(orderId) {
-            console.log('Cancelling order:', orderId);
-            fetch(`/orders/cancel/${orderId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-                .then(res => {
-                    console.log('Cancel response status:', res.status);
-                    return res.json();
-                })
-                .then(data => {
-                    console.log('Cancel response data:', data);
-                    if (data.success) {
-                        showToast("Order cancelled successfully");
-                        setTimeout(() => window.location.reload(), 2000);
-                    } else {
-                        showToast(data.message || "Failed to cancel order", false);
-                    }
-                })
-                .catch(err => {
-                    console.error('Cancel error:', err);
-                    showToast("Error cancelling order", false);
-                });
-        }
+      function cancelOrder(orderId) {
+          fetch(`/orders/cancel/${orderId}`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+          })
+              .then(res => {
+                  return res.json();
+              })
+              .then(data => {
+                  if (data.success) {
+                      showToast("Order cancelled successfully");
+                      setTimeout(() => window.location.reload(), 2000);
+                  } else {
+                      showToast(data.message || "Failed to cancel order", false);
+                  }
+              })
+              .catch(err => {
+                  console.error('Cancel error:', err);
+                  showToast("Error cancelling order", false);
+              });
+      }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, setting up event listeners');
-            
-            // Fix for progress bar
-            const progressBar = document.getElementById('progressBar');
-            const progressWidth = <%= progressWidth %>;
-            setTimeout(() => {
-                progressBar.style.width = `${progressWidth}%`;
-            }, 300);
+      document.addEventListener('DOMContentLoaded', function() {
+          const progressBar = document.getElementById('progressBar');
+          
+          // Handle progress bar and status styles based on order status
+          const status = '<%= order.status.toLowerCase() %>';
+          let progressWidth = 0;
+          
+          // Calculate progress width based on status
+          if (status === 'pending') {
+              progressWidth = 25;
+          } else if (status === 'processing') {
+              progressWidth = 50;
+          } else if (status === 'shipped') {
+              progressWidth = 75;
+          } else if (status === 'delivered') {
+              progressWidth = 100;
+          } else if (status === 'cancelled' || status === 'returned') {
+              progressWidth = 100; // For cancelled/returned, fill the entire bar
+              progressBar.classList.add('progress-fill-' + status);
+          }
+          
+          // Apply status-specific styles
+          const statusLabel = document.querySelector('.status-label');
+          if (statusLabel) {
+              statusLabel.classList.add('status-' + status);
+          }
+          
+          // Animate progress bar
+          setTimeout(() => {
+              progressBar.style.width = `${progressWidth}%`;
+          }, 300);
 
-            // Add hover animation for menu items
-            const menuItems = document.querySelectorAll('.menu-item');
-            menuItems.forEach(item => {
-                item.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateX(5px)';
-                });
-                item.addEventListener('mouseleave', function() {
-                    if (!this.classList.contains('active')) {
-                        this.style.transform = 'translateX(0)';
-                    }
-                });
-            });
+          const menuItems = document.querySelectorAll('.menu-item');
+          menuItems.forEach(item => {
+              item.addEventListener('mouseenter', function() {
+                  this.style.transform = 'translateX(5px)';
+              });
+              item.addEventListener('mouseleave', function() {
+                  if (!this.classList.contains('active')) {
+                      this.style.transform = 'translateX(0)';
+                  }
+              });
+          });
 
-            // Animate elements on scroll
-            const animateOnScroll = function() {
-                const elements = document.querySelectorAll('.track-order-container, .profile-section, .menu-section');
-                elements.forEach(element => {
-                    const elementPosition = element.getBoundingClientRect().top;
-                    const windowHeight = window.innerHeight;
-                    if (elementPosition < windowHeight - 100) {
-                        element.style.opacity = '1';
-                        element.style.transform = 'translateY(0)';
-                    }
-                });
-            };
+          const animateOnScroll = function() {
+              const elements = document.querySelectorAll('.track-order-container, .profile-section, .menu-section');
+              elements.forEach(element => {
+                  const elementPosition = element.getBoundingClientRect().top;
+                  const windowHeight = window.innerHeight;
+                  if (elementPosition < windowHeight - 100) {
+                      element.style.opacity = '1';
+                      element.style.transform = 'translateY(0)';
+                  }
+              });
+          };
 
-            window.addEventListener('scroll', animateOnScroll);
-            animateOnScroll();
+          window.addEventListener('scroll', animateOnScroll);
+          animateOnScroll();
 
-            // Enhanced status step animation
-            const steps = document.querySelectorAll('.step');
-            steps.forEach((step, index) => {
-                setTimeout(() => {
-                    if (step.classList.contains('active')) {
-                        step.style.animation = `bounceStep 0.5s ease-out ${index * 0.2}s`;
-                    }
-                }, 500 + (index * 200));
-            });
+          const steps = document.querySelectorAll('.step');
+          steps.forEach((step, index) => {
+              setTimeout(() => {
+                  if (step.classList.contains('active')) {
+                      step.style.animation = `bounceStep 0.5s ease-out ${index * 0.2}s`;
+                  }
+              }, 500 + (index * 200));
+          });
 
-            // Add pulsing effect to active steps
-            const activeSteps = document.querySelectorAll('.step.active');
-            activeSteps.forEach((step, index) => {
-                const icon = step.querySelector('.step-icon');
-                icon.style.animation = `bounceStep 0.5s ease-out ${index * 0.2}s, pulse 2s infinite ${0.5 + (index * 0.2)}s`;
-            });
 
-            // Modal event listener
-            const cancelModal = document.getElementById('cancelModal');
-            if (cancelModal) {
-                cancelModal.addEventListener('show.bs.modal', function(event) {
-                    console.log('Cancel modal shown');
-                    const button = event.relatedTarget;
-                    const orderId = button.getAttribute('data-order-id');
-                    console.log('Order ID for cancel:', orderId);
-                    const confirmBtn = cancelModal.querySelector('#confirmCancelBtn');
-                    confirmBtn.onclick = () => {
-                        console.log('Confirm cancel button clicked for order:', orderId);
-                        cancelOrder(orderId);
-                    };
-                });
-            }
-        });
+          const activeSteps = document.querySelectorAll('.step.active');
+          activeSteps.forEach((step, index) => {
+              const icon = step.querySelector('.step-icon');
+              if (step.dataset.status === 'Cancelled' || step.dataset.status === 'Returned') {
+                  icon.style.animation = `bounceStep 0.5s ease-out ${index * 0.2}s, shake 1.5s infinite ${0.5 + (index * 0.2)}s`;
+              } else {
+                  icon.style.animation = `bounceStep 0.5s ease-out ${index * 0.2}s, pulse 2s infinite ${0.5 + (index * 0.2)}s`;
+              }
+          });
+
+
+          const cancelModal = document.getElementById('cancelModal');
+          if (cancelModal) {
+              cancelModal.addEventListener('show.bs.modal', function(event) {
+                  const button = event.relatedTarget;
+                  const orderId = button.getAttribute('data-order-id');
+
+                  const confirmBtn = cancelModal.querySelector('#confirmCancelBtn');
+                  confirmBtn.onclick = () => {
+                      cancelOrder(orderId);
+                  };
+              });
+          }
+      });
     </script>
-</body>
+  </body>
 </html>

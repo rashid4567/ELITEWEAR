@@ -222,7 +222,7 @@
         type: formData.get('type')
       };
       
-      console.log('Sending addressData:', addressData); 
+    
       
       try {
         const response = await fetch('/add-address', {
@@ -234,7 +234,7 @@
         });
         
         const result = await response.json();
-        console.log('Server response:', result); // Debug log
+        
         
         if (result.success) {
           showCustomAlert({

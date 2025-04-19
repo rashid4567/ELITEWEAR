@@ -219,12 +219,12 @@
             // Initialize toast
             const wishlistToast = new bootstrap.Toast(document.getElementById('wishlistToast'));
 
-            // Load wishlist state
+    
             async function loadWishlistState() {
                 try {
                     const response = await fetch('/wishlist/ids');
                     const data = await response.json();
-                    console.log('Wishlist IDs:', data);
+                    
                     document.querySelectorAll('.wishlist-heart').forEach(heart => {
                         const productId = heart.getAttribute('data-product-id');
                         if (data.products.includes(productId)) {
@@ -240,13 +240,13 @@
             // Handle wishlist toggle
             document.querySelectorAll('.wishlist-heart').forEach(heart => {
                 heart.addEventListener('click', async function(event) {
-                    // No need for stopPropagation since the icon is outside the <a> tag
+                    
                     const productId = this.getAttribute('data-product-id');
                     const heartPath = this.querySelector('.heart');
                     const isActive = heartPath.classList.contains('active');
                     const url = isActive ? '/wishlist/remove' : '/addTowhislist';
 
-                    console.log(`${isActive ? 'Removing' : 'Adding'} product ID:`, productId);
+                
 
                     try {
                         const response = await fetch(url, {
@@ -256,9 +256,9 @@
                             },
                             body: JSON.stringify({ productId: productId }),
                         });
-                        console.log('Response status:', response.status);
+                        
                         const data = await response.json();
-                        console.log('Response data:', data);
+                
                         const toastBody = document.getElementById('toastBody');
                         toastBody.textContent = data.message;
                         toastBody.style.color = data.success ? 'green' : 'red';
@@ -267,7 +267,7 @@
                             heartPath.classList.toggle('active');
                         }
                     } catch (error) {
-                        console.error('Error:', error);
+                
                         const toastBody = document.getElementById('toastBody');
                         toastBody.textContent = 'Operation failed';
                         toastBody.style.color = 'red';
@@ -276,7 +276,7 @@
                 });
             });
 
-            // Existing filter and pagination logic
+            
             function fetchProducts(isSearch = false) {
                 const filterData = {
                     category: document.getElementById('categorySelect').value,
@@ -404,16 +404,16 @@
                         `;
                         productsContainer.insertAdjacentHTML('beforeend', productHtml);
                     });
-                    // Reattach event listeners to new wishlist icons
+
                     document.querySelectorAll('.wishlist-heart').forEach(heart => {
                         heart.addEventListener('click', async function(event) {
-                            // No need for stopPropagation since the icon is outside the <a> tag
+                            
                             const productId = this.getAttribute('data-product-id');
                             const heartPath = this.querySelector('.heart');
                             const isActive = heartPath.classList.contains('active');
                             const url = isActive ? '/wishlist/remove' : '/addTowhislist';
 
-                            console.log(`${isActive ? 'Removing' : 'Adding'} product ID:`, productId);
+                            
 
                             try {
                                 const response = await fetch(url, {
@@ -423,9 +423,9 @@
                                     },
                                     body: JSON.stringify({ productId: productId }),
                                 });
-                                console.log('Response status:', response.status);
+                        
                                 const data = await response.json();
-                                console.log('Response data:', data);
+                            
                                 const toastBody = document.getElementById('toastBody');
                                 toastBody.textContent = data.message;
                                 toastBody.style.color = data.success ? 'green' : 'red';

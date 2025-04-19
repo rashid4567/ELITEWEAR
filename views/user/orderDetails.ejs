@@ -13,6 +13,7 @@
         .status-return-approved { color: #28a745; }
         .status-return-requested { color: #fd7e14; }
         .refund-info { background-color: #e9f7ef; padding: 10px; border-radius: 5px; }
+        .btn-loading { pointer-events: none; opacity: 0.7; }
     </style>
 </head>
 <body>
@@ -133,7 +134,36 @@
                                             <div class="details-row">
                                                 <div class="details-value"><%= order.paymentMethod || 'N/A' %></div>
                                             </div>
-                                        </div>
+                                        </div><div class="col-md-6 mb-3">
+                                            <div class="details-section">
+                                              <!-- <h5>Shipping Address</h5>
+                                              <% if (order.address) { %>
+                                                <div class="details-row">
+                                                  <div class="details-value"><%= order.address.fullname || 'N/A' %></div>
+                                                </div>
+                                                <div class="details-row">
+                                                  <div class="details-value"><%= order.address.address || 'N/A' %></div>
+                                                </div>
+                                                <div class="details-row">
+                                                  <div class="details-value">
+                                                    <%= order.address.city || 'N/A' %>, <%= order.address.district || 'N/A' %>
+                                                  </div>
+                                                </div>
+                                                <div class="details-row">
+                                                  <div class="details-value">
+                                                    <%= order.address.state || 'N/A' %>, <%= order.address.pincode || 'N/A' %>
+                                                  </div>
+                                                </div>
+                                                <div class="details-row">
+                                                  <div class="details-value">
+                                                    Contact: <%= order.address.mobile || 'N/A' %>
+                                                  </div>
+                                                </div>
+                                              <% } else { %>
+                                                <p class="text-danger">No address information available for this order.</p>
+                                              <% } %>
+                                            </div> -->
+                                          </div>
                                     </div>
 
                                     <div class="col-md-6">
@@ -296,7 +326,7 @@
                     }
                     console.log(`Frontend: Initiating return for order ${orderId} with reason: ${reasonInput.value.trim()}`);
                     initiateReturn(orderId, reasonInput.value.trim());
-                }, 1000); // 1-second debounce
+                }, 1000);
                 reasonInput.addEventListener('input', () => {
                     reasonInput.classList.remove('is-invalid');
                 });
@@ -307,7 +337,11 @@
                 const button = event.relatedTarget;
                 const orderId = button.getAttribute('data-order-id');
                 const confirmBtn = reorderModal.querySelector('#confirmReorderBtn');
-                confirmBtn.onclick = () => reOrder(orderId);
+                confirmBtn.onclick = debounce(() => {
+                    confirmBtn.classList.add('btn-loading');
+                    confirmBtn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Reordering...';
+                    reOrder(orderId, confirmBtn);
+                }, 1000);
             });
         });
 
@@ -320,21 +354,18 @@
         }
 
         function initiateReturn(orderId, returnReason) {
-            console.log(`Frontend: Sending return request for order ${orderId} with reason: ${returnReason}`);
-            fetch(`/return-order/${orderId}`, { // Corrected endpoint
+            fetch(`/return-order/${orderId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ returnReason })
             })
                 .then(res => {
-                    console.log(`Frontend: Response status for return request: ${res.status}`);
                     if (!res.ok) {
                         throw new Error(`HTTP error! Status: ${res.status}`);
                     }
                     return res.json();
                 })
                 .then(data => {
-                    console.log(`Frontend: Response data:`, data);
                     if (data.success) {
                         showToast("Return initiated successfully. Await admin approval.");
                         setTimeout(() => window.location.reload(), 2000);
@@ -366,17 +397,34 @@
                 .catch(err => showToast("Error cancelling order", false));
         }
 
-        function reOrder(orderId) {
-            fetch(`/orders/reorder/${orderId}`, { method: 'POST' })
-                .then(res => res.json())
+        function reOrder(orderId, button) {
+            console.log(`Frontend: Initiating reorder for order ${orderId}`);
+            fetch(`/reorder/${orderId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! Status: ${res.status}`);
+                    }
+                    return res.json();
+                })
                 .then(data => {
+                    button.classList.remove('btn-loading');
+                    button.innerHTML = '<i class="bi bi-arrow-repeat"></i> Yes, reorder';
                     if (data.success) {
-                        window.location.href = data.redirect;
+                        showToast("Order placed successfully!");
+                        setTimeout(() => window.location.href = data.redirect, 2000);
                     } else {
-                        showToast(data.message, false);
+                        showToast(data.message || "Failed to reorder", false);
                     }
                 })
-                .catch(err => showToast("Error reordering", false));
+                .catch(err => {
+                    button.classList.remove('btn-loading');
+                    button.innerHTML = '<i class="bi bi-arrow-repeat"></i> Yes, reorder';
+                    console.error(`Frontend: Reorder error:`, err);
+                    showToast("Error reordering: Please try again", false);
+                });
         }
 
         function downloadInvoice(orderId) {

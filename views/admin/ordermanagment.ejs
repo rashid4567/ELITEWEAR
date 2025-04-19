@@ -307,7 +307,6 @@
             const confirmApproveReturnBtn = document.getElementById('confirmApproveReturnBtn');
             const confirmRejectReturnBtn = document.getElementById('confirmRejectReturnBtn');
 
-            // Status Edit Buttons
             const editStatusBtns = document.querySelectorAll('.btn-edit-status');
             editStatusBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -319,7 +318,6 @@
                 });
             });
 
-            // Save Status
             saveStatusBtn.addEventListener('click', function() {
                 const orderId = orderIdInput.value;
                 const newStatus = statusSelect.value;

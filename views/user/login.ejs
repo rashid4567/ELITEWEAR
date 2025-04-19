@@ -89,13 +89,13 @@
             const passwordError = document.getElementById('passwordError');
             const eyeIcon = document.querySelector('.eye-icon');
 
-            console.log('Eye icon element:', eyeIcon); 
+        
 
             if (eyeIcon) {
                 eyeIcon.addEventListener('click', function () {
                     const isPassword = passwordInput.type === 'password';
                     passwordInput.type = isPassword ? 'text' : 'password';
-                    console.log('Password visibility toggled to:', passwordInput.type); 
+                
                 });
             } else {
                 console.error('Eye icon not found in DOM');

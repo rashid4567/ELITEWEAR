@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const mongoose = require("mongoose")
 const validator = require("validator");
 
+
 const OTP_EXPIRY_MINUTES = 10;
 const OTP_LENGTH = 5;
 const SALT_ROUNDS = 10;
@@ -217,40 +218,27 @@ const resendForgotOtp = async (req, res) => {
 
 const loadProfile = async (req, res) => {
   try {
-    if (!req.session || !req.session.user) {
-    
-      return res.redirect("/login");
-    }
-
-    let userData = req.session.user; 
-
-  
-    if (typeof userData === 'string' || userData instanceof mongoose.Types.ObjectId) {
-      userData = await User.findById(userData);
-      if (!userData) {
-        
-        return res.redirect("/login");
-      }
-      req.session.user = userData; 
-    } else if (typeof userData !== 'object' || userData === null) {
-    
-      return res.redirect("/login");
-    }
-
-    const { fullname, email, mobile = null } = userData; 
-    if (!fullname) {
-     
-      return res.redirect("/login");
-    }
-
    
-    return res.render("profile", { fullname, email, mobile });
+    if (!req.session.user?.email) {
+    
+      return res.redirect('/login');
+    }
+    const user = await User.findOne({ email: req.session.user.email });
+    if (!user) {
+     
+      return res.redirect('/login');
+    }
+   
+    res.render('profile', {
+      email: user.email,
+      fullname: user.fullname,
+      mobile: user.mobile,
+    });
   } catch (error) {
-    console.error("Error in loadProfile function:", error);
-    return res.redirect("/page-404/");
+    console.error('Error in loadProfile:', error);
+    res.redirect('/page-not-found');
   }
 };
-
 const loadProfileEdit = async (req, res) => {
   try {
     if (!req.session || !req.session.user) {
@@ -277,21 +265,37 @@ const loadProfileEdit = async (req, res) => {
 const sendemilUpdateOtp = async (req, res) => {
   try {
     const { newEmail } = req.body;
-    const currentEmail = req.session.user.email;
+    const currentEmail = req.session.user?.email;
+
+  
 
     if (!newEmail) {
+    
       return res.status(400).json({ success: false, message: "New email is required" });
     }
 
+    if (!currentEmail) {
+   
+      return res.status(400).json({ success: false, message: "User session invalid" });
+    }
+
     if (newEmail === currentEmail) {
+   
       return res.status(400).json({ success: false, message: "New email must be different from the current email" });
     }
 
-    validateEmail(newEmail);
+   
+    try {
+      validateEmail(newEmail);
+    } catch (error) {
+   
+      return res.status(400).json({ success: false, message: `Invalid email format: ${error.message}` });
+    }
 
-
+  
     const existingUser = await User.findOne({ email: newEmail });
     if (existingUser && existingUser.email !== currentEmail) {
+  
       return res.status(400).json({ success: false, message: "This email is already in use by another user" });
     }
 
@@ -300,50 +304,143 @@ const sendemilUpdateOtp = async (req, res) => {
     req.session.newEmail = newEmail;
     req.session.otpExpires = Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000;
 
+  
+
+   
     const emailSent = await sendOtpEmail(newEmail, otp);
+ 
+
     if (emailSent.success) {
-      return res.status(200).json({ success: true, message: "OTP sent to new email" });
+   
+      return res.json({ 
+        success: true, 
+        message: "OTP sent to new email", 
+        redirectUrl: "/verify-email-update-otp" 
+      });
+    } else {
+     
+      return res.status(500).json({ success: false, message: `Failed to send OTP: ${emailSent.message}` });
     }
-    return res.status(500).json({ success: false, message: "Failed to send OTP" });
   } catch (error) {
-    console.error("Unable to send email for update:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
+    console.error('Error in sendemilUpdateOtp:', error);
+    return res.status(500).json({ success: false, message: `Server error: ${error.message}` });
   }
 };
-
 const verifyUpdateOtp = async (req, res) => {
   try {
     const { otp } = req.body;
+  
 
-    if (!req.session.emailUpdateOtp) {
-      return res.status(400).json({ success: false, message: "No OTP session found" });
+    if (!otp) {
+  
+      return res.status(400).json({ success: false, message: "OTP is required" });
+    }
+
+ 
+
+    if (!req.session.emailUpdateOtp || !req.session.newEmail) {
+      
+      return res.status(400).json({ success: false, message: "No OTP session found. Please request a new OTP." });
     }
 
     if (Date.now() > req.session.otpExpires) {
+   
       req.session.emailUpdateOtp = null;
       req.session.newEmail = null;
-      return res.status(400).json({ success: false, message: "OTP expired" });
+      return res.status(400).json({ success: false, message: "OTP expired. Please request a new OTP." });
     }
 
     if (String(req.session.emailUpdateOtp) === String(otp)) {
+   
       const newEmail = req.session.newEmail;
+    
       const updateResult = await User.updateOne(
         { email: req.session.user.email },
         { email: newEmail }
       );
 
+     
+
       if (updateResult.modifiedCount > 0) {
         req.session.user.email = newEmail;
         req.session.emailUpdateOtp = null;
         req.session.newEmail = null;
-        return res.json({ success: true, message: "Email updated successfully" });
+      
+        return res.json({ 
+          success: true, 
+          message: "Email updated successfully", 
+          redirectUrl: "/LoadProfile" 
+        });
       }
+    
       return res.status(400).json({ success: false, message: "Email update failed" });
     }
+
+  
     return res.status(400).json({ success: false, message: "Invalid OTP" });
   } catch (error) {
-    console.error("Error verifying OTP:", error);
-    return res.status(500).json({ success: false, message: "Server error" });
+    console.error('Error in verifyUpdateOtp:', error);
+    return res.status(500).json({ success: false, message: `Server error: ${error.message}` });
+  }
+};
+const resendUpdateOtp = async (req, res) => {
+  try {
+    const email = req.session.newEmail;
+   
+
+    if (!email) {
+    
+      return res.status(400).json({
+        success: false,
+        message: "No valid session. Please try again.",
+      });
+    }
+
+    
+    try {
+      validateEmail(email);
+    } catch (error) {
+   
+      return res.status(400).json({ success: false, message: `Invalid email format: ${error.message}` });
+    }
+
+    const otp = generateOtp();
+    req.session.emailUpdateOtp = otp;
+    req.session.otpExpires = Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000;
+
+ 
+
+  
+    const emailSent = await sendOtpEmail(email, otp);
+   
+    if (emailSent.success) {
+ 
+      return res.status(200).json({ success: true, message: "OTP resent successfully" });
+    } else {
+    
+      return res.status(500).json({
+        success: false,
+        message: `Failed to resend OTP: ${emailSent.message}`,
+      });
+    }
+  } catch (error) {
+    console.error('Error in resendUpdateOtp:', error);
+    return res.status(500).json({
+      success: false,
+      message: `Internal server issue: ${error.message}`,
+    });
+  }
+};
+const loadVerifyEmailUpdateOtp = async (req, res) => {
+  try {
+    const email = req.session.newEmail || "unknown@email.com";
+    if (!req.session.emailUpdateOtp || !req.session.newEmail) {
+      return res.redirect("/getprofileEdit");
+    }
+    res.render("emailUpdateOtp", { email }); 
+  } catch (error) {
+    console.error("Error loading email update OTP verification page:", error);
+    res.redirect("/page-not-found");
   }
 };
 
@@ -459,4 +556,6 @@ module.exports = {
   loadupdatePassword,
   updatePassword,
   loadLogout,
+  resendUpdateOtp,
+  loadVerifyEmailUpdateOtp, 
 };

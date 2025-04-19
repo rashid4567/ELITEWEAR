@@ -304,7 +304,12 @@
             <h5 class="modal-title" id="reorderModalLabel">Confirm Reorder</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body">Do you want to place this order again?</div>
+          <div class="modal-body">
+            <p>Do you want to place this order again?</p>
+            <p class="text-muted">
+              Note: Prices and availability may have changed since your original order.
+            </p>
+          </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
             <button type="button" class="btn btn-dark" id="confirmReorderBtn">Yes, reorder</button>
@@ -333,7 +338,7 @@
           const orderId = button.getAttribute("data-order-id");
           const confirmBtn = cancelModal.querySelector("#confirmCancelBtn");
           const reasonInput = cancelModal.querySelector("#cancelReason");
-          confirmBtn.onclick = () => cancelOrder(orderId, reasonInput.value.trim());
+          confirmBtn.onclick = debounce(() => cancelOrder(orderId, reasonInput.value.trim()), 1000);
         });
 
         const returnModal = document.getElementById("returnModal");
@@ -347,9 +352,8 @@
               reasonInput.classList.add("is-invalid");
               return;
             }
-            console.log("Initiating return for order:", orderId, "Reason:", reasonInput.value.trim());
             initiateReturn(orderId, reasonInput.value.trim());
-          }, 1000); // 1-second debounce
+          }, 1000);
           reasonInput.addEventListener("input", () => {
             reasonInput.classList.remove("is-invalid");
           });
@@ -360,7 +364,7 @@
           const button = event.relatedTarget;
           const orderId = button.getAttribute("data-order-id");
           const confirmBtn = reorderModal.querySelector("#confirmReorderBtn");
-          confirmBtn.onclick = () => reOrder(orderId);
+          confirmBtn.onclick = debounce(() => reOrder(orderId), 1000);
         });
       });
 
@@ -406,7 +410,12 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cancelReason }),
         })
-          .then((res) => res.json())
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error(`HTTP error! Status: ${res.status}`);
+            }
+            return res.json();
+          })
           .then((data) => {
             if (data.success) {
               showToast("Order cancelled successfully");
@@ -415,20 +424,35 @@
               showToast(data.message, false);
             }
           })
-          .catch((err) => showToast("Error cancelling order", false));
+          .catch((err) => {
+            console.error("Error in cancelOrder:", err);
+            showToast(`Failed to cancel order: ${err.message}`, false);
+          });
       }
 
       function reOrder(orderId) {
-        fetch(`/orders/reorder/${orderId}`, { method: "POST" })
-          .then((res) => res.json())
+        fetch(`/reorder/${orderId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        })
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error(`HTTP error! Status: ${res.status}`);
+            }
+            return res.json();
+          })
           .then((data) => {
             if (data.success) {
-              window.location.href = data.redirect;
+              showToast("Order placed successfully");
+              setTimeout(() => (window.location.href = data.redirect), 1000);
             } else {
-              showToast(data.message, false);
+              showToast(data.message || "Failed to reorder", false);
             }
           })
-          .catch((err) => showToast("Error reordering", false));
+          .catch((err) => {
+            console.error("Error in reOrder:", err);
+            showToast(`Failed to reorder: ${err.message}`, false);
+          });
       }
 
       function viewDetails(orderId) {

@@ -3,6 +3,7 @@ const User = require("../../model/userSchema");
 const Product = require("../../model/productScheema");
 const Cart = require("../../model/cartScheema");
 const Wishlist = require("../../model/whislistScheema");
+const Category = require("../../model/categoryScheema");
 
 const loadCart = async (req, res) => {
   try {
@@ -18,13 +19,20 @@ const loadCart = async (req, res) => {
     let userCart = await Cart.findOne({ userId })
       .populate({
         path: "items.productId",
-        select: "name images variants.salePrice variants.size variants.varientquatity salePrice isActive",
+        select: "name images variants.salePrice variants.size variants.varientquatity salePrice isActive categoryId",
       })
       .lean();
 
     if (!userCart || userCart.items.length === 0) {
       return res.render("cart", { cart: null, subtotal: "0.00", message: "Your cart is empty" });
     }
+
+    // Fetch all categories for products in the cart
+    const productIds = userCart.items.map(item => item.productId?._id).filter(id => id);
+    const products = await Product.find({ _id: { $in: productIds } }).select('categoryId isActive');
+    const categoryIds = [...new Set(products.map(p => p.categoryId))]; // Unique category IDs
+    const categories = await Category.find({ _id: { $in: categoryIds } }).select('_id isListed');
+    const categoryMap = new Map(categories.map(c => [c._id.toString(), c.isListed]));
 
     const removedItems = [];
     const initialItemsLength = userCart.items.length;
@@ -33,9 +41,16 @@ const loadCart = async (req, res) => {
         if (item.productId) removedItems.push(item.productId.name || "Unnamed Product");
         return false;
       }
+      // Check if the product's category is listed
+      const categoryId = item.productId.categoryId?.toString();
+      if (!categoryId || categoryMap.get(categoryId) === false) {
+        if (item.productId) removedItems.push(item.productId.name || "Unnamed Product");
+        return false;
+      }
       return true;
     });
 
+    // Update cart in database if items were removed
     if (userCart.items.length !== initialItemsLength) {
       const cartUpdate = await Cart.findOne({ userId });
       cartUpdate.items = userCart.items.map((item) => ({
@@ -49,7 +64,7 @@ const loadCart = async (req, res) => {
 
     let message = null;
     if (removedItems.length > 0) {
-      message = `The following items were removed from your cart because they are no longer available: ${removedItems.join(", ")}.`;
+      message = `The following items were removed from your cart because they are no longer available or their category is blocked: ${removedItems.join(", ")}.`;
     }
 
     if (userCart.items.length === 0) {
@@ -103,7 +118,7 @@ const addToCart = async (req, res) => {
     }
 
     const product = await Product.findById(productId).select(
-      "name variants color stock salePrice isActive"
+      "name variants color stock salePrice matinée isActive categoryId"
     );
     if (!product) {
       return res.status(404).json({ success: false, message: "Product not found" });
@@ -112,6 +127,14 @@ const addToCart = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: "This product is no longer available" });
+    }
+
+    // Check if category is listed
+    const category = await Category.findById(product.categoryId);
+    if (!category || !category.isListed) {
+      return res
+        .status(400)
+        .json({ success: false, message: "This product's category is not available" });
     }
 
     if (product.stock <= 0) {
@@ -234,7 +257,7 @@ const updateCartQuantity = async (req, res) => {
         .json({ success: false, message: "Item not found in cart" });
     }
 
-    const product = await Product.findById(productId).select("variants stock salePrice isActive");
+    const product = await Product.findById(productId).select("variants stock salePrice isActive categoryId");
     if (!product) {
       return res
         .status(404)
@@ -246,6 +269,16 @@ const updateCartQuantity = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: "Product is no longer available" });
+    }
+
+    // Check if category is listed
+    const category = await Category.findById(product.categoryId);
+    if (!category || !category.isListed) {
+      userCart.items.splice(itemIndex, 1);
+      await userCart.save();
+      return res
+        .status(400)
+        .json({ success: false, message: "This product's category is not available" });
     }
 
     const newQuantity = userCart.items[itemIndex].quantity + parsedChange;
@@ -393,7 +426,7 @@ const addToCartAndRemoveFromWishlist = async (req, res) => {
     }
 
     const product = await Product.findById(productId).select(
-      "name variants color stock salePrice isActive"
+      "name variants color stock salePrice isActive categoryId"
     );
     if (!product) {
       return res
@@ -404,6 +437,14 @@ const addToCartAndRemoveFromWishlist = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: "This product is no longer available" });
+    }
+
+    // Check if category is listed
+    const category = await Category.findById(product.categoryId);
+    if (!category || !category.isListed) {
+      return res
+        .status(400)
+        .json({ success: false, message: "This product's category is not available" });
     }
 
     if (product.stock <= 0) {
@@ -505,7 +546,7 @@ const blockProduct = async (req, res) => {
         .json({ success: false, message: "Product not found" });
     }
 
-    product.isActive = false; // Block the product
+    product.isActive = false;
     await product.save();
 
     await Cart.updateMany(
@@ -524,6 +565,45 @@ const blockProduct = async (req, res) => {
   }
 };
 
+const blockCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid category ID" });
+    }
+
+    const category = await Category.findById(categoryId);
+    if (!category) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Category not found" });
+    }
+
+    category.isListed = false;
+    await category.save();
+
+    const products = await Product.find({ categoryId }).select('_id');
+    const productIds = products.map(p => p._id);
+
+    await Cart.updateMany(
+      { "items.productId": { $in: productIds } },
+      { $pull: { items: { productId: { $in: productIds } } } }
+    );
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Category blocked successfully" });
+  } catch (error) {
+    console.error("blockCategory - Error:", error.message, error.stack);
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error" });
+  }
+};
+
 module.exports = {
   loadCart,
   addToCart,
@@ -532,4 +612,5 @@ module.exports = {
   emptyCart,
   addToCartAndRemoveFromWishlist,
   blockProduct,
+  blockCategory,
 };

@@ -137,15 +137,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Initialize toast
+        
         const wishlistToast = new bootstrap.Toast(document.getElementById('wishlistToast'));
 
-        // Load wishlist state
         async function loadWishlistState() {
             try {
                 const response = await fetch('/wishlist/ids');
                 const data = await response.json();
-                console.log('Wishlist IDs:', data);
+            
                 document.querySelectorAll('.wishlist-heart').forEach(heart => {
                     const productId = heart.getAttribute('data-product-id');
                     if (data.products.includes(productId)) {
@@ -166,7 +165,7 @@
                 const isActive = heartPath.classList.contains('active');
                 const url = isActive ? '/wishlist/remove' : '/addTowhislist';
 
-                console.log(`${isActive ? 'Removing' : 'Adding'} product ID:`, productId);
+                
 
                 try {
                     const response = await fetch(url, {
@@ -176,9 +175,9 @@
                         },
                         body: JSON.stringify({ productId: productId }),
                     });
-                    console.log('Response status:', response.status);
+                    
                     const data = await response.json();
-                    console.log('Response data:', data);
+                
                     const toastBody = document.getElementById('toastBody');
                     toastBody.textContent = data.message;
                     toastBody.style.color = data.success ? 'green' : 'red';

@@ -303,12 +303,10 @@ const cancelOrder = async (req, res) => {
     });
   } catch (error) {
     console.error("cancelOrder Error:", error.message);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Internal server error while cancelling order",
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error while cancelling order",
+    });
   }
 };
 
@@ -326,29 +324,25 @@ const initiateReturn = async (req, res) => {
 
     if (!returnReason || returnReason.trim() === "") {
       console.error("initiateReturn: Return reason is required");
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Please provide a reason for the return",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Please provide a reason for the return",
+      });
     }
 
     const userId = req.user?._id.toString() || req.session.user?._id.toString();
 
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       console.error("initiateReturn: No authenticated user found");
-      return res
-        .status(401)
-        .json({
-          success: false,
-          message: "Please log in to initiate a return",
-        });
+      return res.status(401).json({
+        success: false,
+        message: "Please log in to initiate a return",
+      });
     }
 
-    const order = await Order.findOne({ _id: orderId, userId }).select(
-      "status userId refunded deliveryDate orderDate"
-    );
+    const order = await Order.findOne({ _id: orderId, userId })
+      .populate("order_items")
+      .select("status userId refunded deliveryDate orderDate order_items");
 
     if (!order) {
       console.error(
@@ -403,6 +397,21 @@ const initiateReturn = async (req, res) => {
       });
     }
 
+    for (const item of order.order_items) {
+      const product = await Product.findById(item.productId);
+      if (!product) {
+        throw new Error(`Product ${item.product_name} not found`);
+      }
+      const variantIndex = product.variants.findIndex(
+        (v) => v.size === item.size
+      );
+      if (variantIndex === -1) {
+        throw new Error(`Variant not found for size ${item.size}`);
+      }
+      product.variants[variantIndex].variantQuantity += item.quantity;
+      await product.save();
+    }
+
     const updatedOrder = await Order.findOneAndUpdate(
       {
         _id: orderId,
@@ -423,9 +432,18 @@ const initiateReturn = async (req, res) => {
         `initiateReturn: Failed to update order status for ID: ${orderId}. Possible reasons: status changed, refunded=true, or query mismatch`
       );
 
-      const currentOrder = await Order.findById(orderId).select(
-        "status refunded"
-      );
+      for (const item of order.order_items) {
+        const product = await Product.findById(item.productId);
+        if (product) {
+          const variantIndex = product.variants.findIndex(
+            (v) => v.size === item.size
+          );
+          if (variantIndex !== -1) {
+            product.variants[variantIndex].variantQuantity -= item.quantity;
+            await product.save();
+          }
+        }
+      }
 
       return res.status(400).json({
         success: false,
@@ -448,6 +466,7 @@ const initiateReturn = async (req, res) => {
 };
 
 const reOrder = async (req, res) => {
+  let newOrderId = null;
   try {
     const orderId = req.params.id;
 
@@ -464,12 +483,15 @@ const reOrder = async (req, res) => {
       console.error("reOrder: No authenticated user found");
       return res
         .status(401)
-        .json({ success: false, message: "No authenticated user found" });
+        .json({ success: false, message: "Please log in to reorder" });
     }
 
-    const order = await Order.findOne({ _id: orderId, userId }).populate(
-      "order_items"
-    );
+    const order = await Order.findOne({ _id: orderId, userId })
+      .populate({
+        path: "order_items",
+        populate: { path: "productId", model: "Product" },
+      })
+      .populate("address");
 
     if (!order) {
       console.error(
@@ -480,51 +502,95 @@ const reOrder = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
+    const selectedAddress = await Address.findOne({
+      _id: order.address._id,
+      userId,
+    });
+    if (!selectedAddress) {
+      console.error(
+        `reOrder: Address not found for ID: ${order.address._id}, User ID: ${userId}`
+      );
+      return res.status(400).json({
+        success: false,
+        message: "Selected address is no longer valid",
+      });
+    }
+
+    let totalPrice = 0;
+    for (const item of order.order_items) {
+      const product = await Product.findById(item.productId._id);
+      if (!product || product.isDeleted) {
+        throw new Error(`Product ${item.product_name} is no longer available`);
+      }
+      const variant = product.variants.find((v) => v.size === item.size);
+      if (!variant) {
+        throw new Error(`Size ${item.size} not available for ${product.name}`);
+      }
+      if (variant.variantQuantity < item.quantity) {
+        throw new Error(
+          `Insufficient stock for ${product.name} (Size: ${item.size})`
+        );
+      }
+      totalPrice += variant.salePrice * item.quantity;
+    }
+
+    const deliveryCharge = totalPrice > 8000 ? 0 : 200;
+    const grandTotal = totalPrice + deliveryCharge;
+
+    const orderNumber = `ORD${Date.now().toString().slice(-6)}`;
+
     const newOrder = new Order({
       userId,
       paymentMethod: order.paymentMethod,
       orderDate: new Date(),
       status: "Pending",
-      address: order.address,
-      total: order.total,
+      address: selectedAddress._id,
+      total: grandTotal,
       order_items: [],
-      orderNumber: `ORD${Date.now().toString().slice(-6)}`,
+      orderNumber,
     });
 
     await newOrder.save();
+    newOrderId = newOrder._id;
 
     const orderItems = [];
     for (const item of order.order_items) {
-      const product = await Product.findById(item.productId);
-
-      const variant = product.variants.find((v) => v.size === item.size);
-      if (!product || !variant || variant.variantQuantity < item.quantity) {
-        console.error(`reOrder: Insufficient stock for ${item.product_name}`);
-        throw new Error(`Insufficient stock for ${item.product_name}`);
+      const product = await Product.findById(item.productId._id);
+      const variantIndex = product.variants.findIndex(
+        (v) => v.size === item.size
+      );
+      if (variantIndex === -1) {
+        throw new Error(`Variant not found for size ${item.size}`);
       }
 
+      const variant = product.variants[variantIndex];
+
       const orderItem = new OrderItem({
-        product_name: item.product_name,
-        productId: item.productId,
+        product_name: product.name,
+        productId: product._id,
         orderId: newOrder._id,
         size: item.size,
-        price: item.price,
+        price: variant.salePrice,
         quantity: item.quantity,
-        total_amount: item.total_amount,
+        total_amount: variant.salePrice * item.quantity,
       });
 
       await orderItem.save();
       orderItems.push(orderItem._id);
 
-      const variantIndex = product.variants.findIndex(
-        (v) => v.size === item.size
-      );
       product.variants[variantIndex].variantQuantity -= item.quantity;
+      if (product.variants[variantIndex].variantQuantity < 0) {
+        throw new Error(
+          `Stock update failed for ${product.name} (Size: ${item.size})`
+        );
+      }
       await product.save();
     }
 
     newOrder.order_items = orderItems;
     await newOrder.save();
+
+    req.session.checkout = { addressId: selectedAddress._id.toString() };
 
     return res.status(200).json({
       success: true,
@@ -533,12 +599,31 @@ const reOrder = async (req, res) => {
     });
   } catch (error) {
     console.error("reOrder Error:", error.message, error.stack);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Internal server error while reordering",
-      });
+
+    if (newOrderId) {
+      const order = await Order.findById(newOrderId).populate("order_items");
+      if (order) {
+        for (const item of order.order_items) {
+          const product = await Product.findById(item.productId);
+          if (product) {
+            const variantIndex = product.variants.findIndex(
+              (v) => v.size === item.size
+            );
+            if (variantIndex !== -1) {
+              product.variants[variantIndex].variantQuantity += item.quantity;
+              await product.save();
+            }
+          }
+        }
+        await Order.findByIdAndDelete(newOrderId);
+        await OrderItem.deleteMany({ orderId: newOrderId });
+      }
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: error.message || "Failed to reorder",
+    });
   }
 };
 
@@ -575,6 +660,8 @@ const getOrderDetails = async (req, res) => {
       );
       return res.redirect("/page-not-found");
     }
+
+
 
     const user = await User.findById(userId);
 
@@ -615,33 +702,210 @@ const downloadInvoice = async (req, res) => {
       throw new Error("Order not found");
     }
 
-    const doc = new PDFDocument();
+    const doc = new PDFDocument({
+      margin: 50,
+      size: "A4",
+      info: {
+        Title: `Invoice ORD${order.orderNumber}`,
+        Author: "Elite Wear",
+        Subject: "Customer Invoice",
+        Creator: "Elite Wear Billing System",
+      },
+    });
+
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename=invoice-${order.orderNumber}.pdf`
+      `attachment; filename=invoice-ORD${order.orderNumber}.pdf`
     );
     doc.pipe(res);
 
-    doc.fontSize(20).text("Invoice", { align: "center" });
-    doc.moveDown();
-    doc.fontSize(12).text(`Order #${order.orderNumber}`);
-    doc.text(`Order Date: ${order.orderDate.toLocaleDateString()}`);
-    doc.text(`Customer: ${order.address.name}`);
-    doc.moveDown();
-
-    doc.text("Items:", { underline: true });
-    order.order_items.forEach((item) => {
-      doc.text(
-        `${item.product_name} (Size: ${item.size}) - ₹${item.price} x ${item.quantity} = ₹${item.total_amount}`
-      );
+    // Company Header
+    doc.registerFont('Helvetica-Bold', 'Helvetica-Bold');
+    doc.registerFont('Helvetica', 'Helvetica');
+    
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(24)
+      .fillColor('#2c3e50')
+      .text("ELITE WEAR", 50, 50);
+    
+    doc
+      .font('Helvetica')
+      .fontSize(10)
+      .fillColor('#34495e');
+    
+    const companyInfo = [
+      "123 Fashion Avenue",
+      "New York, NY 10001",
+      "Phone: (111) 123-1234",
+      "Email: billing@elitewear.com",
+      "Website: www.elitewear.com"
+    ];
+    
+    let yPos = 80;
+    companyInfo.forEach(line => {
+      doc.text(line, 50, yPos);
+      yPos += 15;
     });
 
-    doc.moveDown();
-    const subtotal = order.total - (order.total > 8000 ? 0 : 200);
-    doc.text(`Subtotal: ₹${subtotal.toFixed(2)}`);
-    doc.text(`Delivery Charge: ₹${order.total > 8000 ? 0 : 200}`);
-    doc.text(`Grand Total: ₹${order.total.toFixed(2)}`, { bold: true });
+    // Invoice Details
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(14)
+      .fillColor('#2c3e50')
+      .text("INVOICE", 400, 50);
+    
+    const invoiceDetails = [
+      { label: "Invoice #", value: `ORD${order.orderNumber}` },
+      { 
+        label: "Date", 
+        value: new Date().toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })
+      },
+      { label: "Due Date", value: new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString("en-US") }
+    ];
+    
+    yPos = 80;
+    invoiceDetails.forEach(detail => {
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(10)
+        .text(detail.label, 400, yPos);
+      doc
+        .font('Helvetica')
+        .text(detail.value, 450, yPos);
+      yPos += 15;
+    });
+
+    // Customer Information
+    const customerAddress = order.address || {};
+    const addressLines = [
+      customerAddress.name || "Customer Name",
+      customerAddress.street || "Street Address",
+      `${customerAddress.city || "City"}, ${customerAddress.state || "State"} ${customerAddress.zip || "ZIP"}`,
+      customerAddress.country || "Country",
+      customerAddress.phone || ""
+    ].filter(line => line);
+
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(12)
+      .fillColor('#2c3e50')
+      .text("Bill To:", 50, 160);
+    
+    yPos = 180;
+    doc.font('Helvetica').fontSize(10);
+    addressLines.forEach(line => {
+      doc.text(line, 50, yPos);
+      yPos += 15;
+    });
+
+    // Items Table Header
+    const tableTop = 260;
+    doc
+      .rect(50, tableTop, 500, 25)
+      .fill('#f1f3f5');
+    
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(10)
+      .fillColor('#2c3e50');
+    
+    const headers = [
+      { text: "Item Description", x: 55, width: 280 },
+      { text: "Quantity", x: 335, width: 60 },
+      { text: "Unit Price", x: 395, width: 60 },
+      { text: "Total", x: 455, width: 90 }
+    ];
+    
+    headers.forEach(header => {
+      doc.text(header.text, header.x, tableTop + 8, { 
+        width: header.width,
+        align: header.text === "Total" ? "right" : "left"
+      });
+    });
+
+    // Items Table Content
+    yPos = tableTop + 35;
+    let subtotal = 0;
+    
+    doc.font('Helvetica').fillColor('#34495e');
+    
+    const items = [
+      { description: "Solid Merino Wool Shirt (Size: S)", quantity: 1, price: 16770.00 },
+      { description: "Solid Signature Twill Shirt (Size: S)", quantity: 1, price: 15727.00 }
+    ];
+    
+    items.forEach(item => {
+      const itemTotal = item.price * item.quantity;
+      subtotal += itemTotal;
+      
+      const row = [
+        { text: item.description, x: 55, width: 280 },
+        { text: item.quantity.toString(), x: 335, width: 60 },
+        { text: `₹${item.price.toFixed(2)}`, x: 395, width: 60 },
+        { text: `₹${itemTotal.toFixed(2)}`, x: 455, width: 90 }
+      ];
+      
+      row.forEach(cell => {
+        doc.text(cell.text, cell.x, yPos, { 
+          width: cell.width,
+          align: cell.x === 455 ? "right" : "left"
+        });
+      });
+      
+      yPos += 20;
+      doc
+        .moveTo(50, yPos - 5)
+        .lineTo(550, yPos - 5)
+        .strokeColor('#ececec')
+        .stroke();
+    });
+
+    // Totals
+    const grandTotal = subtotal;
+    
+    const totals = [
+      { label: "Subtotal", value: subtotal.toFixed(2), bold: true }
+    ];
+    
+    yPos += 20;
+    totals.forEach(total => {
+      doc
+        .font(total.bold ? 'Helvetica-Bold' : 'Helvetica')
+        .text(total.label, 400, yPos);
+      doc.text(`₹${total.value}`, 455, yPos, { width: 90, align: "right" });
+      yPos += 15;
+    });
+
+    // Footer
+    doc
+      .rect(0, doc.page.height - 80, doc.page.width, 80)
+      .fill('#2c3e50');
+    
+    doc
+      .font('Helvetica')
+      .fontSize(9)
+      .fillColor('#ffffff')
+      .text(
+        "Thank you for shopping with Elite Wear! For any questions regarding your order, please contact our customer service at billing@elitewear.com",
+        50,
+        doc.page.height - 65,
+        { width: 500, align: "center" }
+      );
+    
+    doc
+      .fontSize(8)
+      .text(
+        "Terms: Payment due within 30 days. Make checks payable to Elite Wear.",
+        50,
+        doc.page.height - 40,
+        { width: 500, align: "center" }
+      );
 
     doc.end();
   } catch (error) {
@@ -684,6 +948,7 @@ const trackOrder = async (req, res) => {
       );
       return res.redirect("/page-not-found");
     }
+
 
     const getProgressWidth = (status) => {
       const steps = [

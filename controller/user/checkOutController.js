@@ -2,6 +2,7 @@ const cart = require("../../model/cartScheema");
 const product = require("../../model/productScheema");
 const User = require("../../model/userSchema");
 const address = require("../../model/AddressScheema");
+const Category = require("../../model/categoryScheema")
 const mongoose = require("mongoose");
 
 const loadcheckOut = async (req, res) => {
@@ -30,6 +31,37 @@ const loadcheckOut = async (req, res) => {
     if (!userCart || !userCart.items.length) {
       return res.status(400).json({ success: false, message: "Cart is empty" });
     }
+
+    const validItems = [];
+    for (const item of userCart.items) {
+      const product = item.productId;
+      if (!product) {
+        continue; 
+      }
+
+     
+      if (!product.isActive) {
+        continue;
+      }
+
+      
+      const category = await Category.findById(product.categoryId);
+      if (!category || !category.isListed) {
+        continue; 
+      }
+
+      validItems.push(item);
+    }
+
+
+    userCart.items = validItems;
+    await userCart.save();
+
+   if (!userCart.items.length) {
+  req.flash("warning", "Some items were removed from your cart. Please shop again.");
+  return res.redirect("/");
+}
+
 
     const userAddresses = await address.find({ userId });
 
@@ -73,7 +105,7 @@ const selectDeliveryAddress = async (req, res) => {
         .json({ success: false, message: "Invalid address" });
     }
 
-    // Store the selected address ID in the session
+  
     req.session.checkout = { addressId };
 
     return res.status(200).json({ success: true, message: "Address selected" });
@@ -90,11 +122,44 @@ const loadCheckoutPayment = async (req, res) => {
       return res.redirect("/login");
     }
 
+    // Fetch the user's cart and populate product details
     const userCart = await cart.findOne({ userId }).populate("items.productId");
     if (!userCart || !userCart.items.length) {
-      return res.redirect("/cart");
+      req.flash("warning", "Your cart is empty. Please shop again.");
+      return res.redirect("/");
     }
 
+    // Validate cart items
+    const validItems = [];
+    for (const item of userCart.items) {
+      const product = item.productId;
+      if (!product) {
+        continue; // Skip if product is not found
+      }
+
+      if (!product.isActive) {
+        continue; // Skip blocked products
+      }
+
+      const category = await Category.findById(product.categoryId);
+      if (!category || !category.isListed) {
+        continue; // Skip products from unlisted categories
+      }
+
+      validItems.push(item);
+    }
+
+    // Update cart with valid items
+    userCart.items = validItems;
+    await userCart.save();
+
+    // If no valid items remain, redirect to home
+    if (!userCart.items.length) {
+      req.flash("warning", "Some items were removed from your cart. Please shop again.");
+      return res.redirect("/");
+    }
+
+    
     const cartItems = userCart.items;
     const totalPrice = cartItems.reduce((total, item) => {
       const productPrice = item.productId.variants?.[0]?.salePrice || 0;
@@ -104,6 +169,7 @@ const loadCheckoutPayment = async (req, res) => {
     const deliveryCharge = totalPrice > 8000 ? 0 : 200;
     const grandTotal = totalPrice + deliveryCharge;
 
+    
     res.render("checkoutPayment", {
       cartItems,
       totalPrice,

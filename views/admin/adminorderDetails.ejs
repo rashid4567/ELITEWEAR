@@ -7,7 +7,255 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/adminStyle/adminOrderdetails.css">
-    
+    <style>
+        /* Custom Modal Styles */
+        .custom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .custom-modal .modal-content {
+            background-color: #fff;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+            padding: 1.5rem;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+            text-align: center;
+        }
+        
+        .custom-modal.show .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 24px;
+            color: #888;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            transition: color 0.2s ease;
+        }
+        
+        .modal-close:hover {
+            color: #333;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .modal-message {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            color: #555;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .btn-modal-cancel {
+            background-color: #f8f9fa;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 0.5rem 1.25rem;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-modal-cancel:hover {
+            background-color: #e9ecef;
+        }
+        
+        .btn-modal-confirm {
+            background-color: #212529;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-modal-confirm:hover {
+            background-color: #000;
+        }
+        
+        /* Badge status colors */
+        .badge-pending {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .badge-processing {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+        
+        .badge-confirmed {
+            background-color: #28a745;
+            color: #fff;
+        }
+        
+        .badge-shipped {
+            background-color: #007bff;
+            color: #fff;
+        }
+        
+        .badge-delivered {
+            background-color: #20c997;
+            color: #fff;
+        }
+        
+        .badge-cancelled {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        
+        .badge-return-requested {
+            background-color: #6c757d;
+            color: #fff;
+        }
+        
+        /* Order status tracker styles */
+        .order-status-tracker {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .status-line {
+            position: absolute;
+            left: 15px;
+            top: 40px;
+            bottom: 40px;
+            width: 2px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+        
+        .status-step {
+            display: flex;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .status-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            background-color: #f8f9fa;
+            border: 2px solid #e9ecef;
+            color: #adb5bd;
+        }
+        
+        .status-icon.completed {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+        
+        .status-icon.current {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+        
+        .status-content {
+            flex: 1;
+        }
+        
+        .status-title {
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+        }
+        
+        .status-date {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-bottom: 0;
+        }
+        
+        /* Order info styles */
+        .order-info-item {
+            display: flex;
+            margin-bottom: 0.75rem;
+        }
+        
+        .order-info-label {
+            width: 40%;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .order-info-value {
+            width: 60%;
+            font-weight: 400;
+        }
+        
+        /* Table styles */
+        .order-list-table img {
+            border-radius: 4px;
+            object-fit: cover;
+        }
+        
+        /* Button styles */
+        .btn-go-back {
+            border-radius: 4px;
+            padding: 0.5rem 1.25rem;
+        }
+        
+        .btn-cancel {
+            border-radius: 4px;
+            padding: 0.5rem 1.25rem;
+        }
+        
+        /* Status select */
+        .status-select {
+            height: 32px;
+            padding: 0 0.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
 </head>
 <body>
     <%- include("../partials/admin/header") %>
@@ -23,9 +271,9 @@
                     </ol>
                 </nav>
             </div>
-            <button class="btn btn-dark rounded" onclick="downloadInvoice('<%= order.orderId %>')">
+            <!-- <button class="btn btn-dark rounded" onclick="downloadInvoice('<%= order._id %>')">
                 <i class="fa-solid fa-file-invoice me-2"></i>Invoice
-            </button>
+            </button> -->
         </div>
 
         <div class="row">
@@ -116,7 +364,7 @@
                                 <thead>
                                     <tr>
                                         <th>Product</th>
-                                        <th>SKU</th>
+                                        <th>ORDER ID</th>
                                         <th>QTY</th>
                                         <th>Price</th>
                                         <th>Total</th>
@@ -184,8 +432,8 @@
                                 <option value="Confirmed" <%= order.status === 'Confirmed' ? 'selected' : '' %>>Confirmed</option>
                                 <option value="Shipped" <%= order.status === 'Shipped' ? 'selected' : '' %>>Shipped</option>
                                 <option value="Delivered" <%= order.status === 'Delivered' ? 'selected' : '' %>>Delivered</option>
-                                <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
-                                <option value="Return Requested" <%= order.status === 'Return Requested' ? 'selected' : '' %>>Return Requested</option>
+                                <option value="Cancelled" <%= order.status === 'Cancelled' ? 'selected' : '' %>>Cancelle the Order</option>
+                                <!-- <option value="Return Requested" <%= order.status === 'Return Requested' ? 'selected' : '' %>>Return Requested</option> -->
                             </select>
                         <% } else { %>
                             <span class="badge badge-cancelled">Cancelled</span>
@@ -231,6 +479,7 @@
         </div>
     </div>
 
+
     <div class="toast-container position-fixed top-0 end-0 p-3">
         <div id="orderToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
             <div class="toast-header">
@@ -242,22 +491,66 @@
         </div>
     </div>
 
+
+    <div class="custom-modal" id="confirmModal">
+        <div class="modal-content">
+            <button type="button" class="modal-close" onclick="closeConfirmModal()">×</button>
+            <h2 class="modal-title">ARE YOU SURE!!</h2>
+            <p class="modal-message" id="confirmMessage">Do you want to Cancel the order?</p>
+            <div class="modal-buttons">
+                <button class="btn btn-modal-cancel" onclick="closeConfirmModal()">Cancel</button>
+                <button class="btn btn-modal-confirm" onclick="confirmAction()">Yes, cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        function showToast(message, isSuccess = true) {
-            const toastEl = document.getElementById("orderToast");
-            const toastBody = toastEl.querySelector(".toast-body");
-            toastBody.innerHTML = `<i class="fas ${isSuccess ? 'fa-check-circle text-success' : 'fa-exclamation-triangle text-danger'} me-2"></i>${message}`;
-            const toast = new bootstrap.Toast(toastEl);
-            toast.show();
-        }
 
-        function updateOrderStatus(orderId, status) {
-            if (!confirm(`Are you sure you want to change the status to ${status}?`)) {
-                return;
+        let currentOrderId = null;
+        let currentStatus = null;
+
+        function showConfirmModal(orderId, status) {
+            currentOrderId = orderId;
+            currentStatus = status;
+            
+      
+            const confirmMessage = document.getElementById('confirmMessage');
+            if (status === 'Cancelled') {
+                confirmMessage.textContent = "Do you want to Cancel the order?";
+                document.querySelector('.btn-modal-confirm').textContent = "Yes, cancel";
+            } else {
+                confirmMessage.textContent = `Do you want to change the status to ${status}?`;
+                document.querySelector('.btn-modal-confirm').textContent = "Yes, confirm";
             }
-
-          fetch("/admin/orders/update-status", {
+            
+            document.getElementById('confirmModal').classList.add('show');
+        }
+        
+ 
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('show');
+            currentOrderId = null;
+            currentStatus = null;
+        }
+        
+      
+        function confirmAction() {
+            if (currentOrderId && currentStatus) {
+  
+                updateOrderStatusInternal(currentOrderId, currentStatus);
+            }
+            closeConfirmModal();
+        }
+        
+ 
+        function updateOrderStatus(orderId, status) {
+            showConfirmModal(orderId, status);
+        }
+        
+   
+        function updateOrderStatusInternal(orderId, status) {
+            fetch("/admin/orders/update-status", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -265,11 +558,9 @@
                 body: JSON.stringify({ orderId, status }),
             })
                 .then((res) => {
-                   
                     return res.json();
                 })
                 .then((data) => {
-                   
                     if (data.success) {
                         showToast("Order status updated successfully");
                         setTimeout(() => location.reload(), 1000);
@@ -282,7 +573,15 @@
                     showToast("Error updating status", false);
                 });
         }
-
+        
+        function showToast(message, isSuccess = true) {
+            const toastEl = document.getElementById("orderToast");
+            const toastBody = toastEl.querySelector(".toast-body");
+            toastBody.innerHTML = `<i class="fas ${isSuccess ? 'fa-check-circle text-success' : 'fa-exclamation-triangle text-danger'} me-2"></i>${message}`;
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+        
         document.addEventListener("DOMContentLoaded", function () {
             const statusSelect = document.querySelector(".status-select");
             if (statusSelect) {
@@ -293,10 +592,37 @@
                 });
             }
         });
-
+        
         function downloadInvoice(orderId) {
-            showToast("Invoice download not implemented yet", false);
-        }
+  fetch(`/admin/invoices/${orderId}`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/pdf",
+    },
+  })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(err => {
+          throw new Error(err.error || "Failed to download invoice");
+        });
+      }
+      return response.blob();
+    })
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `invoice-${orderId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    })
+    .catch(err => {
+      console.error("Error downloading invoice:", err);
+      showToast(err.message, false);
+    });
+}
     </script>
 </body>
 </html>
