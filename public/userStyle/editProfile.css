@@ -421,7 +421,11 @@ textarea.form-control {
     font-size: 1rem;
     color: #333;
 }
-
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-color: #bee5eb;
+  }
 .custom-alert-button {
     display: block;
     width: 100%;

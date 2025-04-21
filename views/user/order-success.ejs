@@ -17,29 +17,7 @@
         rel="stylesheet"
     />
     <link rel="stylesheet" href="/userStyle/orderSuccess.css" />
-    <style>
-        .order-content { padding: 50px 0; min-height: 80vh; }
-        .success-card { border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; background: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
-        .success-icon { font-size: 2rem; color: #28a745; background: #e8f5e9; border-radius: 50%; padding: 10px; }
-        .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #f1f1f1; transition: all 0.3s; }
-        .detail-row:hover { background: #f8f9fa; }
-        .btn-view, .btn-continue { transition: all 0.3s; }
-        .btn-view:hover, .btn-continue:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); }
-        .order-illustration img { max-width: 300px; }
-        .confetti {
-            position: fixed;
-            top: -10px;
-            animation: fall linear forwards;
-            z-index: 1000;
-        }
-        @keyframes fall {
-            to {
-                transform: translateY(100vh) rotate(720deg);
-                opacity: 0;
-            }
-        }
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1050; }
-    </style>
+   
 </head>
 <body>
     <%- include("../partials/user/header") %>

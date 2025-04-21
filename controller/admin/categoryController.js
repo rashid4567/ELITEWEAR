@@ -47,6 +47,7 @@ const addCategory = async (req, res) => {
             name: { $regex: new RegExp(`^${trimmedName}$`, 'i') }
         });
 
+
         if (existingCategory) {
             return res.status(400).json({
                 success: false,

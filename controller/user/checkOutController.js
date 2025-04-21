@@ -2,30 +2,11 @@ const cart = require("../../model/cartScheema");
 const product = require("../../model/productScheema");
 const User = require("../../model/userSchema");
 const address = require("../../model/AddressScheema");
-const Category = require("../../model/categoryScheema")
-const mongoose = require("mongoose");
+const Category = require("../../model/categoryScheema");
 
 const loadcheckOut = async (req, res) => {
   try {
-    let userId;
-    if (req.user && req.user._id) {
-      userId = req.user._id;
-    } else if (req.session.user) {
-      userId =
-        typeof req.session.user === "string" ||
-        req.session.user instanceof mongoose.Types.ObjectId
-          ? req.session.user
-          : req.session.user._id;
-    } else {
-      return res.status(401).json({ success: false, message: "Please log in" });
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res
-        .status(401)
-        .json({ success: false, message: "User not found" });
-    }
+    const userId = req.user._id;
 
     const userCart = await cart.findOne({ userId }).populate("items.productId");
     if (!userCart || !userCart.items.length) {
@@ -35,33 +16,28 @@ const loadcheckOut = async (req, res) => {
     const validItems = [];
     for (const item of userCart.items) {
       const product = item.productId;
-      if (!product) {
-        continue; 
-      }
-
-     
-      if (!product.isActive) {
+      if (!product || !product.isActive) {
         continue;
       }
 
-      
       const category = await Category.findById(product.categoryId);
       if (!category || !category.isListed) {
-        continue; 
+        continue;
       }
 
       validItems.push(item);
     }
 
-
     userCart.items = validItems;
     await userCart.save();
 
-   if (!userCart.items.length) {
-  req.flash("warning", "Some items were removed from your cart. Please shop again.");
-  return res.redirect("/");
-}
-
+    if (!userCart.items.length) {
+      req.flash(
+        "warning",
+        "Some items were removed from your cart. Please shop again."
+      );
+      return res.redirect("/");
+    }
 
     const userAddresses = await address.find({ userId });
 
@@ -81,7 +57,7 @@ const loadcheckOut = async (req, res) => {
       grandTotal,
       addresses: userAddresses,
       orderNumber: `2406`,
-      user: user,
+      user: req.user,
     });
   } catch (error) {
     console.error("Unable to load the checkout page:", error);
@@ -92,11 +68,7 @@ const loadcheckOut = async (req, res) => {
 const selectDeliveryAddress = async (req, res) => {
   try {
     const { addressId } = req.body;
-    const userId = req.user?.id || req.session.user;
-
-    if (!userId) {
-      return res.status(401).json({ success: false, message: "Please log in" });
-    }
+    const userId = req.user._id; // Guaranteed by UserAuth middleware
 
     const selectedAddress = await address.findOne({ _id: addressId, userId });
     if (!selectedAddress) {
@@ -105,7 +77,6 @@ const selectDeliveryAddress = async (req, res) => {
         .json({ success: false, message: "Invalid address" });
     }
 
-  
     req.session.checkout = { addressId };
 
     return res.status(200).json({ success: true, message: "Address selected" });
@@ -117,49 +88,40 @@ const selectDeliveryAddress = async (req, res) => {
 
 const loadCheckoutPayment = async (req, res) => {
   try {
-    const userId = req.user?.id || req.session.user;
-    if (!userId) {
-      return res.redirect("/login");
-    }
+    const userId = req.user._id; // Guaranteed by UserAuth middleware
 
-    // Fetch the user's cart and populate product details
     const userCart = await cart.findOne({ userId }).populate("items.productId");
     if (!userCart || !userCart.items.length) {
       req.flash("warning", "Your cart is empty. Please shop again.");
       return res.redirect("/");
     }
 
-    // Validate cart items
     const validItems = [];
     for (const item of userCart.items) {
       const product = item.productId;
-      if (!product) {
-        continue; // Skip if product is not found
-      }
-
-      if (!product.isActive) {
-        continue; // Skip blocked products
+      if (!product || !product.isActive) {
+        continue;
       }
 
       const category = await Category.findById(product.categoryId);
       if (!category || !category.isListed) {
-        continue; // Skip products from unlisted categories
+        continue;
       }
 
       validItems.push(item);
     }
 
-    // Update cart with valid items
     userCart.items = validItems;
     await userCart.save();
 
-    // If no valid items remain, redirect to home
     if (!userCart.items.length) {
-      req.flash("warning", "Some items were removed from your cart. Please shop again.");
+      req.flash(
+        "warning",
+        "Some items were removed from your cart. Please shop again."
+      );
       return res.redirect("/");
     }
 
-    
     const cartItems = userCart.items;
     const totalPrice = cartItems.reduce((total, item) => {
       const productPrice = item.productId.variants?.[0]?.salePrice || 0;
@@ -169,13 +131,12 @@ const loadCheckoutPayment = async (req, res) => {
     const deliveryCharge = totalPrice > 8000 ? 0 : 200;
     const grandTotal = totalPrice + deliveryCharge;
 
-    
     res.render("checkoutPayment", {
       cartItems,
       totalPrice,
       deliveryCharge,
       grandTotal,
-      user: await User.findById(userId),
+      user: req.user,
     });
   } catch (error) {
     console.error("Error loading checkout payment page:", error);

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pure Threads - Add Coupon</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="/public/adminStyle/AddandeditCoupons.css">
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Sidebar -->
+            <%- include("../partials/admin/header") %>
+            
+            <!-- Main Content -->
+            <div class="col">
+                <div class="main-content">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Coupons</h5>
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="#" style="text-decoration: none; color: #777;">Dashboard</a></li>
+                                    <li class="breadcrumb-item active" aria-current="page">coupons</li>
+                                </ol>
+                            </nav>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <div class="user-profile d-flex justify-content-end">
+                                <div class="user-info text-end">
+                                    <p class="user-name">Ajmal</p>
+                                    <p class="user-role">Admin</p>
+                                </div>
+                                <img src="/api/placeholder/40/40" alt="User Profile" class="ms-2">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="coupon-form">
+                        <h5 class="form-heading">Add Coupon</h5>
+                        <form id="addCouponForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Coupon Code:</label>
+                                        <input type="text" name="coupencode" class="form-control" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Description:</label>
+                                        <input type="text" name="description" class="form-control">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Limit:</label>
+                                        <input type="number" name="limit" class="form-control" min="1" value="1" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Discount (%):</label>
+                                        <input type="number" name="couponpercent" class="form-control" min="1" max="100" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Start Date:</label>
+                                        <input type="text" name="startingDate" class="form-control datepicker" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Expiry Date:</label>
+                                        <input type="text" name="expiryDate" class="form-control datepicker" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Minimum Purchase (₹):</label>
+                                        <input type="number" name="minimumPurchase" class="form-control" min="0" value="0">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Max Redeemable (₹):</label>
+                                        <input type="number" name="maxRedeemable" class="form-control" min="0" value="0">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 text-end">
+                                    <button type="submit" class="btn-add-coupon btn btn-primary">Add Coupon</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Initialize datepicker
+            $('.datepicker').datepicker({
+                dateFormat: 'yy-mm-dd',
+                minDate: 0 // Prevent past dates
+            });
+
+            // Form submission
+            $('#addCouponForm').submit(async function (e) {
+                e.preventDefault();
+                const formData = {
+                    coupencode: $('input[name="coupencode"]').val().toUpperCase(),
+                    couponpercent: parseInt($('input[name="couponpercent"]').val()),
+                    minimumPurchase: parseInt($('input[name="minimumPurchase"]').val()) || 0,
+                    startingDate: $('input[name="startingDate"]').val(),
+                    expiryDate: $('input[name="expiryDate"]').val(),
+                    description: $('input[name="description"]').val(),
+                    limit: parseInt($('input[name="limit"]').val()) || 1,
+                    maxRedeemable: parseInt($('input[name="maxRedeemable"]').val()) || 0
+                };
+
+                try {
+                    const response = await fetch('/admin/createCoupon', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Coupon added successfully');
+                        window.location.href = '/admin/coupons';
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    console.error('Error adding coupon:', error);
+                    alert('Server error');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

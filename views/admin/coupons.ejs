@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEARiT - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/adminStyle/coupons.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Include sidebar partial -->
+        <%- include("../partials/admin/header") %>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="page-title">
+                    <h1>Coupons</h1>
+                    <div class="breadcrumb">
+                        <span>Dashboard</span>
+                        <i class="fas fa-chevron-right breadcrumb-separator"></i>
+                        <span>coupons</span>
+                    </div>
+                </div>
+                
+                <div class="user-profile">
+                    <div class="profile-info">
+                        <span class="user-name">Abhijith</span>
+                        <span class="user-role">Admin</span>
+                    </div>
+                    <div class="profile-image">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WEARiT-ICKNdKFXCOrFbNFOEQqzgceGbY4QKK.png" alt="Admin Profile">
+                    </div>
+                    <div class="dropdown-icon">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search and Filters -->
+            <div class="search-filter-container">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Search coupon code...">
+                </div>
+                
+                <div class="filter-buttons">
+                    <button class="btn-filter">
+                        <i class="fas fa-sliders-h"></i>
+                        <span>Filters</span>
+                    </button>
+                    <div class="filter-options">
+                        <button class="filter-option active" id="filterAll">ALL</button>
+                        <button class="filter-option" id="filterActive">ACTIVE</button>
+                        <button class="filter-option" id="filterInactive">INACTIVE</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Coupons Table -->
+            <div class="coupons-container">
+                <h2 class="section-title">Available coupons</h2>
+                
+                <div class="table-responsive">
+                    <table class="table coupons-table">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Min purchase</th>
+                                <th>limit</th>
+                                <th>Discount</th>
+                                <th>max redeemable</th>
+                                <th>Active</th>
+                                <th>Expiry Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="couponTableBody">
+                            <!-- This will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Add Coupon Button -->
+            <div class="add-coupon-container">
+                <a href="/admin/addCoupon" class="btn-add-coupon">Add Coupon</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function fetchCoupons(filter = 'ALL') {
+            try {
+                const response = await fetch('/admin/getAllCoupons');
+                const result = await response.json();
+                if (result.success) {
+                    let coupons = result.data;
+                    if (filter === 'ACTIVE') {
+                        coupons = coupons.filter(c => c.isActive);
+                    } else if (filter === 'INACTIVE') {
+                        coupons = coupons.filter(c => !c.isActive);
+                    }
+                    renderCoupons(coupons);
+                } else {
+                    alert('Failed to load coupons');
+                }
+            } catch (error) {
+                console.error('Error fetching coupons:', error);
+                alert('Server error');
+            }
+        }
+
+        function renderCoupons(coupons) {
+            const tbody = document.getElementById('couponTableBody');
+            tbody.innerHTML = '';
+            coupons.forEach(coupon => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${coupon.coupencode}</td>
+                    <td>₹${coupon.minimumPurchase}</td>
+                    <td>${coupon.limit}</td>
+                    <td>${coupon.couponpercent}%</td>
+                    <td>₹${coupon.maxRedeemable}</td>
+                    <td>
+                        <div class="toggle-switch ${coupon.isActive ? 'active' : 'inactive'}">
+                            <div class="toggle-slider" onclick="toggleCouponStatus('${coupon._id}', ${!coupon.isActive})"></div>
+                        </div>
+                    </td>
+                    <td>${new Date(coupon.expiryDate).toLocaleDateString()}</td>
+                    <td class="action-buttons">
+                        <a href="/admin/editCoupon/${coupon._id}" class="btn-edit"><i class="fas fa-edit"></i></a>
+                        <button class="btn-delete" onclick="deleteCoupon('${coupon._id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        async function toggleCouponStatus(id, isActive) {
+            try {
+                const response = await fetch(`/admin/toggleCouponStatus/${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ isActive })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert(`Coupon status updated to ${result.isActive ? 'Active' : 'Inactive'}`);
+                    fetchCoupons();
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error('Error toggling coupon:', error);
+                alert('Server error');
+            }
+        }
+
+        async function deleteCoupon(id) {
+            if (confirm('Are you sure you want to delete this coupon?')) {
+                try {
+                    const response = await fetch(`/admin/deleteCoupon/${id}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Coupon deleted successfully');
+                        fetchCoupons();
+                    } else {
+                        alert(result.message);
+                    }
+                } catch (error) {
+                    console.error('Error deleting coupon:', error);
+                    alert('Server error');
+                }
+            }
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', async (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const response = await fetch('/admin/getAllCoupons');
+            const result = await response.json();
+            if (result.success) {
+                const filteredCoupons = result.data.filter(coupon => 
+                    coupon.coupencode.toLowerCase().includes(searchTerm)
+                );
+                renderCoupons(filteredCoupons);
+            }
+        });
+
+        // Filter buttons functionality
+        document.getElementById('filterAll').addEventListener('click', function() {
+            setActiveFilter(this);
+            fetchCoupons('ALL');
+        });
+        document.getElementById('filterActive').addEventListener('click', function() {
+            setActiveFilter(this);
+            fetchCoupons('ACTIVE');
+        });
+        document.getElementById('filterInactive').addEventListener('click', function() {
+            setActiveFilter(this);
+            fetchCoupons('INACTIVE');
+        });
+
+        function setActiveFilter(element) {
+            // Remove active class from all filter options
+            document.querySelectorAll('.filter-option').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Add active class to clicked button
+            element.classList.add('active');
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchCoupons();
+        });
+    </script>
+</body>
+</html>

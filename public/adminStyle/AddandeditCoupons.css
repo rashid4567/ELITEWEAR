@@ -1,0 +1,203 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+}
+
+.sidebar {
+    background-color: white;
+    height: 100vh;
+    padding: 20px 0;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    position: fixed;
+    width: 150px;
+}
+
+.sidebar .logo {
+    font-weight: bold;
+    font-size: 18px;
+    padding: 0 20px 20px;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 20px;
+}
+
+.sidebar .nav-item {
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.3s;
+    margin-bottom: 5px;
+}
+
+.sidebar .nav-item:hover {
+    background-color: #f0f0f0;
+}
+
+.sidebar .nav-item i {
+    margin-right: 10px;
+    width: 20px;
+}
+
+.sidebar .nav-item.active {
+    background-color: #eef5ff;
+    color: #0d6efd;
+    border-left: 3px solid #0d6efd;
+}
+
+.sidebar .nav-item .arrow {
+    margin-left: auto;
+}
+
+.main-content {
+    margin-left: 150px;
+    padding: 20px;
+}
+
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+.search-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.search-container input {
+    padding-left: 35px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    height: 40px;
+}
+
+.search-container i {
+    position: absolute;
+    left: 10px;
+    top: 12px;
+    color: #999;
+}
+
+.coupon-form {
+    background-color: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.form-control {
+    height: 45px;
+    border: 1px solid #ddd;
+}
+
+.btn-add-coupon {
+    background-color: #000;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    height: 45px;
+}
+
+.active-badge {
+    background-color: #e9ecef;
+    color: #333;
+    padding: 5px 15px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.footer-buttons {
+    position: absolute;
+    bottom: 20px;
+    width: 130px;
+}
+
+.btn-account, .btn-logout {
+    width: 100%;
+    margin-bottom: 5px;
+    border-radius: 5px;
+    text-align: center;
+    padding: 5px;
+}
+
+.btn-account {
+    background-color: white;
+    border: 1px solid #333;
+}
+
+.btn-logout {
+    background-color: black;
+    color: white;
+    border: none;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.user-profile img {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.user-profile .user-info {
+    line-height: 1.2;
+}
+
+.user-profile .user-name {
+    font-weight: 500;
+    margin: 0;
+}
+
+.user-profile .user-role {
+    color: #777;
+    font-size: 12px;
+    margin: 0;
+}
+
+.form-heading {
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+.main-content {
+    padding: 20px;
+}
+.coupon-form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.form-heading {
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+.btn-add-coupon {
+    background-color: #007bff;
+    border: none;
+}
+.btn-add-coupon:hover {
+    background-color: #0056b3;
+}
+.active-badge {
+    background: #28a745;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 12px;
+    display: inline-block;
+}

@@ -4,15 +4,7 @@ const mongoose = require('mongoose');
 
 const address = async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).redirect('/login');
-    }
-
     const user = await User.findById(req.user._id).lean();
-    if (!user) {
-      return res.status(404).redirect('/login');
-    }
-
     const userAddresses = await Address.find({ userId: req.user._id }).lean();
 
     res.render('address', {
@@ -28,9 +20,6 @@ const address = async (req, res) => {
 const getaddAddress = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).lean();
-    if (!user) {
-      return res.status(404).redirect('/login');
-    }
 
     res.render('addressAdding', {
       fullname: user.fullname || 'User',
@@ -43,11 +32,6 @@ const getaddAddress = async (req, res) => {
 
 const addAddress = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized: User not logged in' });
-    }
-
     const { fullname, mobile, address, district, city, state, pincode, landmark, type } = req.body;
 
     if (!fullname || !mobile || !address || !district || !city || !state || !pincode) {
@@ -65,12 +49,11 @@ const addAddress = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid address type' });
     }
 
-  
-    const existingAddresses = await Address.countDocuments({ userId });
+    const existingAddresses = await Address.countDocuments({ userId: req.user._id });
     const isDefault = existingAddresses === 0;
 
     const newAddress = new Address({
-      userId,
+      userId: req.user._id,
       fullname,
       mobile,
       address,
@@ -102,17 +85,12 @@ const addAddress = async (req, res) => {
 
 const geteditAddress = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).redirect('/login');
-    }
-
     const addressId = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(addressId)) {
       return res.status(400).redirect('/address');
     }
 
-    const address = await Address.findOne({ _id: addressId, userId }).lean();
+    const address = await Address.findOne({ _id: addressId, userId: req.user._id }).lean();
     if (!address) {
       return res.status(404).redirect('/address');
     }
@@ -124,32 +102,20 @@ const geteditAddress = async (req, res) => {
   }
 };
 
-
-
 const updateAddress = async (req, res) => {
   try {
-  
-    const userId = req.session?.user?._id;
-    if (!userId) {
-      return res.status(401).json({ success: false, message: 'User not logged in' });
-    }
-
-    
     const addressId = req.params.id;
-    if (!addressId || !mongoose.Types.ObjectId.isValid(addressId)) {
-      return res.status(400).json({ success: false, message: 'Invalid or missing address ID' });
+    if (!mongoose.Types.ObjectId.isValid(addressId)) {
+      return res.status(400).json({ success: false, message: 'Invalid address ID' });
     }
 
-    
     const { fullname, mobile, address, district, city, state, pincode, landmark, type } = req.body;
 
-    
-    const existingAddress = await Address.findOne({ _id: addressId, userId });
+    const existingAddress = await Address.findOne({ _id: addressId, userId: req.user._id });
     if (!existingAddress) {
       return res.status(404).json({ success: false, message: 'Address not found or unauthorized' });
     }
 
-  
     const typeMap = {
       home: 'Home',
       work: 'Office',
@@ -157,7 +123,6 @@ const updateAddress = async (req, res) => {
       other: 'Other',
     };
     const normalizedType = typeMap[type?.toLowerCase()] || 'Home';
-
 
     const hasChanges =
       existingAddress.fullname !== fullname ||
@@ -174,9 +139,8 @@ const updateAddress = async (req, res) => {
       return res.status(200).json({ success: false, message: 'No changes made' });
     }
 
-    
     const updatedAddress = await Address.findOneAndUpdate(
-      { _id: addressId, userId },
+      { _id: addressId, userId: req.user._id },
       {
         fullname,
         mobile,
@@ -210,20 +174,14 @@ const updateAddress = async (req, res) => {
   }
 };
 
-module.exports = { updateAddress };
 const removeAddress = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized: User not logged in' });
-    }
-
     const addressId = req.params.id;
-    if (!addressId || !mongoose.Types.ObjectId.isValid(addressId)) {
-      return res.status(400).json({ success: false, message: 'Invalid or missing address ID' });
+    if (!mongoose.Types.ObjectId.isValid(addressId)) {
+      return res.status(400).json({ success: false, message: 'Invalid address ID' });
     }
 
-    const deletedAddress = await Address.findOneAndDelete({ _id: addressId, userId });
+    const deletedAddress = await Address.findOneAndDelete({ _id: addressId, userId: req.user._id });
 
     if (!deletedAddress) {
       return res.status(404).json({ success: false, message: 'Address not found or unauthorized' });
@@ -245,22 +203,15 @@ const removeAddress = async (req, res) => {
 
 const setDefaultAddress = async (req, res) => {
   try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized: User not logged in' });
-    }
-
     const addressId = req.params.id;
-    if (!addressId || !mongoose.Types.ObjectId.isValid(addressId)) {
-      return res.status(400).json({ success: false, message: 'Invalid or missing address ID' });
+    if (!mongoose.Types.ObjectId.isValid(addressId)) {
+      return res.status(400).json({ success: false, message: 'Invalid address ID' });
     }
 
-    // Reset all addresses to non-default for the user
-    await Address.updateMany({ userId }, { isDefault: false });
+    await Address.updateMany({ userId: req.user._id }, { isDefault: false });
 
-    // Set the selected address as default
     const updatedAddress = await Address.findOneAndUpdate(
-      { _id: addressId, userId },
+      { _id: addressId, userId: req.user._id },
       { isDefault: true },
       { new: true }
     );

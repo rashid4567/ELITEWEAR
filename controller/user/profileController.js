@@ -2,9 +2,7 @@ const { sendOtpEmail } = require("../../config/mailer");
 const bcrypt = require("bcrypt");
 const User = require("../../model/userSchema");
 const crypto = require("crypto");
-const mongoose = require("mongoose")
 const validator = require("validator");
-
 
 const OTP_EXPIRY_MINUTES = 10;
 const OTP_LENGTH = 5;
@@ -81,7 +79,9 @@ const forgotemailValidations = async (req, res) => {
     }
   } catch (error) {
     console.error("Error in email validation:", error);
-    res.status(500).json({ success: false, message: "An error occurred, please try again" });
+    res
+      .status(500)
+      .json({ success: false, message: "An error occurred, please try again" });
   }
 };
 
@@ -117,7 +117,9 @@ const passForgotten = async (req, res) => {
     }
   } catch (error) {
     console.error("[passForgotten] Error in OTP validation:", error);
-    res.status(500).json({ success: false, message: "An error occurred, please try again" });
+    res
+      .status(500)
+      .json({ success: false, message: "An error occurred, please try again" });
   }
 };
 
@@ -147,7 +149,9 @@ const resetPassword = async (req, res) => {
     }
 
     if (newPassword !== confirmPassword) {
-      return res.status(400).json({ success: false, message: "Passwords do not match" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Passwords do not match" });
     }
 
     if (!newPassword || newPassword.length < 8) {
@@ -160,7 +164,9 @@ const resetPassword = async (req, res) => {
     const hashedPassword = await securePassword(newPassword);
     const findUser = await User.findOne({ email: email });
     if (!findUser) {
-      return res.status(400).json({ success: false, message: "User not found. Please try again." });
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found. Please try again." });
     }
 
     const updateResult = await User.updateOne(
@@ -180,7 +186,9 @@ const resetPassword = async (req, res) => {
     return res.json({ success: true, message: "Password reset successfully" });
   } catch (error) {
     console.error("Error resetting password:", error);
-    res.status(500).json({ success: false, message: "An error occurred, please try again" });
+    res
+      .status(500)
+      .json({ success: false, message: "An error occurred, please try again" });
   }
 };
 
@@ -200,7 +208,9 @@ const resendForgotOtp = async (req, res) => {
 
     const emailSent = await sendOtpEmail(email, otp);
     if (emailSent.success) {
-      return res.status(200).json({ success: true, message: "OTP resent successfully" });
+      return res
+        .status(200)
+        .json({ success: true, message: "OTP resent successfully" });
     } else {
       return res.status(500).json({
         success: false,
@@ -218,85 +228,71 @@ const resendForgotOtp = async (req, res) => {
 
 const loadProfile = async (req, res) => {
   try {
-   
-    if (!req.session.user?.email) {
-    
-      return res.redirect('/login');
-    }
-    const user = await User.findOne({ email: req.session.user.email });
-    if (!user) {
-     
-      return res.redirect('/login');
-    }
-   
-    res.render('profile', {
-      email: user.email,
-      fullname: user.fullname,
-      mobile: user.mobile,
+    // req.user is guaranteed by UserAuth middleware
+    res.render("profile", {
+      email: req.user.email || "N/A",
+      fullname: req.user.fullname || "Unknown",
+      mobile: req.user.mobile || "N/A",
     });
   } catch (error) {
-    console.error('Error in loadProfile:', error);
-    res.redirect('/page-not-found');
+    console.error("Error in loadProfile:", error);
+    res.redirect("/page-not-found");
   }
 };
+
 const loadProfileEdit = async (req, res) => {
   try {
-    if (!req.session || !req.session.user) {
-      return res.redirect("/login");
-    }
-
-    const { fullname, email, mobile } = req.session.user;
-
-    if (!fullname || !email) {
-      return res.redirect("/login");
-    }
-
-    return res.render("profileEdittor", {
-      fullname: fullname || "Unknown user",
-      email: email || "",
-      mobile: mobile || "",
+    // req.user is guaranteed by UserAuth middleware
+    res.render("profileEdittor", {
+      fullname: req.user.fullname || "Unknown",
+      email: req.user.email || "N/A",
+      mobile: req.user.mobile || "N/A",
     });
   } catch (error) {
     console.error("Error in loadProfileEdit function:", error);
-    return res.redirect("/page-404/");
+    res.redirect("/page-404/");
   }
 };
 
 const sendemilUpdateOtp = async (req, res) => {
   try {
     const { newEmail } = req.body;
-    const currentEmail = req.session.user?.email;
-
-  
+    // req.user is guaranteed by UserAuth middleware
 
     if (!newEmail) {
-    
-      return res.status(400).json({ success: false, message: "New email is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "New email is required" });
     }
 
-    if (!currentEmail) {
-   
-      return res.status(400).json({ success: false, message: "User session invalid" });
+    if (newEmail === req.user.email) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "New email must be different from the current email",
+        });
     }
 
-    if (newEmail === currentEmail) {
-   
-      return res.status(400).json({ success: false, message: "New email must be different from the current email" });
-    }
-
-   
     try {
       validateEmail(newEmail);
     } catch (error) {
-   
-      return res.status(400).json({ success: false, message: `Invalid email format: ${error.message}` });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: `Invalid email format: ${error.message}`,
+        });
     }
 
-  
     const existingUser = await User.findOne({ email: newEmail });
-    if (existingUser && existingUser.email !== currentEmail) {
-  
-      return res.status(400).json({ success: false, message: "This email is already in use by another user" });
+    if (existingUser && existingUser.email !== req.user.email) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "This email is already in use by another user",
+        });
     }
 
     const otp = generateOtp();
@@ -304,140 +300,145 @@ const sendemilUpdateOtp = async (req, res) => {
     req.session.newEmail = newEmail;
     req.session.otpExpires = Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000;
 
-  
-
-   
     const emailSent = await sendOtpEmail(newEmail, otp);
- 
-
     if (emailSent.success) {
-   
-      return res.json({ 
-        success: true, 
-        message: "OTP sent to new email", 
-        redirectUrl: "/verify-email-update-otp" 
+      return res.json({
+        success: true,
+        message: "OTP sent to new email",
+        redirectUrl: "/verify-email-update-otp",
       });
     } else {
-     
-      return res.status(500).json({ success: false, message: `Failed to send OTP: ${emailSent.message}` });
+      return res
+        .status(500)
+        .json({
+          success: false,
+          message: `Failed to send OTP: ${emailSent.message}`,
+        });
     }
   } catch (error) {
-    console.error('Error in sendemilUpdateOtp:', error);
-    return res.status(500).json({ success: false, message: `Server error: ${error.message}` });
+    console.error("Error in sendemilUpdateOtp:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: `Server error: ${error.message}` });
   }
 };
+
 const verifyUpdateOtp = async (req, res) => {
   try {
     const { otp } = req.body;
-  
+    // req.user is guaranteed by UserAuth middleware
 
     if (!otp) {
-  
-      return res.status(400).json({ success: false, message: "OTP is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "OTP is required" });
     }
 
- 
-
     if (!req.session.emailUpdateOtp || !req.session.newEmail) {
-      
-      return res.status(400).json({ success: false, message: "No OTP session found. Please request a new OTP." });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "No OTP session found. Please request a new OTP.",
+        });
     }
 
     if (Date.now() > req.session.otpExpires) {
-   
       req.session.emailUpdateOtp = null;
       req.session.newEmail = null;
-      return res.status(400).json({ success: false, message: "OTP expired. Please request a new OTP." });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "OTP expired. Please request a new OTP.",
+        });
     }
 
     if (String(req.session.emailUpdateOtp) === String(otp)) {
-   
       const newEmail = req.session.newEmail;
-    
       const updateResult = await User.updateOne(
-        { email: req.session.user.email },
+        { _id: req.user._id },
         { email: newEmail }
       );
 
-     
-
       if (updateResult.modifiedCount > 0) {
-        req.session.user.email = newEmail;
         req.session.emailUpdateOtp = null;
         req.session.newEmail = null;
-      
-        return res.json({ 
-          success: true, 
-          message: "Email updated successfully", 
-          redirectUrl: "/LoadProfile" 
+        return res.json({
+          success: true,
+          message: "Email updated successfully",
+          redirectUrl: "/LoadProfile",
         });
       }
-    
-      return res.status(400).json({ success: false, message: "Email update failed" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Email update failed" });
     }
 
-  
     return res.status(400).json({ success: false, message: "Invalid OTP" });
   } catch (error) {
-    console.error('Error in verifyUpdateOtp:', error);
-    return res.status(500).json({ success: false, message: `Server error: ${error.message}` });
+    console.error("Error in verifyUpdateOtp:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: `Server error: ${error.message}` });
   }
 };
+
 const resendUpdateOtp = async (req, res) => {
   try {
     const email = req.session.newEmail;
-   
+    // req.user is guaranteed by UserAuth middleware
 
     if (!email) {
-    
       return res.status(400).json({
         success: false,
         message: "No valid session. Please try again.",
       });
     }
 
-    
     try {
       validateEmail(email);
     } catch (error) {
-   
-      return res.status(400).json({ success: false, message: `Invalid email format: ${error.message}` });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: `Invalid email format: ${error.message}`,
+        });
     }
 
     const otp = generateOtp();
     req.session.emailUpdateOtp = otp;
     req.session.otpExpires = Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000;
 
- 
-
-  
     const emailSent = await sendOtpEmail(email, otp);
-   
     if (emailSent.success) {
- 
-      return res.status(200).json({ success: true, message: "OTP resent successfully" });
+      return res
+        .status(200)
+        .json({ success: true, message: "OTP resent successfully" });
     } else {
-    
       return res.status(500).json({
         success: false,
         message: `Failed to resend OTP: ${emailSent.message}`,
       });
     }
   } catch (error) {
-    console.error('Error in resendUpdateOtp:', error);
+    console.error("Error in resendUpdateOtp:", error);
     return res.status(500).json({
       success: false,
       message: `Internal server issue: ${error.message}`,
     });
   }
 };
+
 const loadVerifyEmailUpdateOtp = async (req, res) => {
   try {
+    // req.user is guaranteed by UserAuth middleware
     const email = req.session.newEmail || "unknown@email.com";
     if (!req.session.emailUpdateOtp || !req.session.newEmail) {
       return res.redirect("/getprofileEdit");
     }
-    res.render("emailUpdateOtp", { email }); 
+    res.render("emailUpdateOtp", { email });
   } catch (error) {
     console.error("Error loading email update OTP verification page:", error);
     res.redirect("/page-not-found");
@@ -446,27 +447,26 @@ const loadVerifyEmailUpdateOtp = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
+    // req.user is guaranteed by UserAuth middleware
     const { fullname, mobile } = req.body;
-    const currentEmail = req.session.user.email;
-    const currentFullname = req.session.user.fullname;
-    const currentMobile = req.session.user.mobile || null;
+    const currentFullname = req.user.fullname || "Unknown";
+    const currentMobile = req.user.mobile || null;
 
-    
     if (fullname === currentFullname && mobile === currentMobile) {
       return res.json({ success: false, message: "No changes made" });
     }
 
     const updateFields = { fullname, mobile };
-
     const updatedUser = await User.updateOne(
-      { email: currentEmail },
+      { _id: req.user._id },
       updateFields
     );
 
     if (updatedUser.modifiedCount > 0) {
-      req.session.user.fullname = fullname;
-      req.session.user.mobile = mobile;
-      return res.json({ success: true, message: "Profile updated successfully" });
+      return res.json({
+        success: true,
+        message: "Profile updated successfully",
+      });
     }
 
     return res.status(400).json({ success: false, message: "Update failed" });
@@ -475,72 +475,108 @@ const updateProfile = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
-const loadupdatePassword = async (req,res)=>{
+
+const loadupdatePassword = async (req, res) => {
   try {
-    if(!req.session || !req.session.user || !req.session.user._id){
-      return res.redirect("/login")
-    }
-    res.render("passwordChange",{ error: null, success: null })
-  } catch (error){
-   console.error("unable to load the passwordUpdate")
-   res.redirect("/page-404/")
-  }
-}
-const updatePassword = async (req, res) => {
-  try {
-    if (!req.session || !req.session.user || !req.session.user._id) {
-      return res.redirect("/login");
+    // req.user is guaranteed by UserAuth middleware
+    if (req.user.googleId && !req.user.password) {
+      return res.render("passwordChange", {
+        error: "Password change is not available for Google accounts",
+        success: null,
+      });
     }
 
-    const userId = req.session.user._id;
+    res.render("passwordChange", { error: null, success: null });
+  } catch (error) {
+    console.error("Unable to load passwordUpdate:", error);
+    res.redirect("/page-404/");
+  }
+};
+
+const updatePassword = async (req, res) => {
+  try {
+    // req.user is guaranteed by UserAuth middleware
+    if (req.user.googleId && !req.user.password) {
+      return res.render("passwordChange", {
+        error: "Password change is not available for Google accounts",
+        success: null,
+      });
+    }
+
     const { currentPassword, newPassword, confirmPassword } = req.body;
 
     if (!currentPassword || !newPassword || !confirmPassword) {
-      return res.render("passwordChange", { error: "All fields are required", success: null });
+      return res.render("passwordChange", {
+        error: "All fields are required",
+        success: null,
+      });
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.redirect("/login");
+    if (currentPassword === newPassword) {
+      return res.render("passwordChange", {
+        error: "New password cannot be the same as the current password",
+        success: null,
+      });
     }
-if(currentPassword === newPassword){
-  return res.render('passwordChange', {error:"new password and the current password are same", success:null})
-}
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    const isMatch = await bcrypt.compare(currentPassword, req.user.password);
     if (!isMatch) {
-      return res.render("passwordChange", { error: "Current password is incorrect", success: null });
+      return res.render("passwordChange", {
+        error: "Current password is incorrect",
+        success: null,
+      });
     }
 
     if (newPassword !== confirmPassword) {
-      return res.render("passwordChange", { error: "New passwords do not match", success: null });
+      return res.render("passwordChange", {
+        error: "New passwords do not match",
+        success: null,
+      });
     }
 
     if (newPassword.length < 8) {
-      return res.render("passwordChange", { error: "New password must be at least 8 characters long", success: null });
+      return res.render("passwordChange", {
+        error: "New password must be at least 8 characters long",
+        success: null,
+      });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedPassword;
-    await user.save();
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    const updateResult = await User.updateOne(
+      { _id: req.user._id },
+      { password: hashedPassword }
+    );
 
-    return res.render("passwordChange", { success: "Password changed successfully", error: null });
+    if (updateResult.modifiedCount > 0) {
+      return res.render("passwordChange", {
+        success: "Password changed successfully",
+        error: null,
+      });
+    }
+
+    return res.render("passwordChange", {
+      error: "Failed to update password",
+      success: null,
+    });
   } catch (error) {
     console.error("Error on changing the password:", error);
-    return res.render("passwordChange", { error: "An error occurred, please try again", success: null });
+    return res.render("passwordChange", {
+      error: "An error occurred, please try again",
+      success: null,
+    });
   }
 };
-const loadLogout = async (req,res)=>{
-  try {
-    if (!req.session || !req.session.user || !req.session.user._id) {
-      return res.redirect("/login");
-    }
 
-    res.render("logout")
+const loadLogout = async (req, res) => {
+  try {
+    // req.user is guaranteed by UserAuth middleware
+    res.render("logout");
   } catch (error) {
-    console.error("error to load logout page")
-    res.status(500).json({success: true, messagr:"server issue"})
+    console.error("Error loading logout page:", error);
+    res.status(500).json({ success: false, message: "Server issue" });
   }
-}
+};
+
 module.exports = {
   forgotPassword,
   forgotemailValidations,
@@ -557,5 +593,5 @@ module.exports = {
   updatePassword,
   loadLogout,
   resendUpdateOtp,
-  loadVerifyEmailUpdateOtp, 
+  loadVerifyEmailUpdateOtp,
 };

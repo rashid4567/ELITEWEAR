@@ -458,6 +458,12 @@ body {
     transform: translate(21.9375rem, -38.4375rem);
 
 }
+.status-return-rejected { color: #dc3545; }
+.status-returned { color: #28a745; }
+.status-return-approved { color: #28a745; }
+.status-return-requested { color: #fd7e14; }
+.refund-info { background-color: #e9f7ef; padding: 10px; border-radius: 5px; }
+.btn-loading { pointer-events: none; opacity: 0.7; }
 .mainOne{
     transform: translate(10px, 10px);
 }

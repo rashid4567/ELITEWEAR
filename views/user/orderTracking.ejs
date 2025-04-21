@@ -254,11 +254,11 @@
       document.addEventListener('DOMContentLoaded', function() {
           const progressBar = document.getElementById('progressBar');
           
-          // Handle progress bar and status styles based on order status
+        
           const status = '<%= order.status.toLowerCase() %>';
           let progressWidth = 0;
           
-          // Calculate progress width based on status
+          
           if (status === 'pending') {
               progressWidth = 25;
           } else if (status === 'processing') {
@@ -268,17 +268,17 @@
           } else if (status === 'delivered') {
               progressWidth = 100;
           } else if (status === 'cancelled' || status === 'returned') {
-              progressWidth = 100; // For cancelled/returned, fill the entire bar
+              progressWidth = 100; 
               progressBar.classList.add('progress-fill-' + status);
           }
           
-          // Apply status-specific styles
+          
           const statusLabel = document.querySelector('.status-label');
           if (statusLabel) {
               statusLabel.classList.add('status-' + status);
           }
           
-          // Animate progress bar
+      
           setTimeout(() => {
               progressBar.style.width = `${progressWidth}%`;
           }, 300);

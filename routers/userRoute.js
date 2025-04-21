@@ -10,6 +10,7 @@ const checkOutController = require("../controller/user/checkOutController");
 const orderController = require("../controller/user/orderController");
 const cartController = require("../controller/user/cartController");
 const walletController = require("../controller/user/walletController");
+const CouponController = require("../controller/user/userCouponCoontroller")
 const { UserAuth } = require("../middleware/auth");
 
 const { checkBlockedStatus } = userControllers;
@@ -175,4 +176,6 @@ router.use((req, res) => {
   res.status(404).redirect("/page-not-found");
 });
 
+router.get("/getcoupon", UserAuth, CouponController.getcoupon);
+router.post("/applyCoupon", UserAuth, CouponController.applyCoupon);
 module.exports = router;

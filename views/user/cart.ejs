@@ -154,7 +154,6 @@
     <script>
       function showToast(message, type = "success") {
         const toastContainer = document.querySelector(".toast-container");
-        // Clear old toasts
         toastContainer.innerHTML = "";
         const toast = document.createElement("div");
         toast.className = `toast align-items-center text-white bg-${
@@ -176,6 +175,8 @@
       }
 
       async function updateQuantity(productId, size, color, change) {
+       
+
         const buttons = document.querySelectorAll(
           `[data-action="increment"], [data-action="decrement"]`
         );
@@ -190,6 +191,8 @@
           });
           const result = await response.json();
 
+       
+
           if (result.success) {
             window.location.reload();
           } else {
@@ -200,6 +203,7 @@
             }
           }
         } catch (error) {
+          console.error("Error updating quantity:", error);
           showToast("Failed to update quantity", "danger");
         } finally {
           buttons.forEach((btn) => btn.classList.remove("loading-btn"));
@@ -207,6 +211,8 @@
       }
 
       async function removeItem(productId, size, color) {
+      
+
         const button = event.currentTarget;
         button.classList.add("loading-btn");
 
@@ -219,6 +225,8 @@
           });
           const result = await response.json();
 
+      
+
           if (result.success) {
             window.location.reload();
           } else {
@@ -229,6 +237,7 @@
             }
           }
         } catch (error) {
+          console.error("Error removing item:", error);
           showToast("Failed to remove item", "danger");
         } finally {
           button.classList.remove("loading-btn");
@@ -254,6 +263,8 @@
         });
 
         if (result.isConfirmed) {
+        
+
           const button = event.currentTarget;
           button.classList.add("loading-btn");
 
@@ -265,6 +276,7 @@
             });
             const result = await response.json();
 
+           
             if (result.success) {
               window.location.reload();
             } else {
@@ -275,6 +287,7 @@
               }
             }
           } catch (error) {
+            console.error("Error clearing cart:", error);
             showToast("Failed to clear cart", "danger");
           } finally {
             button.classList.remove("loading-btn");

@@ -17,13 +17,7 @@
       href="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.css"
       rel="stylesheet"
     />
-    <style>
-      .alert-info {
-        background-color: #d1ecf1;
-        color: #0c5460;
-        border-color: #bee5eb;
-      }
-    </style>
+   
   </head>
   <body>
     <%- include("../partials/user/header") %>
@@ -136,7 +130,7 @@
       const alertMessage = document.getElementById("alertMessage");
       const sendOtpBtn = document.getElementById("sendOtpBtn");
 
-      // Sidebar menu item activation
+  
       document.querySelectorAll(".menu-item").forEach((item) => {
         item.addEventListener("click", function () {
           document.querySelectorAll(".menu-item").forEach((i) => {
@@ -152,7 +146,7 @@
       }
 
       function validatePhone(phone) {
-        if (!phone) return true; // Allow empty phone number
+        if (!phone) return true; 
         const re = /^[0-9]{10}$/;
         return re.test(phone);
       }
@@ -207,7 +201,7 @@
           mobile: phoneNumber.value.trim() || "",
         };
 
-        console.log("Submitting form data:", formData); // Debug log
+ 
 
         try {
           const response = await fetch("/update-profile", {
@@ -220,7 +214,7 @@
 
           const result = await response.json();
 
-          console.log("Server response:", result); // Debug log
+        
 
           if (result.success) {
             showAlert(result.message, "success");

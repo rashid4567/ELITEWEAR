@@ -199,7 +199,7 @@
 
     <%- include("../partials/user/footer") %>
 
-    <!-- Toast Container -->
+
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         <div id="wishlistToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
@@ -216,7 +216,7 @@
         let currentPage = <%= currentPage || 1 %>;
 
         document.addEventListener('DOMContentLoaded', function () {
-            // Initialize toast
+        
             const wishlistToast = new bootstrap.Toast(document.getElementById('wishlistToast'));
 
     
@@ -237,7 +237,7 @@
             }
             loadWishlistState();
 
-            // Handle wishlist toggle
+    
             document.querySelectorAll('.wishlist-heart').forEach(heart => {
                 heart.addEventListener('click', async function(event) {
                     
@@ -303,7 +303,7 @@
                 .then(data => {
                     updateProducts(data);
                     updatePagination(data);
-                    // Reload wishlist state after updating products
+                   
                     loadWishlistState();
                 })
                 .catch(error => {
@@ -514,7 +514,7 @@
 
             initActiveStates();
 
-            // Initial fetch to load products
+           
             fetchProducts();
         });
         

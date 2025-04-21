@@ -365,7 +365,7 @@
                 });
             });
 
-            // Confirm Approve Return
+          
             confirmApproveReturnBtn.addEventListener('click', function() {
                 const orderId = this.getAttribute('data-order-id');
                 fetch(`/admin/orders/return/${orderId}`, {
@@ -404,7 +404,6 @@
                 });
             });
 
-            // Confirm Reject Return
             confirmRejectReturnBtn.addEventListener('click', function() {
                 const orderId = this.getAttribute('data-order-id');
                 const rejectionReason = document.getElementById('rejectionReason').value.trim();

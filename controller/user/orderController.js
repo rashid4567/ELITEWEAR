@@ -2,26 +2,15 @@ const mongoose = require("mongoose");
 const Order = require("../../model/orderSchema");
 const OrderItem = require("../../model/orderItemSchema");
 const Cart = require("../../model/cartScheema");
-const User = require("../../model/userSchema");
 const Address = require("../../model/AddressScheema");
 const Product = require("../../model/productScheema");
 const PDFDocument = require("pdfkit");
 
 const placeOrder = async (req, res) => {
   try {
-    let userId;
-    if (req.user) {
-      userId = req.user._id.toString();
-    } else if (req.session.user && req.session.user._id) {
-      userId = req.session.user._id.toString();
-    } else {
-      return res.status(401).json({
-        success: false,
-        message: "Please log in to place an order",
-      });
-    }
-
+    const userId = req.user._id.toString();
     const { paymentMethod } = req.body;
+
     if (!paymentMethod || paymentMethod !== "COD") {
       throw new Error("Invalid payment method");
     }
@@ -136,6 +125,7 @@ const loadOrderSuccess = async (req, res) => {
       throw new Error("Invalid order ID");
     }
 
+    const userId = req.user._id.toString(); // Guaranteed by UserAuth middleware
     const order = await Order.findById(orderId)
       .populate("order_items")
       .populate("address")
@@ -145,14 +135,13 @@ const loadOrderSuccess = async (req, res) => {
       throw new Error("Order not found");
     }
 
-    const userId = req.user?._id.toString() || req.session.user?._id;
     if (order.userId.toString() !== userId) {
       throw new Error("Unauthorized access");
     }
 
     res.render("order-success", {
       order,
-      user: req.user || req.session.user,
+      user: req.user,
     });
   } catch (error) {
     console.error("loadOrderSuccess Error:", error.message);
@@ -162,28 +151,7 @@ const loadOrderSuccess = async (req, res) => {
 
 const getUserOrders = async (req, res) => {
   try {
-    let userId;
-    if (req.user) {
-      userId = req.user._id.toString();
-    } else if (req.session.user && req.session.user._id) {
-      userId = req.session.user._id.toString();
-    } else {
-      return res.redirect("/login");
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid user ID" });
-    }
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    }
-
+    const userId = req.user._id.toString(); // Guaranteed by UserAuth middleware
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = 5;
     const skip = (page - 1) * limit;
@@ -225,7 +193,7 @@ const getUserOrders = async (req, res) => {
 
     res.render("Orders", {
       orders: ordersWithProgress,
-      user,
+      user: req.user,
       currentPage: page,
       totalPages,
       hasOrders: orders.length > 0,
@@ -240,18 +208,12 @@ const cancelOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
     const { cancelReason } = req.body;
+    const userId = req.user._id.toString(); // Guaranteed by UserAuth middleware
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       return res
         .status(400)
         .json({ success: false, message: "Invalid order ID" });
-    }
-
-    const userId = req.user?._id.toString() || req.session.user?._id.toString();
-    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-      return res
-        .status(401)
-        .json({ success: false, message: "No authenticated user found" });
     }
 
     const order = await Order.findOne({ _id: orderId, userId }).populate(
@@ -314,6 +276,7 @@ const initiateReturn = async (req, res) => {
   try {
     const orderId = req.params.id;
     const { returnReason } = req.body;
+    const userId = req.user._id.toString(); // Guaranteed by UserAuth middleware
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       console.error("initiateReturn: Invalid order ID:", orderId);
@@ -327,16 +290,6 @@ const initiateReturn = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Please provide a reason for the return",
-      });
-    }
-
-    const userId = req.user?._id.toString() || req.session.user?._id.toString();
-
-    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-      console.error("initiateReturn: No authenticated user found");
-      return res.status(401).json({
-        success: false,
-        message: "Please log in to initiate a return",
       });
     }
 
@@ -366,7 +319,7 @@ const initiateReturn = async (req, res) => {
     const deliveryDate = order.deliveryDate
       ? new Date(order.deliveryDate)
       : new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-    const returnWindowDays = 90;
+    const returnWindowDays = 5;
     const returnWindowEnd = new Date(
       deliveryDate.getTime() + returnWindowDays * 24 * 60 * 60 * 1000
     );
@@ -429,7 +382,7 @@ const initiateReturn = async (req, res) => {
 
     if (!updatedOrder) {
       console.error(
-        `initiateReturn: Failed to update order status for ID: ${orderId}. Possible reasons: status changed, refunded=true, or query mismatch`
+        `initiateReturn: Failed to update order status for ID: ${orderId}`
       );
 
       for (const item of order.order_items) {
@@ -469,21 +422,13 @@ const reOrder = async (req, res) => {
   let newOrderId = null;
   try {
     const orderId = req.params.id;
+    const userId = req.user._id.toString(); // Guaranteed by UserAuth middleware
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       console.error("reOrder: Invalid order ID:", orderId);
       return res
         .status(400)
         .json({ success: false, message: "Invalid order ID" });
-    }
-
-    const userId = req.user?._id.toString() || req.session.user?._id.toString();
-
-    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-      console.error("reOrder: No authenticated user found");
-      return res
-        .status(401)
-        .json({ success: false, message: "Please log in to reorder" });
     }
 
     const order = await Order.findOne({ _id: orderId, userId })
@@ -630,17 +575,11 @@ const reOrder = async (req, res) => {
 const getOrderDetails = async (req, res) => {
   try {
     const orderId = req.params.id;
+    const userId = req.user._id.toString(); // Guaranteed by UserAuth middleware
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       console.error("getOrderDetails: Invalid order ID:", orderId);
       return res.redirect("/page-not-found");
-    }
-
-    const userId = req.user?._id.toString() || req.session.user?._id.toString();
-
-    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-      console.error("getOrderDetails: No authenticated user found");
-      return res.redirect("/login");
     }
 
     const order = await Order.findOne({ _id: orderId, userId })
@@ -661,11 +600,7 @@ const getOrderDetails = async (req, res) => {
       return res.redirect("/page-not-found");
     }
 
-
-
-    const user = await User.findById(userId);
-
-    res.render("orderDetails", { order, user: user || {} });
+    res.render("orderDetails", { order, user: req.user });
   } catch (error) {
     console.error("getOrderDetails Error:", error.message, error.stack);
     res.redirect("/page-not-found");
@@ -675,17 +610,11 @@ const getOrderDetails = async (req, res) => {
 const downloadInvoice = async (req, res) => {
   try {
     const orderId = req.params.id;
+    const userId = req.user._id.toString(); // Guaranteed by UserAuth middleware
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       console.error("downloadInvoice: Invalid order ID:", orderId);
       throw new Error("Invalid order ID");
-    }
-
-    const userId = req.user?._id.toString() || req.session.user?._id.toString();
-
-    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-      console.error("downloadInvoice: No authenticated user found");
-      throw new Error("No authenticated user found");
     }
 
     const order = await Order.findOne({ _id: orderId, userId })
@@ -720,184 +649,174 @@ const downloadInvoice = async (req, res) => {
     );
     doc.pipe(res);
 
-    // Company Header
-    doc.registerFont('Helvetica-Bold', 'Helvetica-Bold');
-    doc.registerFont('Helvetica', 'Helvetica');
-    
+    doc.registerFont("Helvetica-Bold", "Helvetica-Bold");
+    doc.registerFont("Helvetica", "Helvetica");
+
     doc
-      .font('Helvetica-Bold')
+      .font("Helvetica-Bold")
       .fontSize(24)
-      .fillColor('#2c3e50')
+      .fillColor("#2c3e50")
       .text("ELITE WEAR", 50, 50);
-    
-    doc
-      .font('Helvetica')
-      .fontSize(10)
-      .fillColor('#34495e');
-    
+
+    doc.font("Helvetica").fontSize(10).fillColor("#34495e");
+
     const companyInfo = [
       "123 Fashion Avenue",
       "New York, NY 10001",
       "Phone: (111) 123-1234",
       "Email: billing@elitewear.com",
-      "Website: www.elitewear.com"
+      "Website: www.elitewear.com",
     ];
-    
+
     let yPos = 80;
-    companyInfo.forEach(line => {
+    companyInfo.forEach((line) => {
       doc.text(line, 50, yPos);
       yPos += 15;
     });
 
-    // Invoice Details
     doc
-      .font('Helvetica-Bold')
+      .font("Helvetica-Bold")
       .fontSize(14)
-      .fillColor('#2c3e50')
+      .fillColor("#2c3e50")
       .text("INVOICE", 400, 50);
-    
+
     const invoiceDetails = [
       { label: "Invoice #", value: `ORD${order.orderNumber}` },
-      { 
-        label: "Date", 
+      {
+        label: "Date",
         value: new Date().toLocaleDateString("en-US", {
           month: "long",
           day: "numeric",
           year: "numeric",
-        })
+        }),
       },
-      { label: "Due Date", value: new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString("en-US") }
+      {
+        label: "Due Date",
+        value: new Date(
+          Date.now() + 30 * 24 * 60 * 60 * 1000
+        ).toLocaleDateString("en-US"),
+      },
     ];
-    
+
     yPos = 80;
-    invoiceDetails.forEach(detail => {
-      doc
-        .font('Helvetica-Bold')
-        .fontSize(10)
-        .text(detail.label, 400, yPos);
-      doc
-        .font('Helvetica')
-        .text(detail.value, 450, yPos);
+    invoiceDetails.forEach((detail) => {
+      doc.font("Helvetica-Bold").fontSize(10).text(detail.label, 400, yPos);
+      doc.font("Helvetica").text(detail.value, 450, yPos);
       yPos += 15;
     });
 
-    // Customer Information
     const customerAddress = order.address || {};
     const addressLines = [
       customerAddress.name || "Customer Name",
       customerAddress.street || "Street Address",
-      `${customerAddress.city || "City"}, ${customerAddress.state || "State"} ${customerAddress.zip || "ZIP"}`,
+      `${customerAddress.city || "City"}, ${customerAddress.state || "State"} ${
+        customerAddress.zip || "ZIP"
+      }`,
       customerAddress.country || "Country",
-      customerAddress.phone || ""
-    ].filter(line => line);
+      customerAddress.phone || "",
+    ].filter((line) => line);
 
     doc
-      .font('Helvetica-Bold')
+      .font("Helvetica-Bold")
       .fontSize(12)
-      .fillColor('#2c3e50')
+      .fillColor("#2c3e50")
       .text("Bill To:", 50, 160);
-    
+
     yPos = 180;
-    doc.font('Helvetica').fontSize(10);
-    addressLines.forEach(line => {
+    doc.font("Helvetica").fontSize(10);
+    addressLines.forEach((line) => {
       doc.text(line, 50, yPos);
       yPos += 15;
     });
 
-    // Items Table Header
     const tableTop = 260;
-    doc
-      .rect(50, tableTop, 500, 25)
-      .fill('#f1f3f5');
-    
-    doc
-      .font('Helvetica-Bold')
-      .fontSize(10)
-      .fillColor('#2c3e50');
-    
+    doc.rect(50, tableTop, 500, 25).fill("#f1f3f5");
+
+    doc.font("Helvetica-Bold").fontSize(10).fillColor("#2c3e50");
+
     const headers = [
       { text: "Item Description", x: 55, width: 280 },
       { text: "Quantity", x: 335, width: 60 },
       { text: "Unit Price", x: 395, width: 60 },
-      { text: "Total", x: 455, width: 90 }
+      { text: "Total", x: 455, width: 90 },
     ];
-    
-    headers.forEach(header => {
-      doc.text(header.text, header.x, tableTop + 8, { 
+
+    headers.forEach((header) => {
+      doc.text(header.text, header.x, tableTop + 8, {
         width: header.width,
-        align: header.text === "Total" ? "right" : "left"
+        align: header.text === "Total" ? "right" : "left",
       });
     });
 
-    // Items Table Content
     yPos = tableTop + 35;
     let subtotal = 0;
-    
-    doc.font('Helvetica').fillColor('#34495e');
-    
-    const items = [
-      { description: "Solid Merino Wool Shirt (Size: S)", quantity: 1, price: 16770.00 },
-      { description: "Solid Signature Twill Shirt (Size: S)", quantity: 1, price: 15727.00 }
-    ];
-    
-    items.forEach(item => {
+
+    doc.font("Helvetica").fillColor("#34495e");
+
+    // Updated to use actual order items instead of hardcoded items
+    const items = order.order_items.map((item) => ({
+      description: `${item.product_name} (Size: ${item.size})`,
+      quantity: item.quantity,
+      price: item.price,
+    }));
+
+    items.forEach((item) => {
       const itemTotal = item.price * item.quantity;
       subtotal += itemTotal;
-      
+
       const row = [
         { text: item.description, x: 55, width: 280 },
         { text: item.quantity.toString(), x: 335, width: 60 },
         { text: `₹${item.price.toFixed(2)}`, x: 395, width: 60 },
-        { text: `₹${itemTotal.toFixed(2)}`, x: 455, width: 90 }
+        { text: `₹${itemTotal.toFixed(2)}`, x: 455, width: 90 },
       ];
-      
-      row.forEach(cell => {
-        doc.text(cell.text, cell.x, yPos, { 
+
+      row.forEach((cell) => {
+        doc.text(cell.text, cell.x, yPos, {
           width: cell.width,
-          align: cell.x === 455 ? "right" : "left"
+          align: cell.x === 455 ? "right" : "left",
         });
       });
-      
+
       yPos += 20;
       doc
         .moveTo(50, yPos - 5)
         .lineTo(550, yPos - 5)
-        .strokeColor('#ececec')
+        .strokeColor("#ececec")
         .stroke();
     });
 
-    // Totals
-    const grandTotal = subtotal;
-    
+    const deliveryCharge = order.total - subtotal;
+    const grandTotal = order.total;
+
     const totals = [
-      { label: "Subtotal", value: subtotal.toFixed(2), bold: true }
+      { label: "Subtotal", value: subtotal.toFixed(2), bold: false },
+      { label: "Delivery Charge", value: deliveryCharge.toFixed(2), bold: false },
+      { label: "Total", value: grandTotal.toFixed(2), bold: true },
     ];
-    
+
     yPos += 20;
-    totals.forEach(total => {
+    totals.forEach((total) => {
       doc
-        .font(total.bold ? 'Helvetica-Bold' : 'Helvetica')
+        .font(total.bold ? "Helvetica-Bold" : "Helvetica")
         .text(total.label, 400, yPos);
       doc.text(`₹${total.value}`, 455, yPos, { width: 90, align: "right" });
       yPos += 15;
     });
 
-    // Footer
+    doc.rect(0, doc.page.height - 80, doc.page.width, 80).fill("#2c3e50");
+
     doc
-      .rect(0, doc.page.height - 80, doc.page.width, 80)
-      .fill('#2c3e50');
-    
-    doc
-      .font('Helvetica')
+      .font("Helvetica")
       .fontSize(9)
-      .fillColor('#ffffff')
+      .fillColor("#ffffff")
       .text(
         "Thank you for shopping with Elite Wear! For any questions regarding your order, please contact our customer service at billing@elitewear.com",
         50,
         doc.page.height - 65,
         { width: 500, align: "center" }
       );
-    
+
     doc
       .fontSize(8)
       .text(
@@ -917,17 +836,11 @@ const downloadInvoice = async (req, res) => {
 const trackOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
+    const userId = req.user._id.toString(); // Guaranteed by UserAuth middleware
 
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       console.error("trackOrder: Invalid order ID:", orderId);
       return res.redirect("/page-not-found");
-    }
-
-    const userId = req.user?._id.toString() || req.session.user?._id.toString();
-
-    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-      console.error("trackOrder: No authenticated user found");
-      return res.redirect("/login");
     }
 
     const order = await Order.findOne({ _id: orderId, userId })
@@ -948,7 +861,6 @@ const trackOrder = async (req, res) => {
       );
       return res.redirect("/page-not-found");
     }
-
 
     const getProgressWidth = (status) => {
       const steps = [
@@ -1028,7 +940,7 @@ const trackOrder = async (req, res) => {
 
     res.render("orderTracking", {
       order,
-      user: req.user || req.session.user,
+      user: req.user,
       progressWidth: getProgressWidth(order.status),
       trackingSteps,
     });

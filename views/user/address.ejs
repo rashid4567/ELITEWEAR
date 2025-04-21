@@ -1,245 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Delivery Address</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/userStyle/address.css">
-</head>
-<body>
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/userStyle/address.css" />
+  </head>
+  <body>
     <%- include("../partials/user/header") %>
-    
+
     <div class="container-wrapper">
-        <%- include("../partials/user/profileSidebar") %>
-        <!-- Main Content -->
-        <div class="main-content">
-            <nav aria-label="breadcrumb" class="breadcrumb-container">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="/profile">Profile</a></li>
-                    <li class="breadcrumb-item active">Delivery Address</li>
-                </ol>
-            </nav>
-            
-            <div class="address-container">
-                <h4 class="section-title">Delivery Address</h4>
-                
-                <div class="address-cards">
-                    <% if (addresses && addresses.length > 0) { %>
-                        <% addresses.forEach(address => { %>
-                            <div class="address-card">
-                                <a href="/getaddress-edit/<%= address._id %>" class="edit-icon"><i class="fas fa-edit"></i></a>
-                                <div class="address-name"><%= address.fullname %></div>
-                                <div class="address-type"><%= address.type.charAt(0).toUpperCase() + address.type.slice(1) %></div>
-                                <div class="address-details">
-                                    <%= address.address %>,<br>
-                                    <%= address.district %>, <%= address.city %>,<br>
-                                    <%= address.state %><br>
-                                    <%= address.pincode %><br>
-                                    <% if (address.landmark) { %>
-                                        Landmark: <%= address.landmark %><br>
-                                    <% } %>
-                                    Mobile: <%= address.mobile %>
-                                </div>
-                                <div class="address-actions">
-                                    <% if (address.isDefault) { %>
-                                        <button class="btn btn-default" disabled>Default</button>
-                                    <% } else { %>
-                                        <button class="btn btn-default set-default-btn" data-address-id="<%= address._id %>">Set as Default</button>
-                                    <% } %>
-                                    <button class="btn btn-delete delete-address-btn" data-address-id="<%= address._id %>">DELETE</button>
-                                </div>
-                            </div>
-                        <% }); %>
-                    <% } else { %>
-                        <div class="col-12 text-center">
-                            <p>No addresses found. Please add a new address.</p>
-                        </div>
-                    <% } %>
-                </div>
-                
-                <div class="add-address-container">
-                    <a href="/getaddAddress" class="btn-add-address">Add New Address</a>
-                </div>
+      <%- include("../partials/user/profileSidebar") %>
+
+      <div class="main-content">
+        <nav aria-label="breadcrumb" class="breadcrumb-container">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/profile">Profile</a></li>
+            <li class="breadcrumb-item active">Delivery Address</li>
+          </ol>
+        </nav>
+
+        <div class="address-container">
+          <h4 class="section-title">Delivery Address</h4>
+
+          <div class="address-cards">
+            <% if (addresses && addresses.length > 0) { %> <%
+            addresses.forEach(address => { %>
+            <div class="address-card">
+              <a href="/getaddress-edit/<%= address._id %>" class="edit-icon"
+                ><i class="fas fa-edit"></i
+              ></a>
+              <div class="address-name"><%= address.fullname %></div>
+              <div class="address-type">
+                <%= address.type.charAt(0).toUpperCase() + address.type.slice(1)
+                %>
+              </div>
+              <div class="address-details">
+                <%= address.address %>,<br />
+                <%= address.district %>, <%= address.city %>,<br />
+                <%= address.state %><br />
+                <%= address.pincode %><br />
+                <% if (address.landmark) { %> Landmark: <%= address.landmark
+                %><br />
+                <% } %> Mobile: <%= address.mobile %>
+              </div>
+              <div class="address-actions">
+                <% if (address.isDefault) { %>
+                <button class="btn btn-default" disabled>Default</button>
+                <% } else { %>
+                <button
+                  class="btn btn-default set-default-btn"
+                  data-address-id="<%= address._id %>"
+                >
+                  Set as Default
+                </button>
+                <% } %>
+                <button
+                  class="btn btn-delete delete-address-btn"
+                  data-address-id="<%= address._id %>"
+                >
+                  DELETE
+                </button>
+              </div>
             </div>
+            <% }); %> <% } else { %>
+            <div class="col-12 text-center">
+              <p>No addresses found. Please add a new address.</p>
+            </div>
+            <% } %>
+          </div>
+
+          <div class="add-address-container">
+            <a href="/getaddAddress" class="btn-add-address">Add New Address</a>
+          </div>
         </div>
+      </div>
     </div>
-    
+
     <%- include("../partials/user/footer") %>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Function to show custom alert
-        function showCustomAlert(options) {
-            const { title, message, buttonText, isSuccess, onButtonClick, showCancelButton } = options;
-            
-            // Create alert container
-            const alertOverlay = document.createElement('div');
-            alertOverlay.className = 'custom-alert-overlay';
-            
-            // Create alert content
-            let buttonsHtml = `<button class="custom-alert-button ${!isSuccess ? (buttonText.toLowerCase().includes('delete') ? 'delete' : 'retry') : ''}">${buttonText}</button>`;
-            
-            // Add cancel button if requested
-            if (showCancelButton) {
-                buttonsHtml = `
+      function showCustomAlert(options) {
+        const {
+          title,
+          message,
+          buttonText,
+          isSuccess,
+          onButtonClick,
+          showCancelButton,
+        } = options;
+
+        const alertOverlay = document.createElement("div");
+        alertOverlay.className = "custom-alert-overlay";
+
+        let buttonsHtml = `<button class="custom-alert-button ${
+          !isSuccess
+            ? buttonText.toLowerCase().includes("delete")
+              ? "delete"
+              : "retry"
+            : ""
+        }">${buttonText}</button>`;
+
+        if (showCancelButton) {
+          buttonsHtml = `
                     <div style="display: flex; justify-content: space-between; gap: 10px;">
                         <button class="custom-alert-button cancel-btn" style="background-color: #6c757d;">Cancel</button>
                         ${buttonsHtml}
                     </div>
                 `;
-            }
-            
-            alertOverlay.innerHTML = `
+        }
+
+        alertOverlay.innerHTML = `
                 <div class="custom-alert">
                     <div class="custom-alert-header">
-                        <div class="custom-alert-title">${title || (isSuccess ? 'SUCCESS!!' : 'SORRY!!')}</div>
+                        <div class="custom-alert-title">${
+                          title || (isSuccess ? "SUCCESS!!" : "SORRY!!")
+                        }</div>
                         <div class="custom-alert-close">✕</div>
                     </div>
                     <div class="custom-alert-message">${message}</div>
                     ${buttonsHtml}
                 </div>
             `;
-            
-            // Add to DOM
-            document.body.appendChild(alertOverlay);
-            
-            // Add event listeners
-            const closeButton = alertOverlay.querySelector('.custom-alert-close');
-            const actionButton = alertOverlay.querySelector('.custom-alert-button:not(.cancel-btn)');
-            const cancelButton = alertOverlay.querySelector('.cancel-btn');
-            
-            closeButton.addEventListener('click', () => {
-                document.body.removeChild(alertOverlay);
-            });
-            
-            actionButton.addEventListener('click', () => {
-                document.body.removeChild(alertOverlay);
-                if (typeof onButtonClick === 'function') {
-                    onButtonClick();
-                }
-            });
-            
-            if (cancelButton) {
-                cancelButton.addEventListener('click', () => {
-                    document.body.removeChild(alertOverlay);
-                });
-            }
-        }
 
-        function showDeleteConfirmation(addressId) {
-            showCustomAlert({
-                title: 'ARE YOU SURE!!',
-                message: 'Do you want to delete the address?',
-                buttonText: "Yes, delete",
-                isSuccess: false,
-                showCancelButton: true,
-                onButtonClick: () => {
-                    deleteAddress(addressId);
-                }
-            });
-        }
+        document.body.appendChild(alertOverlay);
 
-        async function deleteAddress(addressId) {
-            try {
-                const response = await fetch(`/remove-address/${addressId}`, {
-                    method: 'DELETE'
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to delete address');
-                }
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showCustomAlert({
-                        title: 'SUCCESS!!',
-                        message: 'Your address has been deleted successfully!',
-                        buttonText: "OK",
-                        isSuccess: true,
-                        onButtonClick: () => {
-                            window.location.reload();
-                        }
-                    });
-                } else {
-                    showCustomAlert({
-                        title: 'SORRY!!',
-                        message: `Failed to delete address: ${result.message}`,
-                        buttonText: "RETRY",
-                        isSuccess: false
-                    });
-                }
-            } catch (error) {
-                showCustomAlert({
-                    title: 'SORRY!!',
-                    message: `Failed to delete address`,
-                    buttonText: "RETRY",
-                    isSuccess: false
-                });
-            }
-        }
+        const closeButton = alertOverlay.querySelector(".custom-alert-close");
+        const actionButton = alertOverlay.querySelector(
+          ".custom-alert-button:not(.cancel-btn)"
+        );
+        const cancelButton = alertOverlay.querySelector(".cancel-btn");
 
-        async function setDefaultAddress(addressId) {
-            try {
-                const response = await fetch(`/set-default-address/${addressId}`, {
-                    method: 'PUT'
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to set address as default');
-                }
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showCustomAlert({
-                        title: 'SUCCESS!!',
-                        message: 'Default address has been updated!',
-                        buttonText: "OK",
-                        isSuccess: true,
-                        onButtonClick: () => {
-                            window.location.reload();
-                        }
-                    });
-                } else {
-                    showCustomAlert({
-                        title: 'SORRY!!',
-                        message: `Failed to update default address: ${result.message}`,
-                        buttonText: "RETRY",
-                        isSuccess: false
-                    });
-                }
-            } catch (error) {
-                console.error('Error setting default address:', error);
-                showCustomAlert({
-                    title: 'SORRY!!',
-                    message: `Failed to update default address: ${error.message}`,
-                    buttonText: "RETRY",
-                    isSuccess: false
-                });
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const deleteButtons = document.querySelectorAll('.delete-address-btn');
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const addressId = this.getAttribute('data-address-id');
-                    showDeleteConfirmation(addressId);
-                });
-            });
-
-            const defaultButtons = document.querySelectorAll('.set-default-btn');
-            defaultButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const addressId = this.getAttribute('data-address-id');
-                    setDefaultAddress(addressId);
-                });
-            });
+        closeButton.addEventListener("click", () => {
+          document.body.removeChild(alertOverlay);
         });
+
+        actionButton.addEventListener("click", () => {
+          document.body.removeChild(alertOverlay);
+          if (typeof onButtonClick === "function") {
+            onButtonClick();
+          }
+        });
+
+        if (cancelButton) {
+          cancelButton.addEventListener("click", () => {
+            document.body.removeChild(alertOverlay);
+          });
+        }
+      }
+
+      function showDeleteConfirmation(addressId) {
+        showCustomAlert({
+          title: "ARE YOU SURE!!",
+          message: "Do you want to delete the address?",
+          buttonText: "Yes, delete",
+          isSuccess: false,
+          showCancelButton: true,
+          onButtonClick: () => {
+            deleteAddress(addressId);
+          },
+        });
+      }
+
+      async function deleteAddress(addressId) {
+        try {
+          const response = await fetch(`/remove-address/${addressId}`, {
+            method: "DELETE",
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to delete address");
+          }
+
+          const result = await response.json();
+
+          if (result.success) {
+            showCustomAlert({
+              title: "SUCCESS!!",
+              message: "Your address has been deleted successfully!",
+              buttonText: "OK",
+              isSuccess: true,
+              onButtonClick: () => {
+                window.location.reload();
+              },
+            });
+          } else {
+            showCustomAlert({
+              title: "SORRY!!",
+              message: `Failed to delete address: ${result.message}`,
+              buttonText: "RETRY",
+              isSuccess: false,
+            });
+          }
+        } catch (error) {
+          showCustomAlert({
+            title: "SORRY!!",
+            message: `Failed to delete address`,
+            buttonText: "RETRY",
+            isSuccess: false,
+          });
+        }
+      }
+
+      async function setDefaultAddress(addressId) {
+        try {
+          const response = await fetch(`/set-default-address/${addressId}`, {
+            method: "PUT",
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to set address as default");
+          }
+
+          const result = await response.json();
+
+          if (result.success) {
+            showCustomAlert({
+              title: "SUCCESS!!",
+              message: "Default address has been updated!",
+              buttonText: "OK",
+              isSuccess: true,
+              onButtonClick: () => {
+                window.location.reload();
+              },
+            });
+          } else {
+            showCustomAlert({
+              title: "SORRY!!",
+              message: `Failed to update default address: ${result.message}`,
+              buttonText: "RETRY",
+              isSuccess: false,
+            });
+          }
+        } catch (error) {
+          console.error("Error setting default address:", error);
+          showCustomAlert({
+            title: "SORRY!!",
+            message: `Failed to update default address: ${error.message}`,
+            buttonText: "RETRY",
+            isSuccess: false,
+          });
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const deleteButtons = document.querySelectorAll(".delete-address-btn");
+        deleteButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const addressId = this.getAttribute("data-address-id");
+            showDeleteConfirmation(addressId);
+          });
+        });
+
+        const defaultButtons = document.querySelectorAll(".set-default-btn");
+        defaultButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            const addressId = this.getAttribute("data-address-id");
+            setDefaultAddress(addressId);
+          });
+        });
+      });
     </script>
-</body>
+  </body>
 </html>

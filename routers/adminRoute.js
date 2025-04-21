@@ -6,6 +6,7 @@ const CategoryController = require("../controller/admin/categoryController");
 const productManagment = require('../controller/admin/productController');
 const BannerController = require('../controller/admin/BannerController');
 const adminorderController = require("../controller/admin/adminOrderController");
+const CouponController = require("../controller/admin/CounponController"); 
 const upload = require('../middleware/cluadinaryConfig'); 
 const { userAuth, adminAuth } = require('../middleware/auth');
 
@@ -65,5 +66,15 @@ router.post("/orders/update-status", adminAuth, adminorderController.updateOrder
 router.get("/orders/:id", adminAuth, adminorderController.getOrderDetails);
 router.post("/orders/return/:id", adminAuth, adminorderController.manageReturn);
 router.get("/invoices/:id", adminAuth, adminorderController.admindownloadInvoice);
+
+// Coupon Routes
+router.get("/coupons", adminAuth, CouponController.renderCouponsPage);
+router.get("/addCoupon", adminAuth, CouponController.renderAddCouponPage);
+router.get("/editCoupon/:id", adminAuth, CouponController.renderEditCouponPage);
+router.post("/createCoupon", adminAuth, CouponController.createCoupon);
+router.get("/getAllCoupons", adminAuth, CouponController.getAllCoupons);
+router.post("/editCoupon/:id", adminAuth, CouponController.editCoupon);
+router.post("/toggleCouponStatus/:id", adminAuth, CouponController.toggleCouponStatus);
+router.delete("/deleteCoupon/:id", adminAuth, CouponController.deleteCoupon);
 
 module.exports = router;

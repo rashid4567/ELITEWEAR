@@ -174,3 +174,14 @@ body {
     border: none;
     padding: 8px 20px;
 }
+   
+.product-image-link {
+    text-decoration: none;
+    color: inherit;
+  }
+  .product-image-link:hover {
+    text-decoration: none;
+  }
+  .product-image {
+    cursor: pointer;
+  }

@@ -7,14 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/userStyle/orderDetails.css">
-    <style>
-        .status-return-rejected { color: #dc3545; }
-        .status-returned { color: #28a745; }
-        .status-return-approved { color: #28a745; }
-        .status-return-requested { color: #fd7e14; }
-        .refund-info { background-color: #e9f7ef; padding: 10px; border-radius: 5px; }
-        .btn-loading { pointer-events: none; opacity: 0.7; }
-    </style>
+   
 </head>
 <body>
     <div class="page-loader loader-active">
@@ -220,7 +213,7 @@
         </div>
     </div>
 
-    <!-- Cancel Order Modal -->
+
     <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -243,7 +236,7 @@
         </div>
     </div>
 
-    <!-- Return Order Modal -->
+
     <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -267,7 +260,7 @@
         </div>
     </div>
 
-    <!-- Reorder Modal -->
+
     <div class="modal fade" id="reorderModal" tabindex="-1" aria-labelledby="reorderModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -290,7 +283,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Debounce utility to prevent multiple rapid clicks
+  
         function debounce(func, wait) {
             let timeout;
             return function (...args) {

@@ -648,7 +648,6 @@ const admindownloadInvoice = async (req, res) => {
         yPos += 15;
       });
   
-      // Customer Information
       const customerAddress = order.address || {};
       const addressLines = [
         customerAddress.name || "Customer Name",
@@ -671,7 +670,7 @@ const admindownloadInvoice = async (req, res) => {
         yPos += 15;
       });
   
-      // Items Table Header
+  
       const tableTop = 260;
       doc
         .rect(50, tableTop, 500, 25)
@@ -696,13 +695,13 @@ const admindownloadInvoice = async (req, res) => {
         });
       });
   
-      // Items Table Content
+      
       yPos = tableTop + 35;
       let subtotal = 0;
       
       doc.font('Helvetica').fillColor('#34495e');
       
-      // Use actual order items instead of hardcoded items
+      
       const items = order.order_items.map(item => ({
         description: `${item.productId?.name || 'Unknown Product'} (Size: ${item.size || 'N/A'})`,
         quantity: item.quantity || 1,
@@ -735,7 +734,7 @@ const admindownloadInvoice = async (req, res) => {
           .stroke();
       });
   
-      // Totals
+    
       const grandTotal = subtotal;
       
       const totals = [
@@ -752,7 +751,7 @@ const admindownloadInvoice = async (req, res) => {
         yPos += 15;
       });
   
-      // Footer
+      
       doc
         .rect(0, doc.page.height - 80, doc.page.width, 80)
         .fill('#2c3e50');

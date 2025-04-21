@@ -1,19 +1,12 @@
 const Wallet = require("../../model/walletScheema");
-const User = require("../../model/userSchema");
 const mongoose = require("mongoose");
-const { v4: uuidv4 } = require("uuid"); 
+const { v4: uuidv4 } = require("uuid");
 
 const getwallet = async (req, res) => {
   try {
-    const userId = req.user?.id || req.session.user?._id;
-
-    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(401).render("page-401", { message: "Unauthorized access" });
-    }
-
-    let wallet = await Wallet.findOne({ userId }).lean();
+    let wallet = await Wallet.findOne({ userId: req.user._id }).lean();
     if (!wallet) {
-      wallet = await new Wallet({ userId, amount: 0, transactions: [] }).save();
+      wallet = await new Wallet({ userId: req.user._id, amount: 0, transactions: [] }).save();
       wallet = wallet.toObject();
     }
 
@@ -31,7 +24,7 @@ const getwallet = async (req, res) => {
 
     res.render("wallet", {
       wallet,
-      user: req.user || req.session.user,
+      user: req.user,
     });
   } catch (error) {
     console.error("Error in getwallet:", error.message);
@@ -41,12 +34,7 @@ const getwallet = async (req, res) => {
 
 const creditWallet = async (req, res) => {
   try {
-    const userId = req.user?._id || req.session.user?._id;
     const { amount, description } = req.body;
-
-    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(401).json({ success: false, message: "Unauthorized access" });
-    }
 
     const parsedAmount = Number(amount);
     if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) {
@@ -58,7 +46,7 @@ const creditWallet = async (req, res) => {
     }
 
     const wallet = await Wallet.findOneAndUpdate(
-      { userId },
+      { userId: req.user._id },
       {
         $inc: { amount: parsedAmount },
         $push: {
@@ -71,7 +59,7 @@ const creditWallet = async (req, res) => {
           },
         },
       },
-      { new: true, upsert: true } 
+      { new: true, upsert: true }
     );
 
     return res.status(200).json({
@@ -87,12 +75,7 @@ const creditWallet = async (req, res) => {
 
 const debitWallet = async (req, res) => {
   try {
-    const userId = req.user?._id || req.session.user?._id;
     const { amount, description } = req.body;
-
-    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(401).json({ success: false, message: "Unauthorized access" });
-    }
 
     const parsedAmount = Number(amount);
     if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) {
@@ -103,7 +86,7 @@ const debitWallet = async (req, res) => {
       return res.status(400).json({ success: false, message: "Description is required" });
     }
 
-    const wallet = await Wallet.findOne({ userId });
+    const wallet = await Wallet.findOne({ userId: req.user._id });
     if (!wallet) {
       return res.status(404).json({ success: false, message: "Wallet not found" });
     }
@@ -113,7 +96,7 @@ const debitWallet = async (req, res) => {
     }
 
     const updatedWallet = await Wallet.findOneAndUpdate(
-      { userId, amount: { $gte: parsedAmount } },
+      { userId: req.user._id, amount: { $gte: parsedAmount } },
       {
         $inc: { amount: -parsedAmount },
         $push: {

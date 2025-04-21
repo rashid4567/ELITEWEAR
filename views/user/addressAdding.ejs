@@ -97,13 +97,13 @@
   </div>
   <%- include("../partials/user/footer") %>
   <script>
-    // Function to show success alert (keeping this for success messages only)
+  
     function showSuccessAlert(message, onButtonClick) {
-      // Create alert container
+      
       const alertOverlay = document.createElement('div');
       alertOverlay.className = 'custom-alert-overlay';
       
-      // Create alert content
+      
       alertOverlay.innerHTML = `
         <div class="custom-alert">
           <div class="custom-alert-header">
@@ -132,7 +132,7 @@
       });
     }
 
-    // Function to show validation error
+  
     function showValidationError(fieldId, show = true) {
       const field = document.getElementById(fieldId);
       const errorElement = document.getElementById(`${fieldId}Error`);
@@ -146,7 +146,7 @@
       }
     }
     
-    // Function to clear all validation errors
+
     function clearValidationErrors() {
       const errorElements = document.querySelectorAll('.error-message');
       const inputElements = document.querySelectorAll('.form-control');
@@ -160,7 +160,7 @@
       });
     }
     
-    // Add input event listeners to clear errors when user starts typing
+   
     document.querySelectorAll('.form-control').forEach(input => {
       input.addEventListener('input', function() {
         const fieldId = this.id;
@@ -168,7 +168,7 @@
       });
     });
 
-    // Form submission handler
+
     document.getElementById('addAddressForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       clearValidationErrors();
@@ -182,7 +182,7 @@
       const state = document.getElementById('state').value.trim();
       const pinCode = document.getElementById('pinCode').value.trim();
       
-      // Client-side validation with inline errors
+   
       if (!fullName || fullName.length < 2) {
         showValidationError('fullName');
         isValid = false;
@@ -218,9 +218,9 @@
         isValid = false;
       }
       
-      // If any validation failed, stop form submission
+     
       if (!isValid) {
-        // Scroll to the first error field
+        
         const firstErrorField = document.querySelector('.form-control.error');
         if (firstErrorField) {
           firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -258,9 +258,9 @@
             window.location.href = '/address';
           });
         } else {
-          // Show server validation errors if any
+       
           if (result.errors && typeof result.errors === 'object') {
-            // If server returns specific field errors
+         
             for (const [field, message] of Object.entries(result.errors)) {
               const errorElement = document.getElementById(`${field}Error`);
               if (errorElement) {
@@ -269,7 +269,7 @@
               }
             }
           } else {
-            // Generic error at the top of the form
+            
             const formContainer = document.querySelector('.form-container');
             const errorDiv = document.createElement('div');
             errorDiv.className = 'alert-error';
@@ -279,7 +279,7 @@
         }
       } catch (error) {
         console.error('Error submitting form:', error);
-        // Generic error at the top of the form
+
         const formContainer = document.querySelector('.form-container');
         const errorDiv = document.createElement('div');
         errorDiv.className = 'alert-error';
