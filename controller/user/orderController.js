@@ -8,116 +8,113 @@ const PDFDocument = require("pdfkit");
 
 const placeOrder = async (req, res) => {
   try {
-    const userId = req.user._id.toString();
-    const { paymentMethod } = req.body;
+      const userId = req.user._id.toString();
+      const { paymentMethod } = req.body;
 
-    if (!paymentMethod || paymentMethod !== "COD") {
-      throw new Error("Invalid payment method");
-    }
-
-    const userCart = await Cart.findOne({ userId }).populate("items.productId");
-    if (!userCart || !userCart.items.length) {
-      throw new Error("Cart is empty");
-    }
-
-    for (const item of userCart.items) {
-      const product = await Product.findById(item.productId._id);
-      const variant = product.variants.find((v) => v.size === item.size);
-      if (!variant) {
-        throw new Error(`Size ${item.size} not available for ${product.name}`);
-      }
-      if (variant.variantQuantity < item.quantity) {
-        throw new Error(
-          `Insufficient stock for ${product.name} (Size: ${item.size})`
-        );
-      }
-    }
-
-    const addressId = req.session.checkout?.addressId;
-    if (!mongoose.Types.ObjectId.isValid(addressId)) {
-      throw new Error("Invalid address ID");
-    }
-
-    const selectedAddress = await Address.findOne({ _id: addressId, userId });
-    if (!selectedAddress) {
-      throw new Error("Invalid or missing address");
-    }
-
-    const cartItems = userCart.items;
-    let totalPrice = 0;
-
-    for (const item of cartItems) {
-      const product = await Product.findById(item.productId._id);
-      const variant = product.variants.find((v) => v.size === item.size);
-      totalPrice += variant.salePrice * item.quantity;
-    }
-
-    const deliveryCharge = totalPrice > 8000 ? 0 : 200;
-    const grandTotal = totalPrice + deliveryCharge;
-
-    const orderNumber = `ORD${Date.now().toString().slice(-6)}`;
-
-    const newOrder = new Order({
-      userId,
-      paymentMethod,
-      orderDate: new Date(),
-      status: "Pending",
-      address: selectedAddress._id,
-      total: grandTotal,
-      order_items: [],
-      orderNumber,
-    });
-
-    await newOrder.save();
-
-    const orderItems = [];
-
-    for (const item of cartItems) {
-      const product = await Product.findById(item.productId._id);
-      const variantIndex = product.variants.findIndex(
-        (v) => v.size === item.size
-      );
-      if (variantIndex === -1) {
-        throw new Error(`Variant not found for size ${item.size}`);
+      if (!paymentMethod || paymentMethod !== "COD") {
+          throw new Error("Invalid payment method");
       }
 
-      const variant = product.variants[variantIndex];
+      const userCart = await Cart.findOne({ userId }).populate("items.productId");
+      if (!userCart || !userCart.items.length) {
+          throw new Error("Cart is empty");
+      }
 
-      const orderItem = new OrderItem({
-        product_name: product.name,
-        productId: product._id,
-        orderId: newOrder._id,
-        size: item.size,
-        price: variant.salePrice,
-        quantity: item.quantity,
-        total_amount: variant.salePrice * item.quantity,
+      for (const item of userCart.items) {
+          const product = await Product.findById(item.productId._id);
+          const variant = product.variants.find((v) => v.size === item.size);
+          if (!variant) {
+              throw new Error(`Size ${item.size} not available for ${product.name}`);
+          }
+          if (variant.variantQuantity < item.quantity) {
+              throw new Error(`Insufficient stock for ${product.name} (Size: ${item.size})`);
+          }
+      }
+
+      const addressId = req.session.checkout?.addressId;
+      if (!mongoose.Types.ObjectId.isValid(addressId)) {
+          throw new Error("Invalid address ID");
+      }
+
+      const selectedAddress = await Address.findOne({ _id: addressId, userId });
+      if (!selectedAddress) {
+          throw new Error("Invalid or missing address");
+      }
+
+      const cartItems = userCart.items;
+      let totalPrice = 0;
+      for (const item of cartItems) {
+          const product = await Product.findById(item.productId._id);
+          const variant = product.variants.find((v) => v.size === item.size);
+          totalPrice += variant.salePrice * item.quantity;
+      }
+
+      const deliveryCharge = totalPrice > 8000 ? 0 : 200;
+      const discount = req.session.checkout?.coupon?.discount || 0;
+      const couponId = req.session.checkout?.coupon?.couponId || null;
+      const grandTotal = totalPrice - discount + deliveryCharge;
+
+      const orderNumber = `ORD${Date.now().toString().slice(-6)}`;
+
+      const newOrder = new Order({
+          userId,
+          paymentMethod,
+          orderDate: new Date(),
+          status: "Pending",
+          address: selectedAddress._id,
+          total: grandTotal,
+          discount,
+          couponId,
+          order_items: [],
+          orderNumber,
       });
 
-      await orderItem.save();
-      orderItems.push(orderItem._id);
+      await newOrder.save();
 
-      product.variants[variantIndex].variantQuantity -= item.quantity;
-      await product.save();
-    }
+      const orderItems = [];
+      for (const item of cartItems) {
+          const product = await Product.findById(item.productId._id);
+          const variantIndex = product.variants.findIndex((v) => v.size === item.size);
+          if (variantIndex === -1) {
+              throw new Error(`Variant not found for size ${item.size}`);
+          }
 
-    newOrder.order_items = orderItems;
-    await newOrder.save();
+          const variant = product.variants[variantIndex];
 
-    await Cart.findOneAndUpdate({ userId }, { items: [] });
+          const orderItem = new OrderItem({
+              product_name: product.name,
+              productId: product._id,
+              orderId: newOrder._id,
+              size: item.size,
+              price: variant.salePrice,
+              quantity: item.quantity,
+              total_amount: variant.salePrice * item.quantity,
+          });
 
-    delete req.session.checkout;
+          await orderItem.save();
+          orderItems.push(orderItem._id);
 
-    return res.status(200).json({
-      success: true,
-      message: "Order placed successfully",
-      redirect: `/order-success?orderId=${newOrder._id}`,
-    });
+          product.variants[variantIndex].variantQuantity -= item.quantity;
+          await product.save();
+      }
+
+      newOrder.order_items = orderItems;
+      await newOrder.save();
+
+      await Cart.findOneAndUpdate({ userId }, { items: [] });
+
+      delete req.session.checkout;
+
+      return res.status(200).json({
+          success: true,
+          message: "Order placed successfully",
+          redirect: `/order-success?orderId=${newOrder._id}`,
+      });
   } catch (error) {
-    console.error("placeOrder Error:", error.message);
-    return res.status(400).json({ success: false, message: error.message });
+      console.error("placeOrder Error:", error.message);
+      return res.status(400).json({ success: false, message: error.message });
   }
 };
-
 const loadOrderSuccess = async (req, res) => {
   try {
     const orderId = req.query.orderId;
@@ -609,227 +606,190 @@ const getOrderDetails = async (req, res) => {
 
 const downloadInvoice = async (req, res) => {
   try {
-    const orderId = req.params.id;
-    const userId = req.user._id.toString(); // Guaranteed by UserAuth middleware
+      const orderId = req.params.id;
+      const userId = req.user._id.toString();
 
-    if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      console.error("downloadInvoice: Invalid order ID:", orderId);
-      throw new Error("Invalid order ID");
-    }
+      if (!mongoose.Types.ObjectId.isValid(orderId)) {
+          console.error("downloadInvoice: Invalid order ID:", orderId);
+          throw new Error("Invalid order ID");
+      }
 
-    const order = await Order.findOne({ _id: orderId, userId })
-      .populate({
-        path: "order_items",
-        populate: { path: "productId", model: "Product" },
-      })
-      .populate("address");
+      const order = await Order.findOne({ _id: orderId, userId })
+          .populate({
+              path: "order_items",
+              populate: { path: "productId", model: "Product" },
+          })
+          .populate("address")
+          .populate("couponId");
 
-    if (!order) {
-      console.error(
-        `downloadInvoice: Order not found for ID: ${orderId}, User ID: ${userId}`
-      );
-      throw new Error("Order not found");
-    }
+      if (!order) {
+          console.error(`downloadInvoice: Order not found for ID: ${orderId}, User ID: ${userId}`);
+          throw new Error("Order not found");
+      }
 
-    const doc = new PDFDocument({
-      margin: 50,
-      size: "A4",
-      info: {
-        Title: `Invoice ORD${order.orderNumber}`,
-        Author: "Elite Wear",
-        Subject: "Customer Invoice",
-        Creator: "Elite Wear Billing System",
-      },
-    });
-
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=invoice-ORD${order.orderNumber}.pdf`
-    );
-    doc.pipe(res);
-
-    doc.registerFont("Helvetica-Bold", "Helvetica-Bold");
-    doc.registerFont("Helvetica", "Helvetica");
-
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(24)
-      .fillColor("#2c3e50")
-      .text("ELITE WEAR", 50, 50);
-
-    doc.font("Helvetica").fontSize(10).fillColor("#34495e");
-
-    const companyInfo = [
-      "123 Fashion Avenue",
-      "New York, NY 10001",
-      "Phone: (111) 123-1234",
-      "Email: billing@elitewear.com",
-      "Website: www.elitewear.com",
-    ];
-
-    let yPos = 80;
-    companyInfo.forEach((line) => {
-      doc.text(line, 50, yPos);
-      yPos += 15;
-    });
-
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(14)
-      .fillColor("#2c3e50")
-      .text("INVOICE", 400, 50);
-
-    const invoiceDetails = [
-      { label: "Invoice #", value: `ORD${order.orderNumber}` },
-      {
-        label: "Date",
-        value: new Date().toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        }),
-      },
-      {
-        label: "Due Date",
-        value: new Date(
-          Date.now() + 30 * 24 * 60 * 60 * 1000
-        ).toLocaleDateString("en-US"),
-      },
-    ];
-
-    yPos = 80;
-    invoiceDetails.forEach((detail) => {
-      doc.font("Helvetica-Bold").fontSize(10).text(detail.label, 400, yPos);
-      doc.font("Helvetica").text(detail.value, 450, yPos);
-      yPos += 15;
-    });
-
-    const customerAddress = order.address || {};
-    const addressLines = [
-      customerAddress.name || "Customer Name",
-      customerAddress.street || "Street Address",
-      `${customerAddress.city || "City"}, ${customerAddress.state || "State"} ${
-        customerAddress.zip || "ZIP"
-      }`,
-      customerAddress.country || "Country",
-      customerAddress.phone || "",
-    ].filter((line) => line);
-
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(12)
-      .fillColor("#2c3e50")
-      .text("Bill To:", 50, 160);
-
-    yPos = 180;
-    doc.font("Helvetica").fontSize(10);
-    addressLines.forEach((line) => {
-      doc.text(line, 50, yPos);
-      yPos += 15;
-    });
-
-    const tableTop = 260;
-    doc.rect(50, tableTop, 500, 25).fill("#f1f3f5");
-
-    doc.font("Helvetica-Bold").fontSize(10).fillColor("#2c3e50");
-
-    const headers = [
-      { text: "Item Description", x: 55, width: 280 },
-      { text: "Quantity", x: 335, width: 60 },
-      { text: "Unit Price", x: 395, width: 60 },
-      { text: "Total", x: 455, width: 90 },
-    ];
-
-    headers.forEach((header) => {
-      doc.text(header.text, header.x, tableTop + 8, {
-        width: header.width,
-        align: header.text === "Total" ? "right" : "left",
+      const doc = new PDFDocument({
+          margin: 50,
+          size: "A4",
+          info: {
+              Title: `Invoice ORD${order.orderNumber}`,
+              Author: "Elite Wear",
+              Subject: "Customer Invoice",
+              Creator: "Elite Wear Billing System",
+          },
       });
-    });
 
-    yPos = tableTop + 35;
-    let subtotal = 0;
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename=invoice-ORD${order.orderNumber}.pdf`);
+      doc.pipe(res);
 
-    doc.font("Helvetica").fillColor("#34495e");
+      doc.registerFont("Helvetica-Bold", "Helvetica-Bold");
+      doc.registerFont("Helvetica", "Helvetica");
 
-    // Updated to use actual order items instead of hardcoded items
-    const items = order.order_items.map((item) => ({
-      description: `${item.product_name} (Size: ${item.size})`,
-      quantity: item.quantity,
-      price: item.price,
-    }));
+      doc.font("Helvetica-Bold").fontSize(24).fillColor("#2c3e50").text("ELITE WEAR", 50, 50);
 
-    items.forEach((item) => {
-      const itemTotal = item.price * item.quantity;
-      subtotal += itemTotal;
+      doc.font("Helvetica").fontSize(10).fillColor("#34495e");
 
-      const row = [
-        { text: item.description, x: 55, width: 280 },
-        { text: item.quantity.toString(), x: 335, width: 60 },
-        { text: `₹${item.price.toFixed(2)}`, x: 395, width: 60 },
-        { text: `₹${itemTotal.toFixed(2)}`, x: 455, width: 90 },
+      const companyInfo = [
+          "123 Fashion Avenue",
+          "New York, NY 10001",
+          "Phone: (111) 123-1234",
+          "Email: billing@elitewear.com",
+          "Website: www.elitewear.com",
       ];
 
-      row.forEach((cell) => {
-        doc.text(cell.text, cell.x, yPos, {
-          width: cell.width,
-          align: cell.x === 455 ? "right" : "left",
-        });
+      let yPos = 80;
+      companyInfo.forEach((line) => {
+          doc.text(line, 50, yPos);
+          yPos += 15;
       });
 
+      doc.font("Helvetica-Bold").fontSize(14).fillColor("#2c3e50").text("INVOICE", 400, 50);
+
+      const invoiceDetails = [
+          { label: "Invoice #", value: `ORD${order.orderNumber}` },
+          {
+              label: "Date",
+              value: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+          },
+          {
+              label: "Due Date",
+              value: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en-US"),
+          },
+      ];
+
+      yPos = 80;
+      invoiceDetails.forEach((detail) => {
+          doc.font("Helvetica-Bold").fontSize(10).text(detail.label, 400, yPos);
+          doc.font("Helvetica").text(detail.value, 450, yPos);
+          yPos += 15;
+      });
+
+      const customerAddress = order.address || {};
+      const addressLines = [
+          customerAddress.name || "Customer Name",
+          customerAddress.street || "Street Address",
+          `${customerAddress.city || "City"}, ${customerAddress.state || "State"} ${customerAddress.zip || "ZIP"}`,
+          customerAddress.country || "Country",
+          customerAddress.phone || "",
+      ].filter((line) => line);
+
+      doc.font("Helvetica-Bold").fontSize(12).fillColor("#2c3e50").text("Bill To:", 50, 160);
+
+      yPos = 180;
+      doc.font("Helvetica").fontSize(10);
+      addressLines.forEach((line) => {
+          doc.text(line, 50, yPos);
+          yPos += 15;
+      });
+
+      const tableTop = 260;
+      doc.rect(50, tableTop, 500, 25).fill("#f1f3f5");
+
+      doc.font("Helvetica-Bold").fontSize(10).fillColor("#2c3e50");
+
+      const headers = [
+          { text: "Item Description", x: 55, width: 280 },
+          { text: "Quantity", x: 335, width: 60 },
+          { text: "Unit Price", x: 395, width: 60 },
+          { text: "Total", x: 455, width: 90 },
+      ];
+
+      headers.forEach((header) => {
+          doc.text(header.text, header.x, tableTop + 8, { width: header.width, align: header.text === "Total" ? "right" : "left" });
+      });
+
+      yPos = tableTop + 35;
+      let subtotal = 0;
+
+      doc.font("Helvetica").fillColor("#34495e");
+
+      const items = order.order_items.map((item) => ({
+          description: `${item.product_name} (Size: ${item.size})`,
+          quantity: item.quantity,
+          price: item.price,
+      }));
+
+      items.forEach((item) => {
+          const itemTotal = item.price * item.quantity;
+          subtotal += itemTotal;
+
+          const row = [
+              { text: item.description, x: 55, width: 280 },
+              { text: item.quantity.toString(), x: 335, width: 60 },
+              { text: `₹${item.price.toFixed(2)}`, x: 395, width: 60 },
+              { text: `₹${itemTotal.toFixed(2)}`, x: 455, width: 90 },
+          ];
+
+          row.forEach((cell) => {
+              doc.text(cell.text, cell.x, yPos, { width: cell.width, align: cell.x === 455 ? "right" : "left" });
+          });
+
+          yPos += 20;
+          doc.moveTo(50, yPos - 5).lineTo(550, yPos - 5).strokeColor("#ececec").stroke();
+      });
+
+      const deliveryCharge = subtotal > 8000 ? 0 : 200;
+      const discount = order.discount || 0;
+      const grandTotal = order.total;
+
+      const totals = [
+          { label: "Subtotal", value: subtotal.toFixed(2), bold: false },
+          { label: "Delivery Charge", value: deliveryCharge.toFixed(2), bold: false },
+      ];
+
+      if (discount > 0) {
+          totals.push({ label: `Coupon Discount (${order.couponId?.coupencode || ''})`, value: discount.toFixed(2), bold: false });
+      }
+
+      totals.push({ label: "Total", value: grandTotal.toFixed(2), bold: true });
+
       yPos += 20;
-      doc
-        .moveTo(50, yPos - 5)
-        .lineTo(550, yPos - 5)
-        .strokeColor("#ececec")
-        .stroke();
-    });
+      totals.forEach((total) => {
+          doc.font(total.bold ? "Helvetica-Bold" : "Helvetica").text(total.label, 400, yPos);
+          doc.text(`₹${total.value}`, 455, yPos, { width: 90, align: "right" });
+          yPos += 15;
+      });
 
-    const deliveryCharge = order.total - subtotal;
-    const grandTotal = order.total;
+      doc.rect(0, doc.page.height - 80, doc.page.width, 80).fill("#2c3e50");
 
-    const totals = [
-      { label: "Subtotal", value: subtotal.toFixed(2), bold: false },
-      { label: "Delivery Charge", value: deliveryCharge.toFixed(2), bold: false },
-      { label: "Total", value: grandTotal.toFixed(2), bold: true },
-    ];
-
-    yPos += 20;
-    totals.forEach((total) => {
-      doc
-        .font(total.bold ? "Helvetica-Bold" : "Helvetica")
-        .text(total.label, 400, yPos);
-      doc.text(`₹${total.value}`, 455, yPos, { width: 90, align: "right" });
-      yPos += 15;
-    });
-
-    doc.rect(0, doc.page.height - 80, doc.page.width, 80).fill("#2c3e50");
-
-    doc
-      .font("Helvetica")
-      .fontSize(9)
-      .fillColor("#ffffff")
-      .text(
-        "Thank you for shopping with Elite Wear! For any questions regarding your order, please contact our customer service at billing@elitewear.com",
-        50,
-        doc.page.height - 65,
-        { width: 500, align: "center" }
+      doc.font("Helvetica").fontSize(9).fillColor("#ffffff").text(
+          "Thank you for shopping with Elite Wear! For any questions regarding your order, please contact our customer service at billing@elitewear.com",
+          50,
+          doc.page.height - 65,
+          { width: 500, align: "center" }
       );
 
-    doc
-      .fontSize(8)
-      .text(
-        "Terms: Payment due within 30 days. Make checks payable to Elite Wear.",
-        50,
-        doc.page.height - 40,
-        { width: 500, align: "center" }
+      doc.fontSize(8).text(
+          "Terms: Payment due within 30 days. Make checks payable to Elite Wear.",
+          50,
+          doc.page.height - 40,
+          { width: 500, align: "center" }
       );
 
-    doc.end();
+      doc.end();
   } catch (error) {
-    console.error("downloadInvoice Error:", error.message, error.stack);
-    res.redirect("/page-not-found");
+      console.error("downloadInvoice Error:", error.message, error.stack);
+      res.redirect("/page-not-found");
   }
 };
 

@@ -44,12 +44,22 @@ const couponSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
-    }
+    },
+    usedBy: [{
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+        },
+        usedCount: {
+            type: Number,
+            default: 1,
+        },
+    }],
 }, {
     timestamps: true
 });
 
-// Pre-update hook to validate dates
+
 couponSchema.pre('findOneAndUpdate', async function (next) {
     const update = this.getUpdate();
     const startDate = update.$set?.startingDate || (await this.model('Coupon').findById(this.getQuery()._id)).startingDate;

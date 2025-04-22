@@ -1,23 +1,22 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elite Wear - Checkout</title>
-
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/userStyle/checkOut.css">
 </head>
 <body>
-    
     <%- include("../partials/user/header") %>
 
     <div class="overlay" id="overlay"></div>
+    <div class="coupon-overlay" id="couponOverlay"></div>
 
+    <!-- Order Summary Sidebar -->
     <div class="order-summary-sidebar" id="orderSummarySidebar">
         <div class="sidebar-close" id="closeSidebar">
             <i class="fas fa-times"></i>
@@ -36,7 +35,7 @@
                         <div class="order-item-qty">Qty: <%= item.quantity %></div>
                     </div>
                     <div class="order-item-price">
-                        ₹<%= (item.productId.variants?.[0]?.salePrice || 0) * item.quantity %>
+                        ₹<%= (item.productId.variants.find(v => v.size === item.size)?.salePrice || 0) * item.quantity %>
                     </div>
                 </div>
             <% }); %>
@@ -50,15 +49,37 @@
                 <div>Delivery charge</div>
                 <div><%= deliveryCharge === 0 ? 'FREE' : '₹' + deliveryCharge.toFixed(2) %></div>
             </div>
-            <div class="price-row">
-                <div>No coupon available</div>
-            </div>
+            <% if (discount > 0) { %>
+                <div class="price-row">
+                    <div>Coupon Discount (<%= appliedCoupon.code %>)</div>
+                    <div>-₹<%= discount.toFixed(2) %></div>
+                </div>
+            <% } %>
             <div class="divider"></div>
             <div class="price-row grand-total">
                 <div>Grand Total</div>
                 <div>₹<%= grandTotal.toFixed(2) %></div>
             </div>
         </div>
+    </div>
+
+    <!-- Coupon Sidebar -->
+    <div class="coupon-sidebar" id="couponSidebar">
+        <div class="coupon-sidebar-close" id="closeCouponSidebar">
+            <i class="fas fa-times"></i>
+        </div>
+        <div class="coupon-sidebar-header">
+            APPLY COUPON
+        </div>
+        <div class="coupon-input-group">
+            <input type="text" placeholder="Enter coupon code" id="couponCodeInput">
+            <button class="apply-btn" onclick="applyCoupon()">APPLY</button>
+        </div>
+        <div class="available-coupons-title">AVAILABLE COUPONS</div>
+        <div class="coupon-list" id="couponList">
+            <!-- Coupons will be populated by JavaScript -->
+        </div>
+        <div id="couponError" class="text-danger mt-2" style="display: none;"></div>
     </div>
 
     <div class="main-container">
@@ -83,7 +104,14 @@
                         <% }); %>
                     </div>
                     <div class="coupon-applied">
-                        <span class="coupon-Code"><strong>Apply CODE</strong></span>
+                        <% if (appliedCoupon) { %>
+                            <span class="coupon-Code"><strong><%= appliedCoupon.code %> APPLIED</strong> <button class="btn btn-sm text-danger p-0 ms-2" onclick="removeCoupon()">Remove</button></span>
+                        <% } else { %>
+                            <button class="coupon-toggle-btn" id="openCouponSidebar">
+                                <strong>APPLY COUPON</strong>
+                                <i class="fas fa-tag ms-1"></i>
+                            </button>
+                        <% } %>
                     </div>
                     <div class="brand-image-container mt-4">
                         <img src="/Uploads/ChatGPT Image Apr 13, 2025, 06_50_48 PM.png" alt="ELITE WEAR Brand" class="img-fluid brand-logo">
@@ -97,7 +125,7 @@
                         <div class="col-md-6 mb-3">
                             <div class="address-card">
                                 <a href="/getaddress-edit/<%= addr._id %>" class="edit-icon"><i class="fas fa-pencil-alt"></i></a>
-                                <h6 class="address-name"><%= addr.name || addr.fullname %></h6> 
+                                <h6 class="address-name"><%= addr.name || addr.fullname %></h6>
                                 <p class="address-details mb-3">
                                     <%= addr.address || 'No address' %><br>
                                     <%= addr.landmark || '' %>,
@@ -124,59 +152,274 @@
             </div>
         </div>
     </div>
-    
+
     <%- include("../partials/user/footer") %>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded fired');
+
+            // Order Summary Sidebar
             const openSidebar = document.getElementById('openSidebar');
             const closeSidebar = document.getElementById('closeSidebar');
             const sidebar = document.getElementById('orderSummarySidebar');
             const overlay = document.getElementById('overlay');
-            
-            openSidebar.addEventListener('click', function() {
-                sidebar.classList.add('active');
-                overlay.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            });
-            
-            closeSidebar.addEventListener('click', function() {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            });
-            
-            overlay.addEventListener('click', function() {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            });
-        });
 
-        function selectAddress(addressId) {
-            fetch('/select-delivery-address', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ addressId }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.href = '/checkout-payment';
-                } else {
-                    alert(data.message || 'Failed to select address');
+            if (openSidebar && sidebar && overlay) {
+                console.log('openSidebar found:', openSidebar);
+                openSidebar.addEventListener('click', function() {
+                    console.log('openSidebar clicked');
+                    sidebar.classList.add('active');
+                    overlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+            } else {
+                console.error('Order summary sidebar elements missing:', { openSidebar, sidebar, overlay });
+            }
+
+            if (closeSidebar && sidebar && overlay) {
+                closeSidebar.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                });
+            }
+
+            if (overlay && sidebar) {
+                overlay.addEventListener('click', function() {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                });
+            }
+
+            // Coupon Sidebar
+            const openCouponSidebar = document.getElementById('openCouponSidebar');
+            const closeCouponSidebar = document.getElementById('closeCouponSidebar');
+            const couponSidebar = document.getElementById('couponSidebar');
+            const couponOverlay = document.getElementById('couponOverlay');
+            const couponError = document.getElementById('couponError');
+            const totalPrice = <%= totalPrice %>; // Pass totalPrice from EJS
+
+            if (openCouponSidebar && couponSidebar && couponOverlay) {
+                console.log('openCouponSidebar found:', openCouponSidebar);
+                openCouponSidebar.addEventListener('click', function() {
+                    console.log('openCouponSidebar clicked');
+                    couponSidebar.classList.add('active');
+                    couponOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                    fetchCoupons();
+                });
+            } else {
+                console.log('openCouponSidebar not found, likely because a coupon is applied');
+            }
+
+            if (closeCouponSidebar && couponSidebar && couponOverlay) {
+                closeCouponSidebar.addEventListener('click', function() {
+                    couponSidebar.classList.remove('active');
+                    couponOverlay.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                    couponError.style.display = 'none';
+                });
+            }
+
+            if (couponOverlay && couponSidebar) {
+                couponOverlay.addEventListener('click', function() {
+                    couponSidebar.classList.remove('active');
+                    couponOverlay.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                    couponError.style.display = 'none';
+                });
+            }
+
+            // Fallback coupons from EJS
+            const ejsCoupons = <%- JSON.stringify(coupons) %>;
+            console.log('EJS coupons:', ejsCoupons);
+
+            async function fetchCoupons() {
+                try {
+                    console.log('Fetching coupons from /coupons');
+                    const response = await fetch('/coupons');
+                    const result = await response.json();
+                    console.log('Fetched coupons response:', result);
+                    if (result.success) {
+                        renderCoupons(result.coupons);
+                        couponError.style.display = 'none';
+                    } else {
+                        console.log('Fetch failed, using EJS coupons');
+                        renderCoupons(ejsCoupons); // Fallback to EJS coupons
+                        couponError.textContent = 'Failed to load coupons from server, showing available coupons';
+                        couponError.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Error fetching coupons:', error);
+                    console.log('Fetch error, using EJS coupons');
+                    renderCoupons(ejsCoupons); // Fallback to EJS coupons
+                    couponError.textContent = 'Server error while loading coupons, showing available coupons';
+                    couponError.style.display = 'block';
                 }
-            })
-            .catch(error => {
-                console.error('Error selecting address:', error);
-                alert('Server issue');
-            });
-        }
+            }
+
+            function renderCoupons(coupons) {
+                console.log('Rendering coupons:', coupons);
+                const couponList = document.getElementById('couponList');
+                couponList.innerHTML = '';
+                if (coupons.length === 0) {
+                    couponList.innerHTML = '<p>No coupons available</p>';
+                    return;
+                }
+                coupons.forEach(coupon => {
+                    const isEligible = coupon.minimumPurchase <= totalPrice;
+                    const couponItem = document.createElement('div');
+                    couponItem.className = 'coupon-item';
+                    couponItem.innerHTML = `
+                        <div class="coupon-code">${coupon.coupencode}</div>
+                        <div class="coupon-status status-${isEligible ? 'available' : 'unavailable'}">${isEligible ? 'Available' : 'Unavailable'}</div>
+                        <div class="coupon-offer">${coupon.couponpercent}% off entire order</div>
+                        <div class="coupon-min-purchase">Minimum purchase of ₹${coupon.minimumPurchase.toFixed(2)}</div>
+                        <div class="coupon-expiry">Expiry date: ${new Date(coupon.expiryDate).toLocaleDateString()}</div>
+                        <button class="coupon-apply-btn" data-coupon="${coupon.coupencode}" onclick="applyCoupon('${coupon.coupencode}')" ${isEligible ? '' : 'disabled'}>APPLY</button>
+                        ${!isEligible ? '<p class="text-danger mt-1">Add ₹' + (coupon.minimumPurchase - totalPrice).toFixed(2) + ' more to use this coupon</p>' : ''}
+                    `;
+                    couponList.appendChild(couponItem);
+                });
+            }
+
+            window.applyCoupon = async function(couponCode) {
+                if (!couponCode) {
+                    couponCode = document.getElementById('couponCodeInput').value.trim();
+                }
+                if (!couponCode) {
+                    couponError.textContent = 'Please enter a coupon code';
+                    couponError.style.display = 'block';
+                    return;
+                }
+
+                try {
+                    console.log('Applying coupon:', couponCode);
+                    const response = await fetch('/apply-coupon', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ couponCode }),
+                    });
+                    const result = await response.json();
+                    console.log('Apply coupon response:', result);
+                    if (result.success) {
+                        couponError.style.display = 'none';
+                        document.querySelector('.coupon-applied').innerHTML = `
+                            <span class="coupon-Code"><strong>${couponCode} APPLIED</strong> <button class="btn btn-sm text-danger p-0 ms-2" onclick="removeCoupon()">Remove</button></span>
+                        `;
+                        document.querySelector('.subtotal-section').innerHTML = `
+                            <div class="price-row">
+                                <div>Subtotal (incl. of taxes)</div>
+                                <div>₹${result.data.totalPrice}</div>
+                            </div>
+                            <div class="price-row">
+                                <div>Delivery charge</div>
+                                <div>${result.data.deliveryCharge === '0.00' ? 'FREE' : '₹' + result.data.deliveryCharge}</div>
+                            </div>
+                            <div class="price-row">
+                                <div>Coupon Discount (${couponCode})</div>
+                                <div>-₹${result.data.discount}</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="price-row grand-total">
+                                <div>Grand Total</div>
+                                <div>₹${result.data.grandTotal}</div>
+                            </div>
+                        `;
+                        couponSidebar.classList.remove('active');
+                        couponOverlay.classList.remove('active');
+                        document.body.style.overflow = 'auto';
+                    } else {
+                        couponError.textContent = result.message || 'Failed to apply coupon';
+                        couponError.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Error applying coupon:', error);
+                    couponError.textContent = 'Server error while applying coupon';
+                    couponError.style.display = 'block';
+                }
+            };
+
+            window.removeCoupon = async function() {
+                try {
+                    console.log('Removing coupon');
+                    const response = await fetch('/remove-coupon', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                    });
+                    const result = await response.json();
+                    console.log('Remove coupon response:', result);
+                    if (result.success) {
+                        couponError.style.display = 'none';
+                        const couponAppliedDiv = document.querySelector('.coupon-applied');
+                        couponAppliedDiv.innerHTML = `
+                            <button class="coupon-toggle-btn" id="openCouponSidebar">
+                                <strong>APPLY COUPON</strong>
+                                <i class="fas fa-tag ms-1"></i>
+                            </button>
+                        `;
+                        document.querySelector('.subtotal-section').innerHTML = `
+                            <div class="price-row">
+                                <div>Subtotal (incl. of taxes)</div>
+                                <div>₹${result.data.totalPrice}</div>
+                            </div>
+                            <div class="price-row">
+                                <div>Delivery charge</div>
+                                <div>${result.data.deliveryCharge === '0.00' ? 'FREE' : '₹' + result.data.deliveryCharge}</div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="price-row grand-total">
+                                <div>Grand Total</div>
+                                <div>₹${result.data.grandTotal}</div>
+                            </div>
+                        `;
+                        const newOpenCouponSidebar = document.getElementById('openCouponSidebar');
+                        if (newOpenCouponSidebar) {
+                            newOpenCouponSidebar.addEventListener('click', function() {
+                                couponSidebar.classList.add('active');
+                                couponOverlay.classList.add('active');
+                                document.body.style.overflow = 'hidden';
+                                fetchCoupons();
+                            });
+                        }
+                    } else {
+                        couponError.textContent = result.message || 'Failed to remove coupon';
+                        couponError.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('Error removing coupon:', error);
+                    couponError.textContent = 'Server error while removing coupon';
+                    couponError.style.display = 'block';
+                }
+            };
+
+            function selectAddress(addressId) {
+                console.log('Selecting address:', addressId);
+                fetch('/select-delivery-address', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ addressId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Select address response:', data);
+                    if (data.success) {
+                        window.location.href = '/checkout-payment';
+                    } else {
+                        couponError.textContent = data.message || 'Failed to select address';
+                        couponError.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error selecting address:', error);
+                    couponError.textContent = 'Server issue';
+                    couponError.style.display = 'block';
+                });
+            }
+        });
     </script>
 </body>
-</html> 
+</html>

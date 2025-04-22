@@ -176,6 +176,7 @@ router.use((req, res) => {
   res.status(404).redirect("/page-not-found");
 });
 
-router.get("/getcoupon", UserAuth, CouponController.getcoupon);
-router.post("/applyCoupon", UserAuth, CouponController.applyCoupon);
+router.get("/coupons", UserAuth, CouponController.getAvailableCoupons);
+router.post("/apply-coupon", UserAuth, CouponController.applyCoupon);
+router.post("/remove-coupon", UserAuth, CouponController.removeCoupon);
 module.exports = router;

@@ -16,7 +16,7 @@ const orderSchema = new mongoose.Schema({
         default: Date.now,
     },
     deliveryDate: {
-        type: Date, 
+        type: Date,
     },
     status: {
         type: String,
@@ -46,6 +46,11 @@ const orderSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Coupon",
     },
+    discount: {
+        type: Number,
+        default: 0,
+        min: 0,
+    },
     total: {
         type: Number,
         required: true,
@@ -64,19 +69,19 @@ const orderSchema = new mongoose.Schema({
     },
     refunded: {
         type: Boolean,
-        default: false, 
+        default: false,
     },
     cancelReason: {
         type: String,
-        maxlength: 500, 
+        maxlength: 500,
     },
     returnReason: {
         type: String,
-        maxlength: 500, 
+        maxlength: 500,
     },
     returnRejectionReason: {
         type: String,
-        maxlength: 500, 
+        maxlength: 500,
     },
     returnRequestedDate: {
         type: Date,

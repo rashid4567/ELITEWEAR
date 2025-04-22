@@ -45,6 +45,12 @@
                             <div class="summary-label">Delivery charge:</div>
                             <div class="summary-value"><%= deliveryCharge === 0 ? 'Free' : '₹' + deliveryCharge.toFixed(2) %></div>
                         </div>
+                        <% if (couponDiscount > 0 && appliedCoupon) { %>
+                            <div class="summary-row">
+                                <div class="summary-label">Coupon Discount (<%= appliedCoupon %>):</div>
+                                <div class="summary-value">-₹<%= couponDiscount.toFixed(2) %></div>
+                            </div>
+                        <% } %>
                         <div class="summary-row total-row">
                             <div class="summary-label">Total:</div>
                             <div class="summary-value">₹<%= grandTotal.toFixed(2) %></div>
@@ -59,35 +65,30 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function placeOrder() {
-          const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-          
-      
-          fetch('/place-order', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ paymentMethod }),
-          })
-            .then(response => {
-            
-              return response.json();
+            const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+            const couponCode = "<%= appliedCoupon || '' %>";
+
+            fetch('/place-order', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ paymentMethod, couponCode }),
             })
+            .then(response => response.json())
             .then(data => {
-            
-              if (data.success) {
-            
-                window.location.href = data.redirect;
-              } else {
-                console.error("Order failed:", data.message);
-                alert(data.message || 'Failed to place order');
-              }
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    console.error("Order failed:", data.message);
+                    alert(data.message || 'Failed to place order');
+                }
             })
             .catch(error => {
-              console.error('Fetch error:', error);
-              alert('Failed to place order: ' + error.message);
+                console.error('Fetch error:', error);
+                alert('Failed to place order: ' + error.message);
             });
         }
-      </script>
+    </script>
 </body>
 </html>
