@@ -8,14 +8,29 @@
     <link rel="stylesheet" href="/userStyle/signup.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-       
+        .referral-section {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .referral-section p {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .referral-input {
+            margin-top: 0.5rem;
+        }
+        .error-message {
+            color: red;
+            font-size: 0.8rem;
+            margin-top: 0.2rem;
+            display: none;
+        }
     </style>
 </head>
 
 <body>
     <form class="signup-container" id="signupForm" method="post" action="/signup">
         <h1>Sign up</h1>
-
 
         <% if (message) { %>
             <div class="alert alert-danger text-center">
@@ -26,7 +41,7 @@
         <div class="form-group">
             <label for="fullname">Full Name</label>
             <div class="input-wrapper">
-                <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" >
+                <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" value="<%= formData?.fullname || '' %>">
                 <div id="error1" class="error-message"></div>
             </div>
         </div>
@@ -34,7 +49,7 @@
         <div class="form-group">
             <label for="email">Email</label>
             <div class="input-wrapper">
-                <input type="email" id="email" name="email" placeholder="Enter your email" >
+                <input type="email" id="email" name="email" placeholder="Enter your email" value="<%= formData?.email || '' %>">
                 <div id="error2" class="error-message"></div>
             </div>
         </div>
@@ -42,7 +57,7 @@
         <div class="form-group">
             <label for="mobile">Mobile Number</label>
             <div class="input-wrapper">
-                <input type="tel" id="mobile" name="mobile" placeholder="Enter your mobile number" >
+                <input type="tel" id="mobile" name="mobile" placeholder="Enter your mobile number" value="<%= formData?.mobile || '' %>">
                 <div id="error3" class="error-message"></div>
             </div>
         </div>
@@ -50,7 +65,7 @@
         <div class="form-group">
             <label for="password">Password</label>
             <div class="input-wrapper">
-                <input type="password" id="password" name="password" placeholder="Enter your password" >
+                <input type="password" id="password" name="password" placeholder="Enter your password">
                 <div id="error4" class="error-message"></div>
                 <svg class="icon toggle-password" data-target="password" xmlns="http://www.w3.org/2000/svg" width="16"
                     height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -64,7 +79,7 @@
         <div class="form-group">
             <label for="confirm-password">Confirm Password</label>
             <div class="input-wrapper">
-                <input type="password" id="confirm_password" name="cpassword" placeholder="Confirm your password" >
+                <input type="password" id="confirm_password" name="cpassword" placeholder="Confirm your password">
                 <div id="error5" class="error-message"></div>
                 <svg class="icon toggle-password" data-target="confirm-password" xmlns="http://www.w3.org/2000/svg"
                     width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -76,9 +91,11 @@
         </div>
 
         <div class="referral-section">
-            <p>Anyone has referred You? Claim the reward</p>
-            <button type="button" class="referral-btn" id="referralBtn">REFERRAL CODE</button>
-            <input type="hidden" id="referralCode" name="referralCode">
+            <p>Have a referral code? Enter it to claim rewards!</p>
+            <div class="form-group referral-input">
+                <input type="text" id="referralCode" name="referralCode" placeholder="Enter referral code (optional)">
+                <div id="error6" class="error-message"></div>
+            </div>
         </div>
 
         <p class="login-text">Already have an account? <a href="/login">Log in</a></p>
@@ -114,35 +131,34 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-      
             const signupForm = document.getElementById('signupForm');
             const fullnameInput = document.getElementById('fullname');
             const emailInput = document.getElementById('email');
             const mobileInput = document.getElementById('mobile');
             const passwordInput = document.getElementById('password');
             const confirmPasswordInput = document.getElementById("confirm_password");
+            const referralCodeInput = document.getElementById('referralCode');
             const submitBtn = document.querySelector('.signup-button');
 
-      
             const errorElements = {
                 name: document.getElementById('error1'),
                 email: document.getElementById('error2'),
                 mobile: document.getElementById('error3'),
                 password: document.getElementById('error4'),
-                confirm: document.getElementById('error5')
+                confirm: document.getElementById('error5'),
+                referral: document.getElementById('error6')
             };
 
             initEventListeners();
 
             function initEventListeners() {
-         
                 fullnameInput.addEventListener('blur', validateName);
                 emailInput.addEventListener('blur', validateEmail);
                 mobileInput.addEventListener('blur', validateMobile);
                 passwordInput.addEventListener('input', validatePassword);
                 confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+                referralCodeInput.addEventListener('blur', validateReferralCode);
 
-       
                 document.querySelectorAll('.toggle-password').forEach(button => {
                     button.addEventListener('click', function () {
                         const targetId = this.getAttribute('data-target');
@@ -152,16 +168,6 @@
                     });
                 });
 
-              
-                document.getElementById('referralBtn').addEventListener('click', function () {
-                    const code = prompt("Enter your referral code:");
-                    if (code) {
-                        document.getElementById('referralCode').value = code;
-                        this.textContent = "CODE APPLIED: " + code;
-                    }
-                });
-
-         
                 signupForm.addEventListener("submit", async function (event) {
                     if (!validateForm()) {
                         event.preventDefault();
@@ -175,9 +181,10 @@
                 const isMobileValid = validateMobile();
                 const isPasswordValid = validatePassword();
                 const isPasswordMatchValid = validatePasswordMatch();
+                const isReferralValid = validateReferralCode();
 
                 return isNameValid && isEmailValid && isMobileValid &&
-                       isPasswordValid && isPasswordMatchValid;
+                       isPasswordValid && isPasswordMatchValid && isReferralValid;
             }
 
             function validateName() {
@@ -259,6 +266,22 @@
                     hideError(errorElements.confirm);
                     return true;
                 }
+            }
+
+            function validateReferralCode() {
+                const referralValue = referralCodeInput.value.trim();
+                if (referralValue === "") {
+                    hideError(errorElements.referral);
+                    return true; // Referral code is optional
+                }
+                // Basic format check (adjust based on your referral code format)
+                const referralPattern = /^[A-Z0-9]{8}$/;
+                if (!referralPattern.test(referralValue)) {
+                    showError(errorElements.referral, "Invalid referral code format");
+                    return false;
+                }
+                hideError(errorElements.referral);
+                return true;
             }
 
             function showError(element, message) {

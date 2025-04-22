@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Referral Code - Elite Wear</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/userStyle/referalCode.css">
+    <style>
+        .form-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-submit {
+            background-color: #007bff;
+            color: white;
+            width: 100%;
+        }
+        .description {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <%- include("../partials/user/header") %>
+
+    <div class="container">
+        <div class="form-container">
+            <h1>Enter Referral Code</h1>
+            <p class="description">
+                Enter your friend's referral code to unlock exclusive rewards! When you 
+                sign up using a referral code, both you and your friend will receive a 
+                bonus. Don't miss out on this opportunity to start with extra benefits!
+            </p>
+            
+            <% if (message) { %>
+                <div class="alert alert-danger"><%= message %></div>
+            <% } %>
+            
+            <form action="/validate-referral" method="POST" id="referralForm">
+                <div class="mb-4">
+                    <input type="text" class="form-control" id="referralCode" name="referralCode" placeholder="e.g., IT3BCE4GH" required>
+                    <div id="referralError" class="text-danger mt-2" style="display: none;"></div>
+                </div>
+                <button type="submit" class="btn btn-submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <%- include("../partials/user/footer") %>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('referralForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const referralCode = document.getElementById('referralCode').value.trim();
+            const referralError = document.getElementById('referralError');
+
+            if (!referralCode.match(/^[A-Z0-9]{8}$/)) {
+                referralError.textContent = 'Referral code must be 8 alphanumeric characters';
+                referralError.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch('/validate-referral', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ referralCode }),
+                });
+                const result = await response.json();
+                if (result.success) {
+                    window.location.href = result.redirectUrl;
+                } else {
+                    referralError.textContent = result.message;
+                    referralError.style.display = 'block';
+                }
+            } catch (error) {
+                referralError.textContent = 'Server error: ' + error.message;
+                referralError.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

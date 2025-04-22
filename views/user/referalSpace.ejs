@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Referral Space - Elite Wear</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/userStyle/referalSpace.css">
+</head>
+<body>
+    <%- include("../partials/user/header") %>
+
+    <div class="container mt-4">
+        <h2>Referral Space</h2>
+        <% if (message) { %>
+            <div class="alert <%= message.includes('successfully') ? 'alert-success' : 'alert-danger' %>">
+                <%= message %>
+            </div>
+        <% } %>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Your Referral Details</h5>
+                <p><strong>Your Referral Code:</strong> <%= user.referralCode %></p>
+                <p><strong>Wallet Balance:</strong> ₹<%= wallet.amount.toFixed(2) %></p>
+                <p>Share your referral code with friends to earn 200 rupees when they sign up, and they’ll get 100 rupees!</p>
+                <a href="/referral" class="btn btn-primary">View Referral Page</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Wallet Transactions</h5>
+                <% if (wallet.transactions && wallet.transactions.length > 0) { %>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                                <th>Transaction ID</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% wallet.transactions.forEach(tx => { %>
+                                <tr>
+                                    <td><%= new Date(tx.date).toLocaleDateString() %></td>
+                                    <td><%= tx.type.charAt(0).toUpperCase() + tx.type.slice(1) %></td>
+                                    <td>₹<%= tx.amount.toFixed(2) %></td>
+                                    <td><%= tx.description %></td>
+                                    <td><%= tx.transactionRef %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                <% } else { %>
+                    <p>No transactions yet.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <%- include("../partials/user/footer") %>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

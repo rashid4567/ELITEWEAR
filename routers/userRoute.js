@@ -10,6 +10,7 @@ const checkOutController = require("../controller/user/checkOutController");
 const orderController = require("../controller/user/orderController");
 const cartController = require("../controller/user/cartController");
 const walletController = require("../controller/user/walletController");
+const referralController = require("../controller/user/referalController");
 const CouponController = require("../controller/user/userCouponCoontroller")
 const { UserAuth } = require("../middleware/auth");
 
@@ -30,6 +31,12 @@ router.post("/login", userControllers.login);
 
 router.get("/", checkBlockedStatus, userControllers.loadHomepage);
 router.get("/logout", checkBlockedStatus, userControllers.logout);
+
+// Referral routes
+router.get("/referral", UserAuth, referralController.loadReferralPage);
+router.get("/referalSpace", UserAuth, referralController.loadReferralSpace);
+router.get("/validate-referral", UserAuth, referralController.validateReferralCode);
+router.post("/validate-referral", UserAuth, referralController.validateReferralCode);
 
 // Password reset routes
 router.get("/forgot-password", profileController.forgotPassword);

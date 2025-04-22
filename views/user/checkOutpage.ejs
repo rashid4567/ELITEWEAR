@@ -200,7 +200,7 @@
             const couponSidebar = document.getElementById('couponSidebar');
             const couponOverlay = document.getElementById('couponOverlay');
             const couponError = document.getElementById('couponError');
-            const totalPrice = <%= totalPrice %>; // Pass totalPrice from EJS
+            const totalPrice = "<%= totalPrice %>";
 
             if (openCouponSidebar && couponSidebar && couponOverlay) {
                 console.log('openCouponSidebar found:', openCouponSidebar);
@@ -234,7 +234,7 @@
             }
 
             // Fallback coupons from EJS
-            const ejsCoupons = <%- JSON.stringify(coupons) %>;
+            const ejsCoupons =" <%- JSON.stringify(coupons) %>";
             console.log('EJS coupons:', ejsCoupons);
 
             async function fetchCoupons() {
