@@ -142,7 +142,7 @@ const resetPassword = async (req, res) => {
     const email = req.session.email;
 
     if (!email) {
-      return res.status(400).json({
+      return res.json({
         success: false,
         message: "Session expired or invalid. Please try again.",
       });

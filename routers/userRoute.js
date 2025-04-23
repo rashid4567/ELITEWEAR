@@ -11,7 +11,7 @@ const orderController = require("../controller/user/orderController");
 const cartController = require("../controller/user/cartController");
 const walletController = require("../controller/user/walletController");
 const referralController = require("../controller/user/referalController");
-const CouponController = require("../controller/user/userCouponCoontroller")
+const CouponController = require("../controller/user/userCouponCoontroller");
 const { UserAuth } = require("../middleware/auth");
 
 const { checkBlockedStatus } = userControllers;
@@ -34,10 +34,11 @@ router.get("/logout", checkBlockedStatus, userControllers.logout);
 
 // Referral routes
 router.get("/referral", UserAuth, referralController.loadReferralPage);
-router.get("/referalSpace", UserAuth, referralController.loadReferralSpace);
-router.get("/validate-referral", UserAuth, referralController.validateReferralCode);
-router.post("/validate-referral", UserAuth, referralController.validateReferralCode);
-
+router.get("/referralSpace", referralController.loadReferralSpace);
+router.get("/validate-referral", UserAuth, referralController.loadReferralPage);
+router.post("/validate-referral", UserAuth, referralController.loadReferralPage);
+router.post("/validate-referral-code", referralController.validateReferralCode);
+router.post("/apply-referral", referralController.applyReferral);
 // Password reset routes
 router.get("/forgot-password", profileController.forgotPassword);
 router.post("/forgot-email-id", profileController.forgotemailValidations);
@@ -186,4 +187,5 @@ router.use((req, res) => {
 router.get("/coupons", UserAuth, CouponController.getAvailableCoupons);
 router.post("/apply-coupon", UserAuth, CouponController.applyCoupon);
 router.post("/remove-coupon", UserAuth, CouponController.removeCoupon);
+
 module.exports = router;

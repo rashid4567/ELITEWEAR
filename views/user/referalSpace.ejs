@@ -3,67 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Referral Space - Elite Wear</title>
+    <title>Enter Referral Code</title>
+  
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/userStyle/referalSpace.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+        }
+        .form-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .form-control {
+            height: 50px;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        .btn-submit {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            height: 50px;
+            font-size: 18px;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+        .btn-submit:hover {
+            background-color: #0069d9;
+        }
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            display: none;
+        }
+        .back-link {
+            display: block;
+            margin-top: 20px;
+            color: #6c757d;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            color: #343a40;
+        }
+    </style>
 </head>
 <body>
-    <%- include("../partials/user/header") %>
-
-    <div class="container mt-4">
-        <h2>Referral Space</h2>
-        <% if (message) { %>
-            <div class="alert <%= message.includes('successfully') ? 'alert-success' : 'alert-danger' %>">
-                <%= message %>
-            </div>
-        <% } %>
-
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Your Referral Details</h5>
-                <p><strong>Your Referral Code:</strong> <%= user.referralCode %></p>
-                <p><strong>Wallet Balance:</strong> ₹<%= wallet.amount.toFixed(2) %></p>
-                <p>Share your referral code with friends to earn 200 rupees when they sign up, and they’ll get 100 rupees!</p>
-                <a href="/referral" class="btn btn-primary">View Referral Page</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Wallet Transactions</h5>
-                <% if (wallet.transactions && wallet.transactions.length > 0) { %>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Type</th>
-                                <th>Amount</th>
-                                <th>Description</th>
-                                <th>Transaction ID</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% wallet.transactions.forEach(tx => { %>
-                                <tr>
-                                    <td><%= new Date(tx.date).toLocaleDateString() %></td>
-                                    <td><%= tx.type.charAt(0).toUpperCase() + tx.type.slice(1) %></td>
-                                    <td>₹<%= tx.amount.toFixed(2) %></td>
-                                    <td><%= tx.description %></td>
-                                    <td><%= tx.transactionRef %></td>
-                                </tr>
-                            <% }); %>
-                        </tbody>
-                    </table>
-                <% } else { %>
-                    <p>No transactions yet.</p>
-                <% } %>
-            </div>
+    <div class="container">
+        <div class="form-container">
+            <h1>Enter Referral Code</h1>
+            
+            <p class="description">
+                Enter your friend's referral code to unlock exclusive rewards! When you 
+                sign up using a referral code, both you and your friend will receive a 
+                bonus. Don't miss out on this opportunity to start with extra benefits!
+            </p>
+            
+            <form id="referralForm">
+                <div class="mb-4">
+                    <input type="text" class="form-control" id="referralCode" placeholder="IT3BCE4GH">
+                </div>
+                
+                <button type="submit" class="btn btn-submit">Submit</button>
+                <div id="errorMessage" class="error-message"></div>
+            </form>
+            
+            <a href="/signup" class="back-link">← Back to Sign Up</a>
         </div>
     </div>
-
-    <%- include("../partials/user/footer") %>
-
+    
+    <!-- Bootstrap 5 JS Bundle with Popper -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const referralForm = document.getElementById('referralForm');
+            const referralCodeInput = document.getElementById('referralCode');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            referralForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                const referralCode = referralCodeInput.value.trim();
+                if (!referralCode) {
+                    showError('Please enter a referral code');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/validate-referral-code', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ referralCode })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        // Redirect to signup page with referral code
+                        window.location.href = `/signup?referral=${referralCode}`;
+                    } else {
+                        showError(result.message || 'Invalid referral code');
+                    }
+                } catch (error) {
+                    console.error('Error validating referral code:', error);
+                    showError('An error occurred while validating the referral code');
+                }
+            });
+            
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>

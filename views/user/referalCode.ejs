@@ -3,87 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enter Referral Code - Elite Wear</title>
+    <title>My Referral Code - Elite Wear</title>
+    <!-- Bootstrap 5 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/userStyle/referalCode.css">
     <style>
-        .form-container {
-            max-width: 500px;
-            margin: 50px auto;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .referral-section {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
         }
-        .btn-submit {
-            background-color: #007bff;
-            color: white;
-            width: 100%;
-        }
-        .description {
-            font-size: 0.9rem;
-            color: #555;
+        .referral-title {
+            color: #333;
+            font-size: 24px;
+            font-weight: 600;
             margin-bottom: 20px;
+        }
+        .referral-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+        }
+        .referral-description {
+            color: #555;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        .referral-code-box {
+            background-color: white;
+            border: 2px dashed #007bff;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .referral-code-box span {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: #333;
+        }
+        .copy-icon {
+            font-size: 22px;
+            color: #007bff;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        .copy-icon:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+        .copy-success {
+            display: none;
+            color: #28a745;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .share-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .share-button {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #495057;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .share-button:hover {
+            background-color: #e9ecef;
+            color: #212529;
         }
     </style>
 </head>
 <body>
+    <!-- Navbar -->
     <%- include("../partials/user/header") %>
 
-    <div class="container">
-        <div class="form-container">
-            <h1>Enter Referral Code</h1>
-            <p class="description">
-                Enter your friend's referral code to unlock exclusive rewards! When you 
-                sign up using a referral code, both you and your friend will receive a 
-                bonus. Don't miss out on this opportunity to start with extra benefits!
-            </p>
+    <div class="container mt-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-dark">Profile</a></li>
+                <li class="breadcrumb-item active">Referral Code</li>
+            </ol>
+        </nav>
+
+        <div class="row">
+            <!-- Left Sidebar -->
+            <%- include("../partials/user/profileSidebar") %>
             
-            <% if (message) { %>
-                <div class="alert alert-danger"><%= message %></div>
-            <% } %>
-            
-            <form action="/validate-referral" method="POST" id="referralForm">
-                <div class="mb-4">
-                    <input type="text" class="form-control" id="referralCode" name="referralCode" placeholder="e.g., IT3BCE4GH" required>
-                    <div id="referralError" class="text-danger mt-2" style="display: none;"></div>
+            <!-- Right Content -->
+            <div class="col-lg-9">
+                <div class="referral-section">
+                    <h2 class="referral-title">My Referral Code</h2>
+                    
+                    <div class="referral-card">
+                        <p class="referral-description">
+                            Invite your friends and earn rewards! Share your unique referral code to get ₹200 credited to 
+                            your wallet when they join, and your friend receives ₹100 too. Spread the word and start earning 
+                            together!
+                        </p>
+                        
+                        <div class="referral-code-box">
+                            <span id="referralCodeText"><%= user.referralCode %></span>
+                            <i class="bi bi-clipboard copy-icon" id="copyButton"></i>
+                        </div>
+                        <p id="copySuccess" class="copy-success">Referral code copied to clipboard!</p>
+                        
+                        <div class="share-buttons">
+                            <a href="https://wa.me/?text=Use my referral code <%= user.referralCode %> to sign up on Elite Wear and get ₹100 bonus! https://elitewear.com/signup" target="_blank" class="share-button">
+                                <i class="bi bi-whatsapp"></i> WhatsApp
+                            </a>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u=https://elitewear.com/signup&quote=Use my referral code <%= user.referralCode %> to sign up on Elite Wear and get ₹100 bonus!" target="_blank" class="share-button">
+                                <i class="bi bi-facebook"></i> Facebook
+                            </a>
+                            <a href="mailto:?subject=Join Elite Wear with my referral code&body=Use my referral code <%= user.referralCode %> to sign up on Elite Wear and get ₹100 bonus! https://elitewear.com/signup" class="share-button">
+                                <i class="bi bi-envelope"></i> Email
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-submit">Submit</button>
-            </form>
+                
+                <div class="referral-section">
+                    <h2 class="referral-title">Referral Statistics</h2>
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Total Referrals</h5>
+                                    <p class="card-text fs-2 fw-bold"><%= referralStats?.total || 0 %></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Earnings</h5>
+                                    <p class="card-text fs-2 fw-bold">₹<%= referralStats?.earnings || 0 %></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Pending</h5>
+                                    <p class="card-text fs-2 fw-bold"><%= referralStats?.pending || 0 %></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
+    
     <%- include("../partials/user/footer") %>
-
+    
+    <!-- Bootstrap 5 JS Bundle with Popper -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.getElementById('referralForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const referralCode = document.getElementById('referralCode').value.trim();
-            const referralError = document.getElementById('referralError');
-
-            if (!referralCode.match(/^[A-Z0-9]{8}$/)) {
-                referralError.textContent = 'Referral code must be 8 alphanumeric characters';
-                referralError.style.display = 'block';
-                return;
-            }
-
-            try {
-                const response = await fetch('/validate-referral', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ referralCode }),
-                });
-                const result = await response.json();
-                if (result.success) {
-                    window.location.href = result.redirectUrl;
+        document.addEventListener('DOMContentLoaded', function() {
+            const copyButton = document.getElementById('copyButton');
+            const referralCodeText = document.getElementById('referralCodeText');
+            const copySuccess = document.getElementById('copySuccess');
+            
+            copyButton.addEventListener('click', function() {
+                const code = referralCodeText.textContent;
+                
+                // Try to use the modern clipboard API
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(code)
+                        .then(() => {
+                            showCopySuccess();
+                        })
+                        .catch(err => {
+                            console.error('Could not copy text: ', err);
+                            fallbackCopyTextToClipboard(code);
+                        });
                 } else {
-                    referralError.textContent = result.message;
-                    referralError.style.display = 'block';
+                    fallbackCopyTextToClipboard(code);
                 }
-            } catch (error) {
-                referralError.textContent = 'Server error: ' + error.message;
-                referralError.style.display = 'block';
+            });
+            
+            function fallbackCopyTextToClipboard(text) {
+                // Fallback for browsers that don't support clipboard API
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                
+                // Make the textarea out of viewport
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        showCopySuccess();
+                    } else {
+                        console.error('Failed to copy');
+                    }
+                } catch (err) {
+                    console.error('Error during copy', err);
+                }
+                
+                document.body.removeChild(textArea);
+            }
+            
+            function showCopySuccess() {
+                copySuccess.style.display = 'block';
+                setTimeout(() => {
+                    copySuccess.style.display = 'none';
+                }, 3000);
             }
         });
     </script>
