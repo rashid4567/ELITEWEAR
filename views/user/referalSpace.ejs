@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enter Referral Code</title>
-  
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/userStyle/referalSpace.css">
     <style>
         body {
             background-color: #f8f9fa;
@@ -82,7 +80,7 @@
             
             <form id="referralForm">
                 <div class="mb-4">
-                    <input type="text" class="form-control" id="referralCode" placeholder="IT3BCE4GH">
+                    <input type="text" class="form-control" id="referralCode" placeholder="REF-12345678">
                 </div>
                 
                 <button type="submit" class="btn btn-submit">Submit</button>
@@ -93,8 +91,6 @@
         </div>
     </div>
     
-    <!-- Bootstrap 5 JS Bundle with Popper -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const referralForm = document.getElementById('referralForm');
@@ -119,8 +115,7 @@
                     
                     const result = await response.json();
                     if (result.success) {
-                        // Redirect to signup page with referral code
-                        window.location.href = `/signup?referral=${referralCode}`;
+                        window.location.href = `/signup?referral=${encodeURIComponent(referralCode)}`;
                     } else {
                         showError(result.message || 'Invalid referral code');
                     }

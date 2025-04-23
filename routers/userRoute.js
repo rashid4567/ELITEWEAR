@@ -28,17 +28,17 @@ router.post("/resend-otp", userControllers.resendOtp);
 
 router.get("/login", userControllers.userLogin);
 router.post("/login", userControllers.login);
-
+router.post("/apply-referral", UserAuth, userControllers.applyReferral);
 router.get("/", checkBlockedStatus, userControllers.loadHomepage);
 router.get("/logout", checkBlockedStatus, userControllers.logout);
 
 // Referral routes
 router.get("/referral", UserAuth, referralController.loadReferralPage);
 router.get("/referralSpace", referralController.loadReferralSpace);
-router.get("/validate-referral", UserAuth, referralController.loadReferralPage);
+router.post("/validate-referral-code", referralController.validateReferralCode);
 router.post("/validate-referral", UserAuth, referralController.loadReferralPage);
 router.post("/validate-referral-code", referralController.validateReferralCode);
-router.post("/apply-referral", referralController.applyReferral);
+
 // Password reset routes
 router.get("/forgot-password", profileController.forgotPassword);
 router.post("/forgot-email-id", profileController.forgotemailValidations);

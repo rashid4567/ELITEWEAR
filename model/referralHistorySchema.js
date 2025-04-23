@@ -1,34 +1,28 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const mongoose = require("mongoose");
 
-const referralHistorySchema = new Schema({
+const referralHistorySchema = new mongoose.Schema({
   newUserId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
     required: true,
   },
   referrerId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
     required: true,
   },
   amountToNewUser: {
     type: Number,
     required: true,
-    min: 0,
   },
   amountToReferrer: {
     type: Number,
     required: true,
-    min: 0,
   },
   date: {
     type: Date,
     default: Date.now,
-    index: true,
-  }
-}, {
-  timestamps: true
+  },
 });
 
-module.exports = mongoose.model('ReferralHistory', referralHistorySchema);
+module.exports = mongoose.model("ReferralHistory", referralHistorySchema);

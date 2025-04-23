@@ -1,53 +1,43 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const mongoose = require("mongoose");
 
-const transactionSchema = new Schema({
-  type: {
-    type: String,
-    enum: ['credit', 'debit'],
+const walletSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
     required: true,
+    unique: true,
   },
   amount: {
     type: Number,
-    required: true,
-    min: 0, 
+    default: 0,
+    min: 0,
   },
-  date: {
-    type: Date,
-    default: Date.now,
-    index: true,
-  },
-  transactionRef: {
-    type: String,
-    required: true,
-   
-  },
-  description: {
-    type: String,
-    required: true,
-    maxlength: 500, 
-  },
+  transactions: [
+    {
+      type: {
+        type: String,
+        enum: ["credit", "debit"],
+        required: true,
+      },
+      amount: {
+        type: Number,
+        required: true,
+      },
+      transactionRef: {
+        type: String,
+        required: true,
+      },
+      description: {
+        type: String,
+        required: true,
+      },
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
 });
-
-const walletSchema = new Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      unique: true,
-    },
-    amount: {
-      type: Number,
-      default: 0,
-      min: 0, 
-    },
-    transactions: [transactionSchema],
-  },
-  {
-    timestamps: true,
-  }
-);
 
 
 walletSchema.pre('save', async function (next) {
