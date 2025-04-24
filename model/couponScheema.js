@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const couponSchema = new mongoose.Schema(
   {
@@ -61,53 +61,34 @@ const couponSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  },
-)
+  }
+);
 
 couponSchema.pre("findOneAndUpdate", async function (next) {
   try {
-    const update = this.getUpdate()
-
-
+    const update = this.getUpdate();
     if (update.$set?.startingDate || update.$set?.expiryDate) {
-      const query = this.getQuery()
-      let startDate, expiryDate
+      const query = this.getQuery();
+      let startDate = update.$set?.startingDate;
+      let expiryDate = update.$set?.expiryDate;
 
-
-      if (update.$set?.startingDate) {
-        startDate = update.$set.startingDate
-      } else {
-    
-        const coupon = await mongoose.model("Coupon").findOne(query)
+      if (!startDate || !expiryDate) {
+        const coupon = await mongoose.model("Coupon").findOne(query);
         if (coupon) {
-          startDate = coupon.startingDate
+          startDate = startDate || coupon.startingDate;
+          expiryDate = expiryDate || coupon.expiryDate;
         }
       }
 
-
-      if (update.$set?.expiryDate) {
-        expiryDate = update.$set.expiryDate
-      } else if (update.$set?.startingDate) {
-
-        const coupon = await mongoose.model("Coupon").findOne(query)
-        if (coupon) {
-          expiryDate = coupon.expiryDate
-        }
-      }
-
-
-      if (startDate && expiryDate) {
-        if (new Date(expiryDate) <= new Date(startDate)) {
-          return next(new Error("Expiry date must be after start date"))
-        }
+      if (startDate && expiryDate && new Date(expiryDate) <= new Date(startDate)) {
+        return next(new Error("Expiry date must be after start date"));
       }
     }
-
-    next()
+    next();
   } catch (error) {
-    console.error("Error in coupon pre-save hook:", error)
-    next(error)
+    console.error("Error in coupon pre-save hook:", error);
+    next(error);
   }
-})
+});
 
-module.exports = mongoose.model("Coupon", couponSchema)
+module.exports = mongoose.model("Coupon", couponSchema);

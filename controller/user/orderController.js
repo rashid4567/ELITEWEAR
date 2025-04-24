@@ -7,6 +7,7 @@ const Product = require("../../model/productScheema")
 const Coupon = require("../../model/couponScheema") // This import is now correct
 const PDFDocument = require("pdfkit")
 
+
 const placeOrder = async (req, res) => {
   try {
     const userId = req.user._id.toString()
@@ -121,20 +122,35 @@ const placeOrder = async (req, res) => {
 
         console.log("Updating coupon usage for couponId:", couponObjectId)
 
-        // Use updateOne instead of findByIdAndUpdate to avoid triggering the pre-hook
-        const updateResult = await Coupon.updateOne(
-          { _id: couponObjectId },
-          {
-            $push: {
-              usedBy: {
-                userId,
-                usedCount: 1,
-              },
-            },
-          },
-        )
+        // Find the coupon first to check if user has already used it
+        const coupon = await Coupon.findById(couponObjectId)
 
-        console.log("Coupon update result:", updateResult)
+        if (coupon) {
+          const userUsageIndex = coupon.usedBy.findIndex((usage) => usage.userId.toString() === userId)
+
+          if (userUsageIndex >= 0) {
+            // User has already used this coupon before, increment the count
+            await Coupon.updateOne(
+              { _id: couponObjectId, "usedBy.userId": userId },
+              { $inc: { "usedBy.$.usedCount": 1 } },
+            )
+          } else {
+            // First time user is using this coupon
+            await Coupon.updateOne(
+              { _id: couponObjectId },
+              {
+                $push: {
+                  usedBy: {
+                    userId,
+                    usedCount: 1,
+                  },
+                },
+              },
+            )
+          }
+
+          console.log("Coupon usage updated successfully")
+        }
       } catch (couponError) {
         console.error("Error updating coupon usage:", couponError)
         // Continue with order placement even if coupon update fails

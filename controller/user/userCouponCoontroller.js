@@ -4,14 +4,41 @@ const mongoose = require("mongoose")
 
 const getAvailableCoupons = async (req, res) => {
   try {
+    const userId = req.user._id.toString()
     const today = new Date()
-    const coupons = await Coupon.find({
-      isActive: true,
-      startingDate: { $lte: today },
-      expiryDate: { $gte: today },
+
+    const coupons = await Coupon.find({}).lean() // Get all coupons to show status
+
+    const couponsWithStatus = coupons.map((coupon) => {
+      // Add a safety check for usedBy
+      const usedBy = coupon.usedBy || []
+      const userUsage = usedBy.find((u) => u && u.userId && u.userId.toString() === userId)
+
+      const isExpired = new Date(coupon.expiryDate) < today
+      const notStarted = new Date(coupon.startingDate) > today
+      const isUsed = userUsage && userUsage.usedCount >= coupon.limit
+      const isActive = coupon.isActive && !isExpired && new Date(coupon.startingDate) <= today
+
+      return {
+        ...coupon,
+        status: isUsed ? "used" : isExpired ? "expired" : notStarted ? "upcoming" : isActive ? "available" : "inactive",
+        statusText: isUsed
+          ? "Already Used"
+          : isExpired
+            ? "Expired"
+            : notStarted
+              ? "Not Started Yet"
+              : isActive
+                ? "Available"
+                : "Inactive",
+        isEligible: isActive && !isUsed && coupon.minimumPurchase <= (req.session.checkout?.totalPrice || 0),
+        userUsageCount: userUsage ? userUsage.usedCount : 0,
+        remainingUses: userUsage ? Math.max(0, coupon.limit - userUsage.usedCount) : coupon.limit,
+      }
     })
-    console.log("Fetched coupons from DB:", coupons)
-    res.status(200).json({ success: true, coupons })
+
+    console.log("Fetched coupons with status:", couponsWithStatus)
+    res.status(200).json({ success: true, coupons: couponsWithStatus })
   } catch (error) {
     console.error("Error fetching coupons:", error)
     res.status(500).json({ success: false, message: "Server error" })
@@ -37,15 +64,19 @@ const applyCoupon = async (req, res) => {
       expiryDate: { $gte: new Date() },
     })
 
-    console.log("Found coupon:", coupon)
-
     if (!coupon) {
       return res.status(400).json({ success: false, message: "Invalid or expired coupon" })
     }
 
-    const userUsage = coupon.usedBy.find((u) => u.userId.toString() === userId)
+    // Add a safety check for usedBy
+    const usedBy = coupon.usedBy || []
+    const userUsage = usedBy.find((u) => u && u.userId && u.userId.toString() === userId)
+
     if (userUsage && userUsage.usedCount >= coupon.limit) {
-      return res.status(400).json({ success: false, message: "Coupon usage limit reached" })
+      return res.status(400).json({
+        success: false,
+        message: `You've already used this coupon ${userUsage.usedCount} time(s). Maximum usage limit reached.`,
+      })
     }
 
     let totalPrice = 0
@@ -54,12 +85,10 @@ const applyCoupon = async (req, res) => {
       totalPrice += productPrice * item.quantity
     }
 
-    console.log("Cart total price:", totalPrice, "Coupon minimum purchase:", coupon.minimumPurchase)
-
     if (totalPrice < coupon.minimumPurchase) {
       return res.status(400).json({
         success: false,
-        message: `Minimum purchase of ₹${coupon.minimumPurchase} required`,
+        message: `Minimum purchase of ₹${coupon.minimumPurchase} required. Add ₹${(coupon.minimumPurchase - totalPrice).toFixed(2)} more to use this coupon.`,
       })
     }
 
@@ -68,21 +97,19 @@ const applyCoupon = async (req, res) => {
       discount = coupon.maxRedeemable
     }
 
-    // Ensure the session checkout object exists
+    // Store totalPrice in session for use in getAvailableCoupons
     if (!req.session.checkout) {
       req.session.checkout = {}
     }
+    req.session.checkout.totalPrice = totalPrice
 
-    // Save coupon details to session
+    // Save coupon details to session (temporary, until order is placed)
     req.session.checkout.coupon = {
-      couponId: coupon._id.toString(), // Convert ObjectId to string
+      couponId: coupon._id.toString(),
       code: coupon.coupencode,
       discount: Number.parseFloat(discount.toFixed(2)),
     }
 
-    console.log("Session before save:", req.session)
-
-    // Save the session to ensure it's updated
     req.session.save((err) => {
       if (err) {
         console.error("Error saving session:", err)
@@ -91,17 +118,8 @@ const applyCoupon = async (req, res) => {
       }
     })
 
-    console.log("Session after save request:", req.session)
-
     const deliveryCharge = totalPrice > 8000 ? 0 : 200
     const grandTotal = totalPrice - discount + deliveryCharge
-
-    console.log("Coupon applied:", {
-      couponCode,
-      discount,
-      grandTotal,
-      sessionCoupon: req.session.checkout.coupon,
-    })
 
     res.status(200).json({
       success: true,
@@ -135,8 +153,6 @@ const removeCoupon = async (req, res) => {
 
     if (req.session.checkout && req.session.checkout.coupon) {
       delete req.session.checkout.coupon
-
-      // Save the session to ensure it's updated
       req.session.save((err) => {
         if (err) {
           console.error("Error saving session after coupon removal:", err)
@@ -148,12 +164,6 @@ const removeCoupon = async (req, res) => {
 
     const deliveryCharge = totalPrice > 8000 ? 0 : 200
     const grandTotal = totalPrice + deliveryCharge
-
-    console.log("Coupon removed:", {
-      totalPrice,
-      grandTotal,
-      session: req.session.checkout,
-    })
 
     res.status(200).json({
       success: true,

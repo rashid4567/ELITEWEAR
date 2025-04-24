@@ -3,9 +3,9 @@ const Wallet = require("../../model/walletScheema")
 const ReferralHistory = require("../../model/referralHistorySchema")
 const { v4: uuidv4 } = require("uuid")
 
-// Constants for referral rewards
-const REFERRER_REWARD = 200 // Amount for the referrer
-const NEW_USER_REWARD = 100 // Amount for the new user
+
+const REFERRER_REWARD = 200 
+const NEW_USER_REWARD = 100 
 
 const loadReferralPage = async (req, res) => {
   try {
@@ -19,11 +19,10 @@ const loadReferralPage = async (req, res) => {
       return res.redirect("/login")
     }
 
-    // Get referral stats using the existing function from userController
     const userController = require("./userControll")
     const referralStats = await userController.getReferralStats(userId)
 
-    // Create a shareable referral URL
+
     const referralUrl = `${req.protocol}://${req.get("host")}/referralSpace?code=${user.referralCode}`
 
     console.log("Loading referral page for user:", userId)
@@ -102,12 +101,11 @@ const validateReferralCode = async (req, res) => {
   }
 }
 
-// Process referral during signup - this is a wrapper around the existing applyReferral function
 const processSignupReferral = async (userId, referralCode) => {
   try {
     if (!referralCode) return false
 
-    // Use the existing applyReferral function from userController
+
     const userController = require("./userControll")
     const result = await userController.applyReferral(userId, referralCode)
 
