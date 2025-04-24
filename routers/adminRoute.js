@@ -6,7 +6,8 @@ const CategoryController = require("../controller/admin/categoryController");
 const productManagment = require('../controller/admin/productController');
 const BannerController = require('../controller/admin/BannerController');
 const adminorderController = require("../controller/admin/adminOrderController");
-const CouponController = require("../controller/admin/CounponController"); 
+const CouponController = require("../controller/admin/CounponController");
+const salesontroller = require("../controller/admin/salesController")
 const upload = require('../middleware/cluadinaryConfig'); 
 const { userAuth, adminAuth } = require('../middleware/auth');
 
@@ -76,5 +77,10 @@ router.get("/getAllCoupons", adminAuth, CouponController.getAllCoupons);
 router.post("/editCoupon/:id", adminAuth, CouponController.editCoupon);
 router.post("/toggleCouponStatus/:id", adminAuth, CouponController.toggleCouponStatus);
 router.delete("/deleteCoupon/:id", adminAuth, CouponController.deleteCoupon);
+
+
+router.get("/sales", adminAuth, salesontroller.loadsales);
+router.get("/sales/download-pdf", adminAuth, salesontroller.downloadSalesPDF);
+router.get("/sales/download-excel", adminAuth, salesontroller.downloadSalesExcel);
 
 module.exports = router;

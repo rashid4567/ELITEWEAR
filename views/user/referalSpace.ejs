@@ -65,12 +65,30 @@
         .back-link:hover {
             color: #343a40;
         }
+        .reward-info {
+            background-color: #e9f7fe;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .reward-amount {
+            font-weight: bold;
+            color: #007bff;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="form-container">
             <h1>Enter Referral Code</h1>
+            
+            <div class="reward-info">
+                <p><strong>Referral Rewards:</strong></p>
+                <p>New users get <span class="reward-amount">₹100</span> in their wallet when they sign up with a referral code.</p>
+                <p>Referrers get <span class="reward-amount">₹200</span> for each friend who signs up using their code.</p>
+            </div>
             
             <p class="description">
                 Enter your friend's referral code to unlock exclusive rewards! When you 
@@ -80,10 +98,10 @@
             
             <form id="referralForm">
                 <div class="mb-4">
-                    <input type="text" class="form-control" id="referralCode" placeholder="REF-12345678">
+                    <input type="text" class="form-control" id="referralCode" placeholder="Enter code" value="<%= referralCode %>" <%= referralCode ? 'readonly' : '' %>>
                 </div>
                 
-                <button type="submit" class="btn btn-submit">Submit</button>
+                <button type="submit" class="btn btn-submit">Continue to Sign Up</button>
                 <div id="errorMessage" class="error-message"></div>
             </form>
             

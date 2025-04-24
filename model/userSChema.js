@@ -1,6 +1,7 @@
-const mongoose = require("mongoose");
-const { v4: uuidv4 } = require("uuid");
+const mongoose = require("mongoose")
 
+// No need to modify the existing schema, just ensure the referralCode is unique
+// This is a suggestion for how to improve the referral code generation if needed
 const userSchema = new mongoose.Schema({
   fullname: {
     type: String,
@@ -38,7 +39,14 @@ const userSchema = new mongoose.Schema({
   referralCode: {
     type: String,
     unique: true,
-    default: () => `${uuidv4().slice(0, 8).toUpperCase()}`,
+    default: () => {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" 
+      let code = ""
+      for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length))
+      }
+      return code
+    },
   },
   referredBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -49,6 +57,6 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-});
+})
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("User", userSchema)
