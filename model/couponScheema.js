@@ -1,76 +1,113 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose")
 
-const couponSchema = new mongoose.Schema({
+const couponSchema = new mongoose.Schema(
+  {
     coupencode: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-        uppercase: true
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      uppercase: true,
     },
     couponpercent: {
-        type: Number,
-        required: true,
-        min: 1,
-        max: 100
+      type: Number,
+      required: true,
+      min: 1,
+      max: 100,
     },
     minimumPurchase: {
-        type: Number,
-        default: 0,
-        min: 0
+      type: Number,
+      default: 0,
+      min: 0,
     },
     startingDate: {
-        type: Date,
-        required: true
+      type: Date,
+      required: true,
     },
     expiryDate: {
-        type: Date,
-        required: true
+      type: Date,
+      required: true,
     },
     description: {
-        type: String,
-        trim: true
+      type: String,
+      trim: true,
     },
     limit: {
-        type: Number,
-        default: 1,
-        min: 1
+      type: Number,
+      default: 1,
+      min: 1,
     },
     maxRedeemable: {
-        type: Number,
-        default: 0,
-        min: 0
+      type: Number,
+      default: 0,
+      min: 0,
     },
     isActive: {
-        type: Boolean,
-        default: true
+      type: Boolean,
+      default: true,
     },
-    usedBy: [{
+    usedBy: [
+      {
         userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
         },
         usedCount: {
-            type: Number,
-            default: 1,
+          type: Number,
+          default: 1,
         },
-    }],
-}, {
-    timestamps: true
-});
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  },
+)
+
+couponSchema.pre("findOneAndUpdate", async function (next) {
+  try {
+    const update = this.getUpdate()
 
 
-couponSchema.pre('findOneAndUpdate', async function (next) {
-    const update = this.getUpdate();
-    const startDate = update.$set?.startingDate || (await this.model('Coupon').findById(this.getQuery()._id)).startingDate;
-    const expiryDate = update.$set?.expiryDate;
+    if (update.$set?.startingDate || update.$set?.expiryDate) {
+      const query = this.getQuery()
+      let startDate, expiryDate
 
-    if (startDate && expiryDate) {
-        if (new Date(expiryDate) <= new Date(startDate)) {
-            return next(new Error('Expiry date must be after start date'));
+
+      if (update.$set?.startingDate) {
+        startDate = update.$set.startingDate
+      } else {
+    
+        const coupon = await mongoose.model("Coupon").findOne(query)
+        if (coupon) {
+          startDate = coupon.startingDate
         }
-    }
-    next();
-});
+      }
 
-module.exports = mongoose.model('Coupon', couponSchema);
+
+      if (update.$set?.expiryDate) {
+        expiryDate = update.$set.expiryDate
+      } else if (update.$set?.startingDate) {
+
+        const coupon = await mongoose.model("Coupon").findOne(query)
+        if (coupon) {
+          expiryDate = coupon.expiryDate
+        }
+      }
+
+
+      if (startDate && expiryDate) {
+        if (new Date(expiryDate) <= new Date(startDate)) {
+          return next(new Error("Expiry date must be after start date"))
+        }
+      }
+    }
+
+    next()
+  } catch (error) {
+    console.error("Error in coupon pre-save hook:", error)
+    next(error)
+  }
+})
+
+module.exports = mongoose.model("Coupon", couponSchema)

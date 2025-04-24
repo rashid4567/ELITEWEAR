@@ -177,14 +177,16 @@ router.get("/wallet", UserAuth, walletController.getwallet);
 router.post("/credit", UserAuth, walletController.creditWallet);
 router.post("/debit", UserAuth, walletController.debitWallet);
 
+//coupon Route
+router.get("/coupons", UserAuth, CouponController.getAvailableCoupons)
+router.post("/apply-coupon", UserAuth, CouponController.applyCoupon)
+router.post("/remove-coupon", UserAuth, CouponController.removeCoupon)
+
 // Error handling
 router.get("/page-not-found", userControllers.pageNotfound);
 router.use((req, res) => {
   res.status(404).redirect("/page-not-found");
 });
 
-router.get("/coupons", UserAuth, CouponController.getAvailableCoupons);
-router.post("/apply-coupon", UserAuth, CouponController.applyCoupon);
-router.post("/remove-coupon", UserAuth, CouponController.removeCoupon);
 
 module.exports = router;

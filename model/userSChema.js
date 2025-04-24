@@ -1,7 +1,6 @@
 const mongoose = require("mongoose")
 
-// No need to modify the existing schema, just ensure the referralCode is unique
-// This is a suggestion for how to improve the referral code generation if needed
+
 const userSchema = new mongoose.Schema({
   fullname: {
     type: String,

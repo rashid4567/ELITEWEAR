@@ -33,7 +33,7 @@
                                 <h6 class="product-title"><%= item.productId.name %></h6>
                                 <div class="product-qty">Quantity: <%= item.quantity %></div>
                             </div>
-                            <div class="product-price">₹<%= (item.productId.variants?.[0]?.salePrice || 0) * item.quantity %></div>
+                            <div class="product-price">₹<%= (item.productId.variants.find(v => v.size === item.size)?.salePrice || 0) * item.quantity %></div>
                         </div>
                     <% }); %>
                     <div class="order-summary mt-4">
@@ -45,10 +45,10 @@
                             <div class="summary-label">Delivery charge:</div>
                             <div class="summary-value"><%= deliveryCharge === 0 ? 'Free' : '₹' + deliveryCharge.toFixed(2) %></div>
                         </div>
-                        <% if (couponDiscount > 0 && appliedCoupon) { %>
+                        <% if (discount > 0 && appliedCoupon) { %>
                             <div class="summary-row">
-                                <div class="summary-label">Coupon Discount (<%= appliedCoupon %>):</div>
-                                <div class="summary-value">-₹<%= couponDiscount.toFixed(2) %></div>
+                                <div class="summary-label">Coupon Discount (<%= appliedCoupon.code %>):</div>
+                                <div class="summary-value">-₹<%= discount.toFixed(2) %></div>
                             </div>
                         <% } %>
                         <div class="summary-row total-row">
@@ -66,7 +66,7 @@
     <script>
         function placeOrder() {
             const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-            const couponCode = "<%= appliedCoupon || '' %>";
+            const couponCode = "<%= appliedCoupon ? appliedCoupon.code : '' %>";
 
             fetch('/place-order', {
                 method: 'POST',
