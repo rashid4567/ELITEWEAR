@@ -178,9 +178,11 @@ router.post("/credit", UserAuth, walletController.creditWallet);
 router.post("/debit", UserAuth, walletController.debitWallet);
 
 //coupon Route
+router.get("/allcoupons", UserAuth, CouponController.allCoupons)
 router.get("/coupons", UserAuth, CouponController.getAvailableCoupons)
 router.post("/apply-coupon", UserAuth, CouponController.applyCoupon)
 router.post("/remove-coupon", UserAuth, CouponController.removeCoupon)
+
 
 // Error handling
 router.get("/page-not-found", userControllers.pageNotfound);
