@@ -1,6 +1,6 @@
 const User = require("../../model/userSchema")
 const Wallet = require("../../model/walletScheema")
-const ReferralHistory = require("../../model/referralHistorySchema")
+const ReferralHistory = require("../../model/refferalHistoryScheema")
 const { v4: uuidv4 } = require("uuid")
 
 
