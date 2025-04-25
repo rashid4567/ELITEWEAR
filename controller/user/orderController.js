@@ -1,912 +1,1012 @@
-const mongoose = require("mongoose")
-const Order = require("../../model/orderSchema")
-const OrderItem = require("../../model/orderItemSchema")
-const Cart = require("../../model/cartScheema")
-const Address = require("../../model/AddressScheema")
-const Product = require("../../model/productScheema")
-const Coupon = require("../../model/couponScheema") // This import is now correct
-const PDFDocument = require("pdfkit")
-
+const Order = require("../../model/orderSchema");
+const OrderItem = require("../../model/orderItemSchema");
+const Cart = require("../../model/cartScheema");
+const Product = require("../../model/productScheema");
+const User = require("../../model/userSchema");
+const Coupon = require("../../model/couponScheema");
+const Wallet = require("../../model/walletScheema");
+const Address = require("../../model/AddressScheema");
+const {
+  generateOrderNumber,
+  generateTransactionId,
+} = require("../../utils/helpers");
+const { processRefundToWallet } = require("./walletController");
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
+const path = require("path");
 
 const placeOrder = async (req, res) => {
   try {
-    const userId = req.user._id.toString()
-    const { paymentMethod } = req.body
+    const userId = req.session.user || req.user._id;
+    const { paymentMethod, couponCode } = req.body;
 
-    if (!paymentMethod || paymentMethod !== "COD") {
-      throw new Error("Invalid payment method")
+    if (!["COD", "Wallet"].includes(paymentMethod)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid payment method" });
     }
 
-    const userCart = await Cart.findOne({ userId }).populate("items.productId")
-    if (!userCart || !userCart.items.length) {
-      throw new Error("Cart is empty")
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
-    for (const item of userCart.items) {
-      const product = await Product.findById(item.productId._id)
-      const variant = product.variants.find((v) => v.size === item.size)
+    const cart = await Cart.findOne({ userId }).populate({
+      path: "items.productId",
+      select: "name images variants",
+    });
+
+    if (!cart || cart.items.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Your cart is empty" });
+    }
+
+    for (const item of cart.items) {
+      const variant = item.productId.variants.find((v) => v.size === item.size);
       if (!variant) {
-        throw new Error(`Size ${item.size} not available for ${product.name}`)
+        return res.status(400).json({
+          success: false,
+          message: `Invalid variant for product ${item.productId.name}`,
+        });
       }
-      if (variant.variantQuantity < item.quantity) {
-        throw new Error(`Insufficient stock for ${product.name} (Size: ${item.size})`)
+      if (variant.varientquatity < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Only ${variant.varientquatity} units of ${item.productId.name} (${item.size}) are available`,
+        });
       }
     }
 
-    const addressId = req.session.checkout?.addressId
-    if (!mongoose.Types.ObjectId.isValid(addressId)) {
-      throw new Error("Invalid address ID")
+    let totalPrice = 0;
+    for (const item of cart.items) {
+      const variant = item.productId.variants.find((v) => v.size === item.size);
+      totalPrice += variant.salePrice * item.quantity;
     }
 
-    const selectedAddress = await Address.findOne({ _id: addressId, userId })
-    if (!selectedAddress) {
-      throw new Error("Invalid or missing address")
+    const deliveryCharge = totalPrice > 8000 ? 0 : 200;
+    let grandTotal = totalPrice + deliveryCharge;
+
+    let discount = 0;
+    let appliedCoupon = null;
+
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ coupencode: couponCode });
+      if (!coupon) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid coupon code" });
+      }
+
+      const now = new Date();
+      if (
+        now < new Date(coupon.startingDate) ||
+        now > new Date(coupon.expiryDate)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Coupon is not valid at this time",
+        });
+      }
+
+      if (totalPrice < coupon.minimumPurchase) {
+        return res.status(400).json({
+          success: false,
+          message: `Minimum purchase of ₹${coupon.minimumPurchase} required for this coupon`,
+        });
+      }
+
+      const userUsage = coupon.usedBy.find(
+        (usage) => usage.userId.toString() === userId.toString()
+      );
+      if (userUsage && userUsage.usageCount >= coupon.limit) {
+        return res.status(400).json({
+          success: false,
+          message: "You have already used this coupon",
+        });
+      }
+
+      discount = (totalPrice * coupon.couponpercent) / 100;
+      if (discount > coupon.maxDiscount) {
+        discount = coupon.maxDiscount;
+      }
+
+      grandTotal -= discount;
+      appliedCoupon = coupon;
     }
 
-    const cartItems = userCart.items
-    let totalPrice = 0
-    for (const item of cartItems) {
-      const product = await Product.findById(item.productId._id)
-      const variant = product.variants.find((v) => v.size === item.size)
-      totalPrice += variant.salePrice * item.quantity
+    const addressId = req.session.checkout?.addressId;
+    if (!addressId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Delivery address not selected" });
     }
 
-    const deliveryCharge = totalPrice > 8000 ? 0 : 200
-    const discount = req.session.checkout?.coupon?.discount || 0
-    const couponId = req.session.checkout?.coupon?.couponId || null
-    const grandTotal = totalPrice - discount + deliveryCharge
+    if (paymentMethod === "Wallet") {
+      if (user.walletBalance === undefined) {
+        user.walletBalance = 0;
+        await user.save();
+      }
 
-    console.log("Order details:", {
-      totalPrice,
-      deliveryCharge,
-      discount,
-      couponId,
-      grandTotal,
-      sessionCheckout: req.session.checkout,
-    })
+      if (user.walletBalance < grandTotal) {
+        return res.status(400).json({
+          success: false,
+          message: "Insufficient wallet balance",
+        });
+      }
+    }
 
-    const orderNumber = `ORD${Date.now().toString().slice(-6)}`
-
+    const orderNumber = generateOrderNumber();
     const newOrder = new Order({
-      userId,
-      paymentMethod,
-      orderDate: new Date(),
-      status: "Pending",
-      address: selectedAddress._id,
-      total: grandTotal,
-      discount,
-      couponId,
-      order_items: [],
+      userId: userId,
       orderNumber,
-    })
+      paymentMethod,
+      address: addressId,
+      total: grandTotal,
+      discount: discount,
+      paymentStatus: paymentMethod === "COD" ? "Pending" : "Paid",
+      orderDate: new Date(),
+      status: "Processing",
+    });
 
-    await newOrder.save()
+    await newOrder.save();
 
-    const orderItems = []
-    for (const item of cartItems) {
-      const product = await Product.findById(item.productId._id)
-      const variantIndex = product.variants.findIndex((v) => v.size === item.size)
-      if (variantIndex === -1) {
-        throw new Error(`Variant not found for size ${item.size}`)
-      }
-
-      const variant = product.variants[variantIndex]
-
+    const orderItems = [];
+    for (const item of cart.items) {
+      const variant = item.productId.variants.find((v) => v.size === item.size);
       const orderItem = new OrderItem({
-        product_name: product.name,
-        productId: product._id,
+        productId: item.productId._id,
         orderId: newOrder._id,
+        product_name: item.productId.name,
+        quantity: item.quantity,
         size: item.size,
         price: variant.salePrice,
-        quantity: item.quantity,
         total_amount: variant.salePrice * item.quantity,
-      })
-
-      await orderItem.save()
-      orderItems.push(orderItem._id)
-
-      product.variants[variantIndex].variantQuantity -= item.quantity
-      await product.save()
+      });
+      await orderItem.save();
+      orderItems.push(orderItem._id);
     }
 
-    newOrder.order_items = orderItems
-    await newOrder.save()
+    newOrder.order_items = orderItems;
+    await newOrder.save();
 
-    // If a coupon was used, update the coupon's usedBy array
-    if (couponId) {
-      try {
-        // Convert string ID to ObjectId if needed
-        const couponObjectId = mongoose.Types.ObjectId.isValid(couponId)
-          ? new mongoose.Types.ObjectId(couponId)
-          : couponId
-
-        console.log("Updating coupon usage for couponId:", couponObjectId)
-
-        // Find the coupon first to check if user has already used it
-        const coupon = await Coupon.findById(couponObjectId)
-
-        if (coupon) {
-          const userUsageIndex = coupon.usedBy.findIndex((usage) => usage.userId.toString() === userId)
-
-          if (userUsageIndex >= 0) {
-            // User has already used this coupon before, increment the count
-            await Coupon.updateOne(
-              { _id: couponObjectId, "usedBy.userId": userId },
-              { $inc: { "usedBy.$.usedCount": 1 } },
-            )
-          } else {
-            // First time user is using this coupon
-            await Coupon.updateOne(
-              { _id: couponObjectId },
-              {
-                $push: {
-                  usedBy: {
-                    userId,
-                    usedCount: 1,
-                  },
-                },
-              },
-            )
-          }
-
-          console.log("Coupon usage updated successfully")
+    for (const item of cart.items) {
+      const product = await Product.findById(item.productId._id);
+      if (product) {
+        const variantIndex = product.variants.findIndex(
+          (v) => v.size === item.size
+        );
+        if (variantIndex !== -1) {
+          product.variants[variantIndex].varientquatity -= item.quantity;
+          await product.save();
         }
-      } catch (couponError) {
-        console.error("Error updating coupon usage:", couponError)
-        // Continue with order placement even if coupon update fails
       }
     }
 
-    await Cart.findOneAndUpdate({ userId }, { items: [] })
+    if (appliedCoupon) {
+      const userIndex = appliedCoupon.usedBy.findIndex(
+        (usage) => usage.userId.toString() === userId.toString()
+      );
+      if (userIndex !== -1) {
+        appliedCoupon.usedBy[userIndex].usageCount += 1;
+      } else {
+        appliedCoupon.usedBy.push({ userId, usageCount: 1 });
+      }
+      await appliedCoupon.save();
+    }
 
-    delete req.session.checkout
+    if (paymentMethod === "Wallet") {
+      user.walletBalance -= grandTotal;
+      await user.save();
+
+      // Add transaction to wallet history
+      let wallet = await Wallet.findOne({ userId });
+      if (!wallet) {
+        wallet = new Wallet({
+          userId,
+          amount: 0,
+          transactions: [],
+        });
+      }
+
+      wallet.transactions.push({
+        amount: grandTotal,
+        type: "debit",
+        description: `Payment for order #${orderNumber}`,
+        transactionRef: generateTransactionId(),
+        date: new Date(),
+      });
+      await wallet.save();
+    }
+
+    await Cart.findOneAndUpdate({ userId }, { $set: { items: [] } });
+
+    delete req.session.checkout;
+
+    req.session.lastOrderId = newOrder._id;
 
     return res.status(200).json({
       success: true,
       message: "Order placed successfully",
-      redirect: `/order-success?orderId=${newOrder._id}`,
-    })
+      redirect: "/order-success",
+    });
   } catch (error) {
-    console.error("placeOrder Error:", error.message)
-    return res.status(400).json({ success: false, message: error.message })
+    console.error("Error placing order:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to place order. Please try again.",
+    });
   }
-}
+};
+
 const loadOrderSuccess = async (req, res) => {
   try {
-    const orderId = req.query.orderId
-    if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
-      throw new Error("Invalid order ID")
+    const userId = req.session.user || req.user._id;
+    const orderId = req.session.lastOrderId;
+
+    if (!orderId) {
+      return res.redirect("/orders");
     }
 
-    const userId = req.user._id.toString() // Guaranteed by UserAuth middleware
-    const order = await Order.findById(orderId).populate("order_items").populate("address").lean()
-
+    const order = await Order.findById(orderId).populate("userId");
     if (!order) {
-      throw new Error("Order not found")
+      return res.redirect("/orders");
     }
 
-    if (order.userId.toString() !== userId) {
-      throw new Error("Unauthorized access")
-    }
+    const user = await User.findById(userId);
 
     res.render("order-success", {
+      title: "Order Success",
+      user,
       order,
-      user: req.user,
-    })
+      page: "order-success",
+    });
+
+    delete req.session.lastOrderId;
   } catch (error) {
-    console.error("loadOrderSuccess Error:", error.message)
-    res.redirect("/page-not-found")
+    console.error("Error loading order success page:", error);
+    res.redirect("/orders");
   }
-}
+};
 
 const getUserOrders = async (req, res) => {
   try {
-    const userId = req.user._id.toString() // Guaranteed by UserAuth middleware
-    const page = Math.max(1, Number.parseInt(req.query.page) || 1)
-    const limit = 5
-    const skip = (page - 1) * limit
+    const userId = req.session.user || req.user._id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = 3;
+    const skip = (page - 1) * limit;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.redirect("/login");
+    }
+
+    const totalOrders = await Order.countDocuments({ userId });
+    const totalPages = Math.ceil(totalOrders / limit);
 
     const orders = await Order.find({ userId })
       .populate({
         path: "order_items",
         populate: {
           path: "productId",
-          model: "Product",
-          select: "name images variants",
         },
       })
       .populate("address")
       .sort({ orderDate: -1 })
       .skip(skip)
-      .limit(limit)
+      .limit(limit);
 
-    const totalOrders = await Order.countDocuments({ userId })
-    const totalPages = Math.ceil(totalOrders / limit)
+    const ordersWithProgress = orders.map((order) => {
+      let progressWidth = 0;
+      switch (order.status) {
+        case "Pending":
+          progressWidth = 20;
+          break;
+        case "Processing":
+          progressWidth = 40;
+          break;
+        case "Shipped":
+          progressWidth = 60;
+          break;
+        case "Out for Delivery":
+          progressWidth = 80;
+          break;
+        case "Delivered":
+        case "Returned":
+          progressWidth = 100;
+          break;
+        case "Cancelled":
+        case "Return Rejected":
+          progressWidth = 100;
+          break;
+        case "Return Requested":
+          progressWidth = 70;
+          break;
+        case "Return Approved":
+          progressWidth = 85;
+          break;
+        default:
+          progressWidth = 0;
+      }
+      return { ...order.toObject(), progressWidth };
+    });
 
-    const getProgressWidth = (status) => {
-      const steps = ["Pending", "Processing", "Confirmed", "Shipped", "Delivered"]
-      if (status === "Cancelled" || status === "Return Requested") return 100
-      const index = steps.indexOf(status)
-      return index >= 0 ? ((index + 1) / steps.length) * 100 : 20
-    }
-
-    const ordersWithProgress = orders.map((order) => ({
-      ...order._doc,
-      progressWidth: getProgressWidth(order.status),
-    }))
-
-    res.render("Orders", {
+    res.render("orders", {
+      title: "My Orders",
+      user,
       orders: ordersWithProgress,
-      user: req.user,
+      hasOrders: totalOrders > 0,
       currentPage: page,
       totalPages,
-      hasOrders: orders.length > 0,
-    })
+      page: "orders",
+    });
   } catch (error) {
-    console.error("getUserOrders Error:", error.message)
-    res.redirect("/page-not-found")
+    console.error("Error getting user orders:", error);
+    res.redirect("/");
   }
-}
-
-const cancelOrder = async (req, res) => {
-  try {
-    const orderId = req.params.id
-    const { cancelReason } = req.body
-    const userId = req.user._id.toString() // Guaranteed by UserAuth middleware
-
-    if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      return res.status(400).json({ success: false, message: "Invalid order ID" })
-    }
-
-    const order = await Order.findOne({ _id: orderId, userId }).populate("order_items")
-    if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found" })
-    }
-
-    if (order.status !== "Pending" && order.status !== "Processing") {
-      return res.status(400).json({
-        success: false,
-        message: `Order cannot be cancelled in ${order.status} status`,
-      })
-    }
-
-    const updatedOrder = await Order.findOneAndUpdate(
-      { _id: orderId, userId, status: { $in: ["Pending", "Processing"] } },
-      {
-        status: "Cancelled",
-        cancelReason: cancelReason || "No reason provided",
-      },
-      { new: true },
-    )
-
-    if (!updatedOrder) {
-      return res.status(400).json({
-        success: false,
-        message: "Failed to cancel order: Order not in cancellable status",
-      })
-    }
-
-    for (const item of order.order_items) {
-      const product = await Product.findById(item.productId)
-      const variantIndex = product.variants.findIndex((v) => v.size === item.size)
-      if (variantIndex !== -1) {
-        product.variants[variantIndex].variantQuantity += item.quantity
-        await product.save()
-      }
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "Order cancelled successfully",
-    })
-  } catch (error) {
-    console.error("cancelOrder Error:", error.message)
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error while cancelling order",
-    })
-  }
-}
-
-const initiateReturn = async (req, res) => {
-  try {
-    const orderId = req.params.id
-    const { returnReason } = req.body
-    const userId = req.user._id.toString() // Guaranteed by UserAuth middleware
-
-    if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      console.error("initiateReturn: Invalid order ID:", orderId)
-      return res.status(400).json({ success: false, message: "Invalid order ID" })
-    }
-
-    if (!returnReason || returnReason.trim() === "") {
-      console.error("initiateReturn: Return reason is required")
-      return res.status(400).json({
-        success: false,
-        message: "Please provide a reason for the return",
-      })
-    }
-
-    const order = await Order.findOne({ _id: orderId, userId })
-      .populate("order_items")
-      .select("status userId refunded deliveryDate orderDate order_items")
-
-    if (!order) {
-      console.error(`initiateReturn: Order not found for ID: ${orderId}, User ID: ${userId}`)
-      return res.status(404).json({ success: false, message: "Order not found" })
-    }
-
-    if (order.status !== "Delivered") {
-      console.error(`initiateReturn: Order cannot be returned, status: ${order.status}`)
-      return res.status(400).json({
-        success: false,
-        message: `This order cannot be returned because it is in ${order.status} status. Returns are only allowed for delivered orders.`,
-      })
-    }
-
-    const deliveryDate = order.deliveryDate
-      ? new Date(order.deliveryDate)
-      : new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000)
-    const returnWindowDays = 5
-    const returnWindowEnd = new Date(deliveryDate.getTime() + returnWindowDays * 24 * 60 * 60 * 1000)
-    const now = new Date()
-
-    if (now > returnWindowEnd) {
-      console.error(`initiateReturn: Return window expired for order ID: ${orderId}`)
-      return res.status(400).json({
-        success: false,
-        message: `The return window of ${returnWindowDays} days has expired for this order.`,
-      })
-    }
-
-    if (["Return Requested", "Return Approved", "Returned"].includes(order.status) || order.refunded === true) {
-      console.error(
-        `initiateReturn: Order already processed for return or refunded, status: ${order.status}, refunded: ${order.refunded}`,
-      )
-      return res.status(400).json({
-        success: false,
-        message: "This order has already been returned or a return is pending.",
-      })
-    }
-
-    for (const item of order.order_items) {
-      const product = await Product.findById(item.productId)
-      if (!product) {
-        throw new Error(`Product ${item.product_name} not found`)
-      }
-      const variantIndex = product.variants.findIndex((v) => v.size === item.size)
-      if (variantIndex === -1) {
-        throw new Error(`Variant not found for size ${item.size}`)
-      }
-      product.variants[variantIndex].variantQuantity += item.quantity
-      await product.save()
-    }
-
-    const updatedOrder = await Order.findOneAndUpdate(
-      {
-        _id: orderId,
-        userId,
-        status: "Delivered",
-        refunded: { $ne: true },
-      },
-      {
-        status: "Return Requested",
-        returnReason,
-        returnRequestedDate: new Date(),
-      },
-      { new: true },
-    )
-
-    if (!updatedOrder) {
-      console.error(`initiateReturn: Failed to update order status for ID: ${orderId}`)
-
-      for (const item of order.order_items) {
-        const product = await Product.findById(item.productId)
-        if (product) {
-          const variantIndex = product.variants.findIndex((v) => v.size === item.size)
-          if (variantIndex !== -1) {
-            product.variants[variantIndex].variantQuantity -= item.quantity
-            await product.save()
-          }
-        }
-      }
-
-      return res.status(400).json({
-        success: false,
-        message: "Failed to initiate return. The order may no longer be eligible or was modified.",
-      })
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "Return initiated successfully. Please await admin approval.",
-    })
-  } catch (error) {
-    console.error("initiateReturn Error:", error.message, error.stack)
-    return res.status(500).json({
-      success: false,
-      message: `An error occurred while initiating the return: ${error.message}`,
-    })
-  }
-}
-
-const reOrder = async (req, res) => {
-  let newOrderId = null
-  try {
-    const orderId = req.params.id
-    const userId = req.user._id.toString() // Guaranteed by UserAuth middleware
-
-    if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      console.error("reOrder: Invalid order ID:", orderId)
-      return res.status(400).json({ success: false, message: "Invalid order ID" })
-    }
-
-    const order = await Order.findOne({ _id: orderId, userId })
-      .populate({
-        path: "order_items",
-        populate: { path: "productId", model: "Product" },
-      })
-      .populate("address")
-
-    if (!order) {
-      console.error(`reOrder: Order not found for ID: ${orderId}, User ID: ${userId}`)
-      return res.status(404).json({ success: false, message: "Order not found" })
-    }
-
-    const selectedAddress = await Address.findOne({
-      _id: order.address._id,
-      userId,
-    })
-    if (!selectedAddress) {
-      console.error(`reOrder: Address not found for ID: ${order.address._id}, User ID: ${userId}`)
-      return res.status(400).json({
-        success: false,
-        message: "Selected address is no longer valid",
-      })
-    }
-
-    let totalPrice = 0
-    for (const item of order.order_items) {
-      const product = await Product.findById(item.productId._id)
-      if (!product || product.isDeleted) {
-        throw new Error(`Product ${item.product_name} is no longer available`)
-      }
-      const variant = product.variants.find((v) => v.size === item.size)
-      if (!variant) {
-        throw new Error(`Size ${item.size} not available for ${product.name}`)
-      }
-      if (variant.variantQuantity < item.quantity) {
-        throw new Error(`Insufficient stock for ${product.name} (Size: ${item.size})`)
-      }
-      totalPrice += variant.salePrice * item.quantity
-    }
-
-    const deliveryCharge = totalPrice > 8000 ? 0 : 200
-    const grandTotal = totalPrice + deliveryCharge
-
-    const orderNumber = `ORD${Date.now().toString().slice(-6)}`
-
-    const newOrder = new Order({
-      userId,
-      paymentMethod: order.paymentMethod,
-      orderDate: new Date(),
-      status: "Pending",
-      address: selectedAddress._id,
-      total: grandTotal,
-      order_items: [],
-      orderNumber,
-    })
-
-    await newOrder.save()
-    newOrderId = newOrder._id
-
-    const orderItems = []
-    for (const item of order.order_items) {
-      const product = await Product.findById(item.productId._id)
-      const variantIndex = product.variants.findIndex((v) => v.size === item.size)
-      if (variantIndex === -1) {
-        throw new Error(`Variant not found for size ${item.size}`)
-      }
-
-      const variant = product.variants[variantIndex]
-
-      const orderItem = new OrderItem({
-        product_name: product.name,
-        productId: product._id,
-        orderId: newOrder._id,
-        size: item.size,
-        price: variant.salePrice,
-        quantity: item.quantity,
-        total_amount: variant.salePrice * item.quantity,
-      })
-
-      await orderItem.save()
-      orderItems.push(orderItem._id)
-
-      product.variants[variantIndex].variantQuantity -= item.quantity
-      if (product.variants[variantIndex].variantQuantity < 0) {
-        throw new Error(`Stock update failed for ${product.name} (Size: ${item.size})`)
-      }
-      await product.save()
-    }
-
-    newOrder.order_items = orderItems
-    await newOrder.save()
-
-    req.session.checkout = { addressId: selectedAddress._id.toString() }
-
-    return res.status(200).json({
-      success: true,
-      message: "Order placed successfully",
-      redirect: `/order-success?orderId=${newOrder._id}`,
-    })
-  } catch (error) {
-    console.error("reOrder Error:", error.message, error.stack)
-
-    if (newOrderId) {
-      const order = await Order.findById(newOrderId).populate("order_items")
-      if (order) {
-        for (const item of order.order_items) {
-          const product = await Product.findById(item.productId)
-          if (product) {
-            const variantIndex = product.variants.findIndex((v) => v.size === item.size)
-            if (variantIndex !== -1) {
-              product.variants[variantIndex].variantQuantity += item.quantity
-              await product.save()
-            }
-          }
-        }
-        await Order.findByIdAndDelete(newOrderId)
-        await OrderItem.deleteMany({ orderId: newOrderId })
-      }
-    }
-
-    return res.status(400).json({
-      success: false,
-      message: error.message || "Failed to reorder",
-    })
-  }
-}
+};
 
 const getOrderDetails = async (req, res) => {
   try {
-    const orderId = req.params.id
-    const userId = req.user._id.toString() // Guaranteed by UserAuth middleware
+    const userId = req.session.user || req.user._id;
+    const orderId = req.params.id;
 
-    if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      console.error("getOrderDetails: Invalid order ID:", orderId)
-      return res.redirect("/page-not-found")
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.redirect("/login");
     }
 
-    const order = await Order.findOne({ _id: orderId, userId })
+    const order = await Order.findOne({
+      _id: orderId,
+      userId,
+    })
       .populate({
         path: "order_items",
         populate: {
           path: "productId",
-          model: "Product",
-          select: "name images variants",
         },
       })
-      .populate("address")
+      .populate("address");
 
     if (!order) {
-      console.error(`getOrderDetails: Order not found for ID: ${orderId}, User ID: ${userId}`)
-      return res.redirect("/page-not-found")
+      return res.redirect("/orders");
     }
 
-    res.render("orderDetails", { order, user: req.user })
+    const orderItems = await Promise.all(
+      order.order_items.map(async (itemId) => {
+        const item = await OrderItem.findById(itemId).populate("productId");
+        return item;
+      })
+    );
+
+    res.render("orderDetails", {
+      title: "Order Details",
+      user,
+      order,
+      orderItems,
+      page: "order-details",
+    });
   } catch (error) {
-    console.error("getOrderDetails Error:", error.message, error.stack)
-    res.redirect("/page-not-found")
+    console.error("Error getting order details:", error);
+    res.redirect("/orders");
   }
-}
-
-const downloadInvoice = async (req, res) => {
-  try {
-    const orderId = req.params.id
-    const userId = req.user._id.toString()
-
-    if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      console.error("downloadInvoice: Invalid order ID:", orderId)
-      throw new Error("Invalid order ID")
-    }
-
-    const order = await Order.findOne({ _id: orderId, userId })
-      .populate({
-        path: "order_items",
-        populate: { path: "productId", model: "Product" },
-      })
-      .populate("address")
-      .populate("couponId")
-
-    if (!order) {
-      console.error(`downloadInvoice: Order not found for ID: ${orderId}, User ID: ${userId}`)
-      throw new Error("Order not found")
-    }
-
-    const doc = new PDFDocument({
-      margin: 50,
-      size: "A4",
-      info: {
-        Title: `Invoice ORD${order.orderNumber}`,
-        Author: "Elite Wear",
-        Subject: "Customer Invoice",
-        Creator: "Elite Wear Billing System",
-      },
-    })
-
-    res.setHeader("Content-Type", "application/pdf")
-    res.setHeader("Content-Disposition", `attachment; filename=invoice-ORD${order.orderNumber}.pdf`)
-    doc.pipe(res)
-
-    doc.registerFont("Helvetica-Bold", "Helvetica-Bold")
-    doc.registerFont("Helvetica", "Helvetica")
-
-    doc.font("Helvetica-Bold").fontSize(24).fillColor("#2c3e50").text("ELITE WEAR", 50, 50)
-
-    doc.font("Helvetica").fontSize(10).fillColor("#34495e")
-
-    const companyInfo = [
-      "123 Fashion Avenue",
-      "New York, NY 10001",
-      "Phone: (111) 123-1234",
-      "Email: billing@elitewear.com",
-      "Website: www.elitewear.com",
-    ]
-
-    let yPos = 80
-    companyInfo.forEach((line) => {
-      doc.text(line, 50, yPos)
-      yPos += 15
-    })
-
-    doc.font("Helvetica-Bold").fontSize(14).fillColor("#2c3e50").text("INVOICE", 400, 50)
-
-    const invoiceDetails = [
-      { label: "Invoice #", value: `ORD${order.orderNumber}` },
-      {
-        label: "Date",
-        value: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
-      },
-      {
-        label: "Due Date",
-        value: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("en-US"),
-      },
-    ]
-
-    yPos = 80
-    invoiceDetails.forEach((detail) => {
-      doc.font("Helvetica-Bold").fontSize(10).text(detail.label, 400, yPos)
-      doc.font("Helvetica").text(detail.value, 450, yPos)
-      yPos += 15
-    })
-
-    const customerAddress = order.address || {}
-    const addressLines = [
-      customerAddress.name || "Customer Name",
-      customerAddress.street || "Street Address",
-      `${customerAddress.city || "City"}, ${customerAddress.state || "State"} ${customerAddress.zip || "ZIP"}`,
-      customerAddress.country || "Country",
-      customerAddress.phone || "",
-    ].filter((line) => line)
-
-    doc.font("Helvetica-Bold").fontSize(12).fillColor("#2c3e50").text("Bill To:", 50, 160)
-
-    yPos = 180
-    doc.font("Helvetica").fontSize(10)
-    addressLines.forEach((line) => {
-      doc.text(line, 50, yPos)
-      yPos += 15
-    })
-
-    const tableTop = 260
-    doc.rect(50, tableTop, 500, 25).fill("#f1f3f5")
-
-    doc.font("Helvetica-Bold").fontSize(10).fillColor("#2c3e50")
-
-    const headers = [
-      { text: "Item Description", x: 55, width: 280 },
-      { text: "Quantity", x: 335, width: 60 },
-      { text: "Unit Price", x: 395, width: 60 },
-      { text: "Total", x: 455, width: 90 },
-    ]
-
-    headers.forEach((header) => {
-      doc.text(header.text, header.x, tableTop + 8, {
-        width: header.width,
-        align: header.text === "Total" ? "right" : "left",
-      })
-    })
-
-    yPos = tableTop + 35
-    let subtotal = 0
-
-    doc.font("Helvetica").fillColor("#34495e")
-
-    const items = order.order_items.map((item) => ({
-      description: `${item.product_name} (Size: ${item.size})`,
-      quantity: item.quantity,
-      price: item.price,
-    }))
-
-    items.forEach((item) => {
-      const itemTotal = item.price * item.quantity
-      subtotal += itemTotal
-
-      const row = [
-        { text: item.description, x: 55, width: 280 },
-        { text: item.quantity.toString(), x: 335, width: 60 },
-        { text: `₹${item.price.toFixed(2)}`, x: 395, width: 60 },
-        { text: `₹${itemTotal.toFixed(2)}`, x: 455, width: 90 },
-      ]
-
-      row.forEach((cell) => {
-        doc.text(cell.text, cell.x, yPos, { width: cell.width, align: cell.x === 455 ? "right" : "left" })
-      })
-
-      yPos += 20
-      doc
-        .moveTo(50, yPos - 5)
-        .lineTo(550, yPos - 5)
-        .strokeColor("#ececec")
-        .stroke()
-    })
-
-    const deliveryCharge = subtotal > 8000 ? 0 : 200
-    const discount = order.discount || 0
-    const grandTotal = order.total
-
-    const totals = [
-      { label: "Subtotal", value: subtotal.toFixed(2), bold: false },
-      { label: "Delivery Charge", value: deliveryCharge.toFixed(2), bold: false },
-    ]
-
-    if (discount > 0) {
-      totals.push({
-        label: `Coupon Discount (${order.couponId?.coupencode || ""})`,
-        value: discount.toFixed(2),
-        bold: false,
-      })
-    }
-
-    totals.push({ label: "Total", value: grandTotal.toFixed(2), bold: true })
-
-    yPos += 20
-    totals.forEach((total) => {
-      doc.font(total.bold ? "Helvetica-Bold" : "Helvetica").text(total.label, 400, yPos)
-      doc.text(`₹${total.value}`, 455, yPos, { width: 90, align: "right" })
-      yPos += 15
-    })
-
-    doc.rect(0, doc.page.height - 80, doc.page.width, 80).fill("#2c3e50")
-
-    doc
-      .font("Helvetica")
-      .fontSize(9)
-      .fillColor("#ffffff")
-      .text(
-        "Thank you for shopping with Elite Wear! For any questions regarding your order, please contact our customer service at billing@elitewear.com",
-        50,
-        doc.page.height - 65,
-        { width: 500, align: "center" },
-      )
-
-    doc
-      .fontSize(8)
-      .text("Terms: Payment due within 30 days. Make checks payable to Elite Wear.", 50, doc.page.height - 40, {
-        width: 500,
-        align: "center",
-      })
-
-    doc.end()
-  } catch (error) {
-    console.error("downloadInvoice Error:", error.message, error.stack)
-    res.redirect("/page-not-found")
-  }
-}
+};
 
 const trackOrder = async (req, res) => {
   try {
-    const orderId = req.params.id
-    const userId = req.user._id.toString() // Guaranteed by UserAuth middleware
+    const userId = req.session.user || req.user._id;
+    const orderId = req.params.id;
 
-    if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      console.error("trackOrder: Invalid order ID:", orderId)
-      return res.redirect("/page-not-found")
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.redirect("/login");
     }
 
-    const order = await Order.findOne({ _id: orderId, userId })
+    const order = await Order.findOne({
+      _id: orderId,
+      userId,
+    })
       .populate({
         path: "order_items",
         populate: {
           path: "productId",
-          model: "Product",
-          select: "name images variants",
         },
       })
-      .populate("address")
-      .lean()
+      .populate("address");
 
     if (!order) {
-      console.error(`trackOrder: Order not found for ID: ${orderId}, User ID: ${userId}`)
-      return res.redirect("/page-not-found")
+      return res.redirect("/orders");
     }
 
-    const getProgressWidth = (status) => {
-      const steps = ["Pending", "Processing", "Confirmed", "Shipped", "Delivered"]
-      if (status === "Cancelled" || status === "Return Requested") return 100
-      const index = steps.indexOf(status)
-      return index >= 0 ? ((index + 1) / steps.length) * 100 : 20
-    }
+    let trackingSteps = [];
+    let progressWidth = 0;
 
-    let trackingSteps
     if (order.status === "Cancelled") {
       trackingSteps = [
         {
-          status: "Cancelled",
-          icon: "fa-times",
-          date: new Date().toLocaleDateString(),
-          active: true,
-        },
-      ]
-    } else if (order.status === "Return Requested") {
-      trackingSteps = [
-        {
-          status: "Return Requested",
-          icon: "fa-undo",
-          date: new Date().toLocaleDateString(),
-          active: true,
-        },
-      ]
-    } else {
-      trackingSteps = [
-        {
-          status: "Order Confirmed",
-          icon: "fa-check",
+          status: "Order Placed",
           date: order.orderDate.toLocaleDateString(),
-          active: ["Pending", "Processing", "Confirmed", "Shipped", "Delivered"].includes(order.status),
+          icon: "fa-shopping-bag",
+          active: true,
+        },
+        {
+          status: "Cancelled",
+          date: order.updatedAt.toLocaleDateString(),
+          icon: "fa-times-circle",
+          active: true,
+        },
+      ];
+      progressWidth = 100;
+    } else if (
+      order.status === "Return Requested" ||
+      order.status === "Return Approved" ||
+      order.status === "Returned" ||
+      order.status === "Return Rejected"
+    ) {
+      trackingSteps = [
+        {
+          status: "Order Placed",
+          date: order.orderDate.toLocaleDateString(),
+          icon: "fa-shopping-bag",
+          active: true,
+        },
+        {
+          status: "Processing",
+          date: new Date(
+            order.orderDate.getTime() + 86400000
+          ).toLocaleDateString(),
+          icon: "fa-cog",
+          active: true,
         },
         {
           status: "Shipped",
-          icon: "fa-box",
-          date: order.status === "Shipped" || order.status === "Delivered" ? new Date().toLocaleDateString() : "-",
-          active: ["Shipped", "Delivered"].includes(order.status),
-        },
-        {
-          status: "Out for Delivery",
+          date: new Date(
+            order.orderDate.getTime() + 172800000
+          ).toLocaleDateString(),
           icon: "fa-truck",
-          date: order.status === "Delivered" ? new Date().toLocaleDateString() : "-",
-          active: order.status === "Delivered",
+          active: true,
         },
         {
           status: "Delivered",
-          icon: "fa-home",
-          date: order.status === "Delivered" ? new Date().toLocaleDateString() : "-",
+          date: new Date(
+            order.orderDate.getTime() + 432000000
+          ).toLocaleDateString(),
+          icon: "fa-check-circle",
+          active: true,
+        },
+      ];
+
+      if (order.status === "Return Requested") {
+        trackingSteps.push({
+          status: "Return Requested",
+          date: order.updatedAt.toLocaleDateString(),
+          icon: "fa-undo-alt",
+          active: true,
+        });
+        progressWidth = 70;
+      } else if (order.status === "Return Approved") {
+        trackingSteps.push({
+          status: "Return Requested",
+          date: new Date(
+            order.updatedAt.getTime() - 86400000
+          ).toLocaleDateString(),
+          icon: "fa-undo-alt",
+          active: true,
+        });
+        trackingSteps.push({
+          status: "Return Approved",
+          date: order.updatedAt.toLocaleDateString(),
+          icon: "fa-check",
+          active: true,
+        });
+        progressWidth = 85;
+      } else if (order.status === "Returned") {
+        trackingSteps.push({
+          status: "Return Requested",
+          date: new Date(
+            order.updatedAt.getTime() - 172800000
+          ).toLocaleDateString(),
+          icon: "fa-undo-alt",
+          active: true,
+        });
+        trackingSteps.push({
+          status: "Return Approved",
+          date: new Date(
+            order.updatedAt.getTime() - 86400000
+          ).toLocaleDateString(),
+          icon: "fa-check",
+          active: true,
+        });
+        trackingSteps.push({
+          status: "Returned",
+          date: order.updatedAt.toLocaleDateString(),
+          icon: "fa-box",
+          active: true,
+        });
+        progressWidth = 100;
+      } else if (order.status === "Return Rejected") {
+        trackingSteps.push({
+          status: "Return Requested",
+          date: new Date(
+            order.updatedAt.getTime() - 86400000
+          ).toLocaleDateString(),
+          icon: "fa-undo-alt",
+          active: true,
+        });
+        trackingSteps.push({
+          status: "Return Rejected",
+          date: order.updatedAt.toLocaleDateString(),
+          icon: "fa-times-circle",
+          active: true,
+        });
+        progressWidth = 100;
+      }
+    } else {
+      trackingSteps = [
+        {
+          status: "Order Placed",
+          date: order.orderDate.toLocaleDateString(),
+          icon: "fa-shopping-bag",
+          active: true,
+        },
+        {
+          status: "Processing",
+          date:
+            order.status === "Pending"
+              ? "Pending"
+              : new Date(
+                  order.orderDate.getTime() + 86400000
+                ).toLocaleDateString(),
+          icon: "fa-cog",
+          active: order.status !== "Pending",
+        },
+        {
+          status: "Shipped",
+          date:
+            order.status === "Pending" || order.status === "Processing"
+              ? "Pending"
+              : new Date(
+                  order.orderDate.getTime() + 172800000
+                ).toLocaleDateString(),
+          icon: "fa-truck",
+          active: order.status !== "Pending" && order.status !== "Processing",
+        },
+        {
+          status: "Out for Delivery",
+          date:
+            order.status === "Pending" ||
+            order.status === "Processing" ||
+            order.status === "Shipped"
+              ? "Pending"
+              : new Date(
+                  order.orderDate.getTime() + 345600000
+                ).toLocaleDateString(),
+          icon: "fa-truck-loading",
+          active:
+            order.status === "Out for Delivery" || order.status === "Delivered",
+        },
+        {
+          status: "Delivered",
+          date:
+            order.status === "Delivered"
+              ? new Date(
+                  order.orderDate.getTime() + 432000000
+                ).toLocaleDateString()
+              : "Pending",
+          icon: "fa-check-circle",
           active: order.status === "Delivered",
         },
-      ]
+      ];
+
+      switch (order.status) {
+        case "Pending":
+          progressWidth = 20;
+          break;
+        case "Processing":
+          progressWidth = 40;
+          break;
+        case "Shipped":
+          progressWidth = 60;
+          break;
+        case "Out for Delivery":
+          progressWidth = 80;
+          break;
+        case "Delivered":
+          progressWidth = 100;
+          break;
+        default:
+          progressWidth = 0;
+      }
     }
 
     res.render("orderTracking", {
+      title: "Track Order",
+      user,
       order,
-      user: req.user,
-      progressWidth: getProgressWidth(order.status),
       trackingSteps,
-    })
+      progressWidth,
+      page: "order-tracking",
+    });
   } catch (error) {
-    console.error("trackOrder Error:", error.message, error.stack)
-    res.redirect("/page-not-found")
+    console.error("Error tracking order:", error);
+    res.redirect("/orders");
   }
-}
+};
+
+const cancelOrder = async (req, res) => {
+  try {
+    const userId = req.session.user || req.user._id;
+    const orderId = req.params.id;
+    const { cancelReason } = req.body;
+
+    const order = await Order.findOne({
+      _id: orderId,
+      userId,
+    });
+
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    if (!["Pending", "Processing"].includes(order.status)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "This order cannot be cancelled" });
+    }
+
+    order.status = "Cancelled";
+    order.cancelReason = cancelReason || "Cancelled by user";
+    order.updatedAt = new Date();
+    await order.save();
+
+    const orderItems = await OrderItem.find({ orderId: order._id });
+    for (const item of orderItems) {
+      const product = await Product.findById(item.productId);
+      if (product) {
+        const variantIndex = product.variants.findIndex(
+          (v) => v.size === item.size
+        );
+        if (variantIndex !== -1) {
+          product.variants[variantIndex].varientquatity += item.quantity;
+          await product.save();
+        }
+      }
+    }
+
+    if (order.paymentMethod === "COD" && order.paymentStatus === "Paid") {
+      await processRefundToWallet(
+        userId,
+        order.total,
+        order.orderNumber,
+        "Refund for cancelled order"
+      );
+      order.paymentStatus = "Refunded";
+      order.refunded = true;
+    } else if (order.paymentMethod === "Wallet") {
+      await processRefundToWallet(
+        userId,
+        order.total,
+        order.orderNumber,
+        "Refund for cancelled order"
+      );
+      order.paymentStatus = "Refunded";
+      order.refunded = true;
+    } else if (order.paymentMethod === "Online") {
+      await processRefundToWallet(
+        userId,
+        order.total,
+        order.orderNumber,
+        "Refund for cancelled order"
+      );
+      order.paymentStatus = "Refunded";
+      order.refunded = true;
+    }
+
+    await order.save();
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Order cancelled successfully" });
+  } catch (error) {
+    console.error("Error cancelling order:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to cancel order" });
+  }
+};
+
+const initiateReturn = async (req, res) => {
+  try {
+    const userId = req.session.user || req.user._id;
+    const orderId = req.params.id;
+    const { returnReason } = req.body;
+
+    if (!returnReason) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Return reason is required" });
+    }
+
+    const order = await Order.findOne({
+      _id: orderId,
+      userId,
+    });
+
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    if (order.status !== "Delivered") {
+      return res.status(400).json({
+        success: false,
+        message: "Only delivered orders can be returned",
+      });
+    }
+
+    const deliveryDate =
+      order.deliveryDate || order.updatedAt || order.orderDate;
+    const returnPeriod = 14 * 24 * 60 * 60 * 1000;
+    if (Date.now() - deliveryDate.getTime() > returnPeriod) {
+      return res.status(400).json({
+        success: false,
+        message: "Return period has expired (14 days)",
+      });
+    }
+
+    order.status = "Return Requested";
+    order.returnReason = returnReason;
+    order.returnRequestedDate = new Date();
+    order.updatedAt = new Date();
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Return request submitted successfully",
+    });
+  } catch (error) {
+    console.error("Error initiating return:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to submit return request" });
+  }
+};
+
+const reOrder = async (req, res) => {
+  try {
+    const userId = req.session.user || req.user._id;
+    const orderId = req.params.id;
+
+    const order = await Order.findOne({
+      _id: orderId,
+      userId,
+    });
+
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    const cart = await Cart.findOne({ userId });
+    if (!cart) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Cart not found" });
+    }
+
+    cart.items = [];
+    await cart.save();
+
+    const orderItems = await OrderItem.find({ orderId: order._id });
+
+    for (const item of orderItems) {
+      const product = await Product.findById(item.productId);
+      if (!product) {
+        continue;
+      }
+
+      const variant = product.variants.find((v) => v.size === item.size);
+      if (!variant || variant.varientquatity < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `${product.name} (${item.size}) is out of stock or has insufficient quantity`,
+        });
+      }
+
+      cart.items.push({
+        productId: product._id,
+        quantity: item.quantity,
+        size: item.size,
+      });
+    }
+
+    await cart.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Items added to cart",
+      redirect: "/checkOut",
+    });
+  } catch (error) {
+    console.error("Error reordering:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to reorder" });
+  }
+};
+
+const downloadInvoice = async (req, res) => {
+  try {
+    const userId = req.session.user || req.user._id;
+    const orderId = req.params.id;
+
+    const order = await Order.findOne({
+      _id: orderId,
+      userId,
+    }).populate("userId");
+
+    if (!order) {
+      return res.redirect("/orders");
+    }
+
+    const orderItems = await OrderItem.find({ orderId: order._id });
+
+    // Get address
+    const address = await Address.findById(order.address);
+    if (!address) {
+      return res.redirect("/orders");
+    }
+
+    const doc = new PDFDocument({ margin: 50 });
+    const invoiceFilename = `invoice-${order.orderNumber}.pdf`;
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${invoiceFilename}"`
+    );
+
+    doc.pipe(res);
+
+    // doc.image(path.join(__dirname, '../../public/Uploads/logo.png'), 50, 45, { width: 100 });
+
+    doc.fontSize(20).text("ELITE WEAR", { align: "center" });
+    doc.fontSize(12).text("Invoice", { align: "center" });
+    doc.moveDown();
+
+    doc.fontSize(14).text("Order Details", { underline: true });
+    doc.fontSize(10).text(`Order Number: ${order.orderNumber}`);
+    doc.text(`Order Date: ${order.orderDate.toLocaleDateString()}`);
+    doc.text(`Payment Method: ${order.paymentMethod}`);
+    doc.text(`Payment Status: ${order.paymentStatus}`);
+    doc.moveDown();
+
+    doc.fontSize(14).text("Customer Details", { underline: true });
+    doc.fontSize(10).text(`Name: ${order.userId.fullname}`);
+    doc.text(`Email: ${order.userId.email}`);
+    doc.moveDown();
+
+    doc.fontSize(14).text("Shipping Address", { underline: true });
+    doc.fontSize(10).text(`${address.fullname}`);
+    doc.text(`${address.address}`);
+    doc.text(`${address.city}, ${address.district}`);
+    doc.text(`${address.state} - ${address.pincode}`);
+    doc.text(`Phone: ${address.mobile}`);
+    doc.moveDown();
+
+    doc.fontSize(14).text("Order Items", { underline: true });
+    doc.moveDown();
+
+    const tableTop = doc.y;
+    const itemX = 50;
+    const descriptionX = 150;
+    const quantityX = 300;
+    const priceX = 370;
+    const amountX = 450;
+
+    doc
+      .fontSize(10)
+      .text("Item", itemX, tableTop)
+      .text("Description", descriptionX, tableTop)
+      .text("Qty", quantityX, tableTop)
+      .text("Price", priceX, tableTop)
+      .text("Amount", amountX, tableTop);
+
+    doc.moveDown();
+
+    doc
+      .strokeColor("#aaaaaa")
+      .lineWidth(1)
+      .moveTo(itemX, doc.y)
+      .lineTo(550, doc.y)
+      .stroke();
+
+    doc.moveDown();
+
+    let totalAmount = 0;
+    let y = doc.y;
+
+    for (const item of orderItems) {
+      const itemTotal = item.price * item.quantity;
+      totalAmount += itemTotal;
+
+      doc
+        .fontSize(10)
+        .text(item.product_name.substring(0, 20), itemX, y)
+        .text(`Size: ${item.size}`, descriptionX, y)
+        .text(item.quantity, quantityX, y)
+        .text(`₹${item.price.toFixed(2)}`, priceX, y)
+        .text(`₹${itemTotal.toFixed(2)}`, amountX, y);
+
+      y += 20;
+    }
+
+    doc.moveDown();
+
+    doc
+      .strokeColor("#aaaaaa")
+      .lineWidth(1)
+      .moveTo(itemX, doc.y)
+      .lineTo(550, doc.y)
+      .stroke();
+
+    doc.moveDown();
+
+    const subtotalY = doc.y;
+    doc
+      .fontSize(10)
+      .text("Subtotal:", 350, subtotalY)
+      .text(`₹${totalAmount.toFixed(2)}`, amountX, subtotalY);
+
+    const deliveryY = subtotalY + 20;
+    doc
+      .fontSize(10)
+      .text("Delivery Charge:", 350, deliveryY)
+      .text(
+        `₹${(order.total > 8000 ? 0 : 200).toFixed(2)}`,
+        amountX,
+        deliveryY
+      );
+
+    if (order.discount > 0) {
+      const discountY = deliveryY + 20;
+      doc
+        .fontSize(10)
+        .text("Discount:", 350, discountY)
+        .text(`-₹${order.discount.toFixed(2)}`, amountX, discountY);
+    }
+
+    const totalY = order.discount > 0 ? deliveryY + 40 : deliveryY + 20;
+    doc
+      .fontSize(12)
+      .text("Total:", 350, totalY, { bold: true })
+      .text(`₹${order.total.toFixed(2)}`, amountX, totalY, { bold: true });
+
+    doc.fontSize(10).text("Thank you for shopping with ELITE WEAR!", 50, 700, {
+      align: "center",
+    });
+
+    doc.end();
+  } catch (error) {
+    console.error("Error generating invoice:", error);
+    res.redirect("/orders");
+  }
+};
 
 module.exports = {
   placeOrder,
   loadOrderSuccess,
   getUserOrders,
+  getOrderDetails,
+  trackOrder,
   cancelOrder,
   initiateReturn,
   reOrder,
-  getOrderDetails,
   downloadInvoice,
-  trackOrder,
-}
+};

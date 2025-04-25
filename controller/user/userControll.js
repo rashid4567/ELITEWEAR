@@ -18,9 +18,8 @@ const OTP_EXPIRY_MINUTES = 15;
 const OTP_LENGTH = 5;
 const SALT_ROUNDS = 10;
 
-// Referral reward amounts
-const REFERRER_REWARD = 200; // Amount for the referrer
-const NEW_USER_REWARD = 100; // Amount for the new user
+const REFERRER_REWARD = 200;
+const NEW_USER_REWARD = 100;
 
 const debug =
   process.env.NODE_ENV === "development"
@@ -93,26 +92,22 @@ const applyReferral = async (newUserId, referralCode) => {
       referralCode
     );
 
-    // Validate inputs
     if (!newUserId || !referralCode) {
       console.log("Missing required parameters:", { newUserId, referralCode });
       return { success: false, message: "Missing required parameters" };
     }
 
-    // Find the referrer by referral code
     const referrer = await User.findOne({ referralCode });
     if (!referrer) {
       console.log("Invalid referral code:", referralCode);
       return { success: false, message: "Invalid referral code" };
     }
 
-    // Prevent self-referral
     if (referrer._id.toString() === newUserId.toString()) {
       console.log("User attempted to use own referral code:", newUserId);
       return { success: false, message: "Cannot use your own referral code" };
     }
 
-    // Check if user already used a referral code
     const user = await User.findById(newUserId);
     if (!user) {
       console.log("User not found:", newUserId);
@@ -127,12 +122,12 @@ const applyReferral = async (newUserId, referralCode) => {
       };
     }
 
-    // Generate unique transaction references
-    const baseTransactionRef = `REF-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const baseTransactionRef = `REF-${Date.now()}-${Math.floor(
+      Math.random() * 1000
+    )}`;
     const newUserTransactionRef = `${baseTransactionRef}-NEW`;
     const referrerTransactionRef = `${baseTransactionRef}-REF`;
 
-    // Credit new user's wallet
     await Wallet.findOneAndUpdate(
       { userId: newUserId },
       {
@@ -151,7 +146,6 @@ const applyReferral = async (newUserId, referralCode) => {
       { new: true, upsert: true }
     );
 
-    // Credit referrer's wallet
     await Wallet.findOneAndUpdate(
       { userId: referrer._id },
       {
@@ -170,10 +164,8 @@ const applyReferral = async (newUserId, referralCode) => {
       { new: true, upsert: true }
     );
 
-    // Update new user's referredBy field
     await User.findByIdAndUpdate(newUserId, { referredBy: referrer._id });
 
-    // Save to referral history
     const referralHistory = new ReferralHistory({
       newUserId,
       referrerId: referrer._id,
@@ -184,11 +176,11 @@ const applyReferral = async (newUserId, referralCode) => {
     await referralHistory.save();
 
     console.log("Referral applied successfully for user:", newUserId);
-    return { 
-      success: true, 
+    return {
+      success: true,
       message: "Referral applied successfully",
       newUserReward: NEW_USER_REWARD,
-      referrerReward: REFERRER_REWARD
+      referrerReward: REFERRER_REWARD,
     };
   } catch (error) {
     console.error("Error applying referral:", error.message);
@@ -196,25 +188,30 @@ const applyReferral = async (newUserId, referralCode) => {
   }
 };
 
-// Apply referral code after user is already registered
 const applyReferralCode = async (req, res) => {
   try {
     const { referralCode } = req.body;
     const userId = req.session.user;
 
     if (!userId) {
-      return res.status(401).json({ success: false, message: "User not authenticated" });
+      return res
+        .status(401)
+        .json({ success: false, message: "User not authenticated" });
     }
 
     if (!referralCode) {
-      return res.status(400).json({ success: false, message: "Referral code is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Referral code is required" });
     }
 
     const result = await applyReferral(userId, referralCode);
     return res.status(result.success ? 200 : 400).json(result);
   } catch (error) {
     console.error("Error applying referral code:", error);
-    return res.status(500).json({ success: false, message: "Server error: " + error.message });
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error: " + error.message });
   }
 };
 
@@ -328,7 +325,6 @@ const userSignup = async (req, res) => {
     const { fullname, email, mobile, password, cpassword, referralCode } =
       req.body;
 
-    // Normalize email to lowercase
     const normalizedEmail = email.toLowerCase();
 
     if (password !== cpassword) {
@@ -429,16 +425,14 @@ const verifyOtp = async (req, res) => {
       isVerified: true,
     });
 
-    await newUser.save(); // Save the user first
+    await newUser.save();
 
-    // Create wallet
     const wallet = new Wallet({
       userId: newUser._id,
       amount: 0,
     });
     await wallet.save();
 
-    // Referral logic (no session)
     if (registration.userData.referralCode) {
       const referralResult = await applyReferral(
         newUser._id,
@@ -446,7 +440,6 @@ const verifyOtp = async (req, res) => {
       );
       if (!referralResult.success) {
         console.log("Referral failed:", referralResult.message);
-        // Continue without crashing
       } else {
         console.log("Referral applied successfully during signup");
       }
@@ -960,5 +953,5 @@ module.exports = {
   applyReferral,
   applyReferralCode,
   REFERRER_REWARD,
-  NEW_USER_REWARD
+  NEW_USER_REWARD,
 };

@@ -19,7 +19,7 @@ const allCoupons = async (req, res) => {
   
       const totalPrice = req.session.checkout?.totalPrice || 0;
   
-      // Add status fields
+
       const couponsWithStatus = coupons.map((coupon) => {
         const usedBy = coupon.usedBy || [];
         const userUsage = usedBy.find(
@@ -175,7 +175,7 @@ const applyCoupon = async (req, res) => {
         .json({ success: false, message: "Invalid or expired coupon" });
     }
 
-    // Add a safety check for usedBy
+
     const usedBy = coupon.usedBy || [];
     const userUsage = usedBy.find(
       (u) => u && u.userId && u.userId.toString() === userId
@@ -212,13 +212,13 @@ const applyCoupon = async (req, res) => {
       discount = coupon.maxRedeemable;
     }
 
-    // Store totalPrice in session for use in getAvailableCoupons
+ 
     if (!req.session.checkout) {
       req.session.checkout = {};
     }
     req.session.checkout.totalPrice = totalPrice;
 
-    // Save coupon details to session (temporary, until order is placed)
+
     req.session.checkout.coupon = {
       couponId: coupon._id.toString(),
       code: coupon.coupencode,

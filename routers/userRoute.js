@@ -12,6 +12,7 @@ const cartController = require("../controller/user/cartController");
 const walletController = require("../controller/user/walletController");
 const referralController = require("../controller/user/referalController");
 const CouponController = require("../controller/user/userCouponCoontroller");
+const razorpayController = require("../controller/user/razzerpayController");
 const { UserAuth } = require("../middleware/auth");
 
 const { checkBlockedStatus } = userControllers;
@@ -172,23 +173,25 @@ router.get("/order-details/:id", UserAuth, orderController.getOrderDetails);
 router.get("/invoice/:id", UserAuth, orderController.downloadInvoice);
 router.get("/orders/track/:id", UserAuth, orderController.trackOrder);
 
+// Razorpay routes
+router.post("/create-razorpay-order", UserAuth, razorpayController.createRazorpayOrder);
+router.post("/verify-payment", UserAuth, razorpayController.verifyPayment);
+
 // Wallet routes
 router.get("/wallet", UserAuth, walletController.getwallet);
-router.post("/credit", UserAuth, walletController.creditWallet);
-router.post("/debit", UserAuth, walletController.debitWallet);
+router.post("/wallet/credit", UserAuth, walletController.creditWallet);
+router.post("/wallet/debit", UserAuth, walletController.debitWallet);
 
 //coupon Route
-router.get("/allcoupons", UserAuth, CouponController.allCoupons)
-router.get("/coupons", UserAuth, CouponController.getAvailableCoupons)
-router.post("/apply-coupon", UserAuth, CouponController.applyCoupon)
-router.post("/remove-coupon", UserAuth, CouponController.removeCoupon)
-
+router.get("/allcoupons", UserAuth, CouponController.allCoupons);
+router.get("/coupons", UserAuth, CouponController.getAvailableCoupons);
+router.post("/apply-coupon", UserAuth, CouponController.applyCoupon);
+router.post("/remove-coupon", UserAuth, CouponController.removeCoupon);
 
 // Error handling
 router.get("/page-not-found", userControllers.pageNotfound);
 router.use((req, res) => {
   res.status(404).redirect("/page-not-found");
 });
-
 
 module.exports = router;

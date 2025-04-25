@@ -1,12 +1,29 @@
 const Wallet = require("../../model/walletScheema");
+const User = require("../../model/userSchema");
 const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 
 const getwallet = async (req, res) => {
   try {
-    let wallet = await Wallet.findOne({ userId: req.user._id }).lean();
+    const userId = req.session.user || req.user._id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).render("page-500", { message: "User not found" });
+    }
+
+    if (user.walletBalance === undefined) {
+      user.walletBalance = 0;
+      await user.save();
+    }
+
+    let wallet = await Wallet.findOne({ userId }).lean();
     if (!wallet) {
-      wallet = await new Wallet({ userId: req.user._id, amount: 0, transactions: [] }).save();
+      wallet = await new Wallet({
+        userId,
+        amount: user.walletBalance,
+        transactions: [],
+      }).save();
       wallet = wallet.toObject();
     }
 
@@ -19,12 +36,15 @@ const getwallet = async (req, res) => {
             year: "numeric",
           })
         : "N/A",
-      typeDisplay: transaction.type === "credit" ? "Amount Credited" : "Amount Debited",
+      typeDisplay:
+        transaction.type === "credit" ? "Amount Credited" : "Amount Debited",
     }));
 
     res.render("wallet", {
       wallet,
-      user: req.user,
+      user,
+      walletBalance: user.walletBalance || 0,
+      page: "wallet",
     });
   } catch (error) {
     console.error("Error in getwallet:", error.message);
@@ -35,20 +55,43 @@ const getwallet = async (req, res) => {
 const creditWallet = async (req, res) => {
   try {
     const { amount, description } = req.body;
+    const userId = req.session.user || req.user._id;
 
     const parsedAmount = Number(amount);
     if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) {
-      return res.status(400).json({ success: false, message: "Invalid amount" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid amount" });
     }
 
-    if (!description || typeof description !== "string" || description.trim() === "") {
-      return res.status(400).json({ success: false, message: "Description is required" });
+    if (
+      !description ||
+      typeof description !== "string" ||
+      description.trim() === ""
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Description is required" });
     }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    if (user.walletBalance === undefined) {
+      user.walletBalance = 0;
+    }
+
+    user.walletBalance += parsedAmount;
+    await user.save();
 
     const wallet = await Wallet.findOneAndUpdate(
-      { userId: req.user._id },
+      { userId },
       {
-        $inc: { amount: parsedAmount },
+        $set: { amount: user.walletBalance },
         $push: {
           transactions: {
             type: "credit",
@@ -65,7 +108,7 @@ const creditWallet = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Wallet credited successfully",
-      newBalance: wallet.amount,
+      newBalance: user.walletBalance,
     });
   } catch (error) {
     console.error("Error in creditWallet:", error.message);
@@ -76,29 +119,49 @@ const creditWallet = async (req, res) => {
 const debitWallet = async (req, res) => {
   try {
     const { amount, description } = req.body;
+    const userId = req.session.user || req.user._id;
 
     const parsedAmount = Number(amount);
     if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) {
-      return res.status(400).json({ success: false, message: "Invalid amount" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid amount" });
     }
 
-    if (!description || typeof description !== "string" || description.trim() === "") {
-      return res.status(400).json({ success: false, message: "Description is required" });
+    if (
+      !description ||
+      typeof description !== "string" ||
+      description.trim() === ""
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Description is required" });
     }
 
-    const wallet = await Wallet.findOne({ userId: req.user._id });
-    if (!wallet) {
-      return res.status(404).json({ success: false, message: "Wallet not found" });
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
 
-    if (wallet.amount < parsedAmount) {
-      return res.status(400).json({ success: false, message: "Insufficient wallet balance" });
+    if (user.walletBalance === undefined) {
+      user.walletBalance = 0;
     }
 
-    const updatedWallet = await Wallet.findOneAndUpdate(
-      { userId: req.user._id, amount: { $gte: parsedAmount } },
+    if (user.walletBalance < parsedAmount) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Insufficient wallet balance" });
+    }
+
+    user.walletBalance -= parsedAmount;
+    await user.save();
+
+    const wallet = await Wallet.findOneAndUpdate(
+      { userId },
       {
-        $inc: { amount: -parsedAmount },
+        $set: { amount: user.walletBalance },
         $push: {
           transactions: {
             type: "debit",
@@ -109,17 +172,13 @@ const debitWallet = async (req, res) => {
           },
         },
       },
-      { new: true }
+      { new: true, upsert: true }
     );
-
-    if (!updatedWallet) {
-      return res.status(400).json({ success: false, message: "Insufficient wallet balance or wallet not found" });
-    }
 
     return res.status(200).json({
       success: true,
       message: "Wallet debited successfully",
-      newBalance: updatedWallet.amount,
+      newBalance: user.walletBalance,
     });
   } catch (error) {
     console.error("Error in debitWallet:", error.message);
@@ -127,8 +186,50 @@ const debitWallet = async (req, res) => {
   }
 };
 
+const processRefundToWallet = async (userId, amount, orderNumber, reason) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    if (user.walletBalance === undefined) {
+      user.walletBalance = 0;
+    }
+
+    user.walletBalance += amount;
+    await user.save();
+
+    let wallet = await Wallet.findOne({ userId });
+    if (!wallet) {
+      wallet = new Wallet({
+        userId,
+        amount: amount,
+        transactions: [],
+      });
+    } else {
+      wallet.amount = user.walletBalance;
+    }
+
+    wallet.transactions.push({
+      type: "credit",
+      amount: amount,
+      transactionRef: `REF-${uuidv4()}`,
+      description: `${reason} #${orderNumber}`,
+      date: new Date(),
+    });
+
+    await wallet.save();
+    return true;
+  } catch (error) {
+    console.error("Error processing refund to wallet:", error);
+    return false;
+  }
+};
+
 module.exports = {
   getwallet,
   creditWallet,
   debitWallet,
+  processRefundToWallet,
 };

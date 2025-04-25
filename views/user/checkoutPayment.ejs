@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - Elite Wear</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/userStyle/checkoutPayment.css">
+    
 </head>
 <body>
     <%- include("../partials/user/header") %>
@@ -16,24 +18,81 @@
                 <div class="payment-card">
                     <h4 class="payment-title">Payment Methods</h4>
                     <p class="text-muted">Select a payment method</p>
+                    
+                    <div id="paymentAlert"></div>
+                    
                     <div class="payment-methods">
                         <div class="payment-option">
                             <input type="radio" name="payment" id="cod" value="COD" checked>
-                            <label for="cod">Cash on Delivery</label>
+                            <label for="cod"><i class="fas fa-money-bill-wave payment-icon"></i> Cash on Delivery</label>
                         </div>
+                        <p class="payment-description">Pay when your order is delivered</p>
+                        
+                        <div class="payment-option">
+                            <input type="radio" name="payment" id="razorpay" value="Razorpay">
+                            <label for="razorpay"><i class="fas fa-credit-card payment-icon"></i> Pay Online</label>
+                        </div>
+                        <p class="payment-description">Credit/Debit Card, UPI, Netbanking via Razorpay</p>
+                        <div class="razorpay-logos">
+                            <img src="/uploads/visaCard.png" alt="Visa">
+                            <img src="/uploads/mastercard.jpeg" alt="Mastercard">
+                            <img src="/uploads/Rupay-Logo.png" alt="RuPay">
+                            <img src="/uploads/upi.jpeg" alt="UPI">
+                        </div>
+                        
+                        <div class="payment-option">
+                            <input type="radio" name="payment" id="wallet" value="Wallet" 
+                                <%= (user.walletBalance < grandTotal) ? 'disabled' : '' %>>
+                            <label for="wallet" <%= (user.walletBalance < grandTotal) ? 'class="text-muted"' : '' %>>
+                                <i class="fas fa-wallet payment-icon"></i> Wallet
+                                <span class="wallet-badge <%= (user.walletBalance < grandTotal) ? 'bg-danger' : 'bg-success' %> text-white">
+                                    Balance: ₹<%= user.walletBalance ? user.walletBalance.toFixed(2) : '0.00' %>
+                                </span>
+                            </label>
+                        </div>
+                        <% if (user.walletBalance < grandTotal) { %>
+                            <p class="payment-description text-danger">
+                                Insufficient wallet balance. You need ₹<%= (grandTotal - user.walletBalance).toFixed(2) %> more.
+                                <a href="/wallet" class="text-primary">Add money</a>
+                            </p>
+                        <% } else { %>
+                            <p class="payment-description">Pay using your wallet balance</p>
+                        <% } %>
                     </div>
+                </div>
+                
+                <div class="payment-card">
+                    <h5 class="mb-3">Delivery Address</h5>
+                    <div class="address-details">
+                    
+                        <p class="mb-1"><strong><%= deliveryAddress.fullname %></strong></p>
+                        <p class="mb-1"><%= deliveryAddress.address %></p>
+                        <p class="mb-1"><%= deliveryAddress.city %>, <%= deliveryAddress.district %></p>
+                        <p class="mb-1"><%= deliveryAddress.state %> - <%= deliveryAddress.pincode %></p>
+                        <p class="mb-0">Phone: <%= deliveryAddress.mobile %></p>
+                    </div>
+                    <a href="/checkOut" class="btn btn-outline-dark btn-sm mt-3">
+                        <i class="fas fa-edit"></i> Change Address
+                    </a>
                 </div>
             </div>
             <div class="col-lg-7">
                 <div class="payment-card">
-                    <% cartItems.forEach(item => { %>
+                    <h4 class="mb-3">Order Summary</h4>
+                    <% cartItems.forEach(item => { 
+                        const variant = item.productId.variants.find(v => v.size === item.size);
+                        const price = variant ? variant.salePrice : 0;
+                        const totalItemPrice = price * item.quantity;
+                    %>
                         <div class="product-item">
                             <img src="<%= item.productId.images[0]?.url || '/api/placeholder/70/70' %>" alt="<%= item.productId.name %>" class="product-img">
                             <div class="product-details">
                                 <h6 class="product-title"><%= item.productId.name %></h6>
-                                <div class="product-qty">Quantity: <%= item.quantity %></div>
+                                <div class="product-qty">
+                                    Size: <%= item.size %> | Quantity: <%= item.quantity %>
+                                </div>
                             </div>
-                            <div class="product-price">₹<%= (item.productId.variants.find(v => v.size === item.size)?.salePrice || 0) * item.quantity %></div>
+                            <div class="product-price">₹<%= totalItemPrice.toFixed(2) %></div>
                         </div>
                     <% }); %>
                     <div class="order-summary mt-4">
@@ -48,7 +107,7 @@
                         <% if (discount > 0 && appliedCoupon) { %>
                             <div class="summary-row">
                                 <div class="summary-label">Coupon Discount (<%= appliedCoupon.code %>):</div>
-                                <div class="summary-value">-₹<%= discount.toFixed(2) %></div>
+                                <div class="summary-value text-success">-₹<%= discount.toFixed(2) %></div>
                             </div>
                         <% } %>
                         <div class="summary-row total-row">
@@ -56,38 +115,154 @@
                             <div class="summary-value">₹<%= grandTotal.toFixed(2) %></div>
                         </div>
                     </div>
-                    <button class="btn btn-order" onclick="placeOrder()">Place Order</button>
+                    <button class="btn btn-order" id="placeOrderBtn" onclick="handlePayment()">
+                        Place Order - ₹<%= grandTotal.toFixed(2) %>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
     <%- include("../partials/user/footer") %>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
-        function placeOrder() {
+        function showAlert(type, message) {
+            const alertDiv = document.getElementById('paymentAlert');
+            alertDiv.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                const alert = document.querySelector('.alert');
+                if (alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        }
+        
+        async function handlePayment() {
             const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
             const couponCode = "<%= appliedCoupon ? appliedCoupon.code : '' %>";
-
-            fetch('/place-order', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ paymentMethod, couponCode }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.href = data.redirect;
+            const placeOrderBtn = document.getElementById('placeOrderBtn');
+            
+            placeOrderBtn.disabled = true;
+            placeOrderBtn.innerHTML = '<span class="spinner"></span> Processing...';
+            
+            try {
+                if (paymentMethod === 'Razorpay') {
+                    // Handle Razorpay payment
+                    const response = await fetch('/create-razorpay-order', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ couponCode })
+                    });
+                    
+                    const data = await response.json();
+                    console.log('Razorpay order response:', data); // Debug log
+                    
+                    if (!data.success) {
+                        throw new Error(data.message || 'Failed to create Razorpay order');
+                    }
+                    
+                    const options = {
+                        key: data.key, // FIXED: Changed from data.key_id to data.key
+                        amount: data.order.amount,
+                        currency: data.order.currency,
+                        name: 'Elite Wear',
+                        description: 'Purchase from Elite Wear',
+                        image: '/Uploads/ChatGPT Image Apr 13, 2025, 06_50_48 PM.png',
+                        order_id: data.order.id,
+                        prefill: {
+                            name: data.user.name,
+                            email: data.user.email,
+                            contact: data.user.mobile || ''
+                        },
+                        theme: {
+                            color: '#333333'
+                        },
+                        modal: {
+                            ondismiss: function() {
+                                placeOrderBtn.disabled = false;
+                                placeOrderBtn.innerHTML = `Place Order - ₹<%= grandTotal.toFixed(2) %>`;
+                            }
+                        },
+                        handler: async function(response) {
+                            try {
+                                console.log('Payment successful, verifying...', response); // Debug log
+                                const verifyResponse = await fetch('/verify-payment', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        razorpay_payment_id: response.razorpay_payment_id,
+                                        razorpay_order_id: response.razorpay_order_id,
+                                        razorpay_signature: response.razorpay_signature
+                                    })
+                                });
+                                
+                                const verifyData = await verifyResponse.json();
+                                
+                                if (verifyData.success) {
+                                    window.location.href = verifyData.redirect;
+                                } else {
+                                    throw new Error(verifyData.message || 'Payment verification failed');
+                                }
+                            } catch (error) {
+                                console.error('Verification error:', error); // Debug log
+                                showAlert('danger', error.message || 'Payment verification failed');
+                                placeOrderBtn.disabled = false;
+                                placeOrderBtn.innerHTML = `Place Order - ₹<%= grandTotal.toFixed(2) %>`;
+                            }
+                        }
+                    };
+                    
+                    // Add payment.failed handler
+                    const rzp = new Razorpay(options);
+                    rzp.on('payment.failed', function(response) {
+                        console.error('Payment failed:', response.error); // Debug log
+                        showAlert('danger', response.error.description || 'Payment failed. Please try again.');
+                        placeOrderBtn.disabled = false;
+                        placeOrderBtn.innerHTML = `Place Order - ₹<%= grandTotal.toFixed(2) %>`;
+                    });
+                    
+                    rzp.open();
+                    
                 } else {
-                    console.error("Order failed:", data.message);
-                    alert(data.message || 'Failed to place order');
+                    // Handle COD or Wallet payment
+                    const response = await fetch('/place-order', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            paymentMethod, 
+                            couponCode 
+                        }),
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        window.location.href = data.redirect;
+                    } else {
+                        throw new Error(data.message || 'Failed to place order');
+                    }
                 }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-                alert('Failed to place order: ' + error.message);
-            });
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('danger', error.message || 'An error occurred while processing your payment');
+                placeOrderBtn.disabled = false;
+                placeOrderBtn.innerHTML = `Place Order - ₹<%= grandTotal.toFixed(2) %>`;
+            }
         }
     </script>
 </body>

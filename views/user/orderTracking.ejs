@@ -79,10 +79,10 @@
               <div class="order-image">
                 <% if (order.order_items.length > 0) { %>
                 <img
-                  src="<%= order.order_items[0]?.productId?.images[0]?.url || '/api/placeholder/200/250' %>"
-                  alt="<%= order.order_items[0]?.productId?.name || 'Product' %>"
-                  class="mb-3"
-                />
+                src="<%= order.order_items[0]?.productId?.images?.[0]?.url || '/api/placeholder/200/250' %>"
+                alt="<%= order.order_items[0]?.productId?.name || 'Product' %>"
+                class="mb-3"
+              />
                 <% } else { %>
                 <img
                   src="/api/placeholder/200/250"
