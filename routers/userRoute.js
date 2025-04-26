@@ -21,7 +21,8 @@ const { checkBlockedStatus } = userControllers;
 router.get("/signup", userControllers.loadUserSignup);
 router.post("/signup", userControllers.userSignup);
 router.get("/verify-otp", (req, res) => {
-  const email = req.session.registration?.userData?.email || "unknown@email.com";
+  const email =
+    req.session.registration?.userData?.email || "unknown@email.com";
   res.render("verify-otp", { email, context: "signup" });
 });
 router.post("/verify-otp", userControllers.verifyOtp);
@@ -37,7 +38,11 @@ router.get("/logout", checkBlockedStatus, userControllers.logout);
 router.get("/referral", UserAuth, referralController.loadReferralPage);
 router.get("/referralSpace", referralController.loadReferralSpace);
 router.post("/validate-referral-code", referralController.validateReferralCode);
-router.post("/validate-referral", UserAuth, referralController.loadReferralPage);
+router.post(
+  "/validate-referral",
+  UserAuth,
+  referralController.loadReferralPage
+);
 
 // Password reset routes
 router.get("/forgot-password", profileController.forgotPassword);
@@ -106,13 +111,13 @@ router.post(
   UserAuth,
   profileController.verifyUpdateOtp
 );
-router.post(
-  "/resend-update-otp",
-  UserAuth,
-  profileController.resendUpdateOtp
-);
+router.post("/resend-update-otp", UserAuth, profileController.resendUpdateOtp);
 router.post("/update-profile", UserAuth, profileController.updateProfile);
-router.get("/getupdatepassword", UserAuth, profileController.loadupdatePassword);
+router.get(
+  "/getupdatepassword",
+  UserAuth,
+  profileController.loadupdatePassword
+);
 router.post("/updatePassword", UserAuth, profileController.updatePassword);
 router.get("/logoutpage", UserAuth, profileController.loadLogout);
 
@@ -173,8 +178,39 @@ router.get("/order-details/:id", UserAuth, orderController.getOrderDetails);
 router.get("/invoice/:id", UserAuth, orderController.downloadInvoice);
 router.get("/orders/track/:id", UserAuth, orderController.trackOrder);
 
+// Individual item cancellation and return routes
+// Updated routes to match the client-side JavaScript calls
+router.post("/cancel-order/:id", UserAuth, orderController.cancelOrder);
+router.post(
+  "/cancel-order-item/:itemId",
+  UserAuth,
+  orderController.cancelOrderItem
+);
+router.post("/return-order/:id", UserAuth, orderController.initiateReturn);
+router.post(
+  "/return-order-item/:itemId",
+  UserAuth,
+  orderController.returnOrderItem
+);
+
+// Keep the original routes for backward compatibility
+router.post(
+  "/orders/item/:orderItemId/cancel",
+  UserAuth,
+  orderController.cancelOrderItem
+);
+router.post(
+  "/orders/item/:orderItemId/return",
+  UserAuth,
+  orderController.returnOrderItem
+);
+
 // Razorpay routes
-router.post("/create-razorpay-order", UserAuth, razorpayController.createRazorpayOrder);
+router.post(
+  "/create-razorpay-order",
+  UserAuth,
+  razorpayController.createRazorpayOrder
+);
 router.post("/verify-payment", UserAuth, razorpayController.verifyPayment);
 
 // Wallet routes

@@ -8,12 +8,143 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/userStyle/checkOut.css">
+    <link rel="stylesheet" href="/userStyle/toast.css">
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+    
+    <!-- Toast CSS embedded directly -->
+    <style>
+        /* Toast container */
+        #toastContainer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 350px;
+        }
+
+        /* Toast styles */
+        .toast-notification {
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            animation: slideIn 0.3s ease-out forwards;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toast-notification.success {
+            border-left: 4px solid #4CAF50;
+        }
+
+        .toast-notification.error {
+            border-left: 4px solid #F44336;
+        }
+
+        .toast-notification.info {
+            border-left: 4px solid #2196F3;
+        }
+
+        .toast-icon {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        .toast-notification.success .toast-icon {
+            color: #4CAF50;
+        }
+
+        .toast-notification.error .toast-icon {
+            color: #F44336;
+        }
+
+        .toast-notification.info .toast-icon {
+            color: #2196F3;
+        }
+
+        .toast-message {
+            flex-grow: 1;
+            font-size: 14px;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 100%;
+        }
+
+        .toast-notification.success .toast-progress {
+            background-color: #4CAF50;
+            animation: progress 3s linear forwards;
+        }
+
+        .toast-notification.error .toast-progress {
+            background-color: #F44336;
+            animation: progress 3s linear forwards;
+        }
+
+        .toast-notification.info .toast-progress {
+            background-color: #2196F3;
+            animation: progress 3s linear forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes progress {
+            from {
+                width: 100%;
+            }
+            to {
+                width: 0%;
+            }
+        }
+    </style>
 </head>
 <body>
     <%- include("../partials/user/header") %>
 
     <div class="overlay" id="overlay"></div>
     <div class="coupon-overlay" id="couponOverlay"></div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
 
     <!-- Order Summary Sidebar -->
     <div class="order-summary-sidebar" id="orderSummarySidebar">
@@ -72,7 +203,7 @@
         </div>
         <div class="coupon-input-group">
             <input type="text" placeholder="Enter coupon code" id="couponCodeInput">
-            <button class="apply-btn" onclick="applyCoupon()">APPLY</button>
+            <button class="apply-btn" id="applyCouponBtn">APPLY</button>
         </div>
         <div id="couponError" class="text-danger mt-2" style="display: none;"></div>
         
@@ -124,7 +255,7 @@
                     </div>
                     <div class="coupon-applied">
                         <% if (appliedCoupon) { %>
-                            <span class="coupon-Code"><strong><%= appliedCoupon.code %> APPLIED</strong> <button class="btn btn-sm text-danger p-0 ms-2" onclick="removeCoupon()">Remove</button></span>
+                            <span class="coupon-Code"><strong><%= appliedCoupon.code %> APPLIED</strong> <button class="btn btn-sm text-danger p-0 ms-2" id="removeCouponBtn">Remove</button></span>
                         <% } else { %>
                             <button class="coupon-toggle-btn" id="openCouponSidebar">
                                 <strong>APPLY COUPON</strong>
@@ -153,7 +284,7 @@
                                     <%= addr.pincode || 'N/A' %><br>
                                     <%= addr.state || 'N/A' %>, <%= addr.country || '' %>
                                 </p>
-                                <button class="deliver-btn" onclick="selectAddress('<%= addr._id %>')">DELIVER HERE</button>
+                                <button class="deliver-btn address-select-btn" data-address-id="<%= addr._id %>">DELIVER HERE</button>
                             </div>
                         </div>
                     <% }); %>
@@ -172,13 +303,160 @@
         </div>
     </div>
 
+    <!-- Test Toast Buttons -->
+    <div class="container mt-4 mb-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <h5>Test Toast Notifications</h5>
+                <div class="btn-group mt-2">
+                    <button id="testSuccessBtn" class="btn btn-success">Success Toast</button>
+                    <button id="testErrorBtn" class="btn btn-danger">Error Toast</button>
+                    <button id="testInfoBtn" class="btn btn-info">Info Toast</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <%- include("../partials/user/footer") %>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOMContentLoaded fired');
+        // Simple toast notification system
+        const toastSystem = {
+            container: document.getElementById('toastContainer'),
+            counter: 0,
+            
+            // Show a toast notification
+            show: function(message, type = 'success', duration = 3000) {
+                try {
+                    console.log(`Showing toast: ${message}, type: ${type}`);
+                    
+                    // Create toast element
+                    const toastId = `toast-${++this.counter}`;
+                    const toast = document.createElement('div');
+                    toast.id = toastId;
+                    toast.className = `toast-notification ${type}`;
+                    
+                    // Set icon based on type
+                    let icon = '';
+                    if (type === 'success') {
+                        icon = '<i class="fas fa-check-circle"></i>';
+                    } else if (type === 'error') {
+                        icon = '<i class="fas fa-exclamation-circle"></i>';
+                    } else if (type === 'info') {
+                        icon = '<i class="fas fa-info-circle"></i>';
+                    }
+                    
+                    // Create toast content
+                    toast.innerHTML = `
+                        <div class="toast-icon">${icon}</div>
+                        <div class="toast-message">${message}</div>
+                        <button class="toast-close" aria-label="Close">×</button>
+                        <div class="toast-progress"></div>
+                    `;
+                    
+                    // Add to container
+                    this.container.appendChild(toast);
+                    
+                    // Add close button functionality
+                    const closeBtn = toast.querySelector('.toast-close');
+                    closeBtn.addEventListener('click', () => {
+                        this.close(toastId);
+                    });
+                    
+                    // Auto close after duration
+                    setTimeout(() => {
+                        this.close(toastId);
+                    }, duration);
+                    
+                    return toastId;
+                } catch (error) {
+                    console.error('Error showing toast:', error);
+                    // Fallback to alert if toast fails
+                    alert(message);
+                }
+            },
+            
+            // Close a toast notification
+            close: function(id) {
+                try {
+                    const toast = document.getElementById(id);
+                    if (toast) {
+                        toast.style.animation = 'slideOut 0.3s forwards';
+                        setTimeout(() => {
+                            if (toast.parentNode) {
+                                toast.parentNode.removeChild(toast);
+                            }
+                        }, 300);
+                    }
+                } catch (error) {
+                    console.error('Error closing toast:', error);
+                }
+            },
+            
+            // Helper methods for different toast types
+            success: function(message, duration) {
+                return this.show(message, 'success', duration);
+            },
+            
+            error: function(message, duration) {
+                return this.show(message, 'error', duration);
+            },
+            
+            info: function(message, duration) {
+                return this.show(message, 'info', duration);
+            }
+        };
 
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM fully loaded');
+            
+            // Test toast on page load
+          
+            
+            // Test toast buttons
+            document.getElementById('testSuccessBtn').addEventListener('click', function() {
+                console.log('Success button clicked');
+                toastSystem.success('This is a success message!');
+            });
+            
+            document.getElementById('testErrorBtn').addEventListener('click', function() {
+                console.log('Error button clicked');
+                toastSystem.error('This is an error message!');
+            });
+            
+            document.getElementById('testInfoBtn').addEventListener('click', function() {
+                console.log('Info button clicked');
+                toastSystem.info('This is an info message!');
+            });
+            
+            // Apply coupon button
+            const applyCouponBtn = document.getElementById('applyCouponBtn');
+            if (applyCouponBtn) {
+                applyCouponBtn.addEventListener('click', function() {
+                    applyCoupon();
+                });
+            }
+            
+            // Remove coupon button
+            const removeCouponBtn = document.getElementById('removeCouponBtn');
+            if (removeCouponBtn) {
+                removeCouponBtn.addEventListener('click', function() {
+                    removeCoupon();
+                });
+            }
+            
+            // Address selection buttons
+            const addressButtons = document.querySelectorAll('.address-select-btn');
+            addressButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const addressId = this.getAttribute('data-address-id');
+                    selectAddress(addressId);
+                });
+            });
+            
             // Order Summary Sidebar
             const openSidebar = document.getElementById('openSidebar');
             const closeSidebar = document.getElementById('closeSidebar');
@@ -186,15 +464,11 @@
             const overlay = document.getElementById('overlay');
 
             if (openSidebar && sidebar && overlay) {
-                console.log('openSidebar found:', openSidebar);
                 openSidebar.addEventListener('click', function() {
-                    console.log('openSidebar clicked');
                     sidebar.classList.add('active');
                     overlay.classList.add('active');
                     document.body.style.overflow = 'hidden';
                 });
-            } else {
-                console.error('Order summary sidebar elements missing:', { openSidebar, sidebar, overlay });
             }
 
             if (closeSidebar && sidebar && overlay) {
@@ -218,23 +492,17 @@
             const closeCouponSidebar = document.getElementById('closeCouponSidebar');
             const couponSidebar = document.getElementById('couponSidebar');
             const couponOverlay = document.getElementById('couponOverlay');
-            const couponError = document.getElementById('couponError');
             
             // Store the totalPrice from EJS in a global variable
             window.totalPrice = <%= totalPrice %>;
-            console.log('Total price:', window.totalPrice);
 
             if (openCouponSidebar && couponSidebar && couponOverlay) {
-                console.log('openCouponSidebar found:', openCouponSidebar);
                 openCouponSidebar.addEventListener('click', function() {
-                    console.log('openCouponSidebar clicked');
                     couponSidebar.classList.add('active');
                     couponOverlay.classList.add('active');
                     document.body.style.overflow = 'hidden';
                     fetchCoupons();
                 });
-            } else {
-                console.log('openCouponSidebar not found, likely because a coupon is applied');
             }
 
             if (closeCouponSidebar && couponSidebar && couponOverlay) {
@@ -242,7 +510,6 @@
                     couponSidebar.classList.remove('active');
                     couponOverlay.classList.remove('active');
                     document.body.style.overflow = 'auto';
-                    couponError.style.display = 'none';
                 });
             }
 
@@ -251,27 +518,23 @@
                     couponSidebar.classList.remove('active');
                     couponOverlay.classList.remove('active');
                     document.body.style.overflow = 'auto';
-                    couponError.style.display = 'none';
                 });
             }
 
             // Store coupons from EJS in a global variable for fallback
             window.ejsCoupons = <%- JSON.stringify(coupons || []) %>;
-            console.log('EJS coupons:', window.ejsCoupons);
         });
 
+        // Fetch coupons function
         async function fetchCoupons() {
             try {
-                console.log('Fetching coupons from /coupons');
                 const response = await fetch('/coupons');
                 const result = await response.json();
-                console.log('Fetched coupons response:', result);
                 
                 if (result.success) {
                     renderCouponsByCategory(result.coupons);
                     document.getElementById('couponError').style.display = 'none';
                 } else {
-                    console.log('Fetch failed, using EJS coupons');
                     // Use the global ejsCoupons variable
                     renderCouponsByCategory(window.ejsCoupons); // Fallback to EJS coupons
                     const couponError = document.getElementById('couponError');
@@ -280,7 +543,6 @@
                 }
             } catch (error) {
                 console.error('Error fetching coupons:', error);
-                console.log('Fetch error, using EJS coupons');
                 // Use the global ejsCoupons variable
                 renderCouponsByCategory(window.ejsCoupons); // Fallback to EJS coupons
                 const couponError = document.getElementById('couponError');
@@ -289,9 +551,8 @@
             }
         }
 
+        // Render coupons by category
         function renderCouponsByCategory(coupons) {
-            console.log('Rendering coupons by category:', coupons);
-            
             // Get container elements for each category
             const availableContainer = document.getElementById('availableCoupons');
             const usedContainer = document.getElementById('usedCoupons');
@@ -364,6 +625,7 @@
             }
         }
 
+        // Create coupon element
         function createCouponElement(coupon) {
             const couponItem = document.createElement('div');
             couponItem.className = 'coupon-item';
@@ -406,7 +668,7 @@
                 ${usageInfo}
                 ${coupon.description ? `<div class="coupon-description">${coupon.description}</div>` : ''}
                 ${coupon.status === 'available' ? 
-                    `<button class="coupon-apply-btn" onclick="applyCoupon('${coupon.coupencode}')" 
+                    `<button class="coupon-apply-btn" onclick="applyCouponCode('${coupon.coupencode}')" 
                         ${!isEligible ? 'disabled' : ''}>
                         ${isEligible ? 'APPLY' : 'NOT ELIGIBLE'}
                     </button>` : ''}
@@ -415,14 +677,17 @@
             return couponItem;
         }
 
-        async function applyCoupon(couponCode) {
+        // Apply coupon from input field
+        async function applyCoupon() {
+            const couponCode = document.getElementById('couponCodeInput').value.trim();
+            applyCouponCode(couponCode);
+        }
+
+        // Apply coupon with code
+        async function applyCouponCode(couponCode) {
             try {
                 if (!couponCode) {
-                    couponCode = document.getElementById('couponCodeInput').value.trim();
-                }
-                
-                if (!couponCode) {
-                    alert('Please enter a coupon code');
+                    toastSystem.error('Please enter a coupon code');
                     return;
                 }
 
@@ -447,17 +712,27 @@
                 console.log('Apply coupon response:', result);
                 
                 if (result.success) {
-                    // Update the UI to show the applied coupon
-                    alert('Coupon applied successfully!');
+                    toastSystem.success(`Coupon "${couponCode}" applied successfully!`);
                     
-                    // Reload the page to reflect changes
-                    window.location.reload();
+                    // Close the coupon sidebar
+                    const couponSidebar = document.getElementById('couponSidebar');
+                    const couponOverlay = document.getElementById('couponOverlay');
+                    if (couponSidebar && couponOverlay) {
+                        couponSidebar.classList.remove('active');
+                        couponOverlay.classList.remove('active');
+                        document.body.style.overflow = 'auto';
+                    }
+                    
+                    // Reload the page after a short delay to show the toast
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
                 } else {
-                    alert(result.message || 'Failed to apply coupon');
+                    toastSystem.error(result.message || 'Failed to apply coupon');
                 }
             } catch (error) {
                 console.error('Error applying coupon:', error);
-                alert('Error applying coupon. Please try again.');
+                toastSystem.error('Error applying coupon. Please try again.');
             } finally {
                 // Reset loading state
                 const applyBtn = document.querySelector('.apply-btn');
@@ -468,6 +743,7 @@
             }
         }
 
+        // Remove coupon
         async function removeCoupon() {
             try {
                 console.log('Removing coupon');
@@ -480,17 +756,22 @@
                 console.log('Remove coupon response:', result);
                 
                 if (result.success) {
-                    alert('Coupon removed successfully!');
-                    window.location.reload();
+                    toastSystem.info('Coupon removed successfully!');
+                    
+                    // Reload the page after a short delay to show the toast
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
                 } else {
-                    alert(result.message || 'Failed to remove coupon');
+                    toastSystem.error(result.message || 'Failed to remove coupon');
                 }
             } catch (error) {
                 console.error('Error removing coupon:', error);
-                alert('Server error while removing coupon');
+                toastSystem.error('Server error while removing coupon');
             }
         }
 
+        // Select address
         function selectAddress(addressId) {
             console.log('Selecting address:', addressId);
             fetch('/select-delivery-address', {
@@ -504,14 +785,15 @@
                 if (data.success) {
                     window.location.href = '/checkout-payment';
                 } else {
-                    alert(data.message || 'Failed to select address');
+                    toastSystem.error(data.message || 'Failed to select address');
                 }
             })
             .catch(error => {
                 console.error('Error selecting address:', error);
-                alert('Server issue');
+                toastSystem.error('Server issue while selecting address');
             });
         }
     </script>
+    <script src="/js/toast.js"></script>
 </body>
 </html>

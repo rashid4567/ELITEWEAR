@@ -7,7 +7,133 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css">
+    <!-- Animate.css for enhanced animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="/public/adminStyle/AddandeditCoupons.css">
+    <style>
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            padding-right: calc(1.5em + 0.75rem);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        
+        .edit-coupon-swal-popup {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            width: 32em;
+            background: linear-gradient(to bottom, #ffffff, #f8f9fa);
+        }
+        
+        .edit-coupon-swal-title {
+            font-size: 24px;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .edit-coupon-swal-content {
+            font-size: 16px;
+            line-height: 1.6;
+            padding: 10px 0;
+        }
+        
+        .edit-coupon-swal-confirm {
+            padding: 12px 24px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 123, 255, 0.3);
+        }
+        
+        .edit-coupon-swal-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+        }
+        
+        .edit-coupon-swal-cancel {
+            padding: 12px 24px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-coupon-swal-cancel:hover {
+            transform: translateY(-2px);
+        }
+        
+        .coupon-code-highlight {
+            color: #007bff;
+            font-size: 18px;
+            background-color: rgba(0, 123, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* Custom checkbox styling */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #007bff;
+        }
+
+        input:focus + .toggle-slider {
+            box-shadow: 0 0 1px #007bff;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+    </style>
 </head>
 <body>
     <div class="container-fluid p-0">
@@ -23,8 +149,9 @@
                             <h5>Coupons</h5>
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb">
-                                    <li class="breadcrumb-item"><a href="#" style="text-decoration: none; color: #777;">Dashboard</a></li>
-                                    <li class="breadcrumb-item active" aria-current="page">coupons</li>
+                                    <li class="breadcrumb-item"><a href="/admin/dashboard" style="text-decoration: none; color: #777;">Dashboard</a></li>
+                                    <li class="breadcrumb-item"><a href="/admin/coupons" style="text-decoration: none; color: #777;">Coupons</a></li>
+                                    <li class="breadcrumb-item active" aria-current="page">Edit Coupon</li>
                                 </ol>
                             </nav>
                         </div>
@@ -41,46 +168,59 @@
                     
                     <div class="coupon-form">
                         <h5 class="form-heading">Edit Coupon</h5>
-                        <form id="editCouponForm">
+                        <form id="editCouponForm" novalidate>
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Coupon Code:</label>
                                         <input type="text" name="coupencode" class="form-control" value="<%= coupon.coupencode %>" required>
+                                        <div class="error-message" id="coupencode-error">Please enter a valid coupon code.</div>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Description:</label>
                                         <input type="text" name="description" class="form-control" value="<%= coupon.description %>">
+                                        <div class="error-message" id="description-error">Please enter a description.</div>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Limit:</label>
                                         <input type="number" name="limit" class="form-control" min="1" value="<%= coupon.limit %>" required>
+                                        <div class="error-message" id="limit-error">Limit must be at least 1.</div>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Active:</label>
-                                        <input type="checkbox" name="isActive" <%= coupon.isActive ? 'checked' : '' %>>
+                                        <div class="mt-2">
+                                            <label class="toggle-switch">
+                                                <input type="checkbox" name="isActive" <%= coupon.isActive ? 'checked' : '' %>>
+                                                <span class="toggle-slider"></span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label">Discount (%):</label>
                                         <input type="number" name="couponpercent" class="form-control" min="1" max="100" value="<%= coupon.couponpercent %>" required>
+                                        <div class="error-message" id="couponpercent-error">Discount must be between 1% and 100%.</div>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Start Date:</label>
                                         <input type="text" name="startingDate" class="form-control datepicker" value="<%= coupon.startingDate.toISOString().split('T')[0] %>" required>
+                                        <div class="error-message" id="startingDate-error">Please select a valid start date.</div>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Expiry Date:</label>
                                         <input type="text" name="expiryDate" class="form-control datepicker" value="<%= coupon.expiryDate.toISOString().split('T')[0] %>" required>
+                                        <div class="error-message" id="expiryDate-error">Please select a valid expiry date.</div>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Minimum Purchase (₹):</label>
                                         <input type="number" name="minimumPurchase" class="form-control" min="0" value="<%= coupon.minimumPurchase %>">
+                                        <div class="error-message" id="minimumPurchase-error">Minimum purchase cannot be negative.</div>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Max Redeemable (₹):</label>
                                         <input type="number" name="maxRedeemable" class="form-control" min="0" value="<%= coupon.maxRedeemable %>">
+                                        <div class="error-message" id="maxRedeemable-error">Maximum redeemable amount cannot be negative.</div>
                                     </div>
                                 </div>
                             </div>
@@ -99,71 +239,337 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+    
     <script>
         $(document).ready(function () {
-            // Initialize datepicker
+            // Initialize datepicker with existing dates
             $('.datepicker').datepicker({
                 dateFormat: 'yy-mm-dd',
-                minDate: 0
+                // Allow selecting dates from the past for editing existing coupons
+                minDate: null
+            });
+
+            // Form validation
+            function validateForm() {
+                let isValid = true;
+                
+                // Validate coupon code
+                const couponCode = $('input[name="coupencode"]').val().trim();
+                if (!couponCode) {
+                    showError('coupencode', 'Coupon code is required.');
+                    isValid = false;
+                } else if (!/^[A-Za-z0-9_-]{3,15}$/.test(couponCode)) {
+                    showError('coupencode', 'Coupon code must be 3-15 characters and can only contain letters, numbers, hyphens, and underscores.');
+                    isValid = false;
+                } else {
+                    hideError('coupencode');
+                }
+                
+                // Validate description
+                const description = $('input[name="description"]').val().trim();
+                if (!description) {
+                    showError('description', 'Description is required.');
+                    isValid = false;
+                } else {
+                    hideError('description');
+                }
+                
+                // Validate limit
+                const limit = parseInt($('input[name="limit"]').val());
+                if (isNaN(limit) || limit < 1) {
+                    showError('limit', 'Limit must be at least 1.');
+                    isValid = false;
+                } else {
+                    hideError('limit');
+                }
+                
+                // Validate discount percentage
+                const discount = parseInt($('input[name="couponpercent"]').val());
+                if (isNaN(discount) || discount < 1 || discount > 100) {
+                    showError('couponpercent', 'Discount must be between 1% and 100%.');
+                    isValid = false;
+                } else {
+                    hideError('couponpercent');
+                }
+                
+                // Validate start date
+                const startDate = $('input[name="startingDate"]').val();
+                if (!startDate) {
+                    showError('startingDate', 'Start date is required.');
+                    isValid = false;
+                } else {
+                    hideError('startingDate');
+                }
+                
+                // Validate expiry date
+                const expiryDate = $('input[name="expiryDate"]').val();
+                if (!expiryDate) {
+                    showError('expiryDate', 'Expiry date is required.');
+                    isValid = false;
+                } else {
+                    hideError('expiryDate');
+                }
+                
+                // Validate date range
+                if (startDate && expiryDate) {
+                    const startDateObj = new Date(startDate);
+                    const expiryDateObj = new Date(expiryDate);
+                    
+                    if (startDateObj > expiryDateObj) {
+                        showError('expiryDate', 'Expiry date must be after the start date.');
+                        isValid = false;
+                    } else {
+                        hideError('expiryDate');
+                    }
+                }
+                
+                // Validate minimum purchase
+                const minPurchase = parseInt($('input[name="minimumPurchase"]').val());
+                if (isNaN(minPurchase) || minPurchase < 0) {
+                    showError('minimumPurchase', 'Minimum purchase cannot be negative.');
+                    isValid = false;
+                } else {
+                    hideError('minimumPurchase');
+                }
+                
+                // Validate max redeemable
+                const maxRedeemable = parseInt($('input[name="maxRedeemable"]').val());
+                if (isNaN(maxRedeemable) || maxRedeemable < 0) {
+                    showError('maxRedeemable', 'Maximum redeemable amount cannot be negative.');
+                    isValid = false;
+                } else {
+                    hideError('maxRedeemable');
+                }
+                
+                return isValid;
+            }
+            
+            // Show error message
+            function showError(fieldName, message) {
+                $(`input[name="${fieldName}"]`).addClass('is-invalid');
+                $(`#${fieldName}-error`).text(message).css('display', 'block');
+            }
+            
+            // Hide error message
+            function hideError(fieldName) {
+                $(`input[name="${fieldName}"]`).removeClass('is-invalid');
+                $(`#${fieldName}-error`).css('display', 'none');
+            }
+            
+            // Real-time validation on input change
+            $('input').on('input change', function() {
+                const fieldName = $(this).attr('name');
+                
+                // Skip validation for checkbox
+                if (fieldName === 'isActive') return;
+                
+                // Specific validation for each field
+                switch(fieldName) {
+                    case 'coupencode':
+                        const couponCode = $(this).val().trim();
+                        if (!couponCode) {
+                            showError(fieldName, 'Coupon code is required.');
+                        } else if (!/^[A-Za-z0-9_-]{3,15}$/.test(couponCode)) {
+                            showError(fieldName, 'Coupon code must be 3-15 characters and can only contain letters, numbers, hyphens, and underscores.');
+                        } else {
+                            hideError(fieldName);
+                        }
+                        break;
+                        
+                    case 'description':
+                        const description = $(this).val().trim();
+                        if (!description) {
+                            showError(fieldName, 'Description is required.');
+                        } else {
+                            hideError(fieldName);
+                        }
+                        break;
+                        
+                    case 'limit':
+                        const limit = parseInt($(this).val());
+                        if (isNaN(limit) || limit < 1) {
+                            showError(fieldName, 'Limit must be at least 1.');
+                        } else {
+                            hideError(fieldName);
+                        }
+                        break;
+                        
+                    case 'couponpercent':
+                        const discount = parseInt($(this).val());
+                        if (isNaN(discount) || discount < 1 || discount > 100) {
+                            showError(fieldName, 'Discount must be between 1% and 100%.');
+                        } else {
+                            hideError(fieldName);
+                        }
+                        break;
+                        
+                    case 'startingDate':
+                    case 'expiryDate':
+                        const startDate = $('input[name="startingDate"]').val();
+                        const expiryDate = $('input[name="expiryDate"]').val();
+                        
+                        if (fieldName === 'startingDate' && !startDate) {
+                            showError('startingDate', 'Start date is required.');
+                        } else {
+                            hideError('startingDate');
+                        }
+                        
+                        if (fieldName === 'expiryDate' && !expiryDate) {
+                            showError('expiryDate', 'Expiry date is required.');
+                        } else {
+                            hideError('expiryDate');
+                        }
+                        
+                        if (startDate && expiryDate) {
+                            const startDateObj = new Date(startDate);
+                            const expiryDateObj = new Date(expiryDate);
+                            
+                            if (startDateObj > expiryDateObj) {
+                                showError('expiryDate', 'Expiry date must be after the start date.');
+                            } else {
+                                hideError('expiryDate');
+                            }
+                        }
+                        break;
+                        
+                    case 'minimumPurchase':
+                        const minPurchase = parseInt($(this).val());
+                        if (isNaN(minPurchase) || minPurchase < 0) {
+                            showError(fieldName, 'Minimum purchase cannot be negative.');
+                        } else {
+                            hideError(fieldName);
+                        }
+                        break;
+                        
+                    case 'maxRedeemable':
+                        const maxRedeemable = parseInt($(this).val());
+                        if (isNaN(maxRedeemable) || maxRedeemable < 0) {
+                            showError(fieldName, 'Maximum redeemable amount cannot be negative.');
+                        } else {
+                            hideError(fieldName);
+                        }
+                        break;
+                }
             });
 
             // Form submission
             $('#editCouponForm').submit(async function (e) {
                 e.preventDefault();
-
-                const formData = {
-                    coupencode: $('input[name="coupencode"]').val().toUpperCase().trim(),
-                    couponpercent: parseInt($('input[name="couponpercent"]').val()) || 0,
-                    minimumPurchase: parseInt($('input[name="minimumPurchase"]').val()) || 0,
-                    startingDate: $('input[name="startingDate"]').val(),
-                    expiryDate: $('input[name="expiryDate"]').val(),
-                    description: $('input[name="description"]').val().trim() || '',
-                    limit: parseInt($('input[name="limit"]').val()) || 1,
-                    maxRedeemable: parseInt($('input[name="maxRedeemable"]').val()) || 0,
-                    isActive: $('input[name="isActive"]').is(':checked')
-                };
-
-                // Client-side validation
-                if (!formData.coupencode) {
-                    alert('Coupon code is required');
-                    return;
+                
+                // Validate form
+                if (!validateForm()) {
+                    return false;
                 }
-                if (!formData.couponpercent || formData.couponpercent < 1 || formData.couponpercent > 100) {
-                    alert('Discount percentage must be between 1 and 100');
-                    return;
-                }
-                if (!formData.startingDate || !formData.expiryDate) {
-                    alert('Start and expiry dates are required');
-                    return;
-                }
-                if (new Date(formData.expiryDate) <= new Date(formData.startingDate)) {
-                    alert('Expiry date must be after start date');
-                    return;
-                }
-                if (!formData.limit || formData.limit < 1) {
-                    alert('Limit must be at least 1');
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`/admin/editCoupon/<%= coupon._id %>`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(formData)
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        alert('Coupon updated successfully');
-                        window.location.href = '/admin/coupons';
-                    } else {
-                        alert(result.message || 'Failed to update coupon');
+                
+                const couponCode = $('input[name="coupencode"]').val().toUpperCase();
+                const discount = parseInt($('input[name="couponpercent"]').val());
+                const isActive = $('input[name="isActive"]').is(':checked');
+                
+                // Show SweetAlert confirmation
+                Swal.fire({
+                    title: 'Update Coupon?',
+                    html: `Are you sure you want to update the coupon <span class="coupon-code-highlight">${couponCode}</span> with ${discount}% discount?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, update it',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#007bff',
+                    cancelButtonColor: '#6c757d',
+                    reverseButtons: true,
+                    customClass: {
+                        container: 'edit-coupon-swal-container',
+                        popup: 'edit-coupon-swal-popup',
+                        header: 'edit-coupon-swal-header',
+                        title: 'edit-coupon-swal-title',
+                        closeButton: 'edit-coupon-swal-close',
+                        icon: 'edit-coupon-swal-icon',
+                        image: 'edit-coupon-swal-image',
+                        content: 'edit-coupon-swal-content',
+                        input: 'edit-coupon-swal-input',
+                        actions: 'edit-coupon-swal-actions',
+                        confirmButton: 'edit-coupon-swal-confirm',
+                        cancelButton: 'edit-coupon-swal-cancel',
+                        footer: 'edit-coupon-swal-footer'
+                    },
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp'
                     }
-                } catch (error) {
-                    console.error('Error updating coupon:', error);
-                    alert('Server error: Unable to update coupon');
-                }
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        const formData = {
+                            coupencode: couponCode,
+                            couponpercent: discount,
+                            minimumPurchase: parseInt($('input[name="minimumPurchase"]').val()) || 0,
+                            startingDate: $('input[name="startingDate"]').val(),
+                            expiryDate: $('input[name="expiryDate"]').val(),
+                            description: $('input[name="description"]').val(),
+                            limit: parseInt($('input[name="limit"]').val()) || 1,
+                            maxRedeemable: parseInt($('input[name="maxRedeemable"]').val()) || 0,
+                            isActive: isActive
+                        };
+
+                        try {
+                            // Show loading state
+                            Swal.fire({
+                                title: 'Updating Coupon...',
+                                text: 'Please wait while we process your request.',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                showConfirmButton: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            const response = await fetch(`/admin/editCoupon/<%= coupon._id %>`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(formData)
+                            });
+                            
+                            const result = await response.json();
+                            
+                            if (result.success) {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: 'Coupon updated successfully',
+                                    icon: 'success',
+                                    confirmButtonColor: '#007bff',
+                                    customClass: {
+                                        popup: 'edit-coupon-swal-popup',
+                                        title: 'edit-coupon-swal-title',
+                                        confirmButton: 'edit-coupon-swal-confirm'
+                                    }
+                                }).then(() => {
+                                    window.location.href = '/admin/coupons';
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: result.message || 'Failed to update coupon',
+                                    icon: 'error',
+                                    confirmButtonColor: '#007bff'
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error updating coupon:', error);
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Server error occurred',
+                                icon: 'error',
+                                confirmButtonColor: '#007bff'
+                            });
+                        }
+                    }
+                });
             });
         });
     </script>
 </body>
 </html>
+

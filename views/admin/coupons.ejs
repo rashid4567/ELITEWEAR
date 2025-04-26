@@ -3,52 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WEARiT - Admin Dashboard</title>
+    <title>ELITE WEAR - Coupons Dashboard</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css">
+    <!-- Animate.css for enhanced animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="/adminStyle/coupons.css">
 </head>
 <body>
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" id="mobileToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
     <div class="dashboard-container">
-        <!-- Include sidebar partial -->
+        <!-- Sidebar -->
         <%- include("../partials/admin/header") %>
-        
         <!-- Main Content -->
         <div class="main-content">
             <!-- Header -->
-            <div class="header">
-                <div class="page-title">
-                    <h1>Coupons</h1>
-                    <div class="breadcrumb">
-                        <span>Dashboard</span>
-                        <i class="fas fa-chevron-right breadcrumb-separator"></i>
-                        <span>coupons</span>
+            <div class="content-header">
+                <div class="header-container">
+                    <div>
+                        <h1 class="page-title">Coupons</h1>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                            <li class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></li>
+                            <li class="breadcrumb-item">coupons</li>
+                        </ul>
                     </div>
-                </div>
-                
-                <div class="user-profile">
-                    <div class="profile-info">
-                        <span class="user-name">Abhijith</span>
-                        <span class="user-role">Admin</span>
-                    </div>
-                    <div class="profile-image">
-                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WEARiT-ICKNdKFXCOrFbNFOEQqzgceGbY4QKK.png" alt="Admin Profile">
-                    </div>
-                    <div class="dropdown-icon">
-                        <i class="fas fa-chevron-down"></i>
+                    
+                    <div class="user-profile">
+                        <div class="profile-info">
+                            <p class="user-name">Ajmal</p>
+                            <p class="user-role">Admin</p>
+                        </div>
+                        <div class="profile-image">
+                            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WEARiT-ICKNdKFXCOrFbNFOEQqzgceGbY4QKK.png" alt="Admin Profile">
+                        </div>
+                        <div class="dropdown-icon">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- Search and Filters -->
-            <div class="search-filter-container">
+            <div class="search-filter-row">
                 <div class="search-box">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="searchInput" placeholder="Search coupon code...">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search coupon code...">
                 </div>
                 
-                <div class="filter-buttons">
-                    <button class="btn-filter">
+                <div class="filter-container">
+                    <button class="filter-btn">
                         <i class="fas fa-sliders-h"></i>
                         <span>Filters</span>
                     </button>
@@ -87,13 +99,26 @@
             
             <!-- Add Coupon Button -->
             <div class="add-coupon-container">
-                <a href="/admin/addCoupon" class="btn-add-coupon">Add Coupon</a>
+                <a href="/admin/addCoupon" class="btn-add-coupon">
+                    <i class="fas fa-plus"></i>
+                    Add Coupon
+                </a>
             </div>
         </div>
     </div>
 
+    <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+    
     <script>
+        // Mobile sidebar toggle
+        document.getElementById('mobileToggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+        
+        // Fetch and render coupons
         async function fetchCoupons(filter = 'ALL') {
             try {
                 const response = await fetch('/admin/getAllCoupons');
@@ -107,17 +132,27 @@
                     }
                     renderCoupons(coupons);
                 } else {
-                    alert('Failed to load coupons');
+                    showToast('error', 'Failed to load coupons');
                 }
             } catch (error) {
                 console.error('Error fetching coupons:', error);
-                alert('Server error');
+                showToast('error', 'Server error');
             }
         }
 
         function renderCoupons(coupons) {
             const tbody = document.getElementById('couponTableBody');
             tbody.innerHTML = '';
+            
+            if (coupons.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="8" class="text-center py-4">No coupons found</td>
+                `;
+                tbody.appendChild(row);
+                return;
+            }
+            
             coupons.forEach(coupon => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -127,20 +162,63 @@
                     <td>${coupon.couponpercent}%</td>
                     <td>₹${coupon.maxRedeemable}</td>
                     <td>
-                        <div class="toggle-switch ${coupon.isActive ? 'active' : 'inactive'}">
-                            <div class="toggle-slider" onclick="toggleCouponStatus('${coupon._id}', ${!coupon.isActive})"></div>
-                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" ${coupon.isActive ? 'checked' : ''} onchange="confirmToggleCouponStatus('${coupon._id}', ${!coupon.isActive}, '${coupon.coupencode}')">
+                            <span class="toggle-slider"></span>
+                        </label>
                     </td>
-                    <td>${new Date(coupon.expiryDate).toLocaleDateString()}</td>
+                    <td>${formatDate(coupon.expiryDate)}</td>
                     <td class="action-buttons">
-                        <a href="/admin/editCoupon/${coupon._id}" class="btn-edit"><i class="fas fa-edit"></i></a>
-                        <button class="btn-delete" onclick="deleteCoupon('${coupon._id}')"><i class="fas fa-trash"></i></button>
+                        <a href="/admin/editCoupon/${coupon._id}" class="btn-edit" title="Edit coupon">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button class="btn-delete" onclick="confirmDeleteCoupon('${coupon._id}', '${coupon.coupencode}')" title="Delete coupon">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
+        // Format date to MM/DD/YYYY
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        // Confirm before toggling coupon status
+        function confirmToggleCouponStatus(id, newStatus, code) {
+            // Prevent the checkbox from changing state until confirmed
+            event.preventDefault();
+            
+            const statusText = newStatus ? 'activate' : 'deactivate';
+            
+            Swal.fire({
+                title: `${statusText.charAt(0).toUpperCase() + statusText.slice(1)} Coupon?`,
+                html: `Are you sure you want to ${statusText} the coupon <strong>${code}</strong>?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, ' + statusText,
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#000000',
+                cancelButtonColor: '#6c757d',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    toggleCouponStatus(id, newStatus);
+                } else {
+                    // Reset the checkbox to its previous state
+                    fetchCoupons(getCurrentFilter());
+                }
+            });
+        }
+
+        // Toggle coupon status
         async function toggleCouponStatus(id, isActive) {
             try {
                 const response = await fetch(`/admin/toggleCouponStatus/${id}`, {
@@ -150,35 +228,120 @@
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert(`Coupon status updated to ${result.isActive ? 'Active' : 'Inactive'}`);
-                    fetchCoupons();
+                    showToast('success', `Coupon ${result.isActive ? 'activated' : 'deactivated'} successfully`);
+                    fetchCoupons(getCurrentFilter());
                 } else {
-                    alert(result.message);
+                    showToast('error', result.message);
+                    // Reset the checkbox to its previous state
+                    fetchCoupons(getCurrentFilter());
                 }
             } catch (error) {
                 console.error('Error toggling coupon:', error);
-                alert('Server error');
+                showToast('error', 'Server error');
+                // Reset the checkbox to its previous state
+                fetchCoupons(getCurrentFilter());
             }
         }
 
-        async function deleteCoupon(id) {
-            if (confirm('Are you sure you want to delete this coupon?')) {
-                try {
-                    const response = await fetch(`/admin/deleteCoupon/${id}`, {
-                        method: 'DELETE'
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        alert('Coupon deleted successfully');
-                        fetchCoupons();
-                    } else {
-                        alert(result.message);
-                    }
-                } catch (error) {
-                    console.error('Error deleting coupon:', error);
-                    alert('Server error');
+        // Confirm before deleting coupon - ENHANCED VERSION
+        function confirmDeleteCoupon(id, code) {
+            Swal.fire({
+                title: 'Delete Coupon?',
+                html: `Are you sure you want to delete the coupon <strong class="coupon-code">${code}</strong>?<br>This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete it',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                reverseButtons: true,
+                customClass: {
+                    container: 'delete-swal-container',
+                    popup: 'delete-swal-popup',
+                    header: 'delete-swal-header',
+                    title: 'delete-swal-title',
+                    closeButton: 'delete-swal-close',
+                    icon: 'delete-swal-icon',
+                    image: 'delete-swal-image',
+                    content: 'delete-swal-content',
+                    input: 'delete-swal-input',
+                    actions: 'delete-swal-actions',
+                    confirmButton: 'delete-swal-confirm',
+                    cancelButton: 'delete-swal-cancel',
+                    footer: 'delete-swal-footer'
+                },
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                },
+                hideClass: {
+                    popup: 'animate__animated animate__fadeOutUp'
+                },
+                backdrop: `rgba(0,0,0,0.4)`,
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteCoupon(id);
                 }
+            });
+        }
+
+        // Delete coupon
+        async function deleteCoupon(id) {
+            try {
+                const response = await fetch(`/admin/deleteCoupon/${id}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (result.success) {
+                    // Show success animation
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Coupon has been deleted successfully.',
+                        icon: 'success',
+                        confirmButtonColor: '#000000',
+                        customClass: {
+                            popup: 'delete-success-popup',
+                            title: 'delete-success-title',
+                            confirmButton: 'delete-success-button'
+                        },
+                        showClass: {
+                            popup: 'animate__animated animate__fadeInUp'
+                        }
+                    });
+                    fetchCoupons(getCurrentFilter());
+                } else {
+                    showToast('error', result.message);
+                }
+            } catch (error) {
+                console.error('Error deleting coupon:', error);
+                showToast('error', 'Server error');
             }
+        }
+
+        // Show toast notification
+        function showToast(icon, title) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+            
+            Toast.fire({
+                icon: icon,
+                title: title
+            });
+        }
+
+        // Get current filter
+        function getCurrentFilter() {
+            const activeFilter = document.querySelector('.filter-option.active');
+            return activeFilter ? activeFilter.id.replace('filter', '').toUpperCase() : 'ALL';
         }
 
         // Search functionality

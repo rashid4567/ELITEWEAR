@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elite Wear - Wallet Transactions</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/adminStyle/orderDetails.css">
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <%- include("../partials/admin/header") %>
+            <div class="col">
+                <div class="main-content">
+                    <div class="page-header">
+                        <h4>Wallet Transactions</h4>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a href="/admin" class="text-decoration-none">Dashboard</a>
+                                </li>
+                                <li class="breadcrumb-item active" aria-current="page">Wallet Transactions</li>
+                            </ol>
+                        </nav>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Filter Transactions</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="filterForm" method="GET" class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="type" class="form-label">Transaction Type</label>
+                                    <select class="form-select" id="type" name="type">
+                                        <option value="" <%= !filters.type ? 'selected' : '' %>>All Types</option>
+                                        <option value="credit" <%= filters.type === 'credit' ? 'selected' : '' %>>Credit</option>
+                                        <option value="debit" <%= filters.type === 'debit' ? 'selected' : '' %>>Debit</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="timeRange" class="form-label">Time Range</label>
+                                    <select class="form-select" id="timeRange" name="timeRange">
+                                        <option value="all" <%= filters.timeRange === 'all' ? 'selected' : '' %>>All Time</option>
+                                        <option value="24h" <%= filters.timeRange === '24h' ? 'selected' : '' %>>Last 24 Hours</option>
+                                        <option value="7d" <%= filters.timeRange === '7d' ? 'selected' : '' %>>Last 7 Days</option>
+                                        <option value="30d" <%= filters.timeRange === '30d' ? 'selected' : '' %>>Last 30 Days</option>
+                                        <option value="90d" <%= filters.timeRange === '90d' ? 'selected' : '' %>>Last 90 Days</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="sort" class="form-label">Sort By</label>
+                                    <select class="form-select" id="sort" name="sort">
+                                        <option value="date" <%= filters.sort === 'date' ? 'selected' : '' %>>Date</option>
+                                        <option value="amount" <%= filters.sort === 'amount' ? 'selected' : '' %>>Amount</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="order" class="form-label">Order</label>
+                                    <select class="form-select" id="order" name="order">
+                                        <option value="desc" <%= filters.order === 'desc' ? 'selected' : '' %>>Descending</option>
+                                        <option value="asc" <%= filters.order === 'asc' ? 'selected' : '' %>>Ascending</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="search" class="form-label">Search</label>
+                                    <input type="text" class="form-control" id="search" name="search" placeholder="Search by user name or email" value="<%= filters.search %>">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="limit" class="form-label">Items Per Page</label>
+                                    <select class="form-select" id="limit" name="limit">
+                                        <option value="10" <%= filters.limit === 10 ? 'selected' : '' %>>10</option>
+                                        <option value="25" <%= filters.limit === 25 ? 'selected' : '' %>>25</option>
+                                        <option value="50" <%= filters.limit === 50 ? 'selected' : '' %>>50</option>
+                                        <option value="100" <%= filters.limit === 100 ? 'selected' : '' %>>100</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary me-2">Apply Filters</button>
+                                    <a href="/admin/wallet-transactions" class="btn btn-secondary">Reset</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Wallet Transactions</h5>
+                            <div>
+                                <a href="/admin/refund-transactions" class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-undo me-1"></i> View Refunds Only
+                                </a>
+                                <a href="/admin/refund-statistics" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-chart-bar me-1"></i> Refund Statistics
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>User</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>Description</th>
+                                            <th>Transaction ID</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if (transactions.length === 0) { %>
+                                            <tr>
+                                                <td colspan="7" class="text-center py-4">No transactions found</td>
+                                            </tr>
+                                        <% } else { %>
+                                            <% transactions.forEach(transaction => { %>
+                                                <tr>
+                                                    <td>
+                                                        <div>
+                                                            <strong><%= transaction.userFullname %></strong>
+                                                            <div class="text-muted small"><%= transaction.userEmail %></div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge <%= transaction.type === 'credit' ? 'bg-success' : 'bg-danger' %>">
+                                                            <%= transaction.type === 'credit' ? 'Credit' : 'Debit' %>
+                                                            <% if (transaction.isRefund) { %>
+                                                                <i class="fas fa-undo-alt ms-1" title="<%= transaction.refundTypeDisplay || 'Refund' %>"></i>
+                                                            <% } %>
+                                                        </span>
+                                                    </td>
+                                                    <td>₹<%= transaction.amount.toFixed(2) %></td>
+                                                    <td><%= transaction.description %></td>
+                                                    <td>
+                                                        <span class="small text-monospace"><%= transaction.transactionRef %></span>
+                                                    </td>
+                                                    <td><%= transaction.formattedDate %></td>
+                                                    <td>
+                                                        <div class="btn-group">
+                                                            <a href="/admin/user-wallet/<%= transaction.userId %>" class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-wallet me-1"></i> View Wallet
+                                                            </a>
+                                                            <% if (transaction.isRefund) { %>
+                                                                <button class="btn btn-sm btn-outline-info view-refund-details" 
+                                                                        data-transaction-ref="<%= transaction.transactionRef %>">
+                                                                    <i class="fas fa-info-circle me-1"></i> Details
+                                                                </button>
+                                                            <% } %>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            <% }); %>
+                                        <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    Showing <strong><%= transactions.length %></strong> of <strong><%= totalTransactions %></strong> transactions
+                                </div>
+                                <% if (totalPages > 1) { %>
+                                    <nav aria-label="Page navigation">
+                                        <ul class="pagination mb-0">
+                                            <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                                                <a class="page-link" href="?page=<%= currentPage - 1 %>&type=<%= filters.type %>&search=<%= filters.search %>&sort=<%= filters.sort %>&order=<%= filters.order %>&timeRange=<%= filters.timeRange %>&limit=<%= filters.limit %>">Previous</a>
+                                            </li>
+                                            <% for (let i = 1; i <= totalPages; i++) { %>
+                                                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                                    <a class="page-link" href="?page=<%= i %>&type=<%= filters.type %>&search=<%= filters.search %>&sort=<%= filters.sort %>&order=<%= filters.order %>&timeRange=<%= filters.timeRange %>&limit=<%= filters.limit %>"><%= i %></a>
+                                                </li>
+                                            <% } %>
+                                            <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                                                <a class="page-link" href="?page=<%= currentPage + 1 %>&type=<%= filters.type %>&search=<%= filters.search %>&sort=<%= filters.sort %>&order=<%= filters.order %>&timeRange=<%= filters.timeRange %>&limit=<%= filters.limit %>">Next</a>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refund Details Modal -->
+    <div class="modal fade" id="refundDetailsModal" tabindex="-1" aria-labelledby="refundDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="refundDetailsModalLabel">Refund Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="refundDetailsContent">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading refund details...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // View refund details
+            const viewRefundButtons = document.querySelectorAll('.view-refund-details');
+            const refundDetailsModal = new bootstrap.Modal(document.getElementById('refundDetailsModal'));
+            const refundDetailsContent = document.getElementById('refundDetailsContent');
+
+            viewRefundButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const transactionRef = this.getAttribute('data-transaction-ref');
+                    
+                    // Show loading state
+                    refundDetailsContent.innerHTML = `
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading refund details...</p>
+                        </div>
+                    `;
+                    
+                    refundDetailsModal.show();
+                    
+                    // Fetch refund details
+                    fetch(`/admin/refund-details/${transactionRef}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                const transaction = data.transaction;
+                                const user = data.user;
+                                const orderItem = data.orderItem;
+                                const order = data.order;
+                                const product = data.product;
+                                
+                                let html = `
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0">Transaction Information</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <p><strong>Transaction ID:</strong> ${transaction.transactionRef}</p>
+                                                    <p><strong>Type:</strong> ${transaction.type === 'credit' ? 'Credit' : 'Debit'}</p>
+                                                    <p><strong>Amount:</strong> ₹${transaction.amount.toFixed(2)}</p>
+                                                    <p><strong>Date:</strong> ${transaction.formattedDate}</p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p><strong>Refund Type:</strong> ${transaction.refundTypeDisplay || 'Standard Refund'}</p>
+                                                    <p><strong>Description:</strong> ${transaction.description}</p>
+                                                    <p><strong>Status:</strong> ${transaction.status || 'Completed'}</p>
+                                                    <p><strong>Order Reference:</strong> ${transaction.orderReference || 'N/A'}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0">User Information</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <p><strong>Name:</strong> ${user.fullname}</p>
+                                            <p><strong>Email:</strong> ${user.email}</p>
+                                            <p><strong>User ID:</strong> ${user._id}</p>
+                                            <p><a href="/admin/user-wallet/${user._id}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-wallet me-1"></i> View User's Wallet
+                                            </a></p>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                if (orderItem) {
+                                    html += `
+                                        <div class="card mb-3">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0">Product Information</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-2">
+                                                        <img src="${orderItem.itemImage || '/placeholder.jpg'}" alt="${orderItem.product_name}" class="img-fluid rounded border">
+                                                    </div>
+                                                    <div class="col-md-10">
+                                                        <p><strong>Product:</strong> ${orderItem.product_name}</p>
+                                                        <p><strong>Size:</strong> ${orderItem.size}</p>
+                                                        <p><strong>Price:</strong> ₹${orderItem.price.toFixed(2)}</p>
+                                                        <p><strong>Quantity:</strong> ${orderItem.quantity}</p>
+                                                        <p><strong>Total Amount:</strong> ₹${orderItem.total_amount.toFixed(2)}</p>
+                                                        <p><strong>Refund Amount:</strong> ₹${orderItem.refundAmount.toFixed(2)}</p>
+                                                        <p><strong>Refund Date:</strong> ${new Date(orderItem.refundDate).toLocaleString()}</p>
+                                                        ${orderItem.refundReason ? `<p><strong>Refund Reason:</strong> ${orderItem.refundReason}</p>` : ''}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                                
+                                if (order) {
+                                    html += `
+                                        <div class="card">
+                                            <div class="card-header bg-light">
+                                                <h6 class="mb-0">Order Information</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <p><strong>Order Number:</strong> ${order.orderNumber}</p>
+                                                <p><strong>Order Date:</strong> ${new Date(order.orderDate).toLocaleString()}</p>
+                                                <p><strong>Order Status:</strong> ${order.status}</p>
+                                                <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+                                                <p><a href="/admin/orders/${order._id}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye me-1"></i> View Order Details
+                                                </a></p>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                                
+                                refundDetailsContent.innerHTML = html;
+                            } else {
+                                refundDetailsContent.innerHTML = `
+                                    <div class="alert alert-danger">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        ${data.message || 'Failed to load refund details'}
+                                    </div>
+                                `;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching refund details:', error);
+                            refundDetailsContent.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    An error occurred while loading refund details
+                                </div>
+                            `;
+                        });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
