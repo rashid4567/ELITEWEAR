@@ -15,99 +15,76 @@ const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const path = require("path");
 
-
 const updateOrderStatusHelper = async (orderId) => {
   try {
-    console.log(`[DEBUG] updateOrderStatusHelper called for orderId: ${orderId}`)
-    const order = await Order.findById(orderId)
+    const order = await Order.findById(orderId);
     if (!order) {
-      console.log(`[DEBUG] Order not found with ID: ${orderId}`)
-      return
+      return;
     }
 
-
-    const orderItems = await OrderItem.find({ orderId: order._id })
+    const orderItems = await OrderItem.find({ orderId: order._id });
 
     if (orderItems.length === 0) {
-      console.log(`[DEBUG] No order items found for order: ${orderId}`)
-      return
+      return;
     }
 
-  
-    const statusCounts = {}
+    const statusCounts = {};
     for (const item of orderItems) {
-      statusCounts[item.status] = (statusCounts[item.status] || 0) + 1
+      statusCounts[item.status] = (statusCounts[item.status] || 0) + 1;
     }
 
-    console.log(`[DEBUG] Status counts for order ${orderId}:`, statusCounts)
-    const totalItems = orderItems.length
+    const totalItems = orderItems.length;
 
- 
-    let newStatus = order.status
+    let newStatus = order.status;
 
-
-    const allSameStatus = Object.keys(statusCounts).length === 1
+    const allSameStatus = Object.keys(statusCounts).length === 1;
     if (allSameStatus) {
-      newStatus = Object.keys(statusCounts)[0]
-      console.log(`[DEBUG] All items have same status: ${newStatus}`)
-    }
-
-    else if (statusCounts["Cancelled"] && statusCounts["Cancelled"] < totalItems) {
-      newStatus = "Partially Cancelled"
-      console.log(`[DEBUG] Some items cancelled: ${statusCounts["Cancelled"]}/${totalItems}`)
-    }
-
-    else if (
-      (statusCounts["Returned"] || statusCounts["Return Requested"] || statusCounts["Return Approved"]) &&
+      newStatus = Object.keys(statusCounts)[0];
+    } else if (
+      statusCounts["Cancelled"] &&
+      statusCounts["Cancelled"] < totalItems
+    ) {
+      newStatus = "Partially Cancelled";
+    } else if (
+      (statusCounts["Returned"] ||
+        statusCounts["Return Requested"] ||
+        statusCounts["Return Approved"]) &&
       (statusCounts["Returned"] || 0) +
         (statusCounts["Return Requested"] || 0) +
         (statusCounts["Return Approved"] || 0) <
         totalItems
     ) {
-      newStatus = "Partially Returned"
-      console.log(`[DEBUG] Some items in return process`)
-    }
-    
-    else if (Object.keys(statusCounts).length > 1) {
-
+      newStatus = "Partially Returned";
+    } else if (Object.keys(statusCounts).length > 1) {
       if (statusCounts["Delivered"]) {
-        newStatus = "Partially Delivered"
-        console.log(`[DEBUG] Some items delivered, others in different states`)
-      }
-      
-      else if (statusCounts["Shipped"]) {
-        newStatus = "Partially Shipped"
-        console.log(`[DEBUG] Some items shipped, others in different states`)
+        newStatus = "Partially Delivered";
+      } else if (statusCounts["Shipped"]) {
+        newStatus = "Partially Shipped";
       }
     }
-
 
     if (newStatus !== order.status) {
-      console.log(`[DEBUG] Updating order status from ${order.status} to ${newStatus}`)
-      order.status = newStatus
-
+      order.status = newStatus;
 
       if (!order.statusHistory) {
-        order.statusHistory = []
+        order.statusHistory = [];
       }
 
       order.statusHistory.push({
         status: newStatus,
         date: new Date(),
         note: `Status updated to ${newStatus} based on item statuses`,
-      })
-      await order.save()
-      console.log(`[DEBUG] Order status updated successfully`)
+      });
+      await order.save();
     } else {
-      console.log(`[DEBUG] Order status remains unchanged: ${order.status}`)
     }
 
-    return newStatus
+    return newStatus;
   } catch (error) {
-    console.error("[ERROR] Error updating order status:", error)
-    throw error
+    console.error("[ERROR] Error updating order status:", error);
+    throw error;
   }
-}
+};
 
 const placeOrder = async (req, res) => {
   try {
@@ -248,8 +225,8 @@ const placeOrder = async (req, res) => {
           status: "Processing",
           date: new Date(),
           note: "Order placed successfully",
-        }
-      ]
+        },
+      ],
     });
 
     await newOrder.save();
@@ -265,17 +242,18 @@ const placeOrder = async (req, res) => {
         size: item.size,
         price: variant.salePrice,
         total_amount: variant.salePrice * item.quantity,
-        itemImage: item.productId.images && item.productId.images.length > 0 
-          ? item.productId.images[0].url 
-          : null,
+        itemImage:
+          item.productId.images && item.productId.images.length > 0
+            ? item.productId.images[0].url
+            : null,
         status: "Processing",
         statusHistory: [
           {
             status: "Processing",
             date: new Date(),
             note: "Order item created",
-          }
-        ]
+          },
+        ],
       });
       await orderItem.save();
       orderItems.push(orderItem._id);
@@ -312,7 +290,6 @@ const placeOrder = async (req, res) => {
     if (paymentMethod === "Wallet") {
       user.walletBalance -= grandTotal;
       await user.save();
-
 
       let wallet = await Wallet.findOne({ userId });
       if (!wallet) {
@@ -492,7 +469,9 @@ const getOrderDetails = async (req, res) => {
       return res.redirect("/orders");
     }
 
-    const orderItems = await OrderItem.find({ orderId: order._id }).populate("productId");
+    const orderItems = await OrderItem.find({ orderId: order._id }).populate(
+      "productId"
+    );
 
     res.render("orderDetails", {
       title: "Order Details",
@@ -662,7 +641,6 @@ const trackOrder = async (req, res) => {
       order.status === "Partially Delivered" ||
       order.status === "Partially Shipped"
     ) {
- 
       trackingSteps = [
         {
           status: "Order Placed",
@@ -683,8 +661,8 @@ const trackOrder = async (req, res) => {
           date: order.updatedAt.toLocaleDateString(),
           icon: "fa-random",
           active: true,
-          note: "Some items have different statuses. Check order details for more information."
-        }
+          note: "Some items have different statuses. Check order details for more information.",
+        },
       ];
       progressWidth = 75;
     } else {
@@ -779,455 +757,416 @@ const trackOrder = async (req, res) => {
   }
 };
 
-
 const cancelOrderItem = async (req, res) => {
   try {
-    console.log(`[DEBUG] cancelOrderItem called with params:`, req.params)
-    console.log(`[DEBUG] cancelOrderItem body:`, req.body)
-
-
-    const itemId = req.params.itemId || req.params.orderItemId
+    const itemId = req.params.itemId || req.params.orderItemId;
 
     if (!itemId) {
-      console.log(`[DEBUG] No item ID provided in request`)
-      return res.status(400).json({ success: false, message: "Item ID is required" })
+      return res
+        .status(400)
+        .json({ success: false, message: "Item ID is required" });
     }
 
-    const userId = req.session.user || req.user._id
-    const { cancelReason } = req.body
-
-    console.log(`[DEBUG] Processing cancel for item: ${itemId}, user: ${userId}`)
+    const userId = req.session.user || req.user._id;
+    const { cancelReason } = req.body;
 
     if (!cancelReason) {
-      console.log(`[DEBUG] Cancel reason not provided`)
-      return res.status(400).json({ success: false, message: "Cancellation reason is required" })
+      return res
+        .status(400)
+        .json({ success: false, message: "Cancellation reason is required" });
     }
 
-
-    const orderItem = await OrderItem.findById(itemId)
+    const orderItem = await OrderItem.findById(itemId);
     if (!orderItem) {
-      console.log(`[DEBUG] Order item not found: ${itemId}`)
-      return res.status(404).json({ success: false, message: "Order item not found" })
+      return res
+        .status(404)
+        .json({ success: false, message: "Order item not found" });
     }
 
-    console.log(`[DEBUG] Found order item:`, {
-      id: orderItem._id,
-      product: orderItem.product_name,
-      status: orderItem.status,
-    })
-
-
-    const order = await Order.findById(orderItem.orderId)
+    const order = await Order.findById(orderItem.orderId);
     if (!order) {
-      console.log(`[DEBUG] Parent order not found for item: ${itemId}`)
-      return res.status(404).json({ success: false, message: "Parent order not found" })
+      return res
+        .status(404)
+        .json({ success: false, message: "Parent order not found" });
     }
 
- 
     if (order.userId.toString() !== userId.toString()) {
-      console.log(`[DEBUG] Unauthorized access. Order user: ${order.userId}, Request user: ${userId}`)
-      return res.status(403).json({ success: false, message: "Unauthorized access to this order" })
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized access to this order" });
     }
-
 
     if (!["Processing", "Pending"].includes(orderItem.status)) {
-      console.log(`[DEBUG] Item cannot be cancelled. Current status: ${orderItem.status}`)
       return res.status(400).json({
         success: false,
         message: "This item cannot be cancelled in its current status",
-      })
+      });
     }
 
-   
-    orderItem.status = "Cancelled"
-    orderItem.cancelReason = cancelReason
-    orderItem.cancelledAt = new Date()
+    orderItem.status = "Cancelled";
+    orderItem.cancelReason = cancelReason;
+    orderItem.cancelledAt = new Date();
 
-  
     if (!orderItem.statusHistory) {
-      orderItem.statusHistory = []
+      orderItem.statusHistory = [];
     }
 
     orderItem.statusHistory.push({
       status: "Cancelled",
       date: new Date(),
       note: `Cancelled by user. Reason: ${cancelReason}`,
-    })
+    });
 
-    await orderItem.save()
-    console.log(`[DEBUG] Order item status updated to Cancelled`)
+    await orderItem.save();
 
-  
-    const product = await Product.findById(orderItem.productId)
+    const product = await Product.findById(orderItem.productId);
     if (product) {
-      const variantIndex = product.variants.findIndex((v) => v.size === orderItem.size)
+      const variantIndex = product.variants.findIndex(
+        (v) => v.size === orderItem.size
+      );
       if (variantIndex !== -1) {
-        console.log(
-          `[DEBUG] Restoring stock for product: ${product.name}, size: ${orderItem.size}, quantity: ${orderItem.quantity}`,
-        )
-        product.variants[variantIndex].varientquatity += orderItem.quantity
-        await product.save()
-        console.log(`[DEBUG] Stock restored successfully`)
+        product.variants[variantIndex].varientquatity += orderItem.quantity;
+        await product.save();
       } else {
-        console.log(`[DEBUG] Product variant not found for size: ${orderItem.size}`)
+        console.log(
+          `[DEBUG] Product variant not found for size: ${orderItem.size}`
+        );
       }
     } else {
-      console.log(`[DEBUG] Product not found: ${orderItem.productId}`)
+      console.log(`[DEBUG] Product not found: ${orderItem.productId}`);
     }
 
- 
-    const refundAmount = orderItem.total_amount
-    console.log(`[DEBUG] Refund amount calculated: ${refundAmount}`)
+    const refundAmount = orderItem.total_amount;
 
-
-    if (order.paymentStatus === "Paid" || order.paymentMethod === "Wallet" || order.paymentMethod === "Online") {
-      console.log(`[DEBUG] Processing refund to wallet. Payment method: ${order.paymentMethod}`)
+    if (
+      order.paymentStatus === "Paid" ||
+      order.paymentMethod === "Wallet" ||
+      order.paymentMethod === "Online"
+    ) {
       await processRefundToWallet(
         userId,
         refundAmount,
         order.orderNumber,
-        `Refund for cancelled item: ${orderItem.product_name}`,
-      )
-      orderItem.refunded = true
-      orderItem.refundAmount = refundAmount
-      orderItem.refundDate = new Date()
-      await orderItem.save()
-      console.log(`[DEBUG] Refund processed successfully`)
-    } else {
-      console.log(`[DEBUG] No refund needed for payment method: ${order.paymentMethod}`)
+        `Refund for cancelled item: ${orderItem.product_name}`
+      );
+      orderItem.refunded = true;
+      orderItem.refundAmount = refundAmount;
+      orderItem.refundDate = new Date();
+      await orderItem.save();
     }
 
-
-    console.log(`[DEBUG] Updating parent order status`)
-    const newOrderStatus = await updateOrderStatusHelper(order._id)
-    console.log(`[DEBUG] Parent order status updated to: ${newOrderStatus}`)
+    const newOrderStatus = await updateOrderStatusHelper(order._id);
 
     return res.status(200).json({
       success: true,
       message: "Item cancelled successfully",
       refundAmount: refundAmount,
-    })
+    });
   } catch (error) {
-    console.error("[ERROR] Error cancelling order item:", error)
-    return res.status(500).json({ success: false, message: "Failed to cancel item" })
+    console.error("[ERROR] Error cancelling order item:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to cancel item" });
   }
-}
-
+};
 
 const returnOrderItem = async (req, res) => {
   try {
-    console.log(`[DEBUG] returnOrderItem called with params:`, req.params)
-    console.log(`[DEBUG] returnOrderItem body:`, req.body)
-
-
-    const itemId = req.params.itemId || req.params.orderItemId
+    const itemId = req.params.itemId || req.params.orderItemId;
 
     if (!itemId) {
-      console.log(`[DEBUG] No item ID provided in request`)
-      return res.status(400).json({ success: false, message: "Item ID is required" })
+      return res
+        .status(400)
+        .json({ success: false, message: "Item ID is required" });
     }
 
-    const userId = req.session.user || req.user._id
-    const { returnReason } = req.body
-
-    console.log(`[DEBUG] Processing return for item: ${itemId}, user: ${userId}`)
+    const userId = req.session.user || req.user._id;
+    const { returnReason } = req.body;
 
     if (!returnReason) {
-      console.log(`[DEBUG] Return reason not provided`)
-      return res.status(400).json({ success: false, message: "Return reason is required" })
+      return res
+        .status(400)
+        .json({ success: false, message: "Return reason is required" });
     }
 
-
-    const orderItem = await OrderItem.findById(itemId)
+    const orderItem = await OrderItem.findById(itemId);
     if (!orderItem) {
-      console.log(`[DEBUG] Order item not found: ${itemId}`)
-      return res.status(404).json({ success: false, message: "Order item not found" })
+      return res
+        .status(404)
+        .json({ success: false, message: "Order item not found" });
     }
 
-    console.log(`[DEBUG] Found order item:`, {
-      id: orderItem._id,
-      product: orderItem.product_name,
-      status: orderItem.status,
-    })
-
-
-    const order = await Order.findById(orderItem.orderId)
+    const order = await Order.findById(orderItem.orderId);
     if (!order) {
-      console.log(`[DEBUG] Parent order not found for item: ${itemId}`)
-      return res.status(404).json({ success: false, message: "Parent order not found" })
+      return res
+        .status(404)
+        .json({ success: false, message: "Parent order not found" });
     }
 
- 
     if (order.userId.toString() !== userId.toString()) {
-      console.log(`[DEBUG] Unauthorized access. Order user: ${order.userId}, Request user: ${userId}`)
-      return res.status(403).json({ success: false, message: "Unauthorized access to this order" })
+      return res
+        .status(403)
+        .json({ success: false, message: "Unauthorized access to this order" });
     }
-
 
     if (orderItem.status !== "Delivered") {
-      console.log(`[DEBUG] Item cannot be returned. Current status: ${orderItem.status}`)
       return res.status(400).json({
         success: false,
         message: "Only delivered items can be returned",
-      })
+      });
     }
 
- 
-    const deliveryDate = order.deliveryDate || order.updatedAt || order.orderDate
-    const returnPeriod = 7 * 24 * 60 * 60 * 1000
+    const deliveryDate =
+      order.deliveryDate || order.updatedAt || order.orderDate;
+    const returnPeriod = 7 * 24 * 60 * 60 * 1000;
     if (Date.now() - deliveryDate.getTime() > returnPeriod) {
-      console.log(`[DEBUG] Return period expired. Delivery date: ${deliveryDate}, Current date: ${new Date()}`)
-      return res.status(400).json({ success: false, message: "Return period has expired (14 days)" })
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "Return period has expired (14 days)",
+        });
     }
 
-    orderItem.status = "Return Requested"
-    orderItem.returnReason = returnReason
-    orderItem.returnRequestedDate = new Date()
+    orderItem.status = "Return Requested";
+    orderItem.returnReason = returnReason;
+    orderItem.returnRequestedDate = new Date();
 
     if (!orderItem.statusHistory) {
-      orderItem.statusHistory = []
+      orderItem.statusHistory = [];
     }
 
     orderItem.statusHistory.push({
       status: "Return Requested",
       date: new Date(),
       note: `Return requested by user. Reason: ${returnReason}`,
-    })
+    });
 
-    await orderItem.save()
-    console.log(`[DEBUG] Order item status updated to Return Requested`)
+    await orderItem.save();
 
-
-    console.log(`[DEBUG] Updating parent order status`)
-    const newOrderStatus = await updateOrderStatusHelper(order._id)
-    console.log(`[DEBUG] Parent order status updated to: ${newOrderStatus}`)
+    const newOrderStatus = await updateOrderStatusHelper(order._id);
 
     return res.status(200).json({
       success: true,
       message: "Return request submitted successfully",
-    })
+    });
   } catch (error) {
-    console.error("[ERROR] Error requesting return for order item:", error)
-    return res.status(500).json({ success: false, message: "Failed to submit return request" })
+    console.error("[ERROR] Error requesting return for order item:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to submit return request" });
   }
-}
+};
 
 const cancelOrder = async (req, res) => {
   try {
-    console.log(`[DEBUG] cancelOrder called with params:`, req.params)
-    console.log(`[DEBUG] cancelOrder body:`, req.body)
-
-    const userId = req.session.user || req.user._id
-    const orderId = req.params.id
-    const { cancelReason } = req.body
-
-    console.log(`[DEBUG] Processing cancel for order: ${orderId}, user: ${userId}`)
+    const userId = req.session.user || req.user._id;
+    const orderId = req.params.id;
+    const { cancelReason } = req.body;
 
     const order = await Order.findOne({
       _id: orderId,
       userId,
-    })
+    });
 
     if (!order) {
-      console.log(`[DEBUG] Order not found: ${orderId}`)
-      return res.status(404).json({ success: false, message: "Order not found" })
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
     }
 
     if (!["Pending", "Processing"].includes(order.status)) {
-      console.log(`[DEBUG] Order cannot be cancelled. Current status: ${order.status}`)
-      return res.status(400).json({ success: false, message: "This order cannot be cancelled" })
+      return res
+        .status(400)
+        .json({ success: false, message: "This order cannot be cancelled" });
     }
 
- 
-    const orderItems = await OrderItem.find({ orderId: order._id })
-    console.log(`[DEBUG] Found ${orderItems.length} items to cancel`)
+    const orderItems = await OrderItem.find({ orderId: order._id });
 
     for (const item of orderItems) {
-      console.log(`[DEBUG] Cancelling item: ${item._id}, ${item.product_name}`)
-      item.status = "Cancelled"
-      item.cancelReason = cancelReason || "Cancelled by user"
-      item.cancelledAt = new Date()
+      item.status = "Cancelled";
+      item.cancelReason = cancelReason || "Cancelled by user";
+      item.cancelledAt = new Date();
 
-    
       if (!item.statusHistory) {
-        item.statusHistory = []
+        item.statusHistory = [];
       }
 
       item.statusHistory.push({
         status: "Cancelled",
         date: new Date(),
-        note: `Cancelled as part of full order cancellation. Reason: ${cancelReason || "Cancelled by user"}`,
-      })
-      await item.save()
-      console.log(`[DEBUG] Item ${item._id} cancelled successfully`)
+        note: `Cancelled as part of full order cancellation. Reason: ${
+          cancelReason || "Cancelled by user"
+        }`,
+      });
+      await item.save();
     }
 
-    order.status = "Cancelled"
-    order.cancelReason = cancelReason || "Cancelled by user"
+    order.status = "Cancelled";
+    order.cancelReason = cancelReason || "Cancelled by user";
 
- 
     if (!order.statusHistory) {
-      order.statusHistory = []
+      order.statusHistory = [];
     }
 
     order.statusHistory.push({
       status: "Cancelled",
       date: new Date(),
-      note: `Order cancelled by user. Reason: ${cancelReason || "Cancelled by user"}`,
-    })
-    await order.save()
-    console.log(`[DEBUG] Order status updated to Cancelled`)
+      note: `Order cancelled by user. Reason: ${
+        cancelReason || "Cancelled by user"
+      }`,
+    });
+    await order.save();
 
     for (const item of orderItems) {
-      const product = await Product.findById(item.productId)
+      const product = await Product.findById(item.productId);
       if (product) {
-        const variantIndex = product.variants.findIndex((v) => v.size === item.size)
+        const variantIndex = product.variants.findIndex(
+          (v) => v.size === item.size
+        );
         if (variantIndex !== -1) {
-          console.log(
-            `[DEBUG] Restoring stock for product: ${product.name}, size: ${item.size}, quantity: ${item.quantity}`,
-          )
-          product.variants[variantIndex].varientquatity += item.quantity
-          await product.save()
-          console.log(`[DEBUG] Stock restored successfully for item ${item._id}`)
+          product.variants[variantIndex].varientquatity += item.quantity;
+          await product.save();
         } else {
-          console.log(`[DEBUG] Product variant not found for size: ${item.size}`)
+          console.log(
+            `[DEBUG] Product variant not found for size: ${item.size}`
+          );
         }
       } else {
-        console.log(`[DEBUG] Product not found: ${item.productId}`)
+        console.log(`[DEBUG] Product not found: ${item.productId}`);
       }
     }
 
-
     if (order.paymentMethod === "COD" && order.paymentStatus === "Paid") {
-      console.log(`[DEBUG] Processing refund for COD order with Paid status`)
-      await processRefundToWallet(userId, order.total, order.orderNumber, "Refund for cancelled order")
-      order.paymentStatus = "Refunded"
-      order.refunded = true
-      await order.save()
-      console.log(`[DEBUG] Refund processed successfully`)
+      await processRefundToWallet(
+        userId,
+        order.total,
+        order.orderNumber,
+        "Refund for cancelled order"
+      );
+      order.paymentStatus = "Refunded";
+      order.refunded = true;
+      await order.save();
     } else if (order.paymentMethod === "Wallet") {
-      console.log(`[DEBUG] Processing refund for Wallet payment`)
-      await processRefundToWallet(userId, order.total, order.orderNumber, "Refund for cancelled order")
-      order.paymentStatus = "Refunded"
-      order.refunded = true
-      await order.save()
-      console.log(`[DEBUG] Refund processed successfully`)
+      await processRefundToWallet(
+        userId,
+        order.total,
+        order.orderNumber,
+        "Refund for cancelled order"
+      );
+      order.paymentStatus = "Refunded";
+      order.refunded = true;
+      await order.save();
     } else if (order.paymentMethod === "Online") {
-      console.log(`[DEBUG] Processing refund for Online payment`)
-      await processRefundToWallet(userId, order.total, order.orderNumber, "Refund for cancelled order")
-      order.paymentStatus = "Refunded"
-      order.refunded = true
-      await order.save()
-      console.log(`[DEBUG] Refund processed successfully`)
-    } else {
-      console.log(`[DEBUG] No refund needed for payment method: ${order.paymentMethod}`)
+      await processRefundToWallet(
+        userId,
+        order.total,
+        order.orderNumber,
+        "Refund for cancelled order"
+      );
+      order.paymentStatus = "Refunded";
+      order.refunded = true;
+      await order.save();
     }
 
-    return res.status(200).json({ success: true, message: "Order cancelled successfully" })
+    return res
+      .status(200)
+      .json({ success: true, message: "Order cancelled successfully" });
   } catch (error) {
-    console.error("[ERROR] Error cancelling order:", error)
-    return res.status(500).json({ success: false, message: "Failed to cancel order" })
+    console.error("[ERROR] Error cancelling order:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to cancel order" });
   }
-}
+};
 
 const initiateReturn = async (req, res) => {
   try {
-    console.log(`[DEBUG] initiateReturn called with params:`, req.params)
-    console.log(`[DEBUG] initiateReturn body:`, req.body)
-
-    const userId = req.session.user || req.user._id
-    const orderId = req.params.id
-    const { returnReason } = req.body
-
-    console.log(`[DEBUG] Processing return for order: ${orderId}, user: ${userId}`)
+    const userId = req.session.user || req.user._id;
+    const orderId = req.params.id;
+    const { returnReason } = req.body;
 
     if (!returnReason) {
-      console.log(`[DEBUG] Return reason not provided`)
-      return res.status(400).json({ success: false, message: "Return reason is required" })
+      return res
+        .status(400)
+        .json({ success: false, message: "Return reason is required" });
     }
 
     const order = await Order.findOne({
       _id: orderId,
       userId,
-    })
+    });
 
     if (!order) {
-      console.log(`[DEBUG] Order not found: ${orderId}`)
-      return res.status(404).json({ success: false, message: "Order not found" })
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
     }
 
     if (order.status !== "Delivered") {
-      console.log(`[DEBUG] Order cannot be returned. Current status: ${order.status}`)
       return res.status(400).json({
         success: false,
         message: "Only delivered orders can be returned",
-      })
+      });
     }
 
-    const deliveryDate = order.deliveryDate || order.updatedAt || order.orderDate
-    const returnPeriod = 14 * 24 * 60 * 60 * 1000
+    const deliveryDate =
+      order.deliveryDate || order.updatedAt || order.orderDate;
+    const returnPeriod = 14 * 24 * 60 * 60 * 1000;
     if (Date.now() - deliveryDate.getTime() > returnPeriod) {
-      console.log(`[DEBUG] Return period expired. Delivery date: ${deliveryDate}, Current date: ${new Date()}`)
       return res.status(400).json({
         success: false,
         message: "Return period has expired (14 days)",
-      })
+      });
     }
 
- 
-    const orderItems = await OrderItem.find({ orderId: order._id })
-    console.log(`[DEBUG] Found ${orderItems.length} items to return`)
+    const orderItems = await OrderItem.find({ orderId: order._id });
 
     for (const item of orderItems) {
       if (item.status === "Delivered") {
-        console.log(`[DEBUG] Requesting return for item: ${item._id}, ${item.product_name}`)
-        item.status = "Return Requested"
-        item.returnReason = returnReason
-        item.returnRequestedDate = new Date()
+        item.status = "Return Requested";
+        item.returnReason = returnReason;
+        item.returnRequestedDate = new Date();
 
- 
         if (!item.statusHistory) {
-          item.statusHistory = []
+          item.statusHistory = [];
         }
 
         item.statusHistory.push({
           status: "Return Requested",
           date: new Date(),
           note: `Return requested as part of full order return. Reason: ${returnReason}`,
-        })
-        await item.save()
-        console.log(`[DEBUG] Item ${item._id} return requested successfully`)
-      } else {
-        console.log(`[DEBUG] Skipping item ${item._id} with status ${item.status}`)
+        });
+        await item.save();
       }
     }
 
-    order.status = "Return Requested"
-    order.returnReason = returnReason
-    order.returnRequestedDate = new Date()
+    order.status = "Return Requested";
+    order.returnReason = returnReason;
+    order.returnRequestedDate = new Date();
 
-  
     if (!order.statusHistory) {
-      order.statusHistory = []
+      order.statusHistory = [];
     }
 
     order.statusHistory.push({
       status: "Return Requested",
       date: new Date(),
       note: `Return requested by user. Reason: ${returnReason}`,
-    })
-    await order.save()
-    console.log(`[DEBUG] Order status updated to Return Requested`)
+    });
+    await order.save();
 
     return res.status(200).json({
       success: true,
       message: "Return request submitted successfully",
-    })
+    });
   } catch (error) {
-    console.error("[ERROR] Error initiating return:", error)
-    return res.status(500).json({ success: false, message: "Failed to submit return request" })
+    console.error("[ERROR] Error initiating return:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to submit return request" });
   }
-}
+};
 
 const reOrder = async (req, res) => {
   try {
@@ -1315,7 +1254,16 @@ const downloadInvoice = async (req, res) => {
       return res.redirect("/orders");
     }
 
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({
+      margin: 50,
+      size: "A4",
+      info: {
+        Title: `Invoice - ${order.orderNumber}`,
+        Author: "ELITE WEAR",
+        Subject: "Order Invoice",
+      },
+    });
+
     const invoiceFilename = `invoice-${order.orderNumber}.pdf`;
 
     res.setHeader("Content-Type", "application/pdf");
@@ -1326,123 +1274,260 @@ const downloadInvoice = async (req, res) => {
 
     doc.pipe(res);
 
-    // doc.image(path.join(__dirname, '../../public/Uploads/logo.png'), 50, 45, { width: 100 });
+    const primaryColor = "#2c3e50";
+    const secondaryColor = "#3498db";
+    const accentColor = "#e74c3c";
+    const lightGray = "#ecf0f1";
+    const mediumGray = "#bdc3c7";
+    const darkGray = "#7f8c8d";
 
-    doc.fontSize(20).text("ELITE WEAR", { align: "center" });
-    doc.fontSize(12).text("Invoice", { align: "center" });
-    doc.moveDown();
+    doc
+      .rect(20, 20, doc.page.width - 40, doc.page.height - 40)
+      .lineWidth(1)
+      .stroke(primaryColor);
 
-    doc.fontSize(14).text("Order Details", { underline: true });
-    doc.fontSize(10).text(`Order Number: ${order.orderNumber}`);
-    doc.text(`Order Date: ${order.orderDate.toLocaleDateString()}`);
-    doc.text(`Payment Method: ${order.paymentMethod}`);
-    doc.text(`Payment Status: ${order.paymentStatus}`);
-    doc.moveDown();
+    doc.rect(50, 50, doc.page.width - 100, 80).fill(primaryColor);
 
-    doc.fontSize(14).text("Customer Details", { underline: true });
-    doc.fontSize(10).text(`Name: ${order.userId.fullname}`);
-    doc.text(`Email: ${order.userId.email}`);
-    doc.moveDown();
+    doc
+      .fontSize(28)
+      .fillColor("white")
+      .font("Helvetica-Bold")
+      .text("ELITE WEAR", 0, 75, { align: "center" });
 
-    doc.fontSize(14).text("Shipping Address", { underline: true });
-    doc.fontSize(10).text(`${address.fullname}`);
-    doc.text(`${address.address}`);
-    doc.text(`${address.city}, ${address.district}`);
-    doc.text(`${address.state} - ${address.pincode}`);
-    doc.text(`Phone: ${address.mobile}`);
-    doc.moveDown();
+    doc
+      .fontSize(14)
+      .fillColor("white")
+      .font("Helvetica")
+      .text("INVOICE", 0, 110, { align: "center" });
 
-    doc.fontSize(14).text("Order Items", { underline: true });
-    doc.moveDown();
+    doc
+      .rect(350, 150, 200, 100)
+      .lineWidth(1)
+      .fillColor(lightGray)
+      .fill()
+      .stroke(primaryColor);
 
-    const tableTop = doc.y;
-    const itemX = 50;
-    const descriptionX = 150;
-    const quantityX = 300;
-    const priceX = 370;
-    const amountX = 450;
+    doc
+      .fillColor(primaryColor)
+      .fontSize(14)
+      .font("Helvetica-Bold")
+      .text("INVOICE DETAILS", 360, 160);
 
     doc
       .fontSize(10)
-      .text("Item", itemX, tableTop)
-      .text("Description", descriptionX, tableTop)
-      .text("Qty", quantityX, tableTop)
-      .text("Price", priceX, tableTop)
-      .text("Amount", amountX, tableTop);
-
-    doc.moveDown();
+      .font("Helvetica")
+      .text(`Invoice Number: ${order.orderNumber}`, 360, 180)
+      .text(
+        `Date: ${new Date(order.orderDate).toLocaleDateString("en-IN", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}`,
+        360,
+        195
+      )
+      .text(`Payment Method: ${order.paymentMethod}`, 360, 210)
+      .text(`Payment Status: ${order.paymentStatus}`, 360, 225);
 
     doc
-      .strokeColor("#aaaaaa")
+      .rect(50, 150, 280, 100)
       .lineWidth(1)
-      .moveTo(itemX, doc.y)
-      .lineTo(550, doc.y)
-      .stroke();
+      .fillColor(lightGray)
+      .fill()
+      .stroke(primaryColor);
 
-    doc.moveDown();
+    doc
+      .fillColor(primaryColor)
+      .fontSize(14)
+      .font("Helvetica-Bold")
+      .text("CUSTOMER DETAILS", 60, 160);
 
+    doc
+      .fontSize(10)
+      .font("Helvetica")
+      .text(`Name: ${order.userId.fullname}`, 60, 180)
+      .text(`Email: ${order.userId.email}`, 60, 195);
+
+    doc
+      .rect(50, 270, 500, 100)
+      .lineWidth(1)
+      .fillColor(lightGray)
+      .fill()
+      .stroke(primaryColor);
+
+    doc
+      .fillColor(primaryColor)
+      .fontSize(14)
+      .font("Helvetica-Bold")
+      .text("SHIPPING ADDRESS", 60, 280);
+
+    doc
+      .fontSize(10)
+      .font("Helvetica")
+      .text(`${address.fullname}`, 60, 300)
+      .text(`${address.address}`, 60, 315)
+      .text(`${address.city}, ${address.district}`, 60, 330)
+      .text(`${address.state} - ${address.pincode}`, 60, 345)
+      .text(`Phone: ${address.mobile}`, 60, 360);
+
+    const tableTop = 390;
+    const tableBottom = 650;
+    const tableWidth = 500;
+
+    doc.rect(50, tableTop, tableWidth, 25).fillColor(secondaryColor).fill();
+
+    doc
+      .fillColor("white")
+      .fontSize(10)
+      .font("Helvetica-Bold")
+      .text("ITEM", 60, tableTop + 8)
+      .text("DESCRIPTION", 180, tableTop + 8)
+      .text("QTY", 320, tableTop + 8)
+      .text("PRICE", 380, tableTop + 8)
+      .text("AMOUNT", 450, tableTop + 8);
+
+    let y = tableTop + 25;
     let totalAmount = 0;
-    let y = doc.y;
+    let alternateRow = false;
 
     for (const item of orderItems) {
       const itemTotal = item.price * item.quantity;
       totalAmount += itemTotal;
 
+      if (alternateRow) {
+        doc.rect(50, y, tableWidth, 20).fillColor(lightGray).fill();
+      }
+      alternateRow = !alternateRow;
+
       doc
-        .fontSize(10)
-        .text(item.product_name.substring(0, 20), itemX, y)
-        .text(`Size: ${item.size}`, descriptionX, y)
-        .text(item.quantity, quantityX, y)
-        .text(`₹${item.price.toFixed(2)}`, priceX, y)
-        .text(`₹${itemTotal.toFixed(2)}`, amountX, y);
+        .fillColor(primaryColor)
+        .fontSize(9)
+        .font("Helvetica")
+        .text(item.product_name.substring(0, 20), 60, y + 5, { width: 110 })
+        .text(`Size: ${item.size}`, 180, y + 5)
+        .text(item.quantity.toString(), 320, y + 5)
+        .text(`₹${item.price.toFixed(2)}`, 380, y + 5)
+        .text(`₹${itemTotal.toFixed(2)}`, 450, y + 5);
 
       y += 20;
+
+      if (y > tableBottom - 20) {
+        doc.addPage();
+        y = 50;
+
+        doc.rect(50, y, tableWidth, 25).fillColor(secondaryColor).fill();
+
+        doc
+          .fillColor("white")
+          .fontSize(10)
+          .font("Helvetica-Bold")
+          .text("ITEM", 60, y + 8)
+          .text("DESCRIPTION", 180, y + 8)
+          .text("QTY", 320, y + 8)
+          .text("PRICE", 380, y + 8)
+          .text("AMOUNT", 450, y + 8);
+
+        y += 25;
+      }
     }
 
-    doc.moveDown();
-
     doc
-      .strokeColor("#aaaaaa")
+      .rect(50, tableTop, tableWidth, y - tableTop)
       .lineWidth(1)
-      .moveTo(itemX, doc.y)
-      .lineTo(550, doc.y)
-      .stroke();
+      .stroke(primaryColor);
 
-    doc.moveDown();
+    doc
+      .moveTo(170, tableTop)
+      .lineTo(170, y)
+      .moveTo(310, tableTop)
+      .lineTo(310, y)
+      .moveTo(370, tableTop)
+      .lineTo(370, y)
+      .moveTo(440, tableTop)
+      .lineTo(440, y)
+      .stroke(mediumGray);
 
-    const subtotalY = doc.y;
+    const summaryX = 300;
+    const summaryWidth = 250;
+    const summaryY = y + 20;
+
+    doc
+      .rect(summaryX, summaryY, summaryWidth, 100)
+      .lineWidth(1)
+      .fillColor(lightGray)
+      .fill()
+      .stroke(primaryColor);
+
+    doc
+      .fillColor(primaryColor)
+      .fontSize(10)
+      .font("Helvetica")
+      .text("Subtotal:", summaryX + 20, summaryY + 15)
+      .text("Delivery Charge:", summaryX + 20, summaryY + 35)
+      .fontSize(12)
+      .font("Helvetica-Bold")
+      .text("TOTAL:", summaryX + 20, summaryY + 65);
+
+    const deliveryCharge = order.total > 8000 ? 0 : 200;
+
     doc
       .fontSize(10)
-      .text("Subtotal:", 350, subtotalY)
-      .text(`₹${totalAmount.toFixed(2)}`, amountX, subtotalY);
-
-    const deliveryY = subtotalY + 20;
-    doc
-      .fontSize(10)
-      .text("Delivery Charge:", 350, deliveryY)
-      .text(
-        `₹${(order.total > 8000 ? 0 : 200).toFixed(2)}`,
-        amountX,
-        deliveryY
-      );
+      .font("Helvetica")
+      .text(`₹${totalAmount.toFixed(2)}`, summaryX + 150, summaryY + 15, {
+        align: "right",
+      })
+      .text(`₹${deliveryCharge.toFixed(2)}`, summaryX + 150, summaryY + 35, {
+        align: "right",
+      });
 
     if (order.discount > 0) {
-      const discountY = deliveryY + 20;
       doc
-        .fontSize(10)
-        .text("Discount:", 350, discountY)
-        .text(`-₹${order.discount.toFixed(2)}`, amountX, discountY);
+        .fillColor(accentColor)
+        .text("Discount:", summaryX + 20, summaryY + 55)
+        .text(`-₹${order.discount.toFixed(2)}`, summaryX + 150, summaryY + 55, {
+          align: "right",
+        });
     }
 
-    const totalY = order.discount > 0 ? deliveryY + 40 : deliveryY + 20;
     doc
+      .fillColor(primaryColor)
       .fontSize(12)
-      .text("Total:", 350, totalY, { bold: true })
-      .text(`₹${order.total.toFixed(2)}`, amountX, totalY, { bold: true });
+      .font("Helvetica-Bold")
+      .text(`₹${order.total.toFixed(2)}`, summaryX + 150, summaryY + 65, {
+        align: "right",
+      });
 
-    doc.fontSize(10).text("Thank you for shopping with ELITE WEAR!", 50, 700, {
-      align: "center",
-    });
+    const footerY = doc.page.height - 100;
+
+    doc.rect(50, footerY, 500, 50).lineWidth(1).fillColor(primaryColor).fill();
+
+    doc
+      .fillColor("white")
+      .fontSize(10)
+      .font("Helvetica")
+      .text("Thank you for shopping with ELITE WEAR!", 0, footerY + 15, {
+        align: "center",
+      })
+      .fontSize(8)
+      .text(
+        "For any questions regarding your order, please contact our customer service.",
+        0,
+        footerY + 30,
+        { align: "center" }
+      );
+
+    doc
+      .rect(50, y + 20, 200, 100)
+      .lineWidth(1)
+      .stroke(mediumGray);
+
+    doc
+      .fontSize(10)
+      .fillColor(darkGray)
+      .text("Scan to verify purchase", 75, y + 60, {
+        align: "center",
+        width: 150,
+      });
 
     doc.end();
   } catch (error) {
@@ -1452,91 +1537,89 @@ const downloadInvoice = async (req, res) => {
 };
 const checkItemUpdateability = async (req, res) => {
   try {
-    const { orderItemId } = req.params
-    const userId = req.session.user || req.user._id
+    const { orderItemId } = req.params;
+    const userId = req.session.user || req.user._id;
 
     const orderItem = await OrderItem.findById(orderItemId).populate({
       path: "orderId",
       select: "userId",
-    })
+    });
 
     if (!orderItem) {
       return res.status(404).json({
         success: false,
         message: "Order item not found",
-      })
+      });
     }
 
-    // Check if this item belongs to the current user
     if (orderItem.orderId.userId.toString() !== userId.toString()) {
       return res.status(403).json({
         success: false,
         message: "You don't have permission to access this order item",
-      })
+      });
     }
 
-    const finalStates = ["Cancelled", "Returned"]
-    const canUpdate = !finalStates.includes(orderItem.status)
+    const finalStates = ["Cancelled", "Returned"];
+    const canUpdate = !finalStates.includes(orderItem.status);
 
     return res.status(200).json({
       success: true,
       canUpdate,
       status: orderItem.status,
       isFinalState: finalStates.includes(orderItem.status),
-    })
+    });
   } catch (error) {
-    console.error("Error checking item updateability:", error)
+    console.error("Error checking item updateability:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to check item updateability: " + error.message,
-    })
+    });
   }
-}
+};
 
 const checkOrderUpdateability = async (req, res) => {
   try {
-    const { orderId } = req.params
-    const userId = req.session.user || req.user._id
+    const { orderId } = req.params;
+    const userId = req.session.user || req.user._id;
 
-    let order
+    let order;
     if (mongoose.Types.ObjectId.isValid(orderId)) {
-      order = await Order.findById(orderId)
+      order = await Order.findById(orderId);
     } else {
-      order = await Order.findOne({ orderNumber: orderId })
+      order = await Order.findOne({ orderNumber: orderId });
     }
 
     if (!order) {
       return res.status(404).json({
         success: false,
         message: "Order not found",
-      })
+      });
     }
 
-    // Check if this order belongs to the current user
     if (order.userId.toString() !== userId.toString()) {
       return res.status(403).json({
         success: false,
         message: "You don't have permission to access this order",
-      })
+      });
     }
 
-    const finalStates = ["Cancelled", "Returned"]
-    const canUpdate = !finalStates.includes(order.status)
+    const finalStates = ["Cancelled", "Returned"];
+    const canUpdate = !finalStates.includes(order.status);
 
     return res.status(200).json({
       success: true,
       canUpdate,
       status: order.status,
       isFinalState: finalStates.includes(order.status),
-    })
+    });
   } catch (error) {
-    console.error("Error checking order updateability:", error)
+    console.error("Error checking order updateability:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to check order updateability: " + error.message,
-    })
+    });
   }
-}
+};
 
 module.exports = {
   placeOrder,

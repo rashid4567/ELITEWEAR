@@ -58,20 +58,47 @@ const sendVerificationEmail = async (email, otp) => {
   return result;
 };
 
+const generateReferralCode = () => {
+  return crypto.randomBytes(3).toString("hex").toUpperCase();
+};
+
 const getReferralStats = async (userId) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      console.error("Invalid userId format:", userId);
+      return {
+        total: 0,
+        earnings: 0,
+        pending: 0,
+        history: [],
+      };
+    }
+
     const totalReferrals = await User.countDocuments({ referredBy: userId });
-    const referralHistory = await ReferralHistory.find({ referrerId: userId });
+
+    const referralHistory = await ReferralHistory.find({ referrerId: userId })
+      .populate("newUserId", "fullname email")
+      .sort({ date: -1 })
+      .limit(10);
+
     const earnings = referralHistory.reduce(
       (total, record) => total + record.amountToReferrer,
       0
     );
-    const pendingReferrals = 0;
+
+    const history = referralHistory.map((record) => ({
+      date: record.date,
+      name: record.newUserId ? record.newUserId.fullname : "Unknown User",
+      email: record.newUserId ? record.newUserId.email : "",
+      status: "completed",
+      reward: record.amountToReferrer,
+    }));
 
     return {
       total: totalReferrals,
       earnings,
-      pending: pendingReferrals,
+      pending: 0,
+      history,
     };
   } catch (error) {
     console.error("Error getting referral stats:", error);
@@ -79,43 +106,36 @@ const getReferralStats = async (userId) => {
       total: 0,
       earnings: 0,
       pending: 0,
+      history: [],
     };
   }
 };
 
 const applyReferral = async (newUserId, referralCode) => {
   try {
-    console.log(
-      "Applying referral for new user:",
-      newUserId,
-      "with referral code:",
-      referralCode
-    );
-
     if (!newUserId || !referralCode) {
-      console.log("Missing required parameters:", { newUserId, referralCode });
       return { success: false, message: "Missing required parameters" };
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(newUserId)) {
+      return { success: false, message: "Invalid user ID format" };
     }
 
     const referrer = await User.findOne({ referralCode });
     if (!referrer) {
-      console.log("Invalid referral code:", referralCode);
       return { success: false, message: "Invalid referral code" };
     }
 
     if (referrer._id.toString() === newUserId.toString()) {
-      console.log("User attempted to use own referral code:", newUserId);
       return { success: false, message: "Cannot use your own referral code" };
     }
 
     const user = await User.findById(newUserId);
     if (!user) {
-      console.log("User not found:", newUserId);
       return { success: false, message: "User not found" };
     }
 
     if (user.referredBy) {
-      console.log("User already used a referral code:", user.referredBy);
       return {
         success: false,
         message: "You have already used a referral code",
@@ -128,10 +148,10 @@ const applyReferral = async (newUserId, referralCode) => {
     const newUserTransactionRef = `${baseTransactionRef}-NEW`;
     const referrerTransactionRef = `${baseTransactionRef}-REF`;
 
-    await Wallet.findOneAndUpdate(
+
+    const newUserWallet = await Wallet.findOneAndUpdate(
       { userId: newUserId },
       {
-        $setOnInsert: { userId: newUserId, amount: 0, transactions: [] },
         $inc: { amount: NEW_USER_REWARD },
         $push: {
           transactions: {
@@ -146,17 +166,18 @@ const applyReferral = async (newUserId, referralCode) => {
       { new: true, upsert: true }
     );
 
-    await Wallet.findOneAndUpdate(
+    const referrerWallet = await Wallet.findOneAndUpdate(
       { userId: referrer._id },
       {
-        $setOnInsert: { userId: referrer._id, amount: 0, transactions: [] },
         $inc: { amount: REFERRER_REWARD },
         $push: {
           transactions: {
             type: "credit",
             amount: REFERRER_REWARD,
             transactionRef: referrerTransactionRef,
-            description: "Referral bonus for inviting a friend",
+            description: `Referral bonus for inviting ${
+              user.fullname || "a new user"
+            }`,
             date: new Date(),
           },
         },
@@ -175,7 +196,6 @@ const applyReferral = async (newUserId, referralCode) => {
     });
     await referralHistory.save();
 
-    console.log("Referral applied successfully for user:", newUserId);
     return {
       success: true,
       message: "Referral applied successfully",
@@ -367,14 +387,19 @@ const userSignup = async (req, res) => {
       });
     }
 
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    const userReferralCode = generateReferralCode();
+
     req.session.registration = {
       otp,
       userData: {
         fullname,
         email: normalizedEmail,
         mobile,
-        password,
+        password: hashedPassword,
         referralCode,
+        userReferralCode,
       },
       otpExpires: Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000,
     };
@@ -418,14 +443,18 @@ const verifyOtp = async (req, res) => {
       });
     }
 
-    const hashedPassword = await securePassword(registration.userData.password);
+
     const newUser = new User({
-      ...registration.userData,
-      password: hashedPassword,
+      fullname: registration.userData.fullname,
+      email: registration.userData.email,
+      mobile: registration.userData.mobile,
+      password: registration.userData.password,
       isVerified: true,
+      referralCode: registration.userData.userReferralCode,
     });
 
     await newUser.save();
+
 
     const wallet = new Wallet({
       userId: newUser._id,
@@ -433,15 +462,21 @@ const verifyOtp = async (req, res) => {
     });
     await wallet.save();
 
+    let referralResult = { success: false };
     if (registration.userData.referralCode) {
-      const referralResult = await applyReferral(
+      referralResult = await applyReferral(
         newUser._id,
         registration.userData.referralCode
       );
-      if (!referralResult.success) {
-        console.log("Referral failed:", referralResult.message);
+
+      if (referralResult.success) {
+        console.log(
+          `Referral applied successfully during signup for user: ${newUser._id}`
+        );
       } else {
-        console.log("Referral applied successfully during signup");
+        console.log(
+          `Referral failed for user: ${newUser._id}. Reason: ${referralResult.message}`
+        );
       }
     }
 
@@ -450,13 +485,15 @@ const verifyOtp = async (req, res) => {
 
     return res.json({
       success: true,
+      referralApplied: referralResult.success,
+      referralMessage: referralResult.message,
       redirectUrl: "/",
     });
   } catch (error) {
     console.error("OTP verification error:", error);
     return res.status(500).json({
       success: false,
-      message: "Verification error",
+      message: "Verification error: " + error.message,
     });
   }
 };
@@ -518,7 +555,6 @@ const userLogin = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log(`Login attempt with email: ${email}`);
 
     if (!email || !password) {
       return res.render("login", {
@@ -528,20 +564,13 @@ const login = async (req, res) => {
     }
 
     const lowerEmail = email.toLowerCase();
-    console.log(`Searching for user with lowercase email: ${lowerEmail}`);
 
     const findUser = await User.findOne({
       email: lowerEmail,
       isAdmin: false,
     });
 
-    console.log(
-      "User found:",
-      findUser ? `Yes (ID: ${findUser._id}, Email: ${findUser.email})` : "No"
-    );
-
     if (!findUser) {
-      console.log(`User not found for email: ${lowerEmail}`);
       return res.render("login", {
         user: null,
         message: "User not found",
@@ -549,7 +578,6 @@ const login = async (req, res) => {
     }
 
     if (findUser.isBlocked) {
-      console.log(`User is blocked: ${lowerEmail}`);
       return res.render("login", {
         user: null,
         message: "Your account has been blocked. Please contact support.",
@@ -558,16 +586,12 @@ const login = async (req, res) => {
 
     const passwordMatch = await bcrypt.compare(password, findUser.password);
     if (!passwordMatch) {
-      console.log(`Incorrect password for email: ${lowerEmail}`);
       return res.render("login", {
         user: null,
         message: "Incorrect password",
       });
     }
 
-    console.log(
-      `User logged in successfully: ${findUser.email} (ID: ${findUser._id})`
-    );
     req.session.user = findUser._id;
     return res.redirect("/");
   } catch (error) {
@@ -934,6 +958,85 @@ const searchProducts = async (req, res) => {
   }
 };
 
+const loadReferralPage = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    if (!userId) {
+      return res.redirect("/login?redirect=/referrals");
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      req.session.destroy();
+      return res.redirect("/login");
+    }
+
+    const stats = await getReferralStats(userId);
+
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    const referralLink = `${baseUrl}/signup?referral=${user.referralCode}`;
+
+    res.render("referrals", {
+      user,
+      stats,
+      referralLink,
+      message: null,
+    });
+  } catch (error) {
+    console.error("Error loading referral page:", error);
+    res.status(500).render("page-500", { message: "Server issue" });
+  }
+};
+
+const getUserReferralHistory = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const referralHistory = await ReferralHistory.find({ referrerId: userId })
+      .populate("newUserId", "fullname email")
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await ReferralHistory.countDocuments({ referrerId: userId });
+
+    const history = referralHistory.map((record) => ({
+      date: record.date,
+      name: record.newUserId ? record.newUserId.fullname : "Unknown User",
+      email: record.newUserId ? record.newUserId.email : "",
+      status: "completed",
+      reward: record.amountToReferrer,
+    }));
+
+    res.json({
+      success: true,
+      history,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Get user referral history error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to get referral history: " + error.message,
+    });
+  }
+};
+
 module.exports = {
   loadHomepage,
   pageNotfound,
@@ -952,6 +1055,8 @@ module.exports = {
   getReferralStats,
   applyReferral,
   applyReferralCode,
+  loadReferralPage,
+  getUserReferralHistory,
   REFERRER_REWARD,
   NEW_USER_REWARD,
 };

@@ -1,16 +1,12 @@
+const referralHandler = require("../../utils/refferalHandlers");
 const User = require("../../model/userSchema");
 const Wallet = require("../../model/walletScheema");
-const ReferralHistory = require("../../model/refferalHistoryScheema");
-const { v4: uuidv4 } = require("uuid");
-
-const REFERRER_REWARD = 200;
-const NEW_USER_REWARD = 100;
 
 const loadReferralPage = async (req, res) => {
   try {
     const userId = req.session.user;
     if (!userId) {
-      return res.redirect("/login");
+      return res.redirect("/login?redirect=/referral");
     }
 
     const user = await User.findById(userId);
@@ -18,14 +14,13 @@ const loadReferralPage = async (req, res) => {
       return res.redirect("/login");
     }
 
-    const userController = require("./userControll");
-    const referralStats = await userController.getReferralStats(userId);
+    const referralStats = await referralHandler.getReferralStats(userId);
 
-    const referralUrl = `${req.protocol}://${req.get(
-      "host"
-    )}/referralSpace?code=${user.referralCode}`;
+    const referralUrl = referralHandler.generateReferralLink(
+      user.referralCode,
+      `${req.protocol}://${req.get("host")}`
+    );
 
-    console.log("Loading referral page for user:", userId);
     res.render("referalCode", {
       user,
       referralStats: {
@@ -33,6 +28,7 @@ const loadReferralPage = async (req, res) => {
         totalEarned: referralStats.earnings,
       },
       referralUrl,
+      recentReferrals: referralStats.recentReferrals || [],
       message: null,
     });
   } catch (error) {
@@ -51,11 +47,7 @@ const loadReferralSpace = async (req, res) => {
     if (userId) {
       user = await User.findById(userId);
       wallet = await Wallet.findOne({ userId }).lean();
-      console.log("Loading referralSpace for logged in user:", userId);
-    } else {
-      console.log("Loading referralSpace for non-logged in user");
     }
-
     res.render("referalSpace", {
       user,
       wallet: wallet || { amount: 0, transactions: [] },
@@ -70,37 +62,14 @@ const loadReferralSpace = async (req, res) => {
 
 const validateReferralCode = async (req, res) => {
   try {
-    const referralCode = req.body.referralCode;
-    console.log("Validating referral code:", referralCode);
+    const { referralCode } = req.body;
+    const userId = req.session.user || null;
 
-    if (!referralCode) {
-      return res.json({ success: false, message: "Referral code is required" });
-    }
-
-    const referrer = await User.findOne({ referralCode });
-    if (!referrer) {
-      return res.json({ success: false, message: "Invalid referral code" });
-    }
-
-    if (req.session.user) {
-      const userId = req.session.user;
-      if (referrer._id.toString() === userId.toString()) {
-        return res.json({
-          success: false,
-          message: "You cannot use your own referral code",
-        });
-      }
-
-      const user = await User.findById(userId);
-      if (user.referredBy) {
-        return res.json({
-          success: false,
-          message: "You have already used a referral code",
-        });
-      }
-    }
-
-    return res.json({ success: true });
+    const result = await referralHandler.validateReferralCode(
+      referralCode,
+      userId
+    );
+    return res.json(result);
   } catch (error) {
     console.error("Error validating referral code:", error.message);
     return res.json({
@@ -110,17 +79,107 @@ const validateReferralCode = async (req, res) => {
   }
 };
 
-const processSignupReferral = async (userId, referralCode) => {
+const processSignupReferral = async (req, res) => {
   try {
-    if (!referralCode) return false;
+    const { userId, referralCode } = req.body;
 
-    const userController = require("./userControll");
-    const result = await userController.applyReferral(userId, referralCode);
+    if (!userId || !referralCode) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID and referral code are required",
+      });
+    }
 
-    return result.success;
+    const result = await referralHandler.processSignupReferral(
+      userId,
+      referralCode
+    );
+    return res.json(result);
   } catch (error) {
     console.error("Error processing signup referral:", error);
-    return false;
+    return res.status(500).json({
+      success: false,
+      message: "Server error: " + error.message,
+    });
+  }
+};
+
+const applyReferralCode = async (req, res) => {
+  try {
+    const { referralCode } = req.body;
+    const userId = req.session.user;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+    }
+
+    if (!referralCode) {
+      return res.status(400).json({
+        success: false,
+        message: "Referral code is required",
+      });
+    }
+
+    const result = await referralHandler.applyReferral(userId, referralCode);
+    return res.status(result.success ? 200 : 400).json(result);
+  } catch (error) {
+    console.error("Error applying referral code:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error: " + error.message,
+    });
+  }
+};
+
+const getReferralStats = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+    }
+
+    const stats = await referralHandler.getReferralStats(userId);
+    return res.json({ success: true, stats });
+  } catch (error) {
+    console.error("Error getting referral stats:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error: " + error.message,
+    });
+  }
+};
+
+const getReferralHistory = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const history = await referralHandler.getReferralHistory(
+      userId,
+      page,
+      limit
+    );
+    return res.json(history);
+  } catch (error) {
+    console.error("Error getting referral history:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error: " + error.message,
+    });
   }
 };
 
@@ -129,6 +188,9 @@ module.exports = {
   loadReferralSpace,
   validateReferralCode,
   processSignupReferral,
-  REFERRER_REWARD,
-  NEW_USER_REWARD,
+  applyReferralCode,
+  getReferralStats,
+  getReferralHistory,
+  REFERRER_REWARD: referralHandler.REFERRER_REWARD,
+  NEW_USER_REWARD: referralHandler.NEW_USER_REWARD,
 };

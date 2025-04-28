@@ -11,7 +11,7 @@ const path = require("path");
 const { processRefundToWallet } = require("../user/walletController");
 const logger = require("../../utils/logger");
 
-// Helper function to update order status based on item statuses
+
 const updateOrderStatusHelper = async (orderId) => {
   try {
     logger.info(`Updating order status for orderId: ${orderId}`);
@@ -21,7 +21,7 @@ const updateOrderStatusHelper = async (orderId) => {
       return null;
     }
 
-    // Get all order items
+   
     const orderItems = await OrderItem.find({ orderId: order._id });
 
     if (orderItems.length === 0) {
@@ -29,7 +29,7 @@ const updateOrderStatusHelper = async (orderId) => {
       return null;
     }
 
-    // Count items by status
+
     const statusCounts = {};
     for (const item of orderItems) {
       statusCounts[item.status] = (statusCounts[item.status] || 0) + 1;
@@ -38,16 +38,16 @@ const updateOrderStatusHelper = async (orderId) => {
     logger.info(`Status counts for order ${orderId}:`, statusCounts);
     const totalItems = orderItems.length;
 
-    // Determine overall order status
+
     let newStatus = order.status;
 
-    // If all items have the same status, use that status for the order
+    
     const allSameStatus = Object.keys(statusCounts).length === 1;
     if (allSameStatus) {
       newStatus = Object.keys(statusCounts)[0];
       logger.info(`All items have same status: ${newStatus}`);
     }
-    // If some items are cancelled but not all
+
     else if (
       statusCounts["Cancelled"] &&
       statusCounts["Cancelled"] < totalItems
@@ -57,7 +57,7 @@ const updateOrderStatusHelper = async (orderId) => {
         `Some items cancelled: ${statusCounts["Cancelled"]}/${totalItems}`
       );
     }
-    // If some items are returned or in return process but not all
+  
     else if (
       (statusCounts["Returned"] ||
         statusCounts["Return Requested"] ||
@@ -70,26 +70,26 @@ const updateOrderStatusHelper = async (orderId) => {
       newStatus = "Partially Returned";
       logger.info(`Some items in return process`);
     }
-    // Mixed statuses (some delivered, some processing, etc.)
+ 
     else if (Object.keys(statusCounts).length > 1) {
-      // If there are delivered items and other statuses, mark as partially delivered
+     
       if (statusCounts["Delivered"]) {
         newStatus = "Partially Delivered";
         logger.info(`Some items delivered, others in different states`);
       }
-      // If there are shipped items and other statuses, mark as partially shipped
+   
       else if (statusCounts["Shipped"]) {
         newStatus = "Partially Shipped";
         logger.info(`Some items shipped, others in different states`);
       }
     }
 
-    // Update order status if changed
+    
     if (newStatus !== order.status) {
       logger.info(`Updating order status from ${order.status} to ${newStatus}`);
       order.status = newStatus;
 
-      // Make sure statusHistory is initialized
+
       if (!Array.isArray(order.statusHistory)) {
         order.statusHistory = [];
       }
@@ -206,12 +206,12 @@ const getorderController = async (req, res) => {
   }
 };
 
-// Update the updateOrderStatus function to prevent changes to final statuses
+
 const updateOrderStatus = async (req, res) => {
   try {
     const { orderId, status } = req.body;
 
-    // Make sure these match the enum values in both Order and OrderItem schemas
+    
     const validStatuses = [
       "Pending",
       "Processing",
@@ -253,7 +253,7 @@ const updateOrderStatus = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
-    // Check if the order is in a final state
+
     const finalStates = ["Cancelled", "Returned"];
     if (finalStates.includes(order.status)) {
       return res.status(400).json({
@@ -263,7 +263,6 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Prevent backward status changes for delivered orders
     const progressionStates = ["Pending", "Processing", "Confirmed", "Shipped"];
     if (order.status === "Delivered" && progressionStates.includes(status)) {
       return res.status(400).json({
@@ -273,11 +272,11 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Update the main order status
+
     if (status !== order.status) {
       order.status = status;
 
-      // Make sure statusHistory is initialized
+
       if (!Array.isArray(order.statusHistory)) {
         order.statusHistory = [];
       }
@@ -294,13 +293,11 @@ const updateOrderStatus = async (req, res) => {
 
       await order.save();
 
-      // Update all order items with the same status
-      // Skip for partial statuses as they are calculated based on item statuses
+
       if (!status.startsWith("Partially")) {
         const orderItems = await OrderItem.find({ orderId: order._id });
 
-        // Only update items that can be updated to this status
-        // For example, don't update already cancelled or returned items
+
         const nonFinalStatuses = [
           "Pending",
           "Processing",
@@ -309,16 +306,20 @@ const updateOrderStatus = async (req, res) => {
         ];
         const finalStates = ["Cancelled", "Returned"];
 
+        let updatedCount = 0;
+        let skippedCount = 0;
+
         for (const item of orderItems) {
-          // Skip items that are in final states - NEVER update them
+
           if (finalStates.includes(item.status)) {
             logger.info(
               `Skipping item ${item._id} as it's in final state: ${item.status}`
             );
-            continue; // Skip items in final states
+            skippedCount++;
+            continue; 
           }
 
-          // Skip delivered items if trying to move back to earlier status
+          
           if (
             item.status === "Delivered" &&
             progressionStates.includes(status)
@@ -326,19 +327,25 @@ const updateOrderStatus = async (req, res) => {
             logger.info(
               `Skipping delivered item ${item._id} - cannot move back to ${status}`
             );
+            skippedCount++;
             continue;
           }
 
+          
           if (
             status !== "Cancelled" &&
             !nonFinalStatuses.includes(item.status) &&
             !nonFinalStatuses.includes(status)
           ) {
+            logger.info(
+              `Skipping item ${item._id} with special status: ${item.status}`
+            );
+            skippedCount++;
             continue;
           }
 
           try {
-            // Update the item status
+         
             item.status = status;
             item.updatedAt = new Date();
             item.statusHistory.push({
@@ -348,11 +355,16 @@ const updateOrderStatus = async (req, res) => {
             });
 
             await item.save();
+            updatedCount++;
           } catch (itemError) {
             logger.error(`Error updating item ${item._id} status:`, itemError);
-            // Continue with other items even if one fails
+           
           }
         }
+
+        logger.info(
+          `Order ${orderId} status update: ${updatedCount} items updated, ${skippedCount} items skipped`
+        );
       }
     }
 
@@ -365,12 +377,12 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
-// Update the updateOrderItemStatus function to prevent changes to final statuses
+
 const updateOrderItemStatus = async (req, res) => {
   try {
     const { orderItemId, status } = req.body;
 
-    // Make sure these match the enum values in the OrderItem schema
+
     const validStatuses = [
       "Pending",
       "Processing",
@@ -391,7 +403,7 @@ const updateOrderItemStatus = async (req, res) => {
       });
     }
 
-    // Find the order item
+
     const orderItem = await OrderItem.findById(orderItemId);
     if (!orderItem) {
       return res.status(404).json({
@@ -400,7 +412,6 @@ const updateOrderItemStatus = async (req, res) => {
       });
     }
 
-    // Check if the item is in a final state (Cancelled or Returned)
     const finalStates = ["Cancelled", "Returned"];
     if (finalStates.includes(orderItem.status)) {
       return res.status(400).json({
@@ -410,7 +421,7 @@ const updateOrderItemStatus = async (req, res) => {
       });
     }
 
-    // Prevent backward status changes for delivered items
+
     const progressionStates = ["Pending", "Processing", "Confirmed", "Shipped"];
     if (
       orderItem.status === "Delivered" &&
@@ -423,7 +434,7 @@ const updateOrderItemStatus = async (req, res) => {
       });
     }
 
-    // Update the item status
+
     orderItem.status = status;
     orderItem.updatedAt = new Date();
     orderItem.statusHistory.push({
@@ -434,7 +445,6 @@ const updateOrderItemStatus = async (req, res) => {
 
     await orderItem.save();
 
-    // Update the parent order status based on all items
     await updateOrderStatusHelper(orderItem.orderId);
 
     return res.status(200).json({
@@ -450,7 +460,7 @@ const updateOrderItemStatus = async (req, res) => {
   }
 };
 
-// Add a new function to check if an item can be updated
+
 const canUpdateOrderItem = async (orderItemId) => {
   try {
     const orderItem = await OrderItem.findById(orderItemId);
@@ -458,7 +468,7 @@ const canUpdateOrderItem = async (orderItemId) => {
       return { canUpdate: false, message: "Order item not found" };
     }
 
-    // Check if the item is in a final state
+  
     const finalStates = ["Cancelled", "Returned"];
     if (finalStates.includes(orderItem.status)) {
       return {
@@ -478,7 +488,7 @@ const canUpdateOrderItem = async (orderItemId) => {
   }
 };
 
-// Add a new function to check if an order can be updated
+
 const canUpdateOrder = async (orderId) => {
   try {
     const order = await Order.findById(orderId);
@@ -486,7 +496,7 @@ const canUpdateOrder = async (orderId) => {
       return { canUpdate: false, message: "Order not found" };
     }
 
-    // Check if the order is in a final state
+
     const finalStates = ["Cancelled", "Returned"];
     if (finalStates.includes(order.status)) {
       return {
@@ -504,7 +514,7 @@ const canUpdateOrder = async (orderId) => {
   }
 };
 
-// Add a new route handler to check if an item can be updated
+
 const checkItemUpdateability = async (req, res) => {
   try {
     const { orderItemId } = req.params;
@@ -534,7 +544,7 @@ const checkItemUpdateability = async (req, res) => {
   }
 };
 
-// Add a new route handler to check if an order can be updated
+
 const checkOrderUpdateability = async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -592,7 +602,7 @@ const getOrderDetails = async (req, res) => {
       return res.status(404).render("page-404", { message: "Order not found" });
     }
 
-    // Get order items separately to ensure we have all the data
+  
     const orderItems = await OrderItem.find({ orderId: order._id })
       .populate({
         path: "productId",
@@ -600,7 +610,7 @@ const getOrderDetails = async (req, res) => {
       })
       .lean();
 
-    // Format order items with all necessary data
+
     const formattedItems = orderItems.map((item) => {
       return {
         _id: item._id.toString(),
@@ -626,7 +636,7 @@ const getOrderDetails = async (req, res) => {
         cancelReason: item.cancelReason || "",
         returnReason: item.returnReason || "",
         productId: item.productId ? item.productId._id : null,
-        // Add flags to indicate if item can be modified
+       
         canModify: !["Cancelled", "Returned"].includes(item.status),
         isDelivered: item.status === "Delivered",
       };
@@ -656,7 +666,7 @@ const getOrderDetails = async (req, res) => {
       statusHistory: order.statusHistory || [],
       deliveryDate: order.deliveryDate,
       orderItems: formattedItems,
-      // Add flag to indicate if order can be modified
+
       canModify: !["Cancelled", "Returned"].includes(order.status),
     };
 
@@ -667,12 +677,12 @@ const getOrderDetails = async (req, res) => {
   }
 };
 
-// Approve return for individual order item
+
 const approveReturnItem = async (req, res) => {
   try {
     const { orderItemId } = req.params;
 
-    // Find the order item
+
     const orderItem = await OrderItem.findById(orderItemId).populate("orderId");
 
     if (!orderItem) {
@@ -681,7 +691,7 @@ const approveReturnItem = async (req, res) => {
         .json({ success: false, message: "Order item not found" });
     }
 
-    // Check if the item is in return requested status
+   
     if (orderItem.status !== "Return Requested") {
       return res.status(400).json({
         success: false,
@@ -689,7 +699,7 @@ const approveReturnItem = async (req, res) => {
       });
     }
 
-    // Update order item status
+
     orderItem.status = "Return Approved";
     orderItem.returnApprovedDate = new Date();
     orderItem.updatedAt = new Date();
@@ -700,7 +710,7 @@ const approveReturnItem = async (req, res) => {
     });
     await orderItem.save();
 
-    // Update order status based on item statuses
+
     await updateOrderStatusHelper(orderItem.orderId._id);
 
     return res.status(200).json({
@@ -715,7 +725,7 @@ const approveReturnItem = async (req, res) => {
   }
 };
 
-// Complete return for individual order item with enhanced refund handling
+
 const completeReturnItem = async (req, res) => {
   try {
     logger.info(
@@ -723,7 +733,7 @@ const completeReturnItem = async (req, res) => {
     );
     const { orderItemId } = req.params;
 
-    // Find the order item with detailed population
+  
     const orderItem = await OrderItem.findById(orderItemId)
       .populate("orderId")
       .populate({
@@ -738,7 +748,7 @@ const completeReturnItem = async (req, res) => {
         .json({ success: false, message: "Order item not found" });
     }
 
-    // Check if the item is in return approved status
+   
     if (orderItem.status !== "Return Approved") {
       logger.error(
         `Item not in Return Approved status. Current status: ${orderItem.status}`
@@ -749,7 +759,7 @@ const completeReturnItem = async (req, res) => {
       });
     }
 
-    // Check if the item is already refunded
+   
     if (orderItem.refunded) {
       logger.error(`Item already refunded: ${orderItemId}`);
       return res.status(400).json({
@@ -759,7 +769,7 @@ const completeReturnItem = async (req, res) => {
     }
 
     const order = orderItem.orderId;
-    const userId = order.userId?._id; // Ensure we have the user ID
+    const userId = order.userId?._id;
 
     if (!userId) {
       logger.error(`User ID not found in order`);
@@ -769,7 +779,7 @@ const completeReturnItem = async (req, res) => {
       });
     }
 
-    // Update order item status
+   
     orderItem.status = "Returned";
     orderItem.returnCompletedDate = new Date();
     orderItem.updatedAt = new Date();
@@ -781,7 +791,7 @@ const completeReturnItem = async (req, res) => {
     await orderItem.save();
     logger.info(`Order item status updated to Returned`);
 
-    // Restore product stock
+  
     const product = await Product.findById(orderItem.productId);
     if (product) {
       const variantIndex = product.variants.findIndex(
@@ -801,8 +811,7 @@ const completeReturnItem = async (req, res) => {
       logger.error(`Product not found: ${orderItem.productId}`);
     }
 
-    // Process refund to wallet
-    // Ensure we have a valid refund amount
+
     let refundAmount = 0;
     if (
       typeof orderItem.total_amount === "number" &&
@@ -828,7 +837,7 @@ const completeReturnItem = async (req, res) => {
     logger.info(`Calculated refund amount: ${refundAmount}`);
 
     try {
-      // Process the refund using the enhanced function
+   
       const refundResult = await processRefundToWallet(
         userId,
         refundAmount,
@@ -846,7 +855,7 @@ const completeReturnItem = async (req, res) => {
 
       logger.info(`Refund processed successfully:`, refundResult);
 
-      // Mark item as refunded
+   
       orderItem.refunded = true;
       orderItem.refundAmount = refundAmount;
       orderItem.refundDate = new Date();
@@ -854,11 +863,11 @@ const completeReturnItem = async (req, res) => {
       await orderItem.save();
       logger.info(`Item marked as refunded`);
 
-      // Update order status based on item statuses
+    
       await updateOrderStatusHelper(order._id);
       logger.info(`Parent order status updated`);
 
-      // Get user details for the response
+
       const user = await User.findById(userId);
       const userName = user ? user.fullname : "Customer";
 
@@ -885,7 +894,7 @@ const completeReturnItem = async (req, res) => {
   }
 };
 
-// Reject return for individual order item
+
 const rejectReturnItem = async (req, res) => {
   try {
     const { orderItemId } = req.params;
@@ -897,7 +906,7 @@ const rejectReturnItem = async (req, res) => {
         .json({ success: false, message: "Rejection reason is required" });
     }
 
-    // Find the order item
+
     const orderItem = await OrderItem.findById(orderItemId).populate("orderId");
 
     if (!orderItem) {
@@ -906,7 +915,7 @@ const rejectReturnItem = async (req, res) => {
         .json({ success: false, message: "Order item not found" });
     }
 
-    // Check if the item is in return requested status
+
     if (orderItem.status !== "Return Requested") {
       return res.status(400).json({
         success: false,
@@ -914,7 +923,7 @@ const rejectReturnItem = async (req, res) => {
       });
     }
 
-    // Update order item status
+   
     orderItem.status = "Return Rejected";
     orderItem.rejectReason = rejectReason;
     orderItem.updatedAt = new Date();
@@ -925,7 +934,7 @@ const rejectReturnItem = async (req, res) => {
     });
     await orderItem.save();
 
-    // Update order status based on item statuses
+   
     await updateOrderStatusHelper(orderItem.orderId._id);
 
     return res.status(200).json({
@@ -1004,7 +1013,7 @@ const manageReturn = async (req, res) => {
         });
       }
 
-      // Validate order_items
+    
       if (!order.order_items || order.order_items.length === 0) {
         logger.error(
           `manageReturn: No valid order items found for order ID: ${orderId}`
@@ -1052,7 +1061,7 @@ const manageReturn = async (req, res) => {
         }
       }
 
-      // Update order status to Return Approved
+   
       const updatedOrder = await Order.findByIdAndUpdate(
         orderId,
         { status: "Return Approved" },
@@ -1077,7 +1086,7 @@ const manageReturn = async (req, res) => {
             `manageReturn: Refund processing failed:`,
             refundResult.message
           );
-          // Rollback order status
+  
           await Order.findByIdAndUpdate(orderId, {
             status: "Return Requested",
           });
@@ -1105,7 +1114,7 @@ const manageReturn = async (req, res) => {
           error.message,
           error.stack
         );
-        // Rollback order status
+
         await Order.findByIdAndUpdate(orderId, { status: "Return Requested" });
         return res.status(500).json({
           success: false,
@@ -1123,7 +1132,7 @@ const manageReturn = async (req, res) => {
         });
       }
 
-      // Reject return
+
       const updatedOrder = await Order.findByIdAndUpdate(
         orderId,
         { status: "Return Rejected", returnRejectionReason: rejectionReason },
@@ -1159,7 +1168,7 @@ const manageReturn = async (req, res) => {
   }
 };
 
-// Enhanced processRefund function with better stock management and wallet integration
+
 const processRefund = async (order) => {
   try {
     logger.info(`processRefund called for order: ${order._id}`);
@@ -1173,7 +1182,7 @@ const processRefund = async (order) => {
     let processedItems = 0;
     let skippedItems = 0;
 
-    // First pass: Log detailed information about all items
+ 
     logger.info(`Order items details:`);
     for (const item of order.order_items) {
       logger.info(`Item ${item._id} details:`, {
@@ -1186,20 +1195,20 @@ const processRefund = async (order) => {
     }
 
     for (const item of order.order_items) {
-      // Skip already refunded items
+
       if (item.refunded) {
         logger.info(`Skipping already refunded item: ${item._id}`);
         skippedItems++;
         continue;
       }
 
-      // Enhanced validation for product ID
+
       if (!item.productId) {
         logger.warn(
           `Item ${item._id} has undefined productId, attempting to find product by name`
         );
 
-        // Try to find product by name if available
+       
         if (item.product_name) {
           const product = await Product.findOne({ name: item.product_name });
           if (product) {
@@ -1210,7 +1219,6 @@ const processRefund = async (order) => {
           }
         }
 
-        // If still no product ID, skip this item
         if (!item.productId) {
           logger.warn(
             `Skipping item ${item._id} with undefined productId and no product name`
@@ -1228,7 +1236,7 @@ const processRefund = async (order) => {
         continue;
       }
 
-      // Enhanced validation for quantity
+ 
       const quantity = Number(item.quantity);
       if (isNaN(quantity) || quantity <= 0) {
         logger.warn(
@@ -1238,7 +1246,7 @@ const processRefund = async (order) => {
         continue;
       }
 
-      // Enhanced validation for size
+
       if (!item.size) {
         logger.warn(
           `Item ${item._id} missing size, using 'default' as fallback`
@@ -1255,7 +1263,7 @@ const processRefund = async (order) => {
         continue;
       }
 
-      // Find variant, with fallback to first variant if size doesn't match
+     
       let variantIndex = product.variants.findIndex(
         (v) => v.size === item.size
       );
@@ -1277,7 +1285,7 @@ const processRefund = async (order) => {
         }
       }
 
-      // Restore product stock
+     
       logger.info(
         `Restoring stock for product: ${product.name}, size: ${item.size}, quantity: ${quantity}`
       );
@@ -1285,10 +1293,10 @@ const processRefund = async (order) => {
       await product.save();
       logger.info(`Stock restored successfully`);
 
-      // Calculate refund amount for this item with multiple fallbacks
+
       let itemRefundAmount = 0;
 
-      // Try total_amount first
+
       if (
         typeof item.total_amount === "number" &&
         !isNaN(item.total_amount) &&
@@ -1297,7 +1305,7 @@ const processRefund = async (order) => {
         itemRefundAmount = item.total_amount;
         logger.info(`Using item.total_amount for refund: ${itemRefundAmount}`);
       }
-      // Try price * quantity next
+ 
       else if (
         typeof item.price === "number" &&
         !isNaN(item.price) &&
@@ -1309,7 +1317,7 @@ const processRefund = async (order) => {
           `Calculated refund from price * quantity: ${item.price} * ${quantity} = ${itemRefundAmount}`
         );
       }
-      // Try product price as last resort
+   
       else if (product.price && !isNaN(product.price) && product.price > 0) {
         itemRefundAmount = product.price * quantity;
         logger.info(
@@ -1331,7 +1339,7 @@ const processRefund = async (order) => {
       }
     }
 
-    // If no valid items were processed but we have an order total, use that
+   
     if (processedItems === 0) {
       if (
         typeof order.total === "number" &&
@@ -1349,7 +1357,6 @@ const processRefund = async (order) => {
       }
     }
 
-    // Final validation of refund amount
     if (isNaN(totalRefundAmount) || totalRefundAmount <= 0) {
       throw new Error(
         "Invalid refund amount: Amount must be greater than zero"
@@ -1360,7 +1367,7 @@ const processRefund = async (order) => {
       `Final refund amount: ${totalRefundAmount} (Processed: ${processedItems}, Skipped: ${skippedItems})`
     );
 
-    // Process refund to wallet using the enhanced function
+
     const userId = order.userId;
     const refundResult = await processRefundToWallet(
       userId,
@@ -1375,9 +1382,9 @@ const processRefund = async (order) => {
 
     logger.info(`Refund processed successfully:`, refundResult);
 
-    // Update order items to mark them as refunded
+
     for (const item of order.order_items) {
-      // Skip already refunded items
+
       if (item.refunded) {
         continue;
       }
@@ -1390,7 +1397,7 @@ const processRefund = async (order) => {
         continue;
       }
 
-      // Calculate refund amount for this item, ensuring it's a valid number
+
       let itemRefundAmount = 0;
       if (
         typeof item.total_amount === "number" &&
@@ -1408,7 +1415,7 @@ const processRefund = async (order) => {
       ) {
         itemRefundAmount = item.price * item.quantity;
       } else {
-        // If we can't calculate a valid amount, use a proportional amount of the total refund
+       
         const totalItems = order.order_items.length;
         if (totalItems > 0) {
           itemRefundAmount = totalRefundAmount / totalItems;
@@ -1418,13 +1425,13 @@ const processRefund = async (order) => {
         }
       }
 
-      // Only proceed if we have a valid refund amount
+      
       if (itemRefundAmount > 0) {
         orderItem.refunded = true;
         orderItem.refundAmount = itemRefundAmount;
         orderItem.refundDate = new Date();
         orderItem.refundTransactionRef = refundResult.transactionRef;
-        orderItem.status = "Returned"; // Update status to Returned
+        orderItem.status = "Returned";
         orderItem.statusHistory.push({
           status: "Returned",
           date: new Date(),
@@ -1469,13 +1476,13 @@ const admindownloadInvoice = async (req, res) => {
   try {
     const orderId = req.params.id;
 
-    // Validate orderId
+  
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
       logger.error("downloadInvoice: Invalid order ID:", orderId);
       return res.status(400).json({ error: "Invalid order ID" });
     }
 
-    // Find order by ID (no userId restriction for admin)
+
     const order = await Order.findById(orderId)
       .populate({
         path: "order_items",
@@ -1488,7 +1495,7 @@ const admindownloadInvoice = async (req, res) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    // Create PDF document
+
     const doc = new PDFDocument({
       margin: 50,
       size: "A4",
@@ -1500,7 +1507,7 @@ const admindownloadInvoice = async (req, res) => {
       },
     });
 
-    // Set response headers for PDF download
+  
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
@@ -1508,7 +1515,7 @@ const admindownloadInvoice = async (req, res) => {
     );
     doc.pipe(res);
 
-    // Company Header
+    
     doc.registerFont("Helvetica-Bold", "Helvetica-Bold");
     doc.registerFont("Helvetica", "Helvetica");
 
@@ -1534,7 +1541,7 @@ const admindownloadInvoice = async (req, res) => {
       yPos += 15;
     });
 
-    // Invoice Details
+
     doc
       .font("Helvetica-Bold")
       .fontSize(14)
@@ -1700,7 +1707,7 @@ const admindownloadInvoice = async (req, res) => {
   }
 };
 
-// Update the module exports to include the new functions
+
 module.exports = {
   getorderController,
   updateOrderStatus,

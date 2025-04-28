@@ -5,77 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enter Referral Code</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/userStyle/referalSpace.css">
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-        }
-        .form-container {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            text-align: center;
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-        .description {
-            color: #666;
-            margin-bottom: 30px;
-            line-height: 1.6;
-        }
-        .form-control {
-            height: 50px;
-            font-size: 18px;
-            text-align: center;
-            letter-spacing: 2px;
-        }
-        .btn-submit {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            height: 50px;
-            font-size: 18px;
-            font-weight: 500;
-            width: 100%;
-            margin-top: 10px;
-            border-radius: 5px;
-        }
-        .btn-submit:hover {
-            background-color: #0069d9;
-        }
+        /* Add any missing styles here if needed */
         .error-message {
             color: #dc3545;
             margin-top: 10px;
             display: none;
-        }
-        .back-link {
-            display: block;
-            margin-top: 20px;
-            color: #6c757d;
-            text-decoration: none;
-        }
-        .back-link:hover {
-            color: #343a40;
-        }
-        .reward-info {
-            background-color: #e9f7fe;
-            border-left: 4px solid #007bff;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            text-align: left;
-        }
-        .reward-amount {
-            font-weight: bold;
-            color: #007bff;
         }
     </style>
 </head>
@@ -98,14 +34,14 @@
             
             <form id="referralForm">
                 <div class="mb-4">
-                    <input type="text" class="form-control" id="referralCode" placeholder="Enter code" value="<%= referralCode %>" <%= referralCode ? 'readonly' : '' %>>
+                    <input type="text" class="form-control" id="referralCode" placeholder="Enter code" value="<%= typeof referralCode !== 'undefined' ? referralCode : '' %>" <%= typeof referralCode !== 'undefined' && referralCode ? 'readonly' : '' %>>
                 </div>
                 
                 <button type="submit" class="btn btn-submit">Continue to Sign Up</button>
                 <div id="errorMessage" class="error-message"></div>
             </form>
             
-            <a href="/signup" class="back-link">← Back to Sign Up</a>
+            <a href="/signup" class="back-link" id="backToSignup">← Back to Sign Up</a>
         </div>
     </div>
     
@@ -114,7 +50,9 @@
             const referralForm = document.getElementById('referralForm');
             const referralCodeInput = document.getElementById('referralCode');
             const errorMessage = document.getElementById('errorMessage');
+            const backToSignupLink = document.getElementById('backToSignup');
             
+            // Handle form submission
             referralForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
                 
@@ -133,6 +71,7 @@
                     
                     const result = await response.json();
                     if (result.success) {
+                        // Redirect back to signup with the referral code
                         window.location.href = `/signup?referral=${encodeURIComponent(referralCode)}`;
                     } else {
                         showError(result.message || 'Invalid referral code');
@@ -141,6 +80,12 @@
                     console.error('Error validating referral code:', error);
                     showError('An error occurred while validating the referral code');
                 }
+            });
+            
+            // Handle back to signup link - preserve form data
+            backToSignupLink.addEventListener('click', function(event) {
+                // No need to prevent default as we want to navigate back
+                // The stored form data in sessionStorage will be used on the signup page
             });
             
             function showError(message) {

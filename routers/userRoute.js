@@ -38,12 +38,10 @@ router.get("/logout", checkBlockedStatus, userControllers.logout);
 router.get("/referral", UserAuth, referralController.loadReferralPage);
 router.get("/referralSpace", referralController.loadReferralSpace);
 router.post("/validate-referral-code", referralController.validateReferralCode);
-router.post(
-  "/validate-referral",
-  UserAuth,
-  referralController.loadReferralPage
-);
-
+router.post("/process-signup-referral", referralController.processSignupReferral);
+router.post("/apply-referral", UserAuth, referralController.applyReferralCode);
+router.get("/referral-stats", UserAuth, referralController.getReferralStats);
+router.get("/referral-history", UserAuth, referralController.getReferralHistory);
 // Password reset routes
 router.get("/forgot-password", profileController.forgotPassword);
 router.post("/forgot-email-id", profileController.forgotemailValidations);
@@ -177,9 +175,6 @@ router.post("/reorder/:id", UserAuth, orderController.reOrder);
 router.get("/order-details/:id", UserAuth, orderController.getOrderDetails);
 router.get("/invoice/:id", UserAuth, orderController.downloadInvoice);
 router.get("/orders/track/:id", UserAuth, orderController.trackOrder);
-
-// Individual item cancellation and return routes
-// Updated routes to match the client-side JavaScript calls
 router.post("/cancel-order/:id", UserAuth, orderController.cancelOrder);
 router.post(
   "/cancel-order-item/:itemId",

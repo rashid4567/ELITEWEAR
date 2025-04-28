@@ -92,7 +92,8 @@
                                         <h5 class="fw-bold mb-3">Order Summary</h5>
                                         <div class="summary-row">
                                             <span>Items Total</span>
-                                            <span>₹<%= (order.total - (order.total > 8000 ? 0 : 200) + order.discount).toFixed(2) %></span>
+                                            <span>₹<%= ((order.total || 0) - ((order.total || 0) > 8000 ? 0 : 200) + (order.discount || 0)).toFixed(2) %>
+                                            </span>
                                         </div>
                                         <div class="summary-row">
                                             <span>Shipping Charge</span>
@@ -373,7 +374,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('[DEBUG] DOM loaded, setting up event handlers');
             
-            // Initialize Bootstrap modals
+        
             if (typeof bootstrap !== 'undefined') {
                 const modals = document.querySelectorAll('.modal');
                 modals.forEach(modalEl => {
@@ -384,7 +385,7 @@
                 console.error('[ERROR] Bootstrap is not loaded');
             }
             
-            // Download Invoice
+      
             const downloadInvoiceBtn = document.getElementById('downloadInvoice');
 
 if (downloadInvoiceBtn) {
@@ -400,17 +401,17 @@ if (downloadInvoiceBtn) {
                 Swal.showLoading();
 
                 try {
-                    // Start downloading by creating hidden iframe
+           
                     const iframe = document.createElement('iframe');
                     iframe.style.display = 'none';
                     iframe.src = `/invoice/<%= order._id %>/${orderId}`;
 
                     document.body.appendChild(iframe);
 
-                    // Timeout to simulate waiting for download
+             
                     await new Promise(resolve => setTimeout(resolve, 2000));
 
-                    // After 2 seconds, assume download started
+               
                     document.body.removeChild(iframe);
 
                     Swal.fire({
@@ -435,7 +436,7 @@ if (downloadInvoiceBtn) {
     });
 }
 
-            // Cancel Order
+    
             const confirmCancelOrderBtn = document.getElementById('confirmCancelOrder');
             if (confirmCancelOrderBtn) {
                 console.log('[DEBUG] Cancel order button found');
@@ -463,7 +464,7 @@ if (downloadInvoiceBtn) {
                         confirmButtonText: 'Yes, cancel it!'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // Show loading
+                    
                             Swal.fire({
                                 title: 'Processing',
                                 text: 'Cancelling your order...',

@@ -6,26 +6,19 @@ const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 const logger = require("../../utils/logger");
 
-/**
- * Get wallet details for the logged-in user
- */
 const getwallet = async (req, res) => {
   try {
     const userId = req.session.user || req.user._id;
 
-    // Find user without validation to avoid errors
     const user = await User.findById(userId).select("+walletBalance").lean();
     if (!user) {
       return res.status(404).render("error", { message: "User not found" });
     }
 
-    // Initialize wallet balance if needed
     const walletBalance = user.walletBalance || 0;
 
-    // Find or create wallet
     let wallet = await Wallet.findOne({ userId }).lean();
     if (!wallet) {
-      // Create new wallet document without validation
       const newWallet = new Wallet({
         userId,
         amount: walletBalance,
@@ -35,7 +28,6 @@ const getwallet = async (req, res) => {
       wallet = wallet.toObject();
     }
 
-    // Format transactions for display
     wallet.transactions = wallet.transactions.map((transaction) => ({
       ...transaction,
       formattedDate: transaction.date
@@ -56,13 +48,10 @@ const getwallet = async (req, res) => {
       refundTypeDisplay: getRefundTypeDisplay(transaction.refundType),
     }));
 
-    // Sort transactions by date (newest first)
     wallet.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // ✅ Limit to only latest 8 transactions
     wallet.transactions = wallet.transactions.slice(0, 8);
 
-    // Get refund statistics
     const refundStats = {
       totalRefunds: wallet.transactions.filter((t) => t.isRefund).length,
       totalRefundAmount: wallet.transactions
@@ -83,9 +72,6 @@ const getwallet = async (req, res) => {
   }
 };
 
-/**
- * Helper function to get display text for refund types
- */
 const getRefundTypeDisplay = (refundType) => {
   if (!refundType) return null;
 
@@ -99,9 +85,6 @@ const getRefundTypeDisplay = (refundType) => {
   return displayMap[refundType] || "Refund";
 };
 
-/**
- * Credit wallet with specified amount
- */
 const creditWallet = async (req, res) => {
   try {
     const { amount, description } = req.body;
@@ -124,7 +107,6 @@ const creditWallet = async (req, res) => {
         .json({ success: false, message: "Description is required" });
     }
 
-    // Find user without validation
     const user = await User.findById(userId);
     if (!user) {
       return res
@@ -132,19 +114,15 @@ const creditWallet = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    // Initialize wallet balance if needed
     if (user.walletBalance === undefined) {
       user.walletBalance = 0;
     }
 
-    // Update wallet balance
     const previousBalance = user.walletBalance;
     user.walletBalance += parsedAmount;
 
-    // Save with validation disabled
     await User.findByIdAndUpdate(userId, { walletBalance: user.walletBalance });
 
-    // Update or create wallet document
     const wallet = await Wallet.findOneAndUpdate(
       { userId },
       {
@@ -178,9 +156,6 @@ const creditWallet = async (req, res) => {
   }
 };
 
-/**
- * Debit wallet with specified amount
- */
 const debitWallet = async (req, res) => {
   try {
     const { amount, description } = req.body;
@@ -203,7 +178,6 @@ const debitWallet = async (req, res) => {
         .json({ success: false, message: "Description is required" });
     }
 
-    // Find user without validation
     const user = await User.findById(userId);
     if (!user) {
       return res
@@ -211,7 +185,6 @@ const debitWallet = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    // Initialize wallet balance if needed
     if (user.walletBalance === undefined) {
       user.walletBalance = 0;
     }
@@ -222,14 +195,11 @@ const debitWallet = async (req, res) => {
         .json({ success: false, message: "Insufficient wallet balance" });
     }
 
-    // Update wallet balance
     const previousBalance = user.walletBalance;
     user.walletBalance -= parsedAmount;
 
-    // Save with validation disabled
     await User.findByIdAndUpdate(userId, { walletBalance: user.walletBalance });
 
-    // Update or create wallet document
     const wallet = await Wallet.findOneAndUpdate(
       { userId },
       {
@@ -263,15 +233,6 @@ const debitWallet = async (req, res) => {
   }
 };
 
-/**
- * Process a refund to a user's wallet for a specific order item
- * @param {string} userId - The user ID
- * @param {string} orderItemId - The order item ID
- * @param {number} amount - The refund amount (optional, defaults to item total)
- * @param {string} reason - The reason for the refund
- * @param {string} adminId - The admin user ID processing the refund
- * @returns {Promise<Object>} - Result object with success status and additional data
- */
 const processItemRefundToWallet = async (
   userId,
   orderItemId,
@@ -287,7 +248,6 @@ const processItemRefundToWallet = async (
       `Processing item refund for user ${userId}, item: ${orderItemId}`
     );
 
-    // Input validation
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       logger.error(`Invalid user ID: ${userId}`);
       throw new Error("Invalid user ID");
@@ -298,14 +258,12 @@ const processItemRefundToWallet = async (
       throw new Error("Invalid order item ID");
     }
 
-    // Find user without validation
     const user = await User.findById(userId).session(session);
     if (!user) {
       logger.error(`User not found: ${userId}`);
       throw new Error("User not found");
     }
 
-    // Find order item
     const orderItem = await OrderItem.findById(orderItemId)
       .populate("orderId")
       .session(session);
@@ -315,13 +273,11 @@ const processItemRefundToWallet = async (
       throw new Error("Order item not found");
     }
 
-    // Check if item is already refunded
     if (orderItem.refunded) {
       logger.error(`Order item already refunded: ${orderItemId}`);
       throw new Error("This item has already been refunded");
     }
 
-    // Determine refund amount
     let refundAmount = 0;
 
     if (amount !== null) {
@@ -337,7 +293,6 @@ const processItemRefundToWallet = async (
     ) {
       refundAmount = orderItem.total_amount;
     } else if (orderItem.price && orderItem.quantity) {
-      // Fallback calculation if total_amount is not available
       refundAmount = orderItem.price * orderItem.quantity;
     }
 
@@ -348,7 +303,6 @@ const processItemRefundToWallet = async (
       throw new Error("Could not determine a valid refund amount");
     }
 
-    // Check if refund amount exceeds item total (only if amount is specified)
     if (
       amount !== null &&
       orderItem.total_amount &&
@@ -360,21 +314,17 @@ const processItemRefundToWallet = async (
       throw new Error("Refund amount cannot exceed item total");
     }
 
-    // Get order reference
     const orderNumber =
       orderItem.orderId.orderNumber || orderItem.orderId._id.toString();
 
-    // Initialize wallet balance if needed
     if (user.walletBalance === undefined) {
       logger.info(`Initializing wallet balance for user: ${userId}`);
       user.walletBalance = 0;
     }
 
-    // Update user wallet balance
     const previousBalance = user.walletBalance;
     user.walletBalance += refundAmount;
 
-    // Save with validation disabled
     await User.findByIdAndUpdate(
       userId,
       { walletBalance: user.walletBalance },
@@ -385,7 +335,6 @@ const processItemRefundToWallet = async (
       `User wallet balance updated from ${previousBalance} to ${user.walletBalance}`
     );
 
-    // Find or create wallet
     let wallet = await Wallet.findOne({ userId }).session(session);
     if (!wallet) {
       logger.info(`Creating new wallet for user: ${userId}`);
@@ -398,13 +347,11 @@ const processItemRefundToWallet = async (
       wallet.amount = user.walletBalance;
     }
 
-    // Generate transaction reference and description
     const transactionRef = `REF-ITEM-${uuidv4()}`;
     const refundDescription =
       reason ||
       `Refund for ${orderItem.product_name} from order #${orderNumber}`;
 
-    // Add transaction to wallet
     wallet.transactions.push({
       type: "credit",
       amount: refundAmount,
@@ -447,11 +394,9 @@ const processItemRefundToWallet = async (
     await orderItem.save({ session });
     logger.info(`Order item marked as refunded: ${orderItemId}`);
 
-    // Commit transaction
     await session.commitTransaction();
     session.endSession();
 
-    // Return detailed result
     return {
       success: true,
       message: "Item refund processed successfully",
@@ -467,7 +412,6 @@ const processItemRefundToWallet = async (
       timestamp: new Date(),
     };
   } catch (error) {
-    // Abort transaction on error
     await session.abortTransaction();
     session.endSession();
 
@@ -481,21 +425,12 @@ const processItemRefundToWallet = async (
   }
 };
 
-/**
- * Process a refund to a user's wallet
- * @param {string} userId - The user ID
- * @param {number} amount - The refund amount
- * @param {string} orderNumber - The order number or reference
- * @param {string} reason - The reason for the refund
- * @returns {Promise<Object>} - Result object with success status and additional data
- */
 const processRefundToWallet = async (userId, amount, orderNumber, reason) => {
   try {
     logger.info(
       `Processing refund for user ${userId}, amount: ${amount}, order: ${orderNumber}`
     );
 
-    // Input validation
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       logger.error(`Invalid user ID: ${userId}`);
       throw new Error("Invalid user ID");
@@ -512,54 +447,44 @@ const processRefundToWallet = async (userId, amount, orderNumber, reason) => {
       throw new Error("Order number is required");
     }
 
-    // Find user without validation
     const user = await User.findById(userId);
     if (!user) {
       logger.error(`User not found: ${userId}`);
       throw new Error("User not found");
     }
 
-    // Initialize wallet balance if needed
     if (user.walletBalance === undefined) {
       logger.info(`Initializing wallet balance for user: ${userId}`);
       user.walletBalance = 0;
     }
 
-    // Store previous balance for logging
     const previousBalance = user.walletBalance || 0;
 
-    // ADD to the wallet balance instead of replacing it
     user.walletBalance = previousBalance + parsedAmount;
 
-    // Log the balance change
     logger.info(
       `User wallet balance updated from ${previousBalance} to ${user.walletBalance} (added ${parsedAmount})`
     );
 
-    // Save with validation disabled
     await User.findByIdAndUpdate(userId, { walletBalance: user.walletBalance });
 
-    // Find or create wallet
     let wallet = await Wallet.findOne({ userId });
     if (!wallet) {
       logger.info(`Creating new wallet for user: ${userId}`);
       wallet = new Wallet({
         userId,
-        amount: user.walletBalance, // Use the updated balance
+        amount: user.walletBalance,
         transactions: [],
       });
     } else {
-      // Update wallet amount to match user's balance
       wallet.amount = user.walletBalance;
     }
 
-    // Generate transaction reference and description
     const transactionRef = `REF-${uuidv4()}`;
     const refundDescription = reason
       ? `${reason} #${orderNumber}`
       : `Refund for order #${orderNumber}`;
 
-    // Add transaction to wallet
     wallet.transactions.push({
       type: "credit",
       amount: parsedAmount,
@@ -573,7 +498,6 @@ const processRefundToWallet = async (userId, amount, orderNumber, reason) => {
     await wallet.save();
     logger.info(`Refund transaction added to wallet: ${transactionRef}`);
 
-    // Return detailed result
     return {
       success: true,
       message: "Refund processed successfully",
@@ -596,13 +520,6 @@ const processRefundToWallet = async (userId, amount, orderNumber, reason) => {
   }
 };
 
-/**
- * Process a cancellation refund to a user's wallet
- * @param {string} userId - The user ID
- * @param {string} orderItemId - The order item ID
- * @param {string} reason - The reason for the cancellation
- * @returns {Promise<Object>} - Result object with success status and additional data
- */
 const processCancellationRefund = async (userId, orderItemId, reason) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -612,7 +529,6 @@ const processCancellationRefund = async (userId, orderItemId, reason) => {
       `Processing cancellation refund for user ${userId}, item: ${orderItemId}`
     );
 
-    // Input validation
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       logger.error(`Invalid user ID: ${userId}`);
       throw new Error("Invalid user ID");
@@ -623,14 +539,12 @@ const processCancellationRefund = async (userId, orderItemId, reason) => {
       throw new Error("Invalid order item ID");
     }
 
-    // Find user without validation
     const user = await User.findById(userId).session(session);
     if (!user) {
       logger.error(`User not found: ${userId}`);
       throw new Error("User not found");
     }
 
-    // Find order item
     const orderItem = await OrderItem.findById(orderItemId)
       .populate("orderId")
       .session(session);
@@ -640,13 +554,11 @@ const processCancellationRefund = async (userId, orderItemId, reason) => {
       throw new Error("Order item not found");
     }
 
-    // Check if item is already refunded
     if (orderItem.refunded) {
       logger.error(`Order item already refunded: ${orderItemId}`);
       throw new Error("This item has already been refunded");
     }
 
-    // Determine refund amount
     let refundAmount = 0;
 
     if (
@@ -656,7 +568,6 @@ const processCancellationRefund = async (userId, orderItemId, reason) => {
     ) {
       refundAmount = orderItem.total_amount;
     } else if (orderItem.price && orderItem.quantity) {
-      // Fallback calculation if total_amount is not available
       refundAmount = orderItem.price * orderItem.quantity;
     }
 
@@ -667,21 +578,17 @@ const processCancellationRefund = async (userId, orderItemId, reason) => {
       throw new Error("Could not determine a valid refund amount");
     }
 
-    // Get order reference
     const orderNumber =
       orderItem.orderId.orderNumber || orderItem.orderId._id.toString();
 
-    // Initialize wallet balance if needed
     if (user.walletBalance === undefined) {
       logger.info(`Initializing wallet balance for user: ${userId}`);
       user.walletBalance = 0;
     }
 
-    // Update user wallet balance
     const previousBalance = user.walletBalance;
     user.walletBalance += refundAmount;
 
-    // Save with validation disabled
     await User.findByIdAndUpdate(
       userId,
       { walletBalance: user.walletBalance },
@@ -692,7 +599,6 @@ const processCancellationRefund = async (userId, orderItemId, reason) => {
       `User wallet balance updated from ${previousBalance} to ${user.walletBalance}`
     );
 
-    // Find or create wallet
     let wallet = await Wallet.findOne({ userId }).session(session);
     if (!wallet) {
       logger.info(`Creating new wallet for user: ${userId}`);
@@ -705,11 +611,9 @@ const processCancellationRefund = async (userId, orderItemId, reason) => {
       wallet.amount = user.walletBalance;
     }
 
-    // Generate transaction reference and description
     const transactionRef = `REF-CANCEL-${uuidv4()}`;
     const refundDescription = `Refund for cancelled item: ${orderItem.product_name} from order #${orderNumber}`;
 
-    // Add transaction to wallet
     wallet.transactions.push({
       type: "credit",
       amount: refundAmount,
@@ -731,7 +635,6 @@ const processCancellationRefund = async (userId, orderItemId, reason) => {
       `Cancellation refund transaction added to wallet: ${transactionRef}`
     );
 
-    // Update order item
     orderItem.refunded = true;
     orderItem.refundAmount = refundAmount;
     orderItem.refundDate = new Date();
@@ -753,11 +656,9 @@ const processCancellationRefund = async (userId, orderItemId, reason) => {
     await orderItem.save({ session });
     logger.info(`Order item marked as cancelled and refunded: ${orderItemId}`);
 
-    // Commit transaction
     await session.commitTransaction();
     session.endSession();
 
-    // Return detailed result
     return {
       success: true,
       message: "Cancellation refund processed successfully",
@@ -773,7 +674,6 @@ const processCancellationRefund = async (userId, orderItemId, reason) => {
       timestamp: new Date(),
     };
   } catch (error) {
-    // Abort transaction on error
     await session.abortTransaction();
     session.endSession();
 
@@ -787,11 +687,6 @@ const processCancellationRefund = async (userId, orderItemId, reason) => {
   }
 };
 
-/**
- * Get wallet balance for a user
- * @param {string} userId - The user ID
- * @returns {Promise<number>} - The wallet balance
- */
 const getWalletBalance = async (userId) => {
   try {
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
@@ -810,11 +705,6 @@ const getWalletBalance = async (userId) => {
   }
 };
 
-/**
- * Get refund transactions for a user
- * @param {string} userId - The user ID
- * @returns {Promise<Array>} - Array of refund transactions
- */
 const getRefundTransactions = async (userId) => {
   try {
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
@@ -826,7 +716,6 @@ const getRefundTransactions = async (userId) => {
       return [];
     }
 
-    // Filter only refund transactions
     const refundTransactions = wallet.transactions.filter(
       (transaction) =>
         transaction.refundType !== null ||
@@ -834,7 +723,6 @@ const getRefundTransactions = async (userId) => {
           transaction.transactionRef.startsWith("REF-"))
     );
 
-    // Sort by date (newest first)
     refundTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return refundTransactions;
@@ -844,11 +732,6 @@ const getRefundTransactions = async (userId) => {
   }
 };
 
-/**
- * Get refund details for a specific order item
- * @param {string} orderItemId - The order item ID
- * @returns {Promise<Object>} - Refund details
- */
 const getItemRefundDetails = async (orderItemId) => {
   try {
     if (!orderItemId || !mongoose.Types.ObjectId.isValid(orderItemId)) {
@@ -871,7 +754,6 @@ const getItemRefundDetails = async (orderItemId) => {
       };
     }
 
-    // Find the refund transaction
     const wallet = await Wallet.findOne({
       "transactions.orderItemReference": orderItemId,
     }).lean();
@@ -884,7 +766,6 @@ const getItemRefundDetails = async (orderItemId) => {
       };
     }
 
-    // Find the specific transaction for this refund
     const refundTransaction = wallet.transactions.find(
       (t) =>
         t.orderItemReference &&

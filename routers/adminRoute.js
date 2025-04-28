@@ -71,8 +71,6 @@ router.post("/orders/return/:id", adminAuth, adminorderController.manageReturn)
 router.get("/invoices/:id", adminAuth, adminorderController.admindownloadInvoice)
 router.get("/orders/item/:orderItemId/can-update", adminAuth, adminorderController.checkItemUpdateability)
 router.get("/orders/:orderId/can-update", adminAuth, adminorderController.checkOrderUpdateability)
-
-// Individual order item management routes
 router.post("/orders/item/:orderItemId/update-status", adminAuth, adminorderController.updateOrderItemStatus)
 router.post("/orders/item/:orderItemId/approve-return", adminAuth, adminorderController.approveReturnItem)
 router.post("/orders/item/:orderItemId/complete-return", adminAuth, adminorderController.completeReturnItem)

@@ -622,7 +622,6 @@
             }
         }
 
-        // Function to check if an item can be updated
         function checkItemUpdateability(itemId) {
             return fetch(`/admin/orders/item/${itemId}/can-update`)
                 .then(res => res.json())
@@ -636,14 +635,14 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-            // Initialize modals
+
             const itemStatusModal = new bootstrap.Modal(document.getElementById('itemStatusModal'));
             const approveItemReturnModal = new bootstrap.Modal(document.getElementById('approveItemReturnModal'));
             const rejectItemReturnModal = new bootstrap.Modal(document.getElementById('rejectItemReturnModal'));
             const completeItemReturnModal = new bootstrap.Modal(document.getElementById('completeItemReturnModal'));
             const finalStateConfirmModal = new bootstrap.Modal(document.getElementById('finalStateConfirmModal'));
 
-            // Get form elements
+   
             const itemIdInput = document.getElementById('itemIdInput');
             const productNameInput = document.getElementById('productNameInput');
             const itemStatusSelect = document.getElementById('itemStatusSelect');
@@ -657,7 +656,7 @@
             const statusWarning = document.getElementById('statusWarning');
             const finalStatusName = document.getElementById('finalStatusName');
 
-            // Show warning when selecting final states
+            
             itemStatusSelect.addEventListener('change', function() {
                 const selectedStatus = this.value;
                 if (['Cancelled', 'Returned'].includes(selectedStatus)) {
@@ -667,7 +666,7 @@
                 }
             });
 
-            // Function to show SweetAlert for final state items
+           
             function showFinalStateAlert(productName, status) {
                 Swal.fire({
                     title: 'Status Cannot Be Changed',
@@ -683,14 +682,14 @@
                 });
             }
 
-            // Update order status
+           
             const updateOrderStatusBtn = document.getElementById('updateOrderStatusBtn');
             updateOrderStatusBtn.addEventListener('click', function() {
                 const orderId = '<%= order._id %>';
                 const status = document.getElementById('orderStatusSelect').value;
                 const currentStatus = '<%= order.status %>';
                 
-                // Check if order is in a final state
+             
                 if (['Cancelled', 'Returned'].includes(currentStatus)) {
                     Swal.fire({
                         title: 'Cannot Update Order',
@@ -703,11 +702,11 @@
                     return;
                 }
 
-                // If setting to a final state, show confirmation
+            
                 if (['Cancelled', 'Returned'].includes(status)) {
                     finalStatusName.textContent = status;
                     
-                    // Set up the confirmation button
+
                     confirmFinalStateBtn.onclick = function() {
                         finalStateConfirmModal.hide();
                         updateOrderStatusRequest(orderId, status);
@@ -757,7 +756,7 @@
                 });
             }
 
-            // Update item status
+          
             const updateItemStatusBtns = document.querySelectorAll('.btn-update-item-status');
             updateItemStatusBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -765,13 +764,13 @@
                     const currentStatus = this.getAttribute('data-current-status');
                     const productName = this.getAttribute('data-product-name');
                     
-                    // Check if item is in a final state
+                
                     if (['Cancelled', 'Returned'].includes(currentStatus)) {
                         showFinalStateAlert(productName, currentStatus);
                         return;
                     }
                     
-                    // Check updateability via API
+                    
                     checkItemUpdateability(itemId).then(canUpdate => {
                         if (!canUpdate) {
                             showFinalStateAlert(productName, currentStatus);
@@ -792,11 +791,11 @@
                 const status = itemStatusSelect.value;
                 const productName = productNameInput.value;
 
-                // If setting to a final state, show confirmation
+             
                 if (['Cancelled', 'Returned'].includes(status)) {
                     finalStatusName.textContent = status;
                     
-                    // Set up the confirmation button
+                  
                     confirmFinalStateBtn.onclick = function() {
                         finalStateConfirmModal.hide();
                         updateItemStatusRequest(itemId, status, productName);
@@ -842,7 +841,7 @@
                 });
             }
 
-            // Approve item return
+      
             const approveItemReturnBtns = document.querySelectorAll('.btn-approve-item-return');
             approveItemReturnBtns.forEach(btn => {
                 btn.addEventListener('click', function() {
@@ -900,7 +899,7 @@
                 btn.addEventListener('click', function() {
                     const itemId = this.getAttribute('data-item-id');
                     
-                    // Check updateability via API
+      
                     checkItemUpdateability(itemId).then(canUpdate => {
                         if (!canUpdate) {
                             showFinalStateAlert("this item", "a final");
@@ -963,14 +962,14 @@
                     const itemRow = this.closest('tr');
                     const itemPrice = parseFloat(itemRow.querySelector('td:nth-child(5)').textContent.replace('₹', '').trim());
                     
-                    // Check updateability via API
+            
                     checkItemUpdateability(itemId).then(canUpdate => {
                         if (!canUpdate) {
                             showFinalStateAlert("this item", "a final");
                             return;
                         }
                         
-                        // Set the refund amount in the modal
+                 
                         refundAmountSpan.textContent = `₹${itemPrice.toFixed(2)}`;
                         
                         confirmCompleteItemReturnBtn.setAttribute('data-item-id', itemId);
@@ -1021,7 +1020,7 @@
             completeItemReturnModal.hide();
         });
 
-        // Disable action buttons for items in final states
+        
         document.querySelectorAll('tr[data-item-status]').forEach(row => {
             const status = row.getAttribute('data-item-status');
             if (['Cancelled', 'Returned'].includes(status)) {
@@ -1033,12 +1032,11 @@
             }
         });
 
-            // Form validation
+           
             itemRejectionReason?.addEventListener('input', function() {
                 this.classList.remove('is-invalid');
             });
 
-            // Initialize tooltips
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl, {

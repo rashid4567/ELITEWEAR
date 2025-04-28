@@ -135,7 +135,7 @@ const orderItemSchema = new mongoose.Schema(
   },
 )
 
-// Add indexes for faster queries
+
 orderItemSchema.index({ refundDate: -1 })
 orderItemSchema.index({ returnRequestedDate: -1 })
 orderItemSchema.index({ returnCompletedDate: -1 })

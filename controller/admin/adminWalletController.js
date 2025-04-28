@@ -89,21 +89,46 @@ const getAllWalletTransactions = async (req, res) => {
     let allTransactions = [];
 
     for (const wallet of wallets) {
-      const userTransactions = wallet.transactions.map((transaction) => ({
-        ...transaction,
-        userId: wallet.userId._id,
-        userFullname: wallet.userId.fullname,
-        userEmail: wallet.userId.email,
-        walletBalance: wallet.amount,
-        formattedDate: new Date(transaction.date).toLocaleString(),
-        isRefund:
-          transaction.refundType !== null ||
-          (transaction.transactionRef &&
-            transaction.transactionRef.startsWith("REF-")),
-        refundTypeDisplay: getRefundTypeDisplay(transaction.refundType),
-      }));
+      
+      if (wallet.userId && wallet.transactions && wallet.transactions.length > 0) {
+        const userTransactions = wallet.transactions.map((transaction) => ({
+          ...transaction,
+          userId: wallet.userId._id,
+          userFullname: wallet.userId.fullname || "Unknown User",
+          userEmail: wallet.userId.email || "No Email",
+          walletBalance: wallet.amount,
+          formattedDate: new Date(transaction.date).toLocaleString(),
+          isRefund:
+            transaction.refundType !== null ||
+            (transaction.transactionRef &&
+              transaction.transactionRef.startsWith("REF-")),
+          refundTypeDisplay: getRefundTypeDisplay(transaction.refundType),
+        }));
 
-      allTransactions = [...allTransactions, ...userTransactions];
+        allTransactions = [...allTransactions, ...userTransactions];
+      } else {
+      
+        console.warn(`Found wallet with missing or invalid userId: ${wallet._id}`);
+        
+      
+        if (wallet.transactions && wallet.transactions.length > 0) {
+          const userTransactions = wallet.transactions.map((transaction) => ({
+            ...transaction,
+            userId: null,
+            userFullname: "Unknown User",
+            userEmail: "No Email",
+            walletBalance: wallet.amount,
+            formattedDate: new Date(transaction.date).toLocaleString(),
+            isRefund:
+              transaction.refundType !== null ||
+              (transaction.transactionRef &&
+                transaction.transactionRef.startsWith("REF-")),
+            refundTypeDisplay: getRefundTypeDisplay(transaction.refundType),
+          }));
+
+          allTransactions = [...allTransactions, ...userTransactions];
+        }
+      }
     }
 
     const sortField = sort === "amount" ? "amount" : "date";
@@ -132,7 +157,11 @@ const getAllWalletTransactions = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching wallet transactions:", error);
-    res.status(500).render("error", { message: "Internal server error" });
+    try {
+      res.status(500).render("admin/error", { message: "Internal server error" });
+    } catch (renderError) {
+      res.status(500).send("Internal server error: " + error.message);
+    }
   }
 };
 
@@ -181,10 +210,18 @@ const getRefundTransactions = async (req, res) => {
           as: "user",
         },
       },
-      {
-        $unwind: "$user",
-      },
     ];
+
+   
+    pipeline.push({
+      $project: {
+        _id: 1,
+        amount: 1,
+        userId: 1,
+        transactions: 1,
+        user: { $ifNull: [{ $arrayElemAt: ["$user", 0] }, { fullname: "Unknown User", email: "No Email" }] }
+      }
+    });
 
     if (refundType !== "all") {
       pipeline.push({
@@ -255,8 +292,8 @@ const getRefundTransactions = async (req, res) => {
       $project: {
         _id: 0,
         userId: "$user._id",
-        userFullname: "$user.fullname",
-        userEmail: "$user.email",
+        userFullname: { $ifNull: ["$user.fullname", "Unknown User"] },
+        userEmail: { $ifNull: ["$user.email", "No Email"] },
         walletBalance: "$amount",
         transactionId: "$transactions._id",
         type: "$transactions.type",
@@ -301,13 +338,13 @@ const getRefundTransactions = async (req, res) => {
         },
         status: "$transactions.status",
         metadata: "$transactions.metadata",
-        productName: { $arrayElemAt: ["$orderItem.product_name", 0] },
-        productSize: { $arrayElemAt: ["$orderItem.size", 0] },
-        productImage: { $arrayElemAt: ["$orderItem.itemImage", 0] },
+        productName: { $ifNull: [{ $arrayElemAt: ["$orderItem.product_name", 0] }, "Unknown Product"] },
+        productSize: { $ifNull: [{ $arrayElemAt: ["$orderItem.size", 0] }, "N/A"] },
+        productImage: { $ifNull: [{ $arrayElemAt: ["$orderItem.itemImage", 0] }, null] },
       },
     });
 
-    // Add sorting
+    
     const sortField = sort === "amount" ? "amount" : "date";
     const sortOrder = order === "asc" ? 1 : -1;
 
@@ -318,7 +355,6 @@ const getRefundTransactions = async (req, res) => {
     });
 
     const refunds = await Wallet.aggregate(pipeline);
-
     const totalRefunds = refunds.length;
     const totalPages = Math.ceil(totalRefunds / limit);
     const startIndex = (page - 1) * limit;
@@ -361,7 +397,11 @@ const getRefundTransactions = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching refund transactions:", error);
-    res.status(500).render("error", { message: "Internal server error" });
+    try {
+      res.status(500).render("admin/error", { message: "Internal server error" });
+    } catch (renderError) {
+      res.status(500).send("Internal server error: " + error.message);
+    }
   }
 };
 
@@ -370,12 +410,20 @@ const getUserWallet = async (req, res) => {
     const userId = req.params.userId;
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).render("error", { message: "Invalid user ID" });
+      try {
+        return res.status(400).render("admin/error", { message: "Invalid user ID" });
+      } catch (renderError) {
+        return res.status(400).send("Invalid user ID");
+      }
     }
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).render("error", { message: "User not found" });
+      try {
+        return res.status(404).render("admin/error", { message: "User not found" });
+      } catch (renderError) {
+        return res.status(404).send("User not found");
+      }
     }
 
     const wallet = await Wallet.findOne({ userId }).lean();
@@ -384,10 +432,19 @@ const getUserWallet = async (req, res) => {
         user,
         wallet: { amount: 0, transactions: [] },
         hasTransactions: false,
+        stats: {
+          totalCredits: 0,
+          totalDebits: 0,
+          totalCreditAmount: 0,
+          totalDebitAmount: 0,
+          totalRefunds: 0,
+          totalRefundAmount: 0,
+        }
       });
     }
 
-    const transactions = wallet.transactions.map((transaction) => ({
+  
+    const transactions = wallet.transactions ? wallet.transactions.map((transaction) => ({
       ...transaction,
       formattedDate: new Date(transaction.date).toLocaleString(),
       isRefund:
@@ -397,7 +454,7 @@ const getUserWallet = async (req, res) => {
       typeDisplay:
         transaction.type === "credit" ? "Amount Credited" : "Amount Debited",
       refundTypeDisplay: getRefundTypeDisplay(transaction.refundType),
-    }));
+    })) : [];
 
     transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -406,14 +463,14 @@ const getUserWallet = async (req, res) => {
       totalDebits: transactions.filter((t) => t.type === "debit").length,
       totalCreditAmount: transactions
         .filter((t) => t.type === "credit")
-        .reduce((sum, t) => sum + t.amount, 0),
+        .reduce((sum, t) => sum + (t.amount || 0), 0),
       totalDebitAmount: transactions
         .filter((t) => t.type === "debit")
-        .reduce((sum, t) => sum + t.amount, 0),
+        .reduce((sum, t) => sum + (t.amount || 0), 0),
       totalRefunds: transactions.filter((t) => t.isRefund).length,
       totalRefundAmount: transactions
         .filter((t) => t.isRefund)
-        .reduce((sum, t) => sum + t.amount, 0),
+        .reduce((sum, t) => sum + (t.amount || 0), 0),
     };
 
     res.render("admin-user-wallet", {
@@ -424,7 +481,11 @@ const getUserWallet = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching user wallet:", error);
-    res.status(500).render("error", { message: "Internal server error" });
+    try {
+      res.status(500).render("admin/error", { message: "Internal server error" });
+    } catch (renderError) {
+      res.status(500).send("Internal server error: " + error.message);
+    }
   }
 };
 
@@ -513,7 +574,7 @@ const getRefundStatistics = async (req, res) => {
         $group: {
           _id: "$returnReason",
           count: { $sum: 1 },
-          totalAmount: { $sum: "$refundAmount" },
+          totalAmount: { $sum: { $ifNull: ["$refundAmount", 0] } },
         },
       },
       {
@@ -565,14 +626,18 @@ const getRefundStatistics = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching refund statistics:", error);
-    res.status(500).render("error", { message: "Internal server error" });
+    try {
+      res.status(500).render("admin/error", { message: "Internal server error" });
+    } catch (renderError) {
+      res.status(500).send("Internal server error: " + error.message);
+    }
   }
 };
 
 const processManualRefund = async (req, res) => {
   try {
     const { orderItemId, amount, reason } = req.body;
-    const adminId = req.session.admin._id;
+    const adminId = req.session.admin && req.session.admin._id ? req.session.admin._id : null;
 
     if (!orderItemId || !mongoose.Types.ObjectId.isValid(orderItemId)) {
       return res
@@ -598,6 +663,19 @@ const processManualRefund = async (req, res) => {
           success: false,
           message: "This item has already been refunded",
         });
+    }
+
+   
+    if (!orderItem.orderId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Order reference not found for this item" });
+    }
+
+    if (!orderItem.orderId.userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User reference not found for this order" });
     }
 
     const userId = orderItem.orderId.userId._id;
@@ -645,7 +723,7 @@ const processManualRefund = async (req, res) => {
     console.error("Error processing manual refund:", error);
     return res
       .status(500)
-      .json({ success: false, message: "Internal server error" });
+      .json({ success: false, message: "Internal server error: " + error.message });
   }
 };
 
@@ -683,17 +761,22 @@ const getRefundDetails = async (req, res) => {
     let order = null;
     let product = null;
 
-    if (transaction.orderItemReference) {
-      orderItem = await OrderItem.findById(
-        transaction.orderItemReference
-      ).lean();
+    if (transaction.orderItemReference && mongoose.Types.ObjectId.isValid(transaction.orderItemReference)) {
+      try {
+        orderItem = await OrderItem.findById(
+          transaction.orderItemReference
+        ).lean();
 
-      if (orderItem) {
-        order = await Order.findById(orderItem.orderId).lean();
+        if (orderItem && orderItem.orderId && mongoose.Types.ObjectId.isValid(orderItem.orderId)) {
+          order = await Order.findById(orderItem.orderId).lean();
+        }
 
-        if (transaction.productReference) {
+        if (transaction.productReference && mongoose.Types.ObjectId.isValid(transaction.productReference)) {
           product = await Product.findById(transaction.productReference).lean();
         }
+      } catch (lookupError) {
+        console.error("Error looking up related documents:", lookupError);
+        
       }
     }
 
@@ -704,14 +787,14 @@ const getRefundDetails = async (req, res) => {
         formattedDate: new Date(transaction.date).toLocaleString(),
         refundTypeDisplay: getRefundTypeDisplay(transaction.refundType),
       },
-      user: wallet.userId,
+      user: wallet.userId || { fullname: "Unknown User", email: "No Email" },
       orderItem,
       order,
       product,
     });
   } catch (error) {
     console.error("Error fetching refund details:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res.status(500).json({ success: false, message: "Internal server error: " + error.message });
   }
 };
 

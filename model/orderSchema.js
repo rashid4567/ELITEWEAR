@@ -92,7 +92,6 @@ const orderSchema = new mongoose.Schema(
   },
 )
 
-// Generate a unique order number before saving
 orderSchema.pre("save", async function (next) {
   if (!this.orderNumber) {
     const count = await mongoose.model("Order").countDocuments()
