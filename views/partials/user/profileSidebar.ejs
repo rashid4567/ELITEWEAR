@@ -1,145 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Profile Sidebar</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="/userStyle/sidebarpartials.css">
-  </head>
-  <body>
-
-    <div class="sidebar">
-      <div class="profile-info">
-        <div class="profile-avatar">
-          <div class="avatar-circle">
-            <span class="initials"
-              ><%= user && user.fullname && user.fullname.trim() !== '' ?
-              user.fullname.trim().charAt(0).toUpperCase() : 'U' %></span
-            >
-          </div>
-        </div>
-        <%= user && user.fullname && user.fullname.trim() !== '' ? user.fullname : 'Unknown User' %>!
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile Sidebar</title>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+  />
+  <link rel="stylesheet" href="/userStyle/sidebarpartials.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <span class="brand-name">ELITE<span class="accent">WEAR</span></span>
       </div>
+    </div>
+    
+    <div class="profile-info">
+      <div class="profile-avatar">
+        <div class="avatar-circle">
+          <span class="initials"><%= user && user.fullname && user.fullname.trim() !== '' ?
+            user.fullname.trim().charAt(0).toUpperCase() : 'U' %></span>
+        </div>
+      </div>
+      <div class="profile-name">
+        <%= user && user.fullname && user.fullname.trim() !== '' ? user.fullname : 'Unknown User' %>
+      </div>
+    </div>
 
-      <div class="sidebar-menu">
-        <div class="menu-item active">
+    <div class="sidebar-menu">
+      <div class="menu-section">
+        <h4 class="menu-section-title">Account</h4>
+        <div class="menu-item active" data-path="/LoadProfile">
           <span class="icon"><i class="fas fa-user"></i></span>
           <a href="/LoadProfile" class="item-text">My Profile</a>
         </div>
 
-        <div class="menu-item">
+        <div class="menu-item" data-path="/address">
           <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
           <a href="/address" class="item-text">My Address</a>
         </div>
 
-        <div class="menu-item">
+        <div class="menu-item" data-path="/orders">
           <span class="icon"><i class="fas fa-shopping-bag"></i></span>
-          <a href="/orders" class="item-text">My Order</a>
+          <a href="/orders" class="item-text">My Orders</a>
         </div>
 
-        <div class="menu-item">
+        <div class="menu-item" data-path="/wishlist">
           <span class="icon"><i class="fas fa-heart"></i></span>
-          <a href="/wishlist" class="item-text"
-            >My Wishlist </a
-          >
+          <a href="/wishlist" class="item-text">My Wishlist</a>
         </div>
+      </div>
 
-        <div class="menu-divider"></div>
-
-        <div class="menu-item">
+      <div class="menu-divider"></div>
+      
+      <div class="menu-section">
+        <h4 class="menu-section-title">Payments</h4>
+        <div class="menu-item" data-path="/wallet">
           <span class="icon"><i class="fas fa-wallet"></i></span>
           <a href="/wallet" class="item-text">My Wallet</a>
         </div>
 
-        <div class="menu-item">
+        <div class="menu-item" data-path="/allcoupons">
           <span class="icon"><i class="fas fa-tag"></i></span>
-          <a href="/allcoupons" class="item-text">My Coupon</a>
+          <a href="/allcoupons" class="item-text">My Coupons</a>
         </div>
+      </div>
 
-        <div class="menu-divider"></div>
-
-        <div class="menu-item">
+      <div class="menu-divider"></div>
+      
+      <div class="menu-section">
+        <h4 class="menu-section-title">Settings</h4>
+        <div class="menu-item" data-path="/getupdatePassword">
           <span class="icon"><i class="fas fa-lock"></i></span>
           <a href="/getupdatePassword" class="item-text">Change Password</a>
         </div>
 
-        <div class="menu-item">
-          <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
-          <a href="/logoutpage" class="item-text">Log out</a>
-        </div>
-
-        <div class="menu-item">
+        <div class="menu-item" data-path="/referral">
           <span class="icon"><i class="fas fa-gift"></i></span>
           <a href="/referral" class="item-text">Referral Code</a>
         </div>
+        
+        <div class="menu-item logout-item" data-path="/logoutpage">
+          <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+          <a href="/logoutpage" class="item-text">Log out</a>
+        </div>
       </div>
     </div>
+  </div>
 
-    <script>
+  <script>
+    // Set active menu item based on current URL
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentPath = window.location.pathname;
+      
+      // Find the menu item that matches the current path
+      document.querySelectorAll('.menu-item').forEach(item => {
+        const itemPath = item.getAttribute('data-path');
+        if (itemPath && currentPath.includes(itemPath)) {
+          item.classList.add('active');
+        }
+        
+        // Also check the link href
+        const link = item.querySelector('a');
+        if (link && link.getAttribute('href') === currentPath) {
+          item.classList.add('active');
+        }
+      });
+    });
 
-      document.querySelectorAll(".menu-item").forEach((item) => {
-        item.addEventListener("click", function () {
-
+    // Menu item click effect
+    document.querySelectorAll(".menu-item").forEach((item) => {
+      item.addEventListener("click", function() {
+        if (!this.classList.contains('active')) {
           document.querySelectorAll(".menu-item").forEach((i) => {
             i.classList.remove("active");
           });
-
           this.classList.add("active");
-
+        }
         
-          this.style.transform = "scale(0.98)";
-          setTimeout(() => {
-            this.style.transform = "scale(1)";
-          }, 150);
-        });
+        // Scale effect on click
+        this.style.transform = "scale(0.98)";
+        setTimeout(() => {
+          this.style.transform = "scale(1)";
+        }, 150);
       });
+    });
 
- 
-      document.querySelectorAll(".menu-item").forEach((item) => {
-        item.addEventListener("mousedown", function (e) {
-          const ripple = document.createElement("span");
-          const rect = this.getBoundingClientRect();
+    // Ripple effect
+    document.querySelectorAll(".menu-item").forEach((item) => {
+      item.addEventListener("mousedown", function(e) {
+        const ripple = document.createElement("span");
+        const rect = this.getBoundingClientRect();
 
-          const size = Math.max(rect.width, rect.height);
-          const x = e.clientX - rect.left - size / 2;
-          const y = e.clientY - rect.top - size / 2;
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
 
-          ripple.style.width = ripple.style.height = `${size}px`;
-          ripple.style.left = `${x}px`;
-          ripple.style.top = `${y}px`;
-          ripple.classList.add("ripple");
+        ripple.style.width = ripple.style.height = `${size}px`;
+        ripple.style.left = `${x}px`;
+        ripple.style.top = `${y}px`;
+        ripple.classList.add("ripple");
 
-          const style = document.createElement("style");
-          style.textContent = `
-                    .ripple {
-                        position: absolute;
-                        border-radius: 50%;
-                        transform: scale(0);
-                        background-color: rgba(255, 255, 255, 0.4);
-                        pointer-events: none;
-                        animation: rippleEffect 0.6s linear;
-                    }
-                    
-                    @keyframes rippleEffect {
-                        to {
-                            transform: scale(2);
-                            opacity: 0;
-                        }
-                    }
-                `;
-          document.head.appendChild(style);
+        this.appendChild(ripple);
 
-          this.appendChild(ripple);
-
-          setTimeout(() => {
-            ripple.remove();
-          }, 600);
-        });
+        setTimeout(() => {
+          ripple.remove();
+        }, 600);
       });
-    </script>
-  </body>
+    });
+  </script>
+</body>
 </html>

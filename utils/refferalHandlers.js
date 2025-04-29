@@ -1,8 +1,3 @@
-/**
- * Referral System Handler
- * Comprehensive module for handling all referral-related operations
- */
-
 const User = require("../model/userSchema");
 const Wallet = require("../model/walletScheema");
 const ReferralHistory = require("../model/refferalHistoryScheema");
@@ -13,12 +8,6 @@ const NEW_USER_REWARD = 100;
 
 const validateReferralCode = async (referralCode, currentUserId = null) => {
   try {
-    console.log(
-      `Validating referral code: ${referralCode} for user: ${
-        currentUserId || "anonymous"
-      }`
-    );
-
     if (!referralCode) {
       return { success: false, message: "Referral code is required" };
     }

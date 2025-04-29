@@ -362,18 +362,18 @@ const loadOrderSuccess = async (req, res) => {
 
 const getUserOrders = async (req, res) => {
   try {
-    const userId = req.session.user || req.user._id;
-    const page = parseInt(req.query.page) || 1;
-    const limit = 3;
-    const skip = (page - 1) * limit;
+    const userId = req.session.user || req.user._id
+    const page = Number.parseInt(req.query.page) || 1
+    const limit = 3
+    const skip = (page - 1) * limit
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId)
     if (!user) {
-      return res.redirect("/login");
+      return res.redirect("/login")
     }
 
-    const totalOrders = await Order.countDocuments({ userId });
-    const totalPages = Math.ceil(totalOrders / limit);
+    const totalOrders = await Order.countDocuments({ userId })
+    const totalPages = Math.ceil(totalOrders / limit)
 
     const orders = await Order.find({ userId })
       .populate({
@@ -385,48 +385,61 @@ const getUserOrders = async (req, res) => {
       .populate("address")
       .sort({ orderDate: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
 
     const ordersWithProgress = orders.map((order) => {
-      let progressWidth = 0;
-      switch (order.status) {
-        case "Pending":
-          progressWidth = 20;
-          break;
-        case "Processing":
-          progressWidth = 40;
-          break;
-        case "Shipped":
-          progressWidth = 60;
-          break;
-        case "Out for Delivery":
-          progressWidth = 80;
-          break;
-        case "Delivered":
-        case "Returned":
-          progressWidth = 100;
-          break;
-        case "Cancelled":
-        case "Return Rejected":
-          progressWidth = 100;
-          break;
-        case "Return Requested":
-          progressWidth = 70;
-          break;
-        case "Return Approved":
-          progressWidth = 85;
-          break;
-        case "Partially Cancelled":
-        case "Partially Returned":
-        case "Partially Delivered":
-        case "Partially Shipped":
-          progressWidth = 75;
-          break;
-        default:
-          progressWidth = 0;
+      let progressWidth = 0
+      let displayStatus = order.status
+
+      // Handle payment failure case
+      if (order.paymentStatus === "Failed") {
+        displayStatus = "Payment Failed"
+        progressWidth = 20
+      } else {
+        switch (order.status) {
+          case "Pending":
+            progressWidth = 20
+            break
+          case "Processing":
+            progressWidth = 40
+            break
+          case "Shipped":
+            progressWidth = 60
+            break
+          case "Out for Delivery":
+            progressWidth = 80
+            break
+          case "Delivered":
+          case "Returned":
+            progressWidth = 100
+            break
+          case "Cancelled":
+          case "Return Rejected":
+            progressWidth = 100
+            break
+          case "Return Requested":
+            progressWidth = 70
+            break
+          case "Return Approved":
+            progressWidth = 85
+            break
+          case "Partially Cancelled":
+          case "Partially Returned":
+          case "Partially Delivered":
+          case "Partially Shipped":
+            progressWidth = 75
+            break
+          default:
+            progressWidth = 0
+        }
       }
-      return { ...order.toObject(), progressWidth };
-    });
+
+      return {
+        ...order.toObject(),
+        progressWidth,
+        displayStatus: displayStatus,
+      }
+    })
 
     res.render("orders", {
       title: "My Orders",
@@ -436,21 +449,20 @@ const getUserOrders = async (req, res) => {
       currentPage: page,
       totalPages,
       page: "orders",
-    });
+    })
   } catch (error) {
-    console.error("Error getting user orders:", error);
-    res.redirect("/");
+    console.error("Error getting user orders:", error)
+    res.redirect("/")
   }
-};
-
+}
 const getOrderDetails = async (req, res) => {
   try {
-    const userId = req.session.user || req.user._id;
-    const orderId = req.params.id;
+    const userId = req.session.user || req.user._id
+    const orderId = req.params.id
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId)
     if (!user) {
-      return res.redirect("/login");
+      return res.redirect("/login")
     }
 
     const order = await Order.findOne({
@@ -463,15 +475,13 @@ const getOrderDetails = async (req, res) => {
           path: "productId",
         },
       })
-      .populate("address");
+      .populate("address")
 
     if (!order) {
-      return res.redirect("/orders");
+      return res.redirect("/orders")
     }
 
-    const orderItems = await OrderItem.find({ orderId: order._id }).populate(
-      "productId"
-    );
+    const orderItems = await OrderItem.find({ orderId: order._id }).populate("productId")
 
     res.render("orderDetails", {
       title: "Order Details",
@@ -479,12 +489,132 @@ const getOrderDetails = async (req, res) => {
       order,
       orderItems,
       page: "order-details",
-    });
+      showPaymentButton: order.paymentStatus === "Failed",
+    })
   } catch (error) {
-    console.error("Error getting order details:", error);
-    res.redirect("/orders");
+    console.error("Error getting order details:", error)
+    res.redirect("/orders")
   }
-};
+}
+
+
+const completePayment = async (req, res) => {
+  try {
+    const userId = req.session.user || req.user._id
+    const orderId = req.params.id
+    const { paymentMethod } = req.body
+
+    const user = await User.findById(userId)
+    if (!user) {
+      return res.status(401).json({ success: false, message: "User not found" })
+    }
+
+    const order = await Order.findOne({
+      _id: orderId,
+      userId,
+    })
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" })
+    }
+
+    if (order.paymentStatus !== "Failed") {
+      return res.status(400).json({
+        success: false,
+        message: "This order doesn't require payment completion",
+      })
+    }
+
+    if (paymentMethod === "Wallet") {
+      // Check wallet balance
+      if (user.walletBalance < order.total) {
+        return res.status(400).json({
+          success: false,
+          message: "Insufficient wallet balance",
+        })
+      }
+
+      // Deduct from wallet
+      user.walletBalance -= order.total
+      await user.save()
+
+      // Add transaction to wallet
+      let wallet = await Wallet.findOne({ userId })
+      if (!wallet) {
+        wallet = new Wallet({
+          userId,
+          amount: 0,
+          transactions: [],
+        })
+      }
+
+      wallet.transactions.push({
+        amount: order.total,
+        type: "debit",
+        description: `Payment for order #${order.orderNumber}`,
+        transactionRef: generateTransactionId(),
+        date: new Date(),
+      })
+      await wallet.save()
+
+      // Update order
+      order.paymentStatus = "Completed"
+      order.status = "Processing"
+      order.statusHistory.push({
+        status: "Processing",
+        date: new Date(),
+        note: "Payment completed using wallet",
+      })
+      await order.save()
+
+      return res.status(200).json({
+        success: true,
+        message: "Payment completed successfully",
+        redirect: `/order-details/${orderId}`,
+      })
+    } else if (paymentMethod === "Razorpay") {
+      // Create Razorpay order for the pending payment
+      const response = await fetch("/create-razorpay-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId: order._id,
+          isPaymentCompletion: true,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!data.success) {
+        return res.status(400).json({
+          success: false,
+          message: data.message || "Failed to create payment",
+        })
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Razorpay order created",
+        key: data.key,
+        order: data.order,
+        user: data.user,
+      })
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid payment method",
+      })
+    }
+  } catch (error) {
+    console.error("Error completing payment:", error)
+    return res.status(500).json({
+      success: false,
+      message: "Failed to complete payment. Please try again.",
+    })
+  }
+}
 
 const trackOrder = async (req, res) => {
   try {
@@ -1629,6 +1759,7 @@ module.exports = {
   trackOrder,
   cancelOrder,
   initiateReturn,
+  completePayment,
   reOrder,
   checkItemUpdateability,
   checkOrderUpdateability,
@@ -1637,3 +1768,5 @@ module.exports = {
   returnOrderItem,
   updateOrderStatus: updateOrderStatusHelper,
 };
+
+

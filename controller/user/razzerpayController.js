@@ -25,7 +25,7 @@ const getRazorpayInstance = () => {
   });
 };
 
-// Create Razorpay order
+
 const createRazorpayOrder = async (req, res) => {
   try {
     let razorpayInstance;

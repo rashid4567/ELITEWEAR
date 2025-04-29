@@ -89,8 +89,11 @@ const getAllWalletTransactions = async (req, res) => {
     let allTransactions = [];
 
     for (const wallet of wallets) {
-      
-      if (wallet.userId && wallet.transactions && wallet.transactions.length > 0) {
+      if (
+        wallet.userId &&
+        wallet.transactions &&
+        wallet.transactions.length > 0
+      ) {
         const userTransactions = wallet.transactions.map((transaction) => ({
           ...transaction,
           userId: wallet.userId._id,
@@ -107,10 +110,10 @@ const getAllWalletTransactions = async (req, res) => {
 
         allTransactions = [...allTransactions, ...userTransactions];
       } else {
-      
-        console.warn(`Found wallet with missing or invalid userId: ${wallet._id}`);
-        
-      
+        console.warn(
+          `Found wallet with missing or invalid userId: ${wallet._id}`
+        );
+
         if (wallet.transactions && wallet.transactions.length > 0) {
           const userTransactions = wallet.transactions.map((transaction) => ({
             ...transaction,
@@ -158,7 +161,9 @@ const getAllWalletTransactions = async (req, res) => {
   } catch (error) {
     console.error("Error fetching wallet transactions:", error);
     try {
-      res.status(500).render("admin/error", { message: "Internal server error" });
+      res
+        .status(500)
+        .render("admin/error", { message: "Internal server error" });
     } catch (renderError) {
       res.status(500).send("Internal server error: " + error.message);
     }
@@ -212,15 +217,19 @@ const getRefundTransactions = async (req, res) => {
       },
     ];
 
-   
     pipeline.push({
       $project: {
         _id: 1,
         amount: 1,
         userId: 1,
         transactions: 1,
-        user: { $ifNull: [{ $arrayElemAt: ["$user", 0] }, { fullname: "Unknown User", email: "No Email" }] }
-      }
+        user: {
+          $ifNull: [
+            { $arrayElemAt: ["$user", 0] },
+            { fullname: "Unknown User", email: "No Email" },
+          ],
+        },
+      },
     });
 
     if (refundType !== "all") {
@@ -338,13 +347,21 @@ const getRefundTransactions = async (req, res) => {
         },
         status: "$transactions.status",
         metadata: "$transactions.metadata",
-        productName: { $ifNull: [{ $arrayElemAt: ["$orderItem.product_name", 0] }, "Unknown Product"] },
-        productSize: { $ifNull: [{ $arrayElemAt: ["$orderItem.size", 0] }, "N/A"] },
-        productImage: { $ifNull: [{ $arrayElemAt: ["$orderItem.itemImage", 0] }, null] },
+        productName: {
+          $ifNull: [
+            { $arrayElemAt: ["$orderItem.product_name", 0] },
+            "Unknown Product",
+          ],
+        },
+        productSize: {
+          $ifNull: [{ $arrayElemAt: ["$orderItem.size", 0] }, "N/A"],
+        },
+        productImage: {
+          $ifNull: [{ $arrayElemAt: ["$orderItem.itemImage", 0] }, null],
+        },
       },
     });
 
-    
     const sortField = sort === "amount" ? "amount" : "date";
     const sortOrder = order === "asc" ? 1 : -1;
 
@@ -398,7 +415,9 @@ const getRefundTransactions = async (req, res) => {
   } catch (error) {
     console.error("Error fetching refund transactions:", error);
     try {
-      res.status(500).render("admin/error", { message: "Internal server error" });
+      res
+        .status(500)
+        .render("admin/error", { message: "Internal server error" });
     } catch (renderError) {
       res.status(500).send("Internal server error: " + error.message);
     }
@@ -411,7 +430,9 @@ const getUserWallet = async (req, res) => {
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       try {
-        return res.status(400).render("admin/error", { message: "Invalid user ID" });
+        return res
+          .status(400)
+          .render("admin/error", { message: "Invalid user ID" });
       } catch (renderError) {
         return res.status(400).send("Invalid user ID");
       }
@@ -420,7 +441,9 @@ const getUserWallet = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) {
       try {
-        return res.status(404).render("admin/error", { message: "User not found" });
+        return res
+          .status(404)
+          .render("admin/error", { message: "User not found" });
       } catch (renderError) {
         return res.status(404).send("User not found");
       }
@@ -439,22 +462,25 @@ const getUserWallet = async (req, res) => {
           totalDebitAmount: 0,
           totalRefunds: 0,
           totalRefundAmount: 0,
-        }
+        },
       });
     }
 
-  
-    const transactions = wallet.transactions ? wallet.transactions.map((transaction) => ({
-      ...transaction,
-      formattedDate: new Date(transaction.date).toLocaleString(),
-      isRefund:
-        transaction.refundType !== null ||
-        (transaction.transactionRef &&
-          transaction.transactionRef.startsWith("REF-")),
-      typeDisplay:
-        transaction.type === "credit" ? "Amount Credited" : "Amount Debited",
-      refundTypeDisplay: getRefundTypeDisplay(transaction.refundType),
-    })) : [];
+    const transactions = wallet.transactions
+      ? wallet.transactions.map((transaction) => ({
+          ...transaction,
+          formattedDate: new Date(transaction.date).toLocaleString(),
+          isRefund:
+            transaction.refundType !== null ||
+            (transaction.transactionRef &&
+              transaction.transactionRef.startsWith("REF-")),
+          typeDisplay:
+            transaction.type === "credit"
+              ? "Amount Credited"
+              : "Amount Debited",
+          refundTypeDisplay: getRefundTypeDisplay(transaction.refundType),
+        }))
+      : [];
 
     transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -482,7 +508,9 @@ const getUserWallet = async (req, res) => {
   } catch (error) {
     console.error("Error fetching user wallet:", error);
     try {
-      res.status(500).render("admin/error", { message: "Internal server error" });
+      res
+        .status(500)
+        .render("admin/error", { message: "Internal server error" });
     } catch (renderError) {
       res.status(500).send("Internal server error: " + error.message);
     }
@@ -627,7 +655,9 @@ const getRefundStatistics = async (req, res) => {
   } catch (error) {
     console.error("Error fetching refund statistics:", error);
     try {
-      res.status(500).render("admin/error", { message: "Internal server error" });
+      res
+        .status(500)
+        .render("admin/error", { message: "Internal server error" });
     } catch (renderError) {
       res.status(500).send("Internal server error: " + error.message);
     }
@@ -637,7 +667,8 @@ const getRefundStatistics = async (req, res) => {
 const processManualRefund = async (req, res) => {
   try {
     const { orderItemId, amount, reason } = req.body;
-    const adminId = req.session.admin && req.session.admin._id ? req.session.admin._id : null;
+    const adminId =
+      req.session.admin && req.session.admin._id ? req.session.admin._id : null;
 
     if (!orderItemId || !mongoose.Types.ObjectId.isValid(orderItemId)) {
       return res
@@ -657,25 +688,28 @@ const processManualRefund = async (req, res) => {
     }
 
     if (orderItem.refunded) {
+      return res.status(400).json({
+        success: false,
+        message: "This item has already been refunded",
+      });
+    }
+
+    if (!orderItem.orderId) {
       return res
         .status(400)
         .json({
           success: false,
-          message: "This item has already been refunded",
+          message: "Order reference not found for this item",
         });
-    }
-
-   
-    if (!orderItem.orderId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Order reference not found for this item" });
     }
 
     if (!orderItem.orderId.userId) {
       return res
         .status(400)
-        .json({ success: false, message: "User reference not found for this order" });
+        .json({
+          success: false,
+          message: "User reference not found for this order",
+        });
     }
 
     const userId = orderItem.orderId.userId._id;
@@ -723,7 +757,10 @@ const processManualRefund = async (req, res) => {
     console.error("Error processing manual refund:", error);
     return res
       .status(500)
-      .json({ success: false, message: "Internal server error: " + error.message });
+      .json({
+        success: false,
+        message: "Internal server error: " + error.message,
+      });
   }
 };
 
@@ -761,22 +798,31 @@ const getRefundDetails = async (req, res) => {
     let order = null;
     let product = null;
 
-    if (transaction.orderItemReference && mongoose.Types.ObjectId.isValid(transaction.orderItemReference)) {
+    if (
+      transaction.orderItemReference &&
+      mongoose.Types.ObjectId.isValid(transaction.orderItemReference)
+    ) {
       try {
         orderItem = await OrderItem.findById(
           transaction.orderItemReference
         ).lean();
 
-        if (orderItem && orderItem.orderId && mongoose.Types.ObjectId.isValid(orderItem.orderId)) {
+        if (
+          orderItem &&
+          orderItem.orderId &&
+          mongoose.Types.ObjectId.isValid(orderItem.orderId)
+        ) {
           order = await Order.findById(orderItem.orderId).lean();
         }
 
-        if (transaction.productReference && mongoose.Types.ObjectId.isValid(transaction.productReference)) {
+        if (
+          transaction.productReference &&
+          mongoose.Types.ObjectId.isValid(transaction.productReference)
+        ) {
           product = await Product.findById(transaction.productReference).lean();
         }
       } catch (lookupError) {
         console.error("Error looking up related documents:", lookupError);
-        
       }
     }
 
@@ -794,7 +840,12 @@ const getRefundDetails = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching refund details:", error);
-    res.status(500).json({ success: false, message: "Internal server error: " + error.message });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Internal server error: " + error.message,
+      });
   }
 };
 

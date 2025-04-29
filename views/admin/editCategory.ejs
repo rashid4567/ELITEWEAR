@@ -6,15 +6,33 @@
     <title>Edit Category</title>
     <link rel="stylesheet" href="/adminStyle/editCategory.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        .input-error {
+            border: 1px solid #e74c3c !important;
+            background-color: #ffeaea !important;
+        }
+        
+        /* Add some spacing for error messages */
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+    </style>
 </head>
 <body>
 
     <%- include("../partials/admin/header") %>  
 
     <div class="main-content">
-        <form action="/admin/editCategory" method="post" id="editCategoryForm">
+        <form action="/admin/editCategory" method="post" id="editCategoryForm" novalidate>
             
-         
             <input type="hidden" name="id" value="<%= category._id ? category._id : '' %>">
 
             <div class="container">
@@ -28,52 +46,230 @@
 
                 <div class="form-group-row">
                     <div class="form-group">
-                        <label>Category Offer:</label>
-                        <input type="text" name="offer" value="<%= category.offer %>">
+                        <label>Category Offer (%):</label>
+                        <input type="number" name="offer" id="categoryOffer" value="<%= category.offer %>" min="0" max="100" step="0.01">
+                        <span class="error-message" id="offerError"></span>
                     </div>
                     <div class="form-group">
-                        <label>Max Redeemable:</label>
-                        <input type="text" >
+                        <label>Max Redeemable (₹):</label>
+                        <input type="number" name="maxRedeemable" id="maxRedeemable" min="0" step="0.01">
+                        <span class="error-message" id="maxRedeemableError"></span>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>Category Name</label>
-                    <input type="text" name="name" placeholder="Type category name here..." value="<%= category.name %>" required>
+                    <input type="text" name="name" id="categoryName" placeholder="Type category name here..." value="<%= category.name %>" required>
+                    <span class="error-message" id="nameError"></span>
                 </div>
 
                 <div class="form-group">
                     <label>Description</label>
-                    <textarea name="description" placeholder="Type category description here..." required><%= category.description %></textarea>
+                    <textarea name="description" id="categoryDescription" placeholder="Type category description here..." required><%= category.description %></textarea>
+                    <span class="error-message" id="descriptionError"></span>
                 </div>
 
                 <div class="buttons">
                     <button type="button" class="cancel" onclick="window.location.href='/admin/categories'">CANCEL</button>
-                    <button type="submit" class="update" onclick="confirmUpdate(event)">UPDATE CATEGORY</button>
+                    <button type="submit" class="update" id="updateButton">UPDATE CATEGORY</button>
                 </div>
             </div>
         </form>
     </div>
 
     <script>
-        function confirmUpdate(event) {
-            event.preventDefault(); 
-
-            Swal.fire({
-                title: "Are you sure?",
-                text: "Do you want to update this category?",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, update!",
-                cancelButtonText: "Cancel"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById("editCategoryForm").submit(); 
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('editCategoryForm');
+            const categoryOffer = document.getElementById('categoryOffer');
+            const maxRedeemable = document.getElementById('maxRedeemable');
+            const categoryName = document.getElementById('categoryName');
+            const categoryDescription = document.getElementById('categoryDescription');
+            
+            // Error message elements
+            const offerError = document.getElementById('offerError');
+            const maxRedeemableError = document.getElementById('maxRedeemableError');
+            const nameError = document.getElementById('nameError');
+            const descriptionError = document.getElementById('descriptionError');
+            
+            // Add input event listeners for real-time validation
+            categoryOffer.addEventListener('input', validateOffer);
+            maxRedeemable.addEventListener('input', validateMaxRedeemable);
+            categoryName.addEventListener('input', validateName);
+            categoryDescription.addEventListener('input', validateDescription);
+            
+            // Validate offer percentage
+            function validateOffer() {
+                const offerValue = parseFloat(categoryOffer.value);
+                
+                // Clear previous error
+                offerError.textContent = '';
+                categoryOffer.classList.remove('input-error');
+                
+                // Check if empty
+                if (categoryOffer.value.trim() === '') {
+                    return true; // Optional field
+                }
+                
+                // Check if it's a valid number
+                if (isNaN(offerValue)) {
+                    offerError.textContent = 'Please enter a valid number';
+                    categoryOffer.classList.add('input-error');
+                    return false;
+                }
+                
+                // Check range (0-100)
+                if (offerValue < 0 || offerValue > 100) {
+                    offerError.textContent = 'Offer must be between 0 and 100%';
+                    categoryOffer.classList.add('input-error');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Validate max redeemable amount
+            function validateMaxRedeemable() {
+                const maxValue = parseFloat(maxRedeemable.value);
+                
+                // Clear previous error
+                maxRedeemableError.textContent = '';
+                maxRedeemable.classList.remove('input-error');
+                
+                // Check if empty
+                if (maxRedeemable.value.trim() === '') {
+                    return true; // Optional field
+                }
+                
+                // Check if it's a valid number
+                if (isNaN(maxValue)) {
+                    maxRedeemableError.textContent = 'Please enter a valid amount';
+                    maxRedeemable.classList.add('input-error');
+                    return false;
+                }
+                
+                // Check if it's positive
+                if (maxValue < 0) {
+                    maxRedeemableError.textContent = 'Amount cannot be negative';
+                    maxRedeemable.classList.add('input-error');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Validate category name
+            function validateName() {
+                // Clear previous error
+                nameError.textContent = '';
+                categoryName.classList.remove('input-error');
+                
+                // Check if empty
+                if (categoryName.value.trim() === '') {
+                    nameError.textContent = 'Category name is required';
+                    categoryName.classList.add('input-error');
+                    return false;
+                }
+                
+                // Check length
+                if (categoryName.value.trim().length < 2) {
+                    nameError.textContent = 'Category name must be at least 2 characters';
+                    categoryName.classList.add('input-error');
+                    return false;
+                }
+                
+                // Check if it contains only valid characters
+                const nameRegex = /^[a-zA-Z0-9\s&-]+$/;
+                if (!nameRegex.test(categoryName.value.trim())) {
+                    nameError.textContent = 'Category name contains invalid characters';
+                    categoryName.classList.add('input-error');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Validate description
+            function validateDescription() {
+                // Clear previous error
+                descriptionError.textContent = '';
+                categoryDescription.classList.remove('input-error');
+                
+                // Check if empty
+                if (categoryDescription.value.trim() === '') {
+                    descriptionError.textContent = 'Description is required';
+                    categoryDescription.classList.add('input-error');
+                    return false;
+                }
+                
+                // Check length
+                if (categoryDescription.value.trim().length < 10) {
+                    descriptionError.textContent = 'Description must be at least 10 characters';
+                    categoryDescription.classList.add('input-error');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Validate all fields
+            function validateForm() {
+                const isOfferValid = validateOffer();
+                const isMaxRedeemableValid = validateMaxRedeemable();
+                const isNameValid = validateName();
+                const isDescriptionValid = validateDescription();
+                
+                return isOfferValid && isMaxRedeemableValid && isNameValid && isDescriptionValid;
+            }
+            
+            // Handle form submission
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                // Validate all fields
+                if (validateForm()) {
+                    // Show confirmation dialog
+                    Swal.fire({
+                        title: "Are you sure?",
+                        text: "Do you want to update this category?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Yes, update!",
+                        cancelButtonText: "Cancel"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // If offer is empty, set it to 0
+                            if (categoryOffer.value.trim() === '') {
+                                categoryOffer.value = '0';
+                            }
+                            
+                            // Submit the form
+                            form.submit();
+                        }
+                    });
+                } else {
+                    // Show error message
+                    Swal.fire({
+                        title: "Validation Error",
+                        text: "Please fix the errors in the form",
+                        icon: "error",
+                        confirmButtonColor: "#3085d6"
+                    });
+                    
+                    // Focus on the first field with an error
+                    if (!validateName()) {
+                        categoryName.focus();
+                    } else if (!validateDescription()) {
+                        categoryDescription.focus();
+                    } else if (!validateOffer()) {
+                        categoryOffer.focus();
+                    } else if (!validateMaxRedeemable()) {
+                        maxRedeemable.focus();
+                    }
                 }
             });
-        }
+        });
     </script>
 
 </body>

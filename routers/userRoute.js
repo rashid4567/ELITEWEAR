@@ -176,6 +176,7 @@ router.get("/order-details/:id", UserAuth, orderController.getOrderDetails);
 router.get("/invoice/:id", UserAuth, orderController.downloadInvoice);
 router.get("/orders/track/:id", UserAuth, orderController.trackOrder);
 router.post("/cancel-order/:id", UserAuth, orderController.cancelOrder);
+router.post("/complete-payment/:id", UserAuth, orderController.completePayment)
 router.post(
   "/cancel-order-item/:itemId",
   UserAuth,
