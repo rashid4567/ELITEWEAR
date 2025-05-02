@@ -1080,60 +1080,6 @@
                             </p>
                         </div>
                     </div>
-<<<<<<< Updated upstream
-
-                    <div class="detail-row">
-                        <span>Order Time</span>
-                        <span><%= order.orderDate.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Payment Method</span>
-                        <span><%= order.paymentMethod %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Sender Name</span>
-                        <span><%= user.name || 'N/A' %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Shipping Address</span>
-                        <span>
-                            <%= order.address?.fullname || 'N/A' %>, 
-                            <%= order.address?.address || '' %>, 
-                            <%= order.address?.city || '' %>, 
-                            <%= order.address?.district || '' %>, 
-                            <%= order.address?.state || '' %> - <%= order.address?.pincode || '' %>
-                        </span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Order Items</span>
-                        <span>
-                            <% order.order_items.forEach((item, index) => { %>
-                                <%= item.product_name %> (Size: <%= item.size %>) x <%= item.quantity %>
-                                <%= index < order.order_items.length - 1 ? ', ' : '' %>
-                            <% }) %>
-                        </span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Subtotal</span>
-                        <span>₹<%= (order.total - (order.total > 8000 ? 0 : 200)).toFixed(2) %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Delivery Charge</span>
-                        <span>₹<%= order.total > 8000 ? 0 : 200 %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Grand Total</span>
-                        <span class="fw-bold">₹<%= order.total.toFixed(2) %></span>
-                    </div>
-=======
->>>>>>> Stashed changes
                 </div>
             </div>
         </div>
