@@ -7,6 +7,47 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/userStyle/checkoutPayment.css">
+<<<<<<< Updated upstream
+=======
+    <link rel="stylesheet" href="/userStyle/header.css">
+    <link rel="stylesheet" href="/userStyle/footer.css">
+    <style>
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .razorpay-logos img {
+            height: 30px;
+            margin-right: 10px;
+        }
+        .wallet-badge {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+        .btn-order {
+            width: 100%;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            font-size: 1.1rem;
+        }
+        .btn-order:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+>>>>>>> Stashed changes
 </head>
 <body>
     <%- include("../partials/user/header") %>
@@ -21,8 +62,59 @@
                             <input type="radio" name="payment" id="cod" value="COD" checked>
                             <label for="cod">Cash on Delivery</label>
                         </div>
+<<<<<<< Updated upstream
                     </div>
                 </div>
+=======
+                        <p class="payment-description">Pay when your order is delivered</p>
+                        
+                        <div class="payment-option">
+                            <input type="radio" name="payment" id="razorpay" value="Razorpay">
+                            <label for="razorpay"><i class="fas fa-credit-card payment-icon"></i> Pay Online</label>
+                        </div>
+                        <p class="payment-description">Credit/Debit Card, UPI, Netbanking via Razorpay</p>
+                        <div class="razorpay-logos">
+                            <img src="/Uploads/visaCard.png" alt="Visa">
+                            <img src="/Uploads/mastercard.jpeg" alt="Mastercard">
+                            <img src="/Uploads/Rupay-Logo.png" alt="RuPay">
+                            <img src="/Uploads/upi.jpeg" alt="UPI">
+                        </div>
+                        
+                        <div class="payment-option">
+                            <input type="radio" name="payment" id="wallet" value="Wallet" 
+                                <%= (user.walletBalance < grandTotal) ? 'disabled' : '' %>>
+                            <label for="wallet" <%= (user.walletBalance < grandTotal) ? 'class="text-muted"' : '' %>>
+                                <i class="fas fa-wallet payment-icon"></i> Wallet
+                                <span class="wallet-badge <%= (user.walletBalance < grandTotal) ? 'bg-danger' : 'bg-success' %> text-white">
+                                    Balance: ₹<%= user.walletBalance ? user.walletBalance.toFixed(2) : '0.00' %>
+                                </span>
+                            </label>
+                        </div>
+                        <% if (user.walletBalance < grandTotal) { %>
+                            <p class="payment-description text-danger">
+                                Insufficient wallet balance. You need ₹<%= (grandTotal - user.walletBalance).toFixed(2) %> more.
+                                <a href="/wallet" class="text-primary">Add money</a>
+                            </p>
+                        <% } else { %>
+                            <p class="payment-description">Pay using your wallet balance</p>
+                        <% } %>
+                    </div>
+                </div>
+                
+                <div class="payment-card">
+                    <h5 class="mb-3">Delivery Address</h5>
+                    <div class="address-details">
+                        <p class="mb-1"><strong><%= deliveryAddress.fullname %></strong></p>
+                        <p class="mb-1"><%= deliveryAddress.address %></p>
+                        <p class="mb-1"><%= deliveryAddress.city %>, <%= deliveryAddress.district %></p>
+                        <p class="mb-1"><%= deliveryAddress.state %> - <%= deliveryAddress.pincode %></p>
+                        <p class="mb-0">Phone: <%= deliveryAddress.mobile %></p>
+                    </div>
+                    <a href="/checkOut" class="btn btn-outline-dark btn-sm mt-3">
+                        <i class="fas fa-edit"></i> Change Address
+                    </a>
+                </div>
+>>>>>>> Stashed changes
             </div>
             <div class="col-lg-7">
                 <div class="payment-card">
@@ -58,6 +150,7 @@
     <%- include("../partials/user/footer") %>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+<<<<<<< Updated upstream
         function placeOrder() {
           const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
           
@@ -89,5 +182,148 @@
             });
         }
       </script>
+=======
+        function showAlert(type, message) {
+            const alertDiv = document.getElementById('paymentAlert');
+            alertDiv.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            setTimeout(() => {
+                const alert = document.querySelector('.alert');
+                if (alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
+        }
+
+        async function handlePayment() {
+            const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+            const couponCode = "<%= appliedCoupon ? appliedCoupon.code : '' %>";
+            const placeOrderBtn = document.getElementById("placeOrderBtn");
+
+            placeOrderBtn.disabled = true;
+            placeOrderBtn.innerHTML = '<span class="spinner"></span> Processing...';
+
+            try {
+                if (paymentMethod === "Razorpay") {
+                    console.log("Initiating Razorpay payment...");
+                    const response = await fetch("/create-razorpay-order", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ couponCode }),
+                    });
+
+                    const data = await response.json();
+                    console.log("Razorpay order response:", data);
+
+                    if (!data.success) {
+                        throw new Error(data.message || "Failed to create Razorpay order");
+                    }
+
+                    const options = {
+                        key: data.key,
+                        amount: data.order.amount,
+                        currency: data.order.currency,
+                        name: "Elite Wear",
+                        description: "Purchase from Elite Wear",
+                        image: "/Uploads/ChatGPT Image Apr 13, 2025, 06_50_48 PM.png",
+                        order_id: data.order.id,
+                        prefill: {
+                            name: data.user.name,
+                            email: data.user.email,
+                            contact: data.user.contact,
+                        },
+                        theme: {
+                            color: "#333333",
+                        },
+                        modal: {
+                            ondismiss: function () {
+                                console.log("Razorpay modal dismissed");
+                                placeOrderBtn.disabled = false;
+                                placeOrderBtn.innerHTML = `Place Order - ₹<%= grandTotal.toFixed(2) %>`;
+                                showAlert("warning", "Payment window closed. Please try again.");
+                            },
+                        },
+                        handler: async function (response) {
+                            try {
+                                console.log("Payment successful, verifying:", response);
+                                const verifyResponse = await fetch("/verify-payment", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                        razorpay_payment_id: response.razorpay_payment_id,
+                                        razorpay_order_id: response.razorpay_order_id,
+                                        razorpay_signature: response.razorpay_signature,
+                                    }),
+                                });
+
+                                const verifyData = await verifyResponse.json();
+                                console.log("Verification response:", verifyData);
+
+                                if (verifyData.success) {
+                                    window.location.href = verifyData.redirect;
+                                } else {
+                                    throw new Error(verifyData.message || "Payment verification failed");
+                                }
+                            } catch (error) {
+                                console.error("Verification error:", error);
+                                showAlert("danger", error.message || "Payment verification failed. Please contact support.");
+                                placeOrderBtn.disabled = false;
+                                placeOrderBtn.innerHTML = `Place Order - ₹<%= grandTotal.toFixed(2) %>`;
+                            }
+                        },
+                    };
+
+                    const rzp = new Razorpay(options);
+                    rzp.on("payment.failed", function (response) {
+                        console.error("Payment failed:", response.error);
+                        showAlert(
+                            "danger",
+                            response.error.description || "Payment failed. Please try again."
+                        );
+                        placeOrderBtn.disabled = false;
+                        placeOrderBtn.innerHTML = `Place Order - ₹<%= grandTotal.toFixed(2) %>`;
+                    });
+
+                    rzp.open();
+                } else {
+                    console.log(`Processing ${paymentMethod} payment...`);
+                    const response = await fetch("/place-order", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            paymentMethod,
+                            couponCode,
+                        }),
+                    });
+
+                    const data = await response.json();
+                    console.log("Place order response:", data);
+
+                    if (data.success) {
+                        window.location.href = data.redirect;
+                    } else {
+                        throw new Error(data.message || "Failed to place order");
+                    }
+                }
+            } catch (error) {
+                console.error("Payment error:", error);
+                showAlert("danger", error.message || "An error occurred while processing your payment");
+                placeOrderBtn.disabled = false;
+                placeOrderBtn.innerHTML = `Place Order - ₹<%= grandTotal.toFixed(2) %>`;
+            }
+        }
+    </script>
+>>>>>>> Stashed changes
 </body>
 </html>

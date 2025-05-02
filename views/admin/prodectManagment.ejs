@@ -6,127 +6,304 @@
     <title>Admin Panel - Product Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<<<<<<< Updated upstream
+=======
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+>>>>>>> Stashed changes
     <link rel="stylesheet" href="/adminStyle/productManagment.css">
 </head>
 <body>
     <%- include("../partials/admin/header") %>
+    
     <div class="container my-5">
+        <!-- Breadcrumb -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="/admin/">Dashboard</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Products</li>
             </ol>
         </nav>
-        <div class="products-header d-flex justify-content-between align-items-center">
-            <h1>Products</h1>
-            <div class="d-flex align-items-center">
-                <div class="search-bar me-3 position-relative">
-                    <form action="/admin/productManagment" method="GET" class="d-flex align-items-center">
-                        <div class="position-relative w-100">
-                            <i class="fas fa-search search-icon"></i>
-                            <input 
-                                type="text" 
-                                class="form-control ps-4" 
-                                id="searchInput" 
-                                name="search" 
-                                placeholder="Search product..." 
-                                value="<%= search || '' %>" 
-                                oninput="toggleClearButton()"
-                            >
-                            <button 
-                                type="button" 
-                                id="clearBtn" 
-                                class="clear-btn btn btn-link position-absolute top-50 end-0 translate-middle-y" 
-                                onclick="clearSearch()" 
-                                style="display: '<%= (search && search.length > 0) ? 'block' : 'none' %>;'"
-
-
-
-                            >
-                                <i class="fas fa-times-circle text-muted"></i>
-                            </button>
-                        </div>
-                        <button type="submit" class="btn btn-primary ms-2">Search</button>
-                    </form>
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Product Management</h1>
+            <div class="theme-mode-toggle">
+                <button class="btn btn-outline" id="themeToggleBtn">
+                    <i class="fas fa-moon"></i> Dark Mode
+                </button>
+            </div>
+        </div>
+        
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <h3 class="stat-card-title">TOTAL PRODUCTS</h3>
+                    <div class="stat-card-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
                 </div>
-                <a href="/admin/addproduct" class="btn btn-add-new">
-                    <i class="fas fa-plus me-1"></i> Add New Product
+                <h2 class="stat-card-value" id="totalProductsCount"><%= totalProducts || 0 %></h2>
+                <div class="stat-card-trend">
+                    <i class="fas fa-arrow-up trend-up"></i>
+                    <span class="trend-up">5% from last month</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <h3 class="stat-card-title">ACTIVE PRODUCTS</h3>
+                    <div class="stat-card-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <h2 class="stat-card-value" id="activeProductsCount"><%= activeProducts || 0 %></h2>
+                <div class="stat-card-trend">
+                    <i class="fas fa-arrow-up trend-up"></i>
+                    <span class="trend-up">3% from last month</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <h3 class="stat-card-title">LOW STOCK</h3>
+                    <div class="stat-card-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+                <h2 class="stat-card-value" id="lowStockCount"><%= lowStockProducts || 0 %></h2>
+                <div class="stat-card-trend">
+                    <i class="fas fa-arrow-down trend-down"></i>
+                    <span class="trend-down">2% from last month</span>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <h3 class="stat-card-title">WITH OFFERS</h3>
+                    <div class="stat-card-icon">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                </div>
+                <h2 class="stat-card-value" id="productsWithOffersCount"><%= productsWithOffers || 0 %></h2>
+                <div class="stat-card-trend">
+                    <i class="fas fa-arrow-up trend-up"></i>
+                    <span class="trend-up">7% from last month</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="searchInput" 
+                    placeholder="Search products by name, category, or SKU..." 
+                    value="<%= search || '' %>" 
+                >
+                <button 
+                    type="button" 
+                    id="clearBtn" 
+                    class="clear-search" 
+                    style="display: <%= (search && search.length > 0) ? 'block' : 'none' %>;" 
+                >
+                    <i class="fas fa-times-circle"></i>
+                </button>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-outline" id="bulkActionBtn">
+                    <i class="fas fa-tasks"></i> Bulk Actions
+                </button>
+                <a href="/admin/addproduct" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Product
                 </a>
             </div>
         </div>
-
-        <div class="filter-sort-section d-flex justify-content-between align-items-center mt-4">
-            <div>
-                <span class="me-2 fw-medium">Filter By</span>
-                <div class="dropdown d-inline-block">
-                    <button class="btn" type="button" data-bs-toggle="dropdown">
-                        Product Category <i class="fas fa-chevron-down ms-1"></i>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#" onclick="filterByCategory('all')">All</a></li>
-                        <% cat.forEach(category => { %>
-                            <li><a class="dropdown-item" href="#" onclick="filterByCategory('<%= category.name %>')"><%= category.name %></a></li>
-                        <% }) %>
-                    </ul>
+        
+        <!-- Batch Actions (Hidden by default) -->
+        <div class="batch-actions" id="batchActions">
+            <div class="batch-info">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAllProducts">
+                    <label class="form-check-label" for="selectAllProducts">
+                        Select All
+                    </label>
                 </div>
-                <div class="dropdown d-inline-block">
-                    <button class="btn" type="button" data-bs-toggle="dropdown">
-                        Price <i class="fas fa-chevron-down ms-1"></i>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#" onclick="filterByPrice(0, 500)">Below ₹500</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="filterByPrice(500, 1500)">₹500 - ₹1500</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="filterByPrice(1500, 3000)">₹1500 - ₹3000</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="filterByPrice(3000, null)">Above ₹3000</a></li>
-                    </ul>
+                <div>
+                    <span id="selectedCount" class="batch-count">0</span> products selected
                 </div>
             </div>
-            <div>
-                <span class="me-2 fw-medium">Sort</span>
-                <button class="btn" onclick="sortProducts('desc')">Price High-Low</button>
-                <button class="btn" onclick="sortProducts('asc')">Price Low-High</button>
-                <button class="btn" onclick="sortProducts('latest')">Last Added First</button>
+            
+            <div class="batch-buttons">
+                <button class="btn btn-outline" id="bulkListBtn">
+                    <i class="fas fa-eye"></i> List Selected
+                </button>
+                <button class="btn btn-outline" id="bulkUnlistBtn">
+                    <i class="fas fa-eye-slash"></i> Unlist Selected
+                </button>
+                <button class="btn btn-outline" id="bulkOfferBtn">
+                    <i class="fas fa-tag"></i> Update Offers
+                </button>
+                <button class="btn btn-danger" id="bulkDeleteBtn">
+                    <i class="fas fa-trash"></i> Delete Selected
+                </button>
             </div>
         </div>
-
         
-        <div class="mt-4">
-            <% if (message && message.length > 0) { %>
-                <div class="alert alert-warning text-center py-4">
-                    <h4><%= message %></h4>
-                    <p>Try adjusting your search or filters, or <a href="/admin/addproduct" class="alert-link">add a new product</a>.</p>
+        <!-- Filter & Sort Section -->
+        <div class="filter-sort-section">
+            <div class="filter-sort-header">
+                <h3 class="filter-sort-title">Filter & Sort</h3>
+                <button class="filter-sort-reset" id="resetFiltersBtn">Reset All</button>
+            </div>
+            
+            <div class="filter-sort-content">
+                <div class="filter-group">
+                    <label class="filter-label">Category</label>
+                    <select class="filter-select" id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <% cat.forEach(category => { %>
+                            <option value="<%= category.name %>" <%= categoryFilter === category.name ? 'selected' : '' %>><%= category.name %></option>
+                        <% }) %>
+                    </select>
                 </div>
-            <% } else if (data && data.length > 0) { %>
-                <div class="table-container">
-                    <table class="table table-borderless">
-                        <thead>
-                            <tr>
-                                <th>IMAGE</th>
-                                <th>PRODUCT NAME</th>
-                                <th>CATEGORY</th>
-                                <th>PRICE</th>
-                                <th>STOCK</th>
-                                <th>LIST</th>
-                                <th>ACTION</th>
-                                <th>OFFER</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% data.forEach(product => { %>
-                                <tr data-id="<%= product._id %>">
-                                    <td>
-                                        <img src="<%= product.images && product.images.length > 0 ? product.images[0].url : 'https://via.placeholder.com/60' %>"
-                                            alt="Product Image" class="product-img">
-                                    </td>
-                                    <td><%= product.name %></td>
-                                    <td><%= product.categoryId && product.categoryId.name ? product.categoryId.name : 'N/A' %></td>
-                                    <td>₹<%= product.salePrice || 0 %></td>
-                                    <td><%= product.varientquatity || 0 %></td>
-                                    <td>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Price Range</label>
+                    <select class="filter-select" id="priceFilter">
+                        <option value="">All Prices</option>
+                        <option value="0-500" <%= (minPrice === '0' && maxPrice === '500') ? 'selected' : '' %>>Below ₹500</option>
+                        <option value="500-1500" <%= (minPrice === '500' && maxPrice === '1500') ? 'selected' : '' %>>₹500 - ₹1500</option>
+                        <option value="1500-3000" <%= (minPrice === '1500' && maxPrice === '3000') ? 'selected' : '' %>>₹1500 - ₹3000</option>
+                        <option value="3000-" <%= (minPrice === '3000' && !maxPrice) ? 'selected' : '' %>>Above ₹3000</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Stock Status</label>
+                    <select class="filter-select" id="stockFilter">
+                        <option value="">All Stock</option>
+                        <option value="in-stock">In Stock</option>
+                        <option value="low-stock">Low Stock</option>
+                        <option value="out-of-stock">Out of Stock</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Sort By</label>
+                    <select class="filter-select" id="sortFilter">
+                        <option value="latest" <%= sort === 'latest' ? 'selected' : '' %>>Latest Added</option>
+                        <option value="asc" <%= sort === 'asc' ? 'selected' : '' %>>Price: Low to High</option>
+                        <option value="desc" <%= sort === 'desc' ? 'selected' : '' %>>Price: High to Low</option>
+                        <option value="name-asc" <%= sort === 'name-asc' ? 'selected' : '' %>>Name: A to Z</option>
+                        <option value="name-desc" <%= sort === 'name-desc' ? 'selected' : '' %>>Name: Z to A</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- View Toggle -->
+        <div class="view-toggle">
+            <button class="view-toggle-btn active" id="gridViewBtn">
+                <i class="fas fa-th-large"></i>
+            </button>
+            <button class="view-toggle-btn" id="listViewBtn">
+                <i class="fas fa-list"></i>
+            </button>
+        </div>
+        
+        <!-- Products Display -->
+        <div id="productsContainer">
+            <!-- Grid View (Default) -->
+            <div class="product-grid" id="productGrid">
+                <% if (data && data.length > 0) { %>
+                    <% data.forEach(product => { %>
+                        <div class="product-card" data-id="<%= product._id %>">
+                            <!-- Product Status Badge -->
+                            <div class="product-status">
+                                <span class="status-badge <%= product.isActive ? 'status-active' : 'status-inactive' %>">
+                                    <%= product.isActive ? 'Active' : 'Inactive' %>
+                                </span>
+                            </div>
+                            
+                            <!-- Checkbox for Bulk Selection -->
+                            <div class="custom-checkbox">
+                                <input type="checkbox" id="check-<%= product._id %>" class="product-checkbox" data-id="<%= product._id %>">
+                                <label for="check-<%= product._id %>" class="checkbox-label"></label>
+                            </div>
+                            
+                            <!-- Product Image -->
+                            <img 
+                                src="<%= product.images && product.images.length > 0 ? product.images[0].url : 'https://via.placeholder.com/300x200?text=No+Image' %>" 
+                                alt="<%= product.name %>" 
+                                class="product-image"
+                            >
+                            
+                            <!-- Product Details -->
+                            <div class="product-details">
+                                <div class="product-category"><%= product.categoryId && product.categoryId.name ? product.categoryId.name : 'Uncategorized' %></div>
+                                <h3 class="product-name"><%= product.name %></h3>
+                                
+                                <div class="product-meta">
+                                    <div>
+                                        <% if (product.effectiveDiscount && product.effectiveDiscount > 0 && product.variants && product.variants.length > 0) { %>
+                                            <span class="product-price-original">₹<%= product.variants[0].varientPrice %></span>
+                                            <span class="product-price">₹<%= product.variants[0].salePrice %></span>
+                                        <% } else if (product.variants && product.variants.length > 0) { %>
+                                            <span class="product-price">₹<%= product.variants[0].varientPrice %></span>
+                                        <% } else { %>
+                                            <span class="product-price">₹0</span>
+                                        <% } %>
+                                    </div>
+                                    <div class="product-stock <%= product.variants && product.variants.length > 0 && product.variants[0].varientquatity > 10 ? 'stock-high' : product.variants && product.variants.length > 0 && product.variants[0].varientquatity > 0 ? 'stock-medium' : 'stock-low' %>">
+                                        <i class="fas <%= product.variants && product.variants.length > 0 && product.variants[0].varientquatity > 10 ? 'fa-check-circle' : product.variants && product.variants.length > 0 && product.variants[0].varientquatity > 0 ? 'fa-exclamation-circle' : 'fa-times-circle' %>"></i>
+                                        <%= product.variants && product.variants.length > 0 && product.variants[0].varientquatity > 0 ? `${product.variants[0].varientquatity} in stock` : 'Out of stock' %>
+                                    </div>
+                                </div>
+                                
+                                <!-- Offer Information -->
+                                <div class="product-offers">
+                                    <div class="offer-badges">
+                                        <div class="tooltip">
+                                            <span class="offer-badge offer-product">
+                                                <i class="fas fa-tag"></i> Product: <strong><%= product.offer || 0 %>%</strong>
+                                            </span>
+                                            <span class="tooltip-text">Product specific offer</span>
+                                        </div>
+                                        
+                                        <div class="tooltip">
+                                            <span class="offer-badge offer-category">
+                                                <i class="fas fa-folder"></i> Category: <strong><%= product.categoryId && product.categoryId.offer ? product.categoryId.offer : 0 %>%</strong>
+                                            </span>
+                                            <span class="tooltip-text">Category offer from <%= product.categoryId && product.categoryId.name ? product.categoryId.name : 'category' %></span>
+                                        </div>
+                                        
+                                        <div class="tooltip">
+                                            <span class="offer-badge offer-effective">
+                                                <i class="fas fa-check-circle"></i> Applied: <strong><%= product.effectiveDiscount || 0 %>%</strong>
+                                            </span>
+                                            <span class="tooltip-text">Applied offer (<%= product.discountSource === 'product' ? 'Product' : 'Category' %> offer)</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Toggle Switch for Product Status -->
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <span class="detail-label">Status</span>
                                         <label class="toggle-switch">
-                                            <input type="checkbox" data-product-id="<%= product._id %>" <%= product.isActive ? 'checked' : '' %> onchange="toggleStatus('<%= product._id %>', this.checked)">
+                                            <input 
+                                                type="checkbox" 
+                                                class="status-toggle"
+                                                data-product-id="<%= product._id %>" 
+                                                <%= product.isActive ? 'checked' : '' %> 
+                                            >
                                             <span class="slider"></span>
                                         </label>
+<<<<<<< Updated upstream
                                         <span id="status-<%= product._id %>"><%= product.isActive ? 'Listed' : 'Unlisted' %></span>
                                     </td>
                                     <td>
@@ -152,32 +329,145 @@
                                 <li class="page-item">
                                     <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search %>&category=<%= categoryFilter %>&brand=<%= brandFilter %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&sort=<%= sort %>">
                                         <i class="fas fa-chevron-left"></i>
+=======
+                                    </div>
+                                </div>
+                                
+                                <!-- Product Actions -->
+                                <div class="product-actions">
+                                    <a href="/admin/editProduct/<%= product._id %>" class="action-btn btn-edit">
+                                        <i class="fas fa-edit"></i> Edit
+>>>>>>> Stashed changes
                                     </a>
-                                </li>
-                            <% } %>
-                            <% for (let i = 1; i <= totalPage; i++) { %>
-                                <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                    <a class="page-link" href="?page=<%= i %>&search=<%= search %>&category=<%= categoryFilter %>&brand=<%= brandFilter %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&sort=<%= sort %>"><%= i %></a>
-                                </li>
-                            <% } %>
-                            <% if (currentPage < totalPage) { %>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<%= currentPage + 1 %>&search=<%= search %>&category=<%= categoryFilter %>&brand=<%= brandFilter %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&sort=<%= sort %>">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </a>
-                                </li>
-                            <% } %>
-                        </ul>
-                    </nav>
-                </div>
-            <% } else { %>
-                <div class="alert alert-info text-center py-4">
-                    <h4>No products available</h4>
-                    <p>It looks like there are no products to display. <a href="/admin/addproduct" class="alert-link">Add a new product</a> to get started.</p>
-                </div>
-            <% } %>
+                                    <button class="action-btn btn-delete delete-product-btn" data-id="<%= product._id %>">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <!-- Empty State -->
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <h2 class="empty-state-title">No products available</h2>
+                        <p class="empty-state-text">It looks like there are no products to display. Add a new product to get started.</p>
+                        <a href="/admin/addproduct" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add New Product
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+            
+            <!-- List View (Hidden by default) -->
+            <div class="product-list" id="productList" style="display: none;">
+                <% if (data && data.length > 0) { %>
+                    <% data.forEach(product => { %>
+                        <div class="product-list-item" data-id="<%= product._id %>">
+                            <!-- Checkbox for Bulk Selection -->
+                            <div class="custom-checkbox">
+                                <input type="checkbox" id="list-check-<%= product._id %>" class="product-checkbox" data-id="<%= product._id %>">
+                                <label for="list-check-<%= product._id %>" class="checkbox-label"></label>
+                            </div>
+                            
+                            <!-- Product Image -->
+                            <img 
+                                src="<%= product.images && product.images.length > 0 ? product.images[0].url : 'https://via.placeholder.com/150x150?text=No+Image' %>" 
+                                alt="<%= product.name %>" 
+                                class="list-item-image"
+                            >
+                            
+                            <!-- Product Content -->
+                            <div class="list-item-content">
+                                <div class="list-item-header">
+                                    <div>
+                                        <h3 class="list-item-title"><%= product.name %></h3>
+                                        <div class="list-item-category"><%= product.categoryId && product.categoryId.name ? product.categoryId.name : 'Uncategorized' %></div>
+                                    </div>
+                                    
+                                    <div class="product-status">
+                                        <span class="status-badge <%= product.isActive ? 'status-active' : 'status-inactive' %>">
+                                            <%= product.isActive ? 'Active' : 'Inactive' %>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="list-item-details">
+                                    <div class="list-item-detail">
+                                        <span class="detail-label">Price</span>
+                                        <span class="detail-value list-item-price">
+                                            <% if (product.effectiveDiscount && product.effectiveDiscount > 0 && product.variants && product.variants.length > 0) { %>
+                                                <span class="product-price-original">₹<%= product.variants[0].varientPrice %></span>
+                                                <span class="product-price">₹<%= product.variants[0].salePrice %></span>
+                                            <% } else if (product.variants && product.variants.length > 0) { %>
+                                                <span class="product-price">₹<%= product.variants[0].varientPrice %></span>
+                                            <% } else { %>
+                                                <span class="product-price">₹0</span>
+                                            <% } %>
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="list-item-detail">
+                                        <span class="detail-label">Stock</span>
+                                        <span class="detail-value <%= product.variants && product.variants.length > 0 && product.variants[0].varientquatity > 10 ? 'stock-high' : product.variants && product.variants.length > 0 && product.variants[0].varientquatity > 0 ? 'stock-medium' : 'stock-low' %>">
+                                            <%= product.variants && product.variants.length > 0 ? product.variants[0].varientquatity : 0 %> units
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="list-item-detail">
+                                        <span class="detail-label">Product Offer</span>
+                                        <span class="detail-value"><%= product.offer || 0 %>%</span>
+                                    </div>
+                                    
+                                    <div class="list-item-detail">
+                                        <span class="detail-label">Category Offer</span>
+                                        <span class="detail-value"><%= product.categoryId && product.categoryId.offer ? product.categoryId.offer : 0 %>%</span>
+                                    </div>
+                                    
+                                    <div class="list-item-detail">
+                                        <span class="detail-label">Applied Offer</span>
+                                        <span class="detail-value"><%= product.effectiveDiscount || 0 %>% (<%= product.discountSource === 'product' ? 'Product' : 'Category' %>)</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="list-item-footer">
+                                    <label class="toggle-switch">
+                                        <input 
+                                            type="checkbox" 
+                                            class="status-toggle"
+                                            data-product-id="<%= product._id %>" 
+                                            <%= product.isActive ? 'checked' : '' %> 
+                                        >
+                                        <span class="slider"></span>
+                                        <span class="ms-2"><%= product.isActive ? 'Listed' : 'Unlisted' %></span>
+                                    </label>
+                                    
+                                    <div class="product-actions">
+                                        <a href="/admin/editProduct/<%= product._id %>" class="btn btn-sm btn-outline">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                        <button class="btn btn-sm btn-danger delete-product-btn" data-id="<%= product._id %>">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } %>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="pagination-container" id="paginationContainer">
+            <ul class="pagination" id="pagination">
+                <!-- Pagination will be generated by JavaScript -->
+            </ul>
         </div>
     </div>
+<<<<<<< Updated upstream
 
    
     <div class="modal fade custom-modal" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -200,8 +490,97 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 
+=======
+    
+    <!-- Bulk Offer Modal -->
+    <div class="modal-backdrop" id="bulkOfferModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Offers for Selected Products</h5>
+                <button type="button" class="modal-close" id="closeBulkOfferModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="bulkOfferValue" class="form-label">Offer Percentage</label>
+                    <input type="number" class="form-control" id="bulkOfferValue" min="0" max="100" placeholder="Enter offer percentage (0-100)">
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="overrideExistingOffers">
+                    <label class="form-check-label" for="overrideExistingOffers">
+                        Override existing product offers
+                    </label>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> The system will automatically apply the higher of product or category offers.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" id="cancelBulkOfferBtn">Cancel</button>
+                <button type="button" class="btn btn-primary" id="applyBulkOfferBtn">Apply Offers</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Theme Toggle Button -->
+    <div class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+>>>>>>> Stashed changes
     <script>
+        // Global variables
+        let currentPage = <%= currentPage || 1 %>;
+        let totalPages = <%= totalPage || 1 %>;
+        let currentView = 'grid';
+        let selectedProductIds = new Set();
+        
+        // DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const clearBtn = document.getElementById('clearBtn');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const priceFilter = document.getElementById('priceFilter');
+        const stockFilter = document.getElementById('stockFilter');
+        const sortFilter = document.getElementById('sortFilter');
+        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+        const gridViewBtn = document.getElementById('gridViewBtn');
+        const listViewBtn = document.getElementById('listViewBtn');
+        const productGrid = document.getElementById('productGrid');
+        const productList = document.getElementById('productList');
+        const bulkActionBtn = document.getElementById('bulkActionBtn');
+        const batchActions = document.getElementById('batchActions');
+        const selectAllProducts = document.getElementById('selectAllProducts');
+        const selectedCount = document.getElementById('selectedCount');
+        const bulkListBtn = document.getElementById('bulkListBtn');
+        const bulkUnlistBtn = document.getElementById('bulkUnlistBtn');
+        const bulkOfferBtn = document.getElementById('bulkOfferBtn');
+        const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+        const bulkOfferModal = document.getElementById('bulkOfferModal');
+        const closeBulkOfferModal = document.getElementById('closeBulkOfferModal');
+        const cancelBulkOfferBtn = document.getElementById('cancelBulkOfferBtn');
+        const applyBulkOfferBtn = document.getElementById('applyBulkOfferBtn');
+        const bulkOfferValue = document.getElementById('bulkOfferValue');
+        const overrideExistingOffers = document.getElementById('overrideExistingOffers');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const body = document.body;
+        const paginationContainer = document.getElementById('paginationContainer');
+        const pagination = document.getElementById('pagination');
+        
+        // Initialize the page
         document.addEventListener('DOMContentLoaded', () => {
+<<<<<<< Updated upstream
             const deleteButtons = document.querySelectorAll('.delete-btn');
             const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
             let productIdToDelete = null;
@@ -239,59 +618,1096 @@
             const searchInput = document.getElementById("searchInput");
             const clearBtn = document.getElementById('clearBtn');
             clearBtn.style.display = searchInput.value.trim().length > 0 ? "block" : "none";
+=======
+            // Initialize theme
+            initTheme();
+            
+            // Initialize view
+            initView();
+            
+            // Initialize event listeners
+            initEventListeners();
+            
+            // Initialize checkboxes
+            initCheckboxes();
+            
+            // Generate pagination
+            generatePagination(currentPage, totalPages);
+            
+            // Hide checkboxes initially
+            document.querySelectorAll('.custom-checkbox').forEach(el => {
+                el.style.display = 'none';
+            });
+        });
+        
+        // Theme functions
+        function initTheme() {
+            const savedTheme = localStorage.getItem('admin-theme');
+            if (savedTheme) {
+                body.setAttribute('data-theme', savedTheme);
+                updateThemeIcons(savedTheme);
+            }
         }
-
+        
+        function toggleTheme() {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('admin-theme', newTheme);
+            
+            updateThemeIcons(newTheme);
+        }
+        
+        function updateThemeIcons(theme) {
+            if (theme === 'dark') {
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
+            } else {
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
+            }
+        }
+        
+        // View functions
+        function initView() {
+            const savedView = localStorage.getItem('productViewType');
+            if (savedView) {
+                switchView(savedView);
+            }
+        }
+        
+        function switchView(viewType) {
+            currentView = viewType;
+            
+            if (viewType === 'grid') {
+                productGrid.style.display = 'grid';
+                productList.style.display = 'none';
+                gridViewBtn.classList.add('active');
+                listViewBtn.classList.remove('active');
+                localStorage.setItem('productViewType', 'grid');
+            } else {
+                productGrid.style.display = 'none';
+                productList.style.display = 'flex';
+                gridViewBtn.classList.remove('active');
+                listViewBtn.classList.add('active');
+                localStorage.setItem('productViewType', 'list');
+            }
+        }
+        
+        // Event listeners
+        function initEventListeners() {
+            // Theme toggle
+            themeToggle.addEventListener('click', toggleTheme);
+            themeToggleBtn.addEventListener('click', toggleTheme);
+            
+            // View toggle
+            gridViewBtn.addEventListener('click', () => switchView('grid'));
+            listViewBtn.addEventListener('click', () => switchView('list'));
+            
+            // Search
+            searchInput.addEventListener('input', debounce(handleSearch, 500));
+            clearBtn.addEventListener('click', clearSearch);
+            
+            // Filters
+            categoryFilter.addEventListener('change', applyFilters);
+            priceFilter.addEventListener('change', applyFilters);
+            stockFilter.addEventListener('change', applyFilters);
+            sortFilter.addEventListener('change', applyFilters);
+            resetFiltersBtn.addEventListener('click', resetFilters);
+            
+            // Bulk actions
+            bulkActionBtn.addEventListener('click', toggleBulkActions);
+            selectAllProducts.addEventListener('change', toggleSelectAll);
+            bulkListBtn.addEventListener('click', () => bulkUpdateStatus(true));
+            bulkUnlistBtn.addEventListener('click', () => bulkUpdateStatus(false));
+            bulkOfferBtn.addEventListener('click', showBulkOfferModal);
+            bulkDeleteBtn.addEventListener('click', confirmBulkDelete);
+            
+            // Bulk offer modal
+            closeBulkOfferModal.addEventListener('click', closeBulkOfferModalFn);
+            cancelBulkOfferBtn.addEventListener('click', closeBulkOfferModalFn);
+            applyBulkOfferBtn.addEventListener('click', applyBulkOffer);
+            
+            // Product actions
+            document.querySelectorAll('.delete-product-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-id');
+                    confirmDelete(productId);
+                });
+            });
+            
+            document.querySelectorAll('.status-toggle').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    toggleStatus(productId, this.checked);
+                });
+            });
+        }
+        
+        // Initialize checkboxes
+        function initCheckboxes() {
+            document.querySelectorAll('.product-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const productId = this.getAttribute('data-id');
+                    
+                    if (this.checked) {
+                        selectedProductIds.add(productId);
+                    } else {
+                        selectedProductIds.delete(productId);
+                    }
+                    
+                    updateSelectedCount();
+                    
+                    // Sync checkboxes with the same product ID
+                    document.querySelectorAll(`.product-checkbox[data-id="${productId}"]`).forEach(cb => {
+                        cb.checked = this.checked;
+                    });
+                });
+            });
+>>>>>>> Stashed changes
+        }
+        
+        // Search functions
+        function handleSearch() {
+            const searchValue = searchInput.value.trim();
+            clearBtn.style.display = searchValue.length > 0 ? 'block' : 'none';
+            
+            if (searchValue.length >= 2 || searchValue.length === 0) {
+                applyFilters();
+            }
+        }
+        
         function clearSearch() {
-            window.location.href = "/admin/productManagment";
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            applyFilters();
         }
-
+        
+        // Filter functions
+        function applyFilters() {
+            showLoading();
+            
+            const search = searchInput.value.trim();
+            const category = categoryFilter.value;
+            const priceRange = priceFilter.value;
+            const stock = stockFilter.value;
+            const sort = sortFilter.value;
+            
+            let minPrice = '';
+            let maxPrice = '';
+            
+            if (priceRange) {
+                const [min, max] = priceRange.split('-');
+                minPrice = min;
+                maxPrice = max;
+            }
+            
+            // Fetch products with filters
+            fetchProducts(1, search, category, minPrice, maxPrice, stock, sort);
+        }
+        
+        function resetFilters() {
+            searchInput.value = '';
+            categoryFilter.value = '';
+            priceFilter.value = '';
+            stockFilter.value = '';
+            sortFilter.value = 'latest';
+            clearBtn.style.display = 'none';
+            
+            applyFilters();
+        }
+        
+        // Fetch products with AJAX
+        function fetchProducts(page, search = '', category = '', minPrice = '', maxPrice = '', stock = '', sort = 'latest') {
+            const url = new URL('/admin/api/products', window.location.origin);
+            
+            // Add query parameters
+            url.searchParams.append('page', page);
+            if (search) url.searchParams.append('search', search);
+            if (category) url.searchParams.append('category', category);
+            if (minPrice) url.searchParams.append('minPrice', minPrice);
+            if (maxPrice) url.searchParams.append('maxPrice', maxPrice);
+            if (stock) url.searchParams.append('stock', stock);
+            if (sort) url.searchParams.append('sort', sort);
+            
+            fetch(url.toString())
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update products
+                        updateProducts(data.products);
+                        
+                        // Update pagination
+                        currentPage = data.pagination.currentPage;
+                        totalPages = data.pagination.totalPage;
+                        generatePagination(currentPage, totalPages);
+                        
+                        // Update stats
+                        updateStats(data.stats);
+                        
+                        // Update URL without reloading the page
+                        updateURL(page, search, category, minPrice, maxPrice, sort);
+                    } else {
+                        throw new Error(data.message || 'Failed to fetch products');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message || 'Something went wrong!'
+                    });
+                })
+                .finally(() => {
+                    hideLoading();
+                });
+        }
+        
+        // Update products in the DOM
+        function updateProducts(products) {
+            // Clear existing products
+            productGrid.innerHTML = '';
+            productList.innerHTML = '';
+            
+            if (products.length === 0) {
+                // Show empty state
+                const emptyState = `
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <h2 class="empty-state-title">No products found</h2>
+                        <p class="empty-state-text">Try adjusting your search or filters, or add a new product to get started.</p>
+                        <a href="/admin/addproduct" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add New Product
+                        </a>
+                    </div>
+                `;
+                
+                productGrid.innerHTML = emptyState;
+                return;
+            }
+            
+            // Add products to grid view
+            products.forEach(product => {
+                const gridItem = createGridItem(product);
+                productGrid.appendChild(gridItem);
+                
+                const listItem = createListItem(product);
+                productList.appendChild(listItem);
+            });
+            
+            // Reinitialize event listeners for new elements
+            initProductEventListeners();
+        }
+        
+        // Create grid item
+        function createGridItem(product) {
+            const div = document.createElement('div');
+            div.className = 'product-card';
+            div.setAttribute('data-id', product._id);
+            
+            const categoryName = product.categoryId ? product.categoryId.name : 'Uncategorized';
+            const hasVariants = product.variants && product.variants.length > 0;
+            const variantPrice = hasVariants ? product.variants[0].varientPrice : 0;
+            const salePrice = hasVariants ? product.variants[0].salePrice : 0;
+            const hasDiscount = product.effectiveDiscount && product.effectiveDiscount > 0;
+            const stockQuantity = hasVariants ? product.variants[0].varientquatity : 0;
+            
+            div.innerHTML = `
+                <div class="product-status">
+                    <span class="status-badge ${product.isActive ? 'status-active' : 'status-inactive'}">
+                        ${product.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                </div>
+                
+                <div class="custom-checkbox">
+                    <input type="checkbox" id="check-${product._id}" class="product-checkbox" data-id="${product._id}">
+                    <label for="check-${product._id}" class="checkbox-label"></label>
+                </div>
+                
+                <img 
+                    src="${product.images && product.images.length > 0 ? product.images[0].url : 'https://via.placeholder.com/300x200?text=No+Image'}" 
+                    alt="${product.name}" 
+                    class="product-image"
+                >
+                
+                <div class="product-details">
+                    <div class="product-category">${categoryName}</div>
+                    <h3 class="product-name">${product.name}</h3>
+                    
+                    <div class="product-meta">
+                        <div>
+                            ${hasDiscount ? `<span class="product-price-original">₹${variantPrice}</span>` : ''}
+                            <span class="product-price">₹${hasDiscount ? salePrice : variantPrice}</span>
+                        </div>
+                        <div class="product-stock ${stockQuantity > 10 ? 'stock-high' : stockQuantity > 0 ? 'stock-medium' : 'stock-low'}">
+                            <i class="fas ${stockQuantity > 10 ? 'fa-check-circle' : stockQuantity > 0 ? 'fa-exclamation-circle' : 'fa-times-circle'}"></i>
+                            ${stockQuantity > 0 ? `${stockQuantity} in stock` : 'Out of stock'}
+                        </div>
+                    </div>
+                    
+                    <div class="product-offers">
+                        <div class="offer-badges">
+                            <div class="tooltip">
+                                <span class="offer-badge offer-product">
+                                    <i class="fas fa-tag"></i> Product: <strong>${product.offer || 0}%</strong>
+                                </span>
+                                <span class="tooltip-text">Product specific offer</span>
+                            </div>
+                            
+                            <div class="tooltip">
+                                <span class="offer-badge offer-category">
+                                    <i class="fas fa-folder"></i> Category: <strong>${product.categoryId && product.categoryId.offer ? product.categoryId.offer : 0}%</strong>
+                                </span>
+                                <span class="tooltip-text">Category offer from ${categoryName}</span>
+                            </div>
+                            
+                            <div class="tooltip">
+                                <span class="offer-badge offer-effective">
+                                    <i class="fas fa-check-circle"></i> Applied: <strong>${product.effectiveDiscount || 0}%</strong>
+                                </span>
+                                <span class="tooltip-text">Applied offer (${product.discountSource === 'product' ? 'Product' : 'Category'} offer)</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <span class="detail-label">Status</span>
+                            <label class="toggle-switch">
+                                <input 
+                                    type="checkbox" 
+                                    class="status-toggle"
+                                    data-product-id="${product._id}" 
+                                    ${product.isActive ? 'checked' : ''} 
+                                >
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="product-actions">
+                        <a href="/admin/editProduct/${product._id}" class="action-btn btn-edit">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <button class="action-btn btn-delete delete-product-btn" data-id="${product._id}">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return div;
+        }
+        
+        // Create list item
+        function createListItem(product) {
+            const div = document.createElement('div');
+            div.className = 'product-list-item';
+            div.setAttribute('data-id', product._id);
+            
+            const categoryName = product.categoryId ? product.categoryId.name : 'Uncategorized';
+            const hasVariants = product.variants && product.variants.length > 0;
+            const variantPrice = hasVariants ? product.variants[0].varientPrice : 0;
+            const salePrice = hasVariants ? product.variants[0].salePrice : 0;
+            const hasDiscount = product.effectiveDiscount && product.effectiveDiscount > 0;
+            const stockQuantity = hasVariants ? product.variants[0].varientquatity : 0;
+            
+            div.innerHTML = `
+                <div class="custom-checkbox">
+                    <input type="checkbox" id="list-check-${product._id}" class="product-checkbox" data-id="${product._id}">
+                    <label for="list-check-${product._id}" class="checkbox-label"></label>
+                </div>
+                
+                <img 
+                    src="${product.images && product.images.length > 0 ? product.images[0].url : 'https://via.placeholder.com/150x150?text=No+Image'}" 
+                    alt="${product.name}" 
+                    class="list-item-image"
+                >
+                
+                <div class="list-item-content">
+                    <div class="list-item-header">
+                        <div>
+                            <h3 class="list-item-title">${product.name}</h3>
+                            <div class="list-item-category">${categoryName}</div>
+                        </div>
+                        
+                        <div class="product-status">
+                            <span class="status-badge ${product.isActive ? 'status-active' : 'status-inactive'}">
+                                ${product.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="list-item-details">
+                        <div class="list-item-detail">
+                            <span class="detail-label">Price</span>
+                            <span class="detail-value list-item-price">
+                                ${hasDiscount ? `<span class="product-price-original">₹${variantPrice}</span>` : ''}
+                                ₹${hasDiscount ? salePrice : variantPrice}
+                            </span>
+                        </div>
+                        
+                        <div class="list-item-detail">
+                            <span class="detail-label">Stock</span>
+                            <span class="detail-value ${stockQuantity > 10 ? 'stock-high' : stockQuantity > 0 ? 'stock-medium' : 'stock-low'}">
+                                ${stockQuantity} units
+                            </span>
+                        </div>
+                        
+                        <div class="list-item-detail">
+                            <span class="detail-label">Product Offer</span>
+                            <span class="detail-value">${product.offer || 0}%</span>
+                        </div>
+                        
+                        <div class="list-item-detail">
+                            <span class="detail-label">Category Offer</span>
+                            <span class="detail-value">${product.categoryId && product.categoryId.offer ? product.categoryId.offer : 0}%</span>
+                        </div>
+                        
+                        <div class="list-item-detail">
+                            <span class="detail-label">Applied Offer</span>
+                            <span class="detail-value">${product.effectiveDiscount || 0}% (${product.discountSource === 'product' ? 'Product' : 'Category'})</span>
+                        </div>
+                    </div>
+                    
+                    <div class="list-item-footer">
+                        <label class="toggle-switch">
+                            <input 
+                                type="checkbox" 
+                                class="status-toggle"
+                                data-product-id="${product._id}" 
+                                ${product.isActive ? 'checked' : ''} 
+                            >
+                            <span class="slider"></span>
+                            <span class="ms-2">${product.isActive ? 'Listed' : 'Unlisted'}</span>
+                        </label>
+                        
+                        <div class="product-actions">
+                            <a href="/admin/editProduct/${product._id}" class="btn btn-sm btn-outline">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <button class="btn btn-sm btn-danger delete-product-btn" data-id="${product._id}">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return div;
+        }
+        
+        // Initialize event listeners for product elements
+        function initProductEventListeners() {
+            // Delete buttons
+            document.querySelectorAll('.delete-product-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-id');
+                    confirmDelete(productId);
+                });
+            });
+            
+            // Status toggles
+            document.querySelectorAll('.status-toggle').forEach(toggle => {
+                toggle.addEventListener('change', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    toggleStatus(productId, this.checked);
+                });
+            });
+            
+            // Checkboxes
+            document.querySelectorAll('.product-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const productId = this.getAttribute('data-id');
+                    
+                    if (this.checked) {
+                        selectedProductIds.add(productId);
+                    } else {
+                        selectedProductIds.delete(productId);
+                    }
+                    
+                    updateSelectedCount();
+                    
+                    // Sync checkboxes with the same product ID
+                    document.querySelectorAll(`.product-checkbox[data-id="${productId}"]`).forEach(cb => {
+                        cb.checked = this.checked;
+                    });
+                });
+            });
+        }
+        
+        // Update stats
+        function updateStats(stats) {
+            document.getElementById('totalProductsCount').textContent = stats.totalProducts || 0;
+            document.getElementById('activeProductsCount').textContent = stats.activeProducts || 0;
+            document.getElementById('lowStockCount').textContent = stats.lowStockProducts || 0;
+            document.getElementById('productsWithOffersCount').textContent = stats.productsWithOffers || 0;
+        }
+        
+        // Update URL
+        function updateURL(page, search, category, minPrice, maxPrice, sort) {
+            const url = new URL(window.location.href);
+            
+            // Update query parameters
+            url.searchParams.set('page', page);
+            
+            if (search) {
+                url.searchParams.set('search', search);
+            } else {
+                url.searchParams.delete('search');
+            }
+            
+            if (category) {
+                url.searchParams.set('category', category);
+            } else {
+                url.searchParams.delete('category');
+            }
+            
+            if (minPrice) {
+                url.searchParams.set('minPrice', minPrice);
+            } else {
+                url.searchParams.delete('minPrice');
+            }
+            
+            if (maxPrice) {
+                url.searchParams.set('maxPrice', maxPrice);
+            } else {
+                url.searchParams.delete('maxPrice');
+            }
+            
+            if (sort && sort !== 'latest') {
+                url.searchParams.set('sort', sort);
+            } else {
+                url.searchParams.delete('sort');
+            }
+            
+            // Update URL without reloading the page
+            window.history.pushState({}, '', url.toString());
+        }
+        
+        // Generate pagination
+        function generatePagination(currentPage, totalPages) {
+            pagination.innerHTML = '';
+            
+            // Previous button
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            
+            const prevLink = document.createElement('a');
+            prevLink.className = 'page-link';
+            prevLink.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            if (currentPage > 1) {
+                prevLink.addEventListener('click', () => goToPage(currentPage - 1));
+            }
+            
+            prevLi.appendChild(prevLink);
+            pagination.appendChild(prevLi);
+            
+            // Page numbers
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, startPage + 4);
+            
+            // Ensure we show 5 pages if possible
+            if (endPage - startPage < 4 && totalPages > 5) {
+                if (startPage === 1) {
+                    endPage = Math.min(5, totalPages);
+                } else {
+                    startPage = Math.max(1, endPage - 4);
+                }
+            }
+            
+            // First page
+            if (startPage > 1) {
+                const firstLi = document.createElement('li');
+                firstLi.className = 'page-item';
+                
+                const firstLink = document.createElement('a');
+                firstLink.className = 'page-link';
+                firstLink.textContent = '1';
+                firstLink.addEventListener('click', () => goToPage(1));
+                
+                firstLi.appendChild(firstLink);
+                pagination.appendChild(firstLi);
+                
+                // Ellipsis
+                if (startPage > 2) {
+                    const ellipsisLi = document.createElement('li');
+                    ellipsisLi.className = 'page-item disabled';
+                    
+                    const ellipsisSpan = document.createElement('span');
+                    ellipsisSpan.className = 'page-link';
+                    ellipsisSpan.textContent = '...';
+                    
+                    ellipsisLi.appendChild(ellipsisSpan);
+                    pagination.appendChild(ellipsisLi);
+                }
+            }
+            
+            // Page numbers
+            for (let i = startPage; i <= endPage; i++) {
+                const pageLi = document.createElement('li');
+                pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                
+                const pageLink = document.createElement('a');
+                pageLink.className = 'page-link';
+                pageLink.textContent = i;
+                pageLink.addEventListener('click', () => goToPage(i));
+                
+                pageLi.appendChild(pageLink);
+                pagination.appendChild(pageLi);
+            }
+            
+            // Last page
+            if (endPage < totalPages) {
+                // Ellipsis
+                if (endPage < totalPages - 1) {
+                    const ellipsisLi = document.createElement('li');
+                    ellipsisLi.className = 'page-item disabled';
+                    
+                    const ellipsisSpan = document.createElement('span');
+                    ellipsisSpan.className = 'page-link';
+                    ellipsisSpan.textContent = '...';
+                    
+                    ellipsisLi.appendChild(ellipsisSpan);
+                    pagination.appendChild(ellipsisLi);
+                }
+                
+                const lastLi = document.createElement('li');
+                lastLi.className = 'page-item';
+                
+                const lastLink = document.createElement('a');
+                lastLink.className = 'page-link';
+                lastLink.textContent = totalPages;
+                lastLink.addEventListener('click', () => goToPage(totalPages));
+                
+                lastLi.appendChild(lastLink);
+                pagination.appendChild(lastLi);
+            }
+            
+            // Next button
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            
+            const nextLink = document.createElement('a');
+            nextLink.className = 'page-link';
+            nextLink.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            if (currentPage < totalPages) {
+                nextLink.addEventListener('click', () => goToPage(currentPage + 1));
+            }
+            
+            nextLi.appendChild(nextLink);
+            pagination.appendChild(nextLi);
+        }
+        
+        // Go to page
+        function goToPage(page) {
+            if (page === currentPage) return;
+            
+            showLoading();
+            
+            const search = searchInput.value.trim();
+            const category = categoryFilter.value;
+            const priceRange = priceFilter.value;
+            const stock = stockFilter.value;
+            const sort = sortFilter.value;
+            
+            let minPrice = '';
+            let maxPrice = '';
+            
+            if (priceRange) {
+                const [min, max] = priceRange.split('-');
+                minPrice = min;
+                maxPrice = max;
+            }
+            
+            fetchProducts(page, search, category, minPrice, maxPrice, stock, sort);
+        }
+        
+        // Bulk actions
+        function toggleBulkActions() {
+            const checkboxes = document.querySelectorAll('.product-checkbox');
+            const isVisible = batchActions.style.display === 'flex';
+            
+            if (isVisible) {
+                batchActions.style.display = 'none';
+                document.querySelectorAll('.custom-checkbox').forEach(el => {
+                    el.style.display = 'none';
+                });
+                
+                // Clear selection
+                selectedProductIds.clear();
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                updateSelectedCount();
+            } else {
+                batchActions.style.display = 'flex';
+                document.querySelectorAll('.custom-checkbox').forEach(el => {
+                    el.style.display = 'block';
+                });
+            }
+        }
+        
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.product-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAllProducts.checked;
+                
+                const productId = checkbox.getAttribute('data-id');
+                if (selectAllProducts.checked) {
+                    selectedProductIds.add(productId);
+                } else {
+                    selectedProductIds.delete(productId);
+                }
+            });
+            
+            updateSelectedCount();
+        }
+        
+        function updateSelectedCount() {
+            selectedCount.textContent = selectedProductIds.size;
+        }
+        
+        function bulkUpdateStatus(isActive) {
+            const selectedIds = Array.from(selectedProductIds);
+            
+            if (selectedIds.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Products Selected',
+                    text: 'Please select at least one product.'
+                });
+                return;
+            }
+            
+            Swal.fire({
+                title: `${isActive ? 'List' : 'Unlist'} Selected Products?`,
+                text: `Are you sure you want to ${isActive ? 'list' : 'unlist'} ${selectedIds.length} products?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, proceed'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    showLoading();
+                    
+                    try {
+                        const response = await fetch('/admin/bulkUpdateStatus', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ productIds: selectedIds, isActive })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: `${selectedIds.length} products have been ${isActive ? 'listed' : 'unlisted'}.`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // Refresh products
+                                applyFilters();
+                            });
+                        } else {
+                            throw new Error(data.message || 'Operation failed');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: error.message || 'An error occurred during the operation'
+                        });
+                        hideLoading();
+                    }
+                }
+            });
+        }
+        
+        function confirmBulkDelete() {
+            const selectedIds = Array.from(selectedProductIds);
+            
+            if (selectedIds.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Products Selected',
+                    text: 'Please select at least one product.'
+                });
+                return;
+            }
+            
+            Swal.fire({
+                title: 'Delete Selected Products?',
+                text: `Are you sure you want to delete ${selectedIds.length} products? This action cannot be undone!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete them!'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    showLoading();
+                    
+                    try {
+                        const response = await fetch('/admin/bulkDeleteProducts', {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ productIds: selectedIds })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: `${selectedIds.length} products have been deleted.`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // Refresh products
+                                applyFilters();
+                            });
+                        } else {
+                            throw new Error(data.message || 'Deletion failed');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: error.message || 'An error occurred during deletion'
+                        });
+                        hideLoading();
+                    }
+                }
+            });
+        }
+        
+        // Bulk offer modal
+        function showBulkOfferModal() {
+            const selectedIds = Array.from(selectedProductIds);
+            
+            if (selectedIds.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Products Selected',
+                    text: 'Please select at least one product.'
+                });
+                return;
+            }
+            
+            bulkOfferModal.classList.add('show');
+        }
+        
+        function closeBulkOfferModalFn() {
+            bulkOfferModal.classList.remove('show');
+        }
+        
+        function applyBulkOffer() {
+            const selectedIds = Array.from(selectedProductIds);
+            const offerValue = bulkOfferValue.value;
+            const override = overrideExistingOffers.checked;
+            
+            if (!offerValue || isNaN(offerValue) || offerValue < 0 || offerValue > 100) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid Offer',
+                    text: 'Please enter a valid offer percentage between 0 and 100.'
+                });
+                return;
+            }
+            
+            Swal.fire({
+                title: 'Apply Offer to Selected Products?',
+                text: `Are you sure you want to set a ${offerValue}% offer for ${selectedIds.length} products?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, apply offer'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    showLoading();
+                    closeBulkOfferModalFn();
+                    
+                    try {
+                        const response = await fetch('/admin/updateProductOffer', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                productIds: selectedIds,
+                                offer: offerValue,
+                                override: override
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: `Offer applied to ${selectedIds.length} products.`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // Refresh products
+                                applyFilters();
+                            });
+                        } else {
+                            throw new Error(data.message || 'Operation failed');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: error.message || 'An error occurred during the operation'
+                        });
+                        hideLoading();
+                    }
+                }
+            });
+        }
+        
+        // Product actions
+        function confirmDelete(productId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    showLoading();
+                    
+                    try {
+                        const response = await fetch(`/admin/deleteProduct/${productId}`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const data = await response.json();
+                        
+                        if (data.status) {
+                            // Remove product from DOM
+                            document.querySelectorAll(`[data-id="${productId}"]`).forEach(el => el.remove());
+                            
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted!',
+                                text: 'Product has been deleted successfully.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                            
+                            // Update stats
+                            const totalProductsCount = document.getElementById('totalProductsCount');
+                            totalProductsCount.textContent = parseInt(totalProductsCount.textContent) - 1;
+                        } else {
+                            throw new Error(data.message || 'Failed to delete product');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error!',
+                            text: error.message || 'An error occurred while deleting the product'
+                        });
+                    } finally {
+                        hideLoading();
+                    }
+                }
+            });
+        }
+        
         function toggleStatus(productId, isChecked) {
+            showLoading();
+            
             const url = isChecked ? `/admin/listProduct/${productId}` : `/admin/unlistProduct/${productId}`;
-            const checkbox = document.querySelector(`input[data-product-id="${productId}"]`);
-            if (!checkbox) return;
-
-            checkbox.disabled = true;
-
+            const checkboxes = document.querySelectorAll(`input[data-product-id="${productId}"]`);
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.disabled = true;
+            });
+            
             fetch(url, { method: "POST", headers: { 'Content-Type': 'application/json' } })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        document.getElementById(`status-${productId}`).innerText = data.isActive ? "Listed" : "Unlisted";
+                        // Update status badges
+                        const statusBadges = document.querySelectorAll(`.product-card[data-id="${productId}"] .status-badge, .product-list-item[data-id="${productId}"] .status-badge`);
+                        statusBadges.forEach(badge => {
+                            badge.className = `status-badge ${data.isActive ? 'status-active' : 'status-inactive'}`;
+                            badge.textContent = data.isActive ? 'Active' : 'Inactive';
+                        });
+                        
+                        // Show success toast
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: `Product ${data.isActive ? 'listed' : 'unlisted'} successfully`,
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                        
+                        // Update stats
+                        const activeProductsCount = document.getElementById('activeProductsCount');
+                        activeProductsCount.textContent = parseInt(activeProductsCount.textContent) + (data.isActive ? 1 : -1);
                     } else {
                         throw new Error(data.message || "Failed to update status");
                     }
                 })
                 .catch(error => {
                     console.error("Error:", error);
-                    alert(error.message || "Something went wrong!");
-                    checkbox.checked = !isChecked;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message || "Something went wrong!"
+                    });
+                    
+                    // Revert checkbox state
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = !isChecked;
+                    });
                 })
-                .finally(() => checkbox.disabled = false);
+                .finally(() => {
+                    checkboxes.forEach(checkbox => {
+                        checkbox.disabled = false;
+                    });
+                    hideLoading();
+                });
         }
-
-        function filterByCategory(category) {
-            const params = new URLSearchParams(window.location.search);
-            if (category === "all") params.delete("category");
-            else params.set("category", category);
-            params.set("page", "1");
-            window.location.href = `/admin/productManagment?${params.toString()}`;
+        
+        // Utility functions
+        function showLoading() {
+            loadingOverlay.classList.add('show');
         }
-
-        function filterByPrice(min, max) {
-            const params = new URLSearchParams(window.location.search);
-            if (min !== null) params.set("minPrice", min);
-            else params.delete("minPrice");
-            if (max !== null) params.set("maxPrice", max);
-            else params.delete("maxPrice");
-            params.set("page", "1");
-            window.location.href = `/admin/productManagment?${params.toString()}`;
+        
+        function hideLoading() {
+            loadingOverlay.classList.remove('show');
         }
-
-        function sortProducts(sortOption) {
-            const params = new URLSearchParams(window.location.search);
-            if (sortOption) params.set("sort", sortOption);
-            else params.delete("sort");
-            window.location.href = `/admin/productManagment?${params.toString()}`;
+        
+        function debounce(func, delay) {
+            let timeout;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), delay);
+            };
         }
     </script>
 </body>

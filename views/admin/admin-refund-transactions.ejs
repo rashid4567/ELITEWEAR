@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<%
+// Helper functions for the template - MUST be defined at the top before use
+function getStatusColorClass(status) {
+  switch (status) {
+    case 'approved':
+      return 'bg-success-soft text-success';
+    case 'pending':
+      return 'bg-warning-soft text-warning';
+    case 'rejected':
+      return 'bg-danger-soft text-danger';
+    default:
+      return 'bg-secondary-soft text-secondary';
+  }
+}
+
+function getStatusBadgeClass(status) {
+  switch (status) {
+    case 'approved':
+      return 'bg-success';
+    case 'pending':
+      return 'bg-warning';
+    case 'rejected':
+      return 'bg-danger';
+    default:
+      return 'bg-secondary';
+  }
+}
+
+function getStatusIcon(status) {
+  switch (status) {
+    case 'approved':
+      return 'fa-check-circle';
+    case 'pending':
+      return 'fa-clock';
+    case 'rejected':
+      return 'fa-times-circle';
+    default:
+      return 'fa-question-circle';
+  }
+}
+
+function getStatusColor(status) {
+  switch (status) {
+    case 'completed':
+      return 'success';
+    case 'pending':
+      return 'warning';
+    case 'cancelled':
+      return 'danger';
+    case 'processing':
+      return 'info';
+    default:
+      return 'secondary';
+  }
+}
+
+// Calculate statistics from refund data
+let totalRefundAmount = 0;
+let approvedRefunds = 0;
+let pendingRefunds = 0;
+let rejectedRefunds = 0;
+
+if (refunds && refunds.length > 0) {
+  totalRefundAmount = refunds.reduce((sum, refund) => sum + (refund.amount || 0), 0);
+  approvedRefunds = refunds.filter(refund => refund.status === 'approved').length;
+  pendingRefunds = refunds.filter(refund => refund.status === 'pending').length;
+  rejectedRefunds = refunds.filter(refund => refund.status === 'rejected').length;
+}
+%>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elite Wear - Refund Transactions</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/adminStyle/refundwallet.css">
+</head>
+<body class="admin-dashboard">
+<div class="app-container">
+  <div class="main-content">
+      <div class="content-wrapper">
+          <!-- Top Navigation Bar -->
+          <header class="top-navbar">
+              <div class="container-fluid">
+                  <div class="d-flex justify-content-between align-items-center">
+                      <div class="d-flex align-items-center">
+                          <button class="menu-toggle me-3 btn-icon">
+                              <i class="fas fa-bars"></i>
+                          </button>
+                          <h1 class="page-title mb-0">Refund Transactions</h1>
+                      </div>
+                      <div class="d-flex align-items-center">
+                          <div class="search-bar me-3">
+                              <div class="input-group">
+                                  <span class="input-group-text border-0">
+                                      <i class="fas fa-search"></i>
+                                  </span>
+                                  <input type="text" class="form-control border-0" placeholder="Search refunds...">
+                              </div>
+                          </div>
+                          <div class="dropdown me-3">
+                              <button class="btn btn-icon" type="button" data-bs-toggle="dropdown">
+                                  <span class="notification-badge"></span>
+                                  <i class="fas fa-bell"></i>
+                              </button>
+                              <div class="dropdown-menu dropdown-menu-end notification-dropdown">
+                                  <h6 class="dropdown-header">Notifications</h6>
+                                  <div class="notification-item">
+                                      <div class="notification-icon bg-success-soft">
+                                          <i class="fas fa-wallet text-success"></i>
+                                      </div>
+                                      <div class="notification-content">
+                                          <p class="mb-0">New refund request received</p>
+                                          <small class="text-muted">5 minutes ago</small>
+                                      </div>
+                                  </div>
+                                  <div class="notification-item">
+                                      <div class="notification-icon bg-danger-soft">
+                                          <i class="fas fa-undo-alt text-danger"></i>
+                                      </div>
+                                      <div class="notification-content">
+                                          <p class="mb-0">Refund request approved</p>
+                                          <small class="text-muted">1 hour ago</small>
+                                      </div>
+                                  </div>
+                                  <div class="dropdown-footer">
+                                      <a href="#">View all notifications</a>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="dropdown">
+                              <button class="btn btn-icon profile-dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                  <div class="avatar-circle">
+                                      <img src="https://randomuser.me/api/portraits/men/41.jpg" alt="Admin">
+                                  </div>
+                              </button>
+                              <div class="dropdown-menu dropdown-menu-end profile-dropdown">
+                                  <div class="dropdown-header d-flex align-items-center">
+                                      <div class="avatar-circle me-3">
+                                          <img src="https://randomuser.me/api/portraits/men/41.jpg" alt="Admin">
+                                      </div>
+                                      <div>
+                                          <h6 class="mb-0">Admin User</h6>
+                                          <small class="text-muted">Administrator</small>
+                                      </div>
+                                  </div>
+                                  <div class="dropdown-divider"></div>
+                                  <a class="dropdown-item" href="#">
+                                      <i class="fas fa-user me-2"></i> My Profile
+                                  </a>
+                                  <a class="dropdown-item" href="#">
+                                      <i class="fas fa-cog me-2"></i> Settings
+                                  </a>
+                                  <div class="dropdown-divider"></div>
+                                  <a class="dropdown-item" href="#">
+                                      <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                  </a>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </header>
+
+          <!-- Breadcrumb -->
+          <div class="breadcrumb-wrapper">
+              <div class="container-fluid">
+                  <nav aria-label="breadcrumb">
+                      <ol class="breadcrumb">
+                          <li class="breadcrumb-item">
+                              <a href="/admin">Dashboard</a>
+                          </li>
+                          <li class="breadcrumb-item">
+                              <a href="/admin/wallet-transactions">Wallet Transactions</a>
+                          </li>
+                          <li class="breadcrumb-item active" aria-current="page">Refund Transactions</li>
+                      </ol>
+                  </nav>
+              </div>
+          </div>
+
+          <!-- Main Content Area -->
+          <div class="container-fluid py-3">
+              <!-- Stats Cards -->
+              <div class="row g-3 mb-3 fade-in">
+                  <div class="col-xl-3 col-md-6">
+                      <div class="stats-card">
+                          <div class="stats-icon bg-primary-soft text-primary">
+                              <i class="fas fa-undo-alt"></i>
+                          </div>
+                          <div class="stats-value">₹<%= totalRefundAmount.toFixed(2) %></div>
+                          <div class="stats-label">Total Refund Amount</div>
+                          <div class="stats-trend up">
+                              <i class="fas fa-arrow-up"></i> 5% from last month
+                          </div>
+                      </div>
+                  </div>
+                  <div class="col-xl-3 col-md-6">
+                      <div class="stats-card">
+                          <div class="stats-icon bg-success-soft text-success">
+                              <i class="fas fa-check-circle"></i>
+                          </div>
+                          <div class="stats-value"><%= approvedRefunds %></div>
+                          <div class="stats-label">Approved Refunds</div>
+                          <div class="stats-trend up">
+                              <i class="fas fa-arrow-up"></i> 8% from last month
+                          </div>
+                      </div>
+                  </div>
+                  <div class="col-xl-3 col-md-6">
+                      <div class="stats-card">
+                          <div class="stats-icon bg-warning-soft text-warning">
+                              <i class="fas fa-clock"></i>
+                          </div>
+                          <div class="stats-value"><%= pendingRefunds %></div>
+                          <div class="stats-label">Pending Refunds</div>
+                          <div class="stats-trend down">
+                              <i class="fas fa-arrow-down"></i> 3% from last month
+                          </div>
+                      </div>
+                  </div>
+                  <div class="col-xl-3 col-md-6">
+                      <div class="stats-card">
+                          <div class="stats-icon bg-danger-soft text-danger">
+                              <i class="fas fa-times-circle"></i>
+                          </div>
+                          <div class="stats-value"><%= rejectedRefunds %></div>
+                          <div class="stats-label">Rejected Refunds</div>
+                          <div class="stats-trend up">
+                              <i class="fas fa-arrow-up"></i> 6% from last month
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Quick Actions & Filters -->
+              <div class="row g-3 mb-3 fade-in">
+                  <div class="col-xl-8">
+                      <div class="card filter-card">
+                          <div class="card-header">
+                              <div class="d-flex justify-content-between align-items-center">
+                                  <h5 class="card-title mb-0">Filter Refunds</h5>
+                                  <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+                                      <i class="fas fa-chevron-down"></i>
+                                  </button>
+                              </div>
+                          </div>
+                          <div class="collapse show" id="filterCollapse">
+                              <div class="card-body">
+                                  <form id="filterForm" method="GET" class="row g-2">
+                                      <div class="col-md-3">
+                                          <div class="form-floating">
+                                              <select class="form-select" id="status" name="status">
+                                                  <option value="" <%= !filters || !filters.status ? 'selected' : '' %>>All Statuses</option>
+                                                  <option value="approved" <%= filters && filters.status === 'approved' ? 'selected' : '' %>>Approved</option>
+                                                  <option value="pending" <%= filters && filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                                                  <option value="rejected" <%= filters && filters.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
+                                              </select>
+                                              <label for="status">Refund Status</label>
+                                          </div>
+                                      </div>
+                                      <div class="col-md-3">
+                                          <div class="form-floating">
+                                              <select class="form-select" id="refundType" name="refundType">
+                                                  <option value="" <%= !filters || !filters.refundType ? 'selected' : '' %>>All Types</option>
+                                                  <option value="order_refund" <%= filters && filters.refundType === 'order_refund' ? 'selected' : '' %>>Order Refund</option>
+                                                  <option value="item_refund" <%= filters && filters.refundType === 'item_refund' ? 'selected' : '' %>>Product Refund</option>
+                                                  <option value="cancellation_refund" <%= filters && filters.refundType === 'cancellation_refund' ? 'selected' : '' %>>Cancellation Refund</option>
+                                                  <option value="manual_refund" <%= filters && filters.refundType === 'manual_refund' ? 'selected' : '' %>>Manual Refund</option>
+                                              </select>
+                                              <label for="refundType">Refund Type</label>
+                                          </div>
+                                      </div>
+                                      <div class="col-md-3">
+                                          <div class="form-floating">
+                                              <select class="form-select" id="timeRange" name="timeRange">
+                                                  <option value="all" <%= !filters || filters.timeRange === 'all' ? 'selected' : '' %>>All Time</option>
+                                                  <option value="24h" <%= filters && filters.timeRange === '24h' ? 'selected' : '' %>>Last 24 Hours</option>
+                                                  <option value="7d" <%= filters && filters.timeRange === '7d' ? 'selected' : '' %>>Last 7 Days</option>
+                                                  <option value="30d" <%= filters && filters.timeRange === '30d' ? 'selected' : '' %>>Last 30 Days</option>
+                                                  <option value="90d" <%= filters && filters.timeRange === '90d' ? 'selected' : '' %>>Last 90 Days</option>
+                                              </select>
+                                              <label for="timeRange">Time Range</label>
+                                          </div>
+                                      </div>
+                                      <div class="col-md-3">
+                                          <div class="form-floating">
+                                              <select class="form-select" id="sort" name="sort">
+                                                  <option value="date" <%= !filters || filters.sort === 'date' ? 'selected' : '' %>>Date</option>
+                                                  <option value="amount" <%= filters && filters.sort === 'amount' ? 'selected' : '' %>>Amount</option>
+                                              </select>
+                                              <label for="sort">Sort By</label>
+                                          </div>
+                                      </div>
+                                      <div class="col-md-6">
+                                          <div class="form-floating">
+                                              <input type="text" class="form-control" id="search" name="search" placeholder="Search by user name or email" value="<%= filters && filters.search ? filters.search : '' %>">
+                                              <label for="search">Search</label>
+                                          </div>
+                                      </div>
+                                      <div class="col-md-3">
+                                          <div class="form-floating">
+                                              <select class="form-select" id="limit" name="limit">
+                                                  <option value="10" <%= !filters || filters.limit === 10 ? 'selected' : '' %>>10</option>
+                                                  <option value="25" <%= filters && filters.limit === 25 ? 'selected' : '' %>>25</option>
+                                                  <option value="50" <%= filters && filters.limit === 50 ? 'selected' : '' %>>50</option>
+                                                  <option value="100" <%= filters && filters.limit === 100 ? 'selected' : '' %>>100</option>
+                                              </select>
+                                              <label for="limit">Items Per Page</label>
+                                          </div>
+                                      </div>
+                                      <div class="col-md-3 d-flex align-items-end">
+                                          <button type="submit" class="btn btn-primary me-2">
+                                              <i class="fas fa-filter me-1"></i>Apply
+                                          </button>
+                                          <a href="/admin/refund-transactions" class="btn btn-outline-secondary">
+                                              <i class="fas fa-redo me-1"></i>Reset
+                                          </a>
+                                      </div>
+                                  </form>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="col-xl-4">
+                      <div class="card">
+                          <div class="card-header">
+                              <h5 class="card-title mb-0">Quick Actions</h5>
+                          </div>
+                          <div class="card-body">
+                              <div class="quick-actions">
+                                  <a href="/admin/wallet-transactions" class="quick-action-item">
+                                      <div class="quick-action-icon bg-primary-soft">
+                                          <i class="fas fa-wallet text-primary"></i>
+                                      </div>
+                                      <span class="quick-action-text">All Transactions</span>
+                                  </a>
+                                  <a href="/admin/refund-statistics" class="quick-action-item">
+                                      <div class="quick-action-icon bg-success-soft">
+                                          <i class="fas fa-chart-bar text-success"></i>
+                                      </div>
+                                      <span class="quick-action-text">Refund Stats</span>
+                                  </a>
+                                  <a href="#" class="quick-action-item" id="exportRefunds">
+                                      <div class="quick-action-icon bg-info-soft">
+                                          <i class="fas fa-file-export text-primary"></i>
+                                      </div>
+                                      <span class="quick-action-text">Export Data</span>
+                                  </a>
+                                  <a href="#" class="quick-action-item" data-bs-toggle="modal" data-bs-target="#settingsModal">
+                                      <div class="quick-action-icon bg-warning-soft">
+                                          <i class="fas fa-cog text-warning"></i>
+                                      </div>
+                                      <span class="quick-action-text">Settings</span>
+                                  </a>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Quick Filters -->
+              <div class="quick-filters mb-3 fade-in">
+                  <button class="btn btn-quick-filter active" data-filter="all">
+                      <i class="fas fa-list me-1"></i>All Refunds
+                  </button>
+                  <button class="btn btn-quick-filter" data-filter="approved">
+                      <i class="fas fa-check-circle me-1"></i>Approved
+                  </button>
+                  <button class="btn btn-quick-filter" data-filter="pending">
+                      <i class="fas fa-clock me-1"></i>Pending
+                  </button>
+                  <button class="btn btn-quick-filter" data-filter="rejected">
+                      <i class="fas fa-times-circle me-1"></i>Rejected
+                  </button>
+                  <button class="btn btn-quick-filter" data-filter="today">
+                      <i class="fas fa-calendar-day me-1"></i>Today
+                  </button>
+                  <button class="btn btn-quick-filter" data-filter="week">
+                      <i class="fas fa-calendar-week me-1"></i>This Week
+                  </button>
+              </div>
+
+              <!-- Refund Transactions Table Card -->
+              <div class="card transactions-card fade-in">
+                  <div class="card-header">
+                      <div class="d-flex justify-content-between align-items-center">
+                          <h5 class="card-title mb-0">Refund Transactions</h5>
+                          <div class="table-actions">
+                              <button class="btn btn-sm btn-outline-secondary me-2" id="refreshTable">
+                                  <i class="fas fa-sync-alt me-1"></i> Refresh
+                              </button>
+                              <div class="dropdown">
+                                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                      <i class="fas fa-cog me-1"></i> Options
+                                  </button>
+                                  <ul class="dropdown-menu dropdown-menu-end">
+                                      <li><a class="dropdown-item" href="#"><i class="fas fa-file-export me-2"></i> Export CSV</a></li>
+                                      <li><a class="dropdown-item" href="#"><i class="fas fa-file-pdf me-2"></i> Export PDF</a></li>
+                                      <li><a class="dropdown-item" href="#"><i class="fas fa-print me-2"></i> Print</a></li>
+                                      <li><hr class="dropdown-divider"></li>
+                                      <li><a class="dropdown-item" href="#"><i class="fas fa-columns me-2"></i> Manage Columns</a></li>
+                                  </ul>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="card-body p-0">
+                      <div class="table-responsive">
+                          <table class="table table-hover transactions-table mb-0">
+                              <thead>
+                                  <tr>
+                                      <th>
+                                          <div class="form-check">
+                                              <input class="form-check-input" type="checkbox" id="selectAll">
+                                              <label class="form-check-label" for="selectAll"></label>
+                                          </div>
+                                      </th>
+                                      <th>User</th>
+                                      <th>Order ID</th>
+                                      <th>Amount</th>
+                                      <th>Reason</th>
+                                      <th>Status</th>
+                                      <th>Date</th>
+                                      <th>Actions</th>
+                                  </tr>
+                              </thead>
+                              <tbody>
+                                  <% if (!refunds || refunds.length === 0) { %>
+                                      <tr>
+                                          <td colspan="8" class="text-center py-4">
+                                              <div class="empty-state">
+                                                  <div class="empty-state-icon">
+                                                      <i class="fas fa-search"></i>
+                                                  </div>
+                                                  <h5>No refunds found</h5>
+                                                  <p class="text-muted">Try adjusting your search or filter criteria</p>
+                                                  <button class="btn btn-primary btn-sm">Clear Filters</button>
+                                              </div>
+                                          </td>
+                                      </tr>
+                                  <% } else { %>
+                                      <% refunds.forEach(refund => { %>
+                                          <tr class="refund-row" data-status="<%= refund.status %>" data-type="<%= refund.refundType %>">
+                                              <td>
+                                                  <div class="form-check">
+                                                      <input class="form-check-input refund-checkbox" type="checkbox" id="refund<%= refund._id %>">
+                                                      <label class="form-check-label" for="refund<%= refund._id %>"></label>
+                                                  </div>
+                                              </td>
+                                              <td>
+                                                  <div class="d-flex align-items-center">
+                                                      <div class="avatar-circle <%= getStatusColorClass(refund.status) %>">
+                                                          <%= refund.userFullname ? refund.userFullname.charAt(0).toUpperCase() : 'U' %>
+                                                      </div>
+                                                      <div class="ms-2">
+                                                          <div class="d-flex align-items-center">
+                                                              <strong><%= refund.userFullname || 'Unknown User' %></strong>
+                                                              <% if (refund.isVIP) { %>
+                                                                  <span class="badge bg-warning-soft text-warning ms-1">VIP</span>
+                                                              <% } %>
+                                                          </div>
+                                                          <div class="text-muted small"><%= refund.userEmail || 'No email' %></div>
+                                                      </div>
+                                                  </div>
+                                              </td>
+                                              <td>
+                                                  <div class="transaction-id-wrapper">
+                                                      <span class="transaction-id"><%= refund.orderReference || 'N/A' %></span>
+                                                      <button class="btn btn-sm btn-icon copy-btn" data-clipboard-text="<%= refund.orderReference || 'N/A' %>" title="Copy to clipboard">
+                                                          <i class="fas fa-copy"></i>
+                                                      </button>
+                                                  </div>
+                                              </td>
+                                              <td class="fw-bold text-<%= refund.refundType === 'full' ? 'danger' : 'warning' %>">
+                                                  ₹<%= refund.amount ? refund.amount.toFixed(2) : '0.00' %>
+                                                  <div class="small text-muted">
+                                                      <%= refund.refundTypeDisplay || 'Refund' %>
+                                                  </div>
+                                              </td>
+                                              <td>
+                                                  <div class="description-cell" title="<%= refund.description || 'No reason provided' %>">
+                                                      <%= refund.description || 'No reason provided' %>
+                                                  </div>
+                                              </td>
+                                              <td>
+                                                  <span class="badge rounded-pill <%= getStatusBadgeClass(refund.status) %>">
+                                                      <i class="fas <%= getStatusIcon(refund.status) %> me-1"></i>
+                                                      <%= refund.status ? refund.status.charAt(0).toUpperCase() + refund.status.slice(1) : 'Unknown' %>
+                                                  </span>
+                                              </td>
+                                              <td>
+                                                  <div class="d-flex flex-column">
+                                                      <span><%= refund.formattedDate ? refund.formattedDate.split(' ')[0] : 'N/A' %></span>
+                                                      <small class="text-muted"><%= refund.formattedDate && refund.formattedDate.split(' ')[1] ? refund.formattedDate.split(' ')[1] : '' %></small>
+                                                  </div>
+                                              </td>
+                                              <td>
+                                                  <div class="dropdown">
+                                                      <button class="btn btn-sm btn-icon" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                          <i class="fas fa-ellipsis-v"></i>
+                                                      </button>
+                                                      <ul class="dropdown-menu dropdown-menu-end">
+                                                          <li>
+                                                              <a class="dropdown-item view-refund-details" href="#" data-refund-id="<%= refund.transactionId %>">
+                                                                  <i class="fas fa-info-circle me-2"></i> View Details
+                                                              </a>
+                                                          </li>
+                                                          <li>
+                                                              <a class="dropdown-item" href="/admin/orders/<%= refund.orderReference %>">
+                                                                  <i class="fas fa-shopping-cart me-2"></i> View Order
+                                                              </a>
+                                                          </li>
+                                                          <li>
+                                                              <a class="dropdown-item" href="/admin/users/<%= refund.userId %>">
+                                                                  <i class="fas fa-user me-2"></i> View User
+                                                              </a>
+                                                          </li>
+                                                          <% if (refund.status === 'pending') { %>
+                                                              <li><hr class="dropdown-divider"></li>
+                                                              <li>
+                                                                  <a class="dropdown-item text-success approve-refund" href="#" data-refund-id="<%= refund.transactionId %>">
+                                                                      <i class="fas fa-check-circle me-2"></i> Approve Refund
+                                                                  </a>
+                                                              </li>
+                                                              <li>
+                                                                  <a class="dropdown-item text-danger reject-refund" href="#" data-refund-id="<%= refund.transactionId %>">
+                                                                      <i class="fas fa-times-circle me-2"></i> Reject Refund
+                                                                  </a>
+                                                              </li>
+                                                          <% } %>
+                                                      </ul>
+                                                  </div>
+                                              </td>
+                                          </tr>
+                                      <% }); %>
+                                  <% } %>
+                              </tbody>
+                          </table>
+                      </div>
+                  </div>
+                  <div class="card-footer">
+                      <div class="d-flex flex-wrap justify-content-between align-items-center">
+                          <div class="pagination-info">
+                              <div class="d-flex align-items-center">
+                                  <div class="me-3">
+                                      <span class="fw-bold"><%= refunds ? refunds.length : 0 %></span> of <span class="fw-bold"><%= typeof totalRefunds !== 'undefined' ? totalRefunds : 0 %></span> refunds
+                                  </div>
+                                  <div class="bulk-actions">
+                                      <button class="btn btn-sm btn-outline-success me-2 bulk-action-btn" disabled>
+                                          <i class="fas fa-check-circle me-1"></i> Approve Selected
+                                      </button>
+                                      <button class="btn btn-sm btn-outline-danger bulk-action-btn" disabled>
+                                          <i class="fas fa-times-circle me-1"></i> Reject Selected
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                          <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+                              <nav aria-label="Page navigation">
+                                  <ul class="pagination pagination-sm mb-0">
+                                      <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                                          <a class="page-link" href="?page=<%= currentPage - 1 %>&status=<%= filters && filters.status ? filters.status : '' %>&search=<%= filters && filters.search ? filters.search : '' %>&sort=<%= filters && filters.sort ? filters.sort : 'date' %>&order=<%= filters && filters.order ? filters.order : 'desc' %>&timeRange=<%= filters && filters.timeRange ? filters.timeRange : 'all' %>&limit=<%= filters && filters.limit ? filters.limit : 10 %>">
+                                              <i class="fas fa-chevron-left"></i>
+                                          </a>
+                                      </li>
+                                      <% for (let i = 1; i <= totalPages; i++) { %>
+                                          <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                              <a class="page-link" href="?page=<%= i %>&status=<%= filters && filters.status ? filters.status : '' %>&search=<%= filters && filters.search ? filters.search : '' %>&sort=<%= filters && filters.sort ? filters.sort : 'date' %>&order=<%= filters && filters.order ? filters.order : 'desc' %>&timeRange=<%= filters && filters.timeRange ? filters.timeRange : 'all' %>&limit=<%= filters && filters.limit ? filters.limit : 10 %>"><%= i %></a>
+                                          </li>
+                                      <% } %>
+                                      <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                                          <a class="page-link" href="?page=<%= currentPage + 1 %>&status=<%= filters && filters.status ? filters.status : '' %>&search=<%= filters && filters.search ? filters.search : '' %>&sort=<%= filters && filters.sort ? filters.sort : 'date' %>&order=<%= filters && filters.order ? filters.order : 'desc' %>&timeRange=<%= filters && filters.timeRange ? filters.timeRange : 'all' %>&limit=<%= filters && filters.limit ? filters.limit : 10 %>">
+                                              <i class="fas fa-chevron-right"></i>
+                                          </a>
+                                      </li>
+                                  </ul>
+                              </nav>
+                          <% } %>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+
+<!-- Refund Details Modal -->
+<div class="modal fade" id="refundDetailsModal" tabindex="-1" aria-labelledby="refundDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="refundDetailsModalLabel">
+                  <i class="fas fa-undo-alt me-2"></i>Refund Details
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <div id="refundDetailsContent">
+                  <div class="text-center py-4">
+                      <div class="spinner-border text-primary" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                      </div>
+                      <p class="mt-2">Loading refund details...</p>
+                  </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<!-- Approve Refund Modal -->
+<div class="modal fade" id="approveRefundModal" tabindex="-1" aria-labelledby="approveRefundModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="approveRefundModalLabel">
+                  <i class="fas fa-check-circle me-2 text-success"></i>Approve Refund
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <p>Are you sure you want to approve this refund? This action will:</p>
+              <ul>
+                  <li>Process the refund to the customer's wallet</li>
+                  <li>Update the order status</li>
+                  <li>Send a confirmation email to the customer</li>
+              </ul>
+              <div class="form-floating mb-3">
+                  <textarea class="form-control" id="approveNotes" style="height: 100px" placeholder="Add notes (optional)"></textarea>
+                  <label for="approveNotes">Admin Notes (Optional)</label>
+              </div>
+              <input type="hidden" id="approveRefundId">
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-success" id="confirmApproveRefund">
+                  <i class="fas fa-check-circle me-2"></i>Approve Refund
+              </button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<!-- Reject Refund Modal -->
+<div class="modal fade" id="rejectRefundModal" tabindex="-1" aria-labelledby="rejectRefundModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="rejectRefundModalLabel">
+                  <i class="fas fa-times-circle me-2 text-danger"></i>Reject Refund
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <p>Are you sure you want to reject this refund request?</p>
+              <div class="form-floating mb-3">
+                  <select class="form-select" id="rejectReason">
+                      <option value="">Select a reason</option>
+                      <option value="policy_violation">Policy Violation</option>
+                      <option value="product_used">Product Used/Damaged</option>
+                      <option value="return_period_expired">Return Period Expired</option>
+                      <option value="insufficient_evidence">Insufficient Evidence</option>
+                      <option value="other">Other</option>
+                  </select>
+                  <label for="rejectReason">Rejection Reason</label>
+              </div>
+              <div class="form-floating mb-3">
+                  <textarea class="form-control" id="rejectNotes" style="height: 100px" placeholder="Add detailed explanation"></textarea>
+                  <label for="rejectNotes">Detailed Explanation (Required)</label>
+              </div>
+              <input type="hidden" id="rejectRefundId">
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-danger" id="confirmRejectRefund">
+                  <i class="fas fa-times-circle me-2"></i>Reject Refund
+              </button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<!-- Export Options Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="exportModalLabel">
+                  <i class="fas fa-file-export me-2"></i>Export Refunds
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <div class="mb-3">
+                  <label for="exportFormat" class="form-label">Export Format</label>
+                  <select class="form-select" id="exportFormat">
+                      <option value="csv">CSV</option>
+                      <option value="excel">Excel</option>
+                      <option value="pdf">PDF</option>
+                      <option value="json">JSON</option>
+                  </select>
+              </div>
+              <div class="mb-3">
+                  <label for="exportRange" class="form-label">Date Range</label>
+                  <select class="form-select" id="exportRange">
+                      <option value="all">All Time</option>
+                      <option value="current">Current View</option>
+                      <option value="custom">Custom Range</option>
+                  </select>
+              </div>
+              <div class="mb-3 export-custom-range d-none">
+                  <div class="row">
+                      <div class="col-md-6">
+                          <label for="exportStartDate" class="form-label">Start Date</label>
+                          <input type="date" class="form-control" id="exportStartDate">
+                      </div>
+                      <div class="col-md-6">
+                          <label for="exportEndDate" class="form-label">End Date</label>
+                          <input type="date" class="form-control" id="exportEndDate">
+                      </div>
+                  </div>
+              </div>
+              <div class="mb-3">
+                  <label for="exportColumns" class="form-label">Columns to Export</label>
+                  <div class="export-columns">
+                      <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="colUser" checked>
+                          <label class="form-check-label" for="colUser">User</label>
+                      </div>
+                      <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="colOrderId" checked>
+                          <label class="form-check-label" for="colOrderId">Order ID</label>
+                      </div>
+                      <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="colAmount" checked>
+                          <label class="form-check-label" for="colAmount">Amount</label>
+                      </div>
+                      <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="colReason" checked>
+                          <label class="form-check-label" for="colReason">Reason</label>
+                      </div>
+                      <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="colStatus" checked>
+                          <label class="form-check-label" for="colStatus">Status</label>
+                      </div>
+                      <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="colDate" checked>
+                          <label class="form-check-label" for="colDate">Date</label>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-primary" id="confirmExport">
+                  <i class="fas fa-download me-2"></i>Export
+              </button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="settingsModalLabel">
+                  <i class="fas fa-cog me-2"></i>Settings
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <div class="mb-3">
+                  <h6 class="settings-section-title">Display Options</h6>
+                  <div class="form-check form-switch mb-2">
+                      <input class="form-check-input" type="checkbox" id="darkModeSwitch">
+                      <label class="form-check-label" for="darkModeSwitch">Dark Mode</label>
+                  </div>
+                  <div class="form-check form-switch mb-2">
+                      <input class="form-check-input" type="checkbox" id="compactViewSwitch" checked>
+                      <label class="form-check-label" for="compactViewSwitch">Compact View</label>
+                  </div>
+                  <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="animationsSwitch" checked>
+                      <label class="form-check-label" for="animationsSwitch">Enable Animations</label>
+                  </div>
+              </div>
+              <div class="mb-3">
+                  <h6 class="settings-section-title">Table Columns</h6>
+                  <div class="settings-columns">
+                      <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="showUser" checked>
+                          <label class="form-check-label" for="showUser">User</label>
+                      </div>
+                      <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="showOrderId" checked>
+                          <label class="form-check-label" for="showOrderId">Order ID</label>
+                      </div>
+                      <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="showAmount" checked>
+                          <label class="form-check-label" for="showAmount">Amount</label>
+                      </div>
+                      <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="showReason" checked>
+                          <label class="form-check-label" for="showReason">Reason</label>
+                      </div>
+                      <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="showStatus" checked>
+                          <label class="form-check-label" for="showStatus">Status</label>
+                      </div>
+                      <div class="form-check">
+                          <input class="form-check-input" type="checkbox" id="showDate" checked>
+                          <label class="form-check-label" for="showDate">Date</label>
+                      </div>
+                  </div>
+              </div>
+              <div>
+                  <h6 class="settings-section-title">Notifications</h6>
+                  <div class="form-check form-switch mb-2">
+                      <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                      <label class="form-check-label" for="emailNotifications">Email Notifications</label>
+                  </div>
+                  <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="browserNotifications">
+                      <label class="form-check-label" for="browserNotifications">Browser Notifications</label>
+                  </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-primary" id="saveSettings">
+                  <i class="fas fa-save me-2"></i>Save Settings
+              </button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script>
+<script>
+import ClipboardJS from "clipboard"
+import * as bootstrap from "bootstrap"
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Initialize clipboard.js
+  new ClipboardJS(".copy-btn").on("success", (e) => {
+    const button = e.trigger
+    button.innerHTML = '<i class="fas fa-check"></i>'
+    setTimeout(() => {
+      button.innerHTML = '<i class="fas fa-copy"></i>'
+    }, 2000)
+  })
+
+  // View refund details
+  const viewRefundButtons = document.querySelectorAll(".view-refund-details")
+  const refundDetailsModal = new bootstrap.Modal(document.getElementById("refundDetailsModal"))
+  const refundDetailsContent = document.getElementById("refundDetailsContent")
+
+  viewRefundButtons.forEach((button) => {
+    button.addEventListener("click", function (e) {
+      e.preventDefault()
+      const refundId = this.getAttribute("data-refund-id")
+
+      // Show loading state
+      refundDetailsContent.innerHTML = `
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2">Loading refund details...</p>
+        </div>
+      `
+
+      refundDetailsModal.show()
+
+      // Fetch refund details
+      fetch(`/admin/refund-details/${refundId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            const transaction = data.transaction
+            const user = data.user
+            const orderItem = data.orderItem
+            const order = data.order
+            const product = data.product
+
+            let html = `
+              <div class="refund-details">
+                <div class="card mb-3 border-0 shadow-sm">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-undo-alt me-2"></i>Refund Information</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="detail-item">
+                          <span class="detail-label">Transaction ID</span>
+                          <span class="detail-value">${transaction.transactionRef || "N/A"}</span>
+                        </div>
+                        <div class="detail-item">
+                          <span class="detail-label">Amount</span>
+                          <span class="detail-value fw-bold text-primary">
+                            ₹${transaction.amount.toFixed(2)}
+                          </span>
+                        </div>
+                        <div class="detail-item">
+                          <span class="detail-label">Refund Type</span>
+                          <span class="detail-value">
+                            ${transaction.refundTypeDisplay || "Refund"}
+                          </span>
+                        </div>
+                        <div class="detail-item">
+                          <span class="detail-label">Date</span>
+                          <span class="detail-value">${transaction.formattedDate}</span>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="detail-item">
+                          <span class="detail-label">Status</span>
+                          <span class="detail-value">
+                            <span class="badge rounded-pill ${getStatusBadgeClass(transaction.status)}">
+                              <i class="fas ${getStatusIcon(transaction.status)} me-1"></i>
+                              ${transaction.status ? transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1) : "Unknown"}
+                            </span>
+                          </span>
+                        </div>
+                        <div class="detail-item">
+                          <span class="detail-label">Order Reference</span>
+                          <span class="detail-value">${transaction.orderReference || "N/A"}</span>
+                        </div>
+                        <div class="detail-item">
+                          <span class="detail-label">Wallet Balance</span>
+                          <span class="detail-value">₹${data.walletBalance ? data.walletBalance.toFixed(2) : "0.00"}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-3">
+                      <div class="refund-reason">
+                        <h6>Description:</h6>
+                        <p class="mb-0 p-2 bg-light rounded">${transaction.description || "No description provided"}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="card mb-3 border-0 shadow-sm">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-user me-2"></i>User Information</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="user-info">
+                      <div class="d-flex align-items-center mb-3">
+                        <div class="avatar-circle bg-primary-soft me-3">
+                          ${user.fullname ? user.fullname.charAt(0).toUpperCase() : "U"}
+                        </div>
+                        <div>
+                          <h6 class="mb-0">${user.fullname || "Unknown User"}</h6>
+                          <p class="text-muted mb-0">${user.email || "No email"}</p>
+                        </div>
+                      </div>
+                      <div class="mt-3">
+                        <a href="/admin/user-wallet/${user._id}" class="btn btn-sm btn-primary">
+                          <i class="fas fa-wallet me-2"></i>View User's Wallet
+                        </a>
+                        <a href="/admin/users/${user._id}" class="btn btn-sm btn-outline-secondary ms-2">
+                          <i class="fas fa-user me-2"></i>View User Profile
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            `
+
+            if (order) {
+              html += `
+                <div class="card mb-3 border-0 shadow-sm">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Order Information</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="detail-item">
+                          <span class="detail-label">Order Number</span>
+                          <span class="detail-value">${order.orderNumber || order._id}</span>
+                        </div>
+                        <div class="detail-item">
+                          <span class="detail-label">Order Date</span>
+                          <span class="detail-value">${new Date(order.orderDate || order.createdAt).toLocaleString()}</span>
+                        </div>
+                        <div class="detail-item">
+                          <span class="detail-label">Order Total</span>
+                          <span class="detail-value">₹${order.totalAmount ? order.totalAmount.toFixed(2) : "0.00"}</span>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="detail-item">
+                          <span class="detail-label">Order Status</span>
+                          <span class="detail-value">
+                            <span class="badge bg-info">
+                              ${order.status || "Unknown"}
+                            </span>
+                          </span>
+                        </div>
+                        <div class="detail-item">
+                          <span class="detail-label">Payment Method</span>
+                          <span class="detail-value">${order.paymentMethod || "Unknown"}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-3">
+                      <a href="/admin/orders/${order._id}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-eye me-2"></i>View Order Details
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              `
+            }
+
+            if (product) {
+              html += `
+                <div class="card border-0 shadow-sm">
+                  <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-box me-2"></i>Product Information</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-3">
+                        <div class="product-image-container">
+                          <img src="${product.image || "/placeholder.jpg"}" alt="${product.name}" class="img-fluid rounded product-image">
+                        </div>
+                      </div>
+                      <div class="col-md-9">
+                        <h5 class="product-name">${product.name || "Unknown Product"}</h5>
+                        <div class="product-details">
+                          <div class="row">
+                            <div class="col-md-6">
+                              <div class="detail-item">
+                                <span class="detail-label">SKU</span>
+                                <span class="detail-value">${product.sku || "N/A"}</span>
+                              </div>
+                              <div class="detail-item">
+                                <span class="detail-label">Price</span>
+                                <span class="detail-value">₹${product.price ? product.price.toFixed(2) : "0.00"}</span>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <div class="detail-item">
+                                <span class="detail-label">Category</span>
+                                <span class="detail-value">${product.category || "N/A"}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `
+            }
+
+            html += `</div>`
+
+            refundDetailsContent.innerHTML = html
+          } else {
+            refundDetailsContent.innerHTML = `
+              <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                ${data.message || "Failed to load refund details"}
+              </div>
+            `
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching refund details:", error)
+          refundDetailsContent.innerHTML = `
+            <div class="alert alert-danger">
+              <i class="fas fa-exclamation-circle me-2"></i>
+              An error occurred while loading refund details
+            </div>
+          `
+        })
+    })
+  })
+
+  // Approve refund
+  const approveRefundButtons = document.querySelectorAll(".approve-refund")
+  const approveRefundModal = new bootstrap.Modal(document.getElementById("approveRefundModal"))
+  const approveRefundId = document.getElementById("approveRefundId")
+  const confirmApproveRefund = document.getElementById("confirmApproveRefund")
+
+  approveRefundButtons.forEach((button) => {
+    button.addEventListener("click", function (e) {
+      e.preventDefault()
+      const refundId = this.getAttribute("data-refund-id")
+      approveRefundId.value = refundId
+      approveRefundModal.show()
+    })
+  })
+
+  // Confirm approve refund
+  confirmApproveRefund.addEventListener("click", function () {
+    const refundId = approveRefundId.value
+    const notes = document.getElementById("approveNotes").value
+
+    // Disable button and show loading state
+    this.disabled = true
+    this.innerHTML =
+      '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...'
+
+    // Send approve request to server
+    fetch(`/admin/refund/${refundId}/approve`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ notes }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          // Close modal
+          approveRefundModal.hide()
+
+          // Show success toast
+          showToast("success", "Refund approved successfully")
+
+          // Refresh the page after a short delay
+          setTimeout(() => {
+            location.reload()
+          }, 1500)
+        } else {
+          // Show error message
+          showToast("error", data.message || "Failed to approve refund")
+
+          // Reset button state
+          this.disabled = false
+          this.innerHTML = '<i class="fas fa-check-circle me-2"></i>Approve Refund'
+        }
+      })
+      .catch((error) => {
+        console.error("Error approving refund:", error)
+
+        // Show error message
+        showToast("error", "An error occurred while approving the refund")
+
+        // Reset button state
+        this.disabled = false
+        this.innerHTML = '<i class="fas fa-check-circle me-2"></i>Approve Refund'
+      })
+  })
+
+  // Reject refund
+  const rejectRefundButtons = document.querySelectorAll(".reject-refund")
+  const rejectRefundModal = new bootstrap.Modal(document.getElementById("rejectRefundModal"))
+  const rejectRefundId = document.getElementById("rejectRefundId")
+  const confirmRejectRefund = document.getElementById("confirmRejectRefund")
+
+  rejectRefundButtons.forEach((button) => {
+    button.addEventListener("click", function (e) {
+      e.preventDefault()
+      const refundId = this.getAttribute("data-refund-id")
+      rejectRefundId.value = refundId
+      rejectRefundModal.show()
+    })
+  })
+
+  // Confirm reject refund
+  confirmRejectRefund.addEventListener("click", function () {
+    const refundId = rejectRefundId.value
+    const reason = document.getElementById("rejectReason").value
+    const notes = document.getElementById("rejectNotes").value
+
+    // Validate inputs
+    if (!reason) {
+      alert("Please select a rejection reason")
+      return
+    }
+
+    if (!notes) {
+      alert("Please provide a detailed explanation")
+      return
+    }
+
+    // Disable button and show loading state
+    this.disabled = true
+    this.innerHTML =
+      '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...'
+
+    // Send reject request to server
+    fetch(`/admin/refund/${refundId}/reject`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ reason, notes }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          // Close modal
+          rejectRefundModal.hide()
+
+          // Show success toast
+          showToast("success", "Refund rejected successfully")
+
+          // Refresh the page after a short delay
+          setTimeout(() => {
+            location.reload()
+          }, 1500)
+        } else {
+          // Show error message
+          showToast("error", data.message || "Failed to reject refund")
+
+          // Reset button state
+          this.disabled = false
+          this.innerHTML = '<i class="fas fa-times-circle me-2"></i>Reject Refund'
+        }
+      })
+      .catch((error) => {
+        console.error("Error rejecting refund:", error)
+
+        // Show error message
+        showToast("error", "An error occurred while rejecting the refund")
+
+        // Reset button state
+        this.disabled = false
+        this.innerHTML = '<i class="fas fa-times-circle me-2"></i>Reject Refund'
+      })
+  })
+
+  // Bulk actions
+  const selectAllCheckbox = document.getElementById("selectAll")
+  const refundCheckboxes = document.querySelectorAll(".refund-checkbox")
+  const bulkActionButtons = document.querySelectorAll(".bulk-action-btn")
+
+  selectAllCheckbox.addEventListener("change", function () {
+    refundCheckboxes.forEach((checkbox) => {
+      checkbox.checked = this.checked
+    })
+    updateBulkActionsState()
+  })
+
+  refundCheckboxes.forEach((checkbox) => {
+    checkbox.addEventListener("change", updateBulkActionsState)
+  })
+
+  function updateBulkActionsState() {
+    const checkedCheckboxes = document.querySelectorAll(".refund-checkbox:checked")
+    const anyChecked = checkedCheckboxes.length > 0
+
+    bulkActionButtons.forEach((button) => {
+      button.disabled = !anyChecked
+      if (anyChecked) {
+        button.innerHTML = button.innerHTML.replace(/\s$$\d+$$/, "") + ` (${checkedCheckboxes.length})`
+      } else {
+        button.innerHTML = button.innerHTML.replace(/\s$$\d+$$/, "")
+      }
+    })
+  }
+
+  // Quick filters
+  const quickFilterButtons = document.querySelectorAll(".btn-quick-filter")
+  quickFilterButtons.forEach((button) => {
+    button.addEventListener("click", function (e) {
+      e.preventDefault()
+      const filter = this.getAttribute("data-filter")
+
+      // Remove active class from other buttons
+      quickFilterButtons.forEach((btn) => btn.classList.remove("active"))
+
+      // Add active class to this button
+      this.classList.add("active")
+
+      // Filter the table rows
+      const refundRows = document.querySelectorAll(".refund-row")
+      refundRows.forEach((row) => {
+        if (filter === "all") {
+          row.style.display = ""
+        } else if (filter === "today") {
+          const dateCell = row.querySelector("td:nth-child(7) span")
+          if (dateCell) {
+            const refundDate = new Date(dateCell.textContent)
+            const today = new Date()
+            if (refundDate.toDateString() === today.toDateString()) {
+              row.style.display = ""
+            } else {
+              row.style.display = "none"
+            }
+          } else {
+            row.style.display = "none"
+          }
+        } else if (filter === "week") {
+          const dateCell = row.querySelector("td:nth-child(7) span")
+          if (dateCell) {
+            const refundDate = new Date(dateCell.textContent)
+            const today = new Date()
+            const startOfWeek = new Date(today)
+            startOfWeek.setDate(today.getDate() - today.getDay())
+            const endOfWeek = new Date(today)
+            endOfWeek.setDate(startOfWeek.getDate() + 6)
+
+            if (refundDate >= startOfWeek && refundDate <= endOfWeek) {
+              row.style.display = ""
+            } else {
+              row.style.display = "none"
+            }
+          } else {
+            row.style.display = "none"
+          }
+        } else if (row.dataset.status === filter) {
+          row.style.display = ""
+        } else {
+          row.style.display = "none"
+        }
+      })
+    })
+  })
+
+  // Export refunds
+  const exportRefundsButton = document.getElementById("exportRefunds")
+  const exportModal = new bootstrap.Modal(document.getElementById("exportModal"))
+  const confirmExportButton = document.getElementById("confirmExport")
+  const exportCustomRangeDiv = document.querySelector(".export-custom-range")
+  const exportRangeSelect = document.getElementById("exportRange")
+
+  exportRefundsButton.addEventListener("click", (e) => {
+    e.preventDefault()
+    exportModal.show()
+  })
+
+  exportRangeSelect.addEventListener("change", function () {
+    if (this.value === "custom") {
+      exportCustomRangeDiv.classList.remove("d-none")
+    } else {
+      exportCustomRangeDiv.classList.add("d-none")
+    }
+  })
+
+  confirmExportButton.addEventListener("click", () => {
+    const format = document.getElementById("exportFormat").value
+    const range = document.getElementById("exportRange").value
+    const startDate = document.getElementById("exportStartDate").value
+    const endDate = document.getElementById("exportEndDate").value
+
+    // Get selected columns
+    const columns = []
+    document.querySelectorAll(".export-columns .form-check-input:checked").forEach((checkbox) => {
+      columns.push(checkbox.id.replace("col", "").toLowerCase())
+    })
+
+    if (columns.length === 0) {
+      alert("Please select at least one column to export")
+      return
+    }
+
+    // Build query parameters
+    let queryParams = `format=${format}&range=${range}&columns=${columns.join(",")}`
+
+    if (range === "custom") {
+      if (!startDate || !endDate) {
+        alert("Please select both start and end dates")
+        return
+      }
+      queryParams += `&startDate=${startDate}&endDate=${endDate}`
+    }
+
+    // Redirect to export endpoint
+    window.location.href = `/admin/export-refunds?${queryParams}`
+
+    // Close modal
+    exportModal.hide()
+  })
+
+  // Settings modal
+  const settingsModal = new bootstrap.Modal(document.getElementById("settingsModal"))
+  const darkModeSwitch = document.getElementById("darkModeSwitch")
+  const compactViewSwitch = document.getElementById("compactViewSwitch")
+  const animationsSwitch = document.getElementById("animationsSwitch")
+  const emailNotificationsSwitch = document.getElementById("emailNotifications")
+  const browserNotificationsSwitch = document.getElementById("browserNotifications")
+  const saveSettingsButton = document.getElementById("saveSettings")
+
+  // Load settings from local storage
+  const loadSettings = () => {
+    const settings = JSON.parse(localStorage.getItem("adminSettings")) || {}
+    darkModeSwitch.checked = settings.darkMode || false
+    compactViewSwitch.checked = settings.compactView !== undefined ? settings.compactView : true
+    animationsSwitch.checked = settings.animations !== undefined ? settings.animations : true
+    emailNotificationsSwitch.checked = settings.emailNotifications !== undefined ? settings.emailNotifications : true
+    browserNotificationsSwitch.checked = settings.browserNotifications || false
+
+    // Apply dark mode
+    if (darkModeSwitch.checked) {
+      document.body.classList.add("dark-mode")
+    } else {
+      document.body.classList.remove("dark-mode")
+    }
+  }
+
+  // Save settings to local storage
+  const saveSettings = () => {
+    const settings = {
+      darkMode: darkModeSwitch.checked,
+      compactView: compactViewSwitch.checked,
+      animations: animationsSwitch.checked,
+      emailNotifications: emailNotificationsSwitch.checked,
+      browserNotifications: browserNotificationsSwitch.checked,
+    }
+    localStorage.setItem("adminSettings", JSON.stringify(settings))
+
+    // Apply dark mode
+    if (darkModeSwitch.checked) {
+      document.body.classList.add("dark-mode")
+    } else {
+      document.body.classList.remove("dark-mode")
+    }
+  }
+
+  // Event listeners for settings
+  darkModeSwitch.addEventListener("change", saveSettings)
+  compactViewSwitch.addEventListener("change", saveSettings)
+  animationsSwitch.addEventListener("change", saveSettings)
+  emailNotificationsSwitch.addEventListener("change", saveSettings)
+  browserNotificationsSwitch.addEventListener("change", saveSettings)
+  saveSettingsButton.addEventListener("click", () => {
+    saveSettings()
+    settingsModal.hide()
+
+    // Show success toast
+    showToast("success", "Settings saved successfully")
+  })
+
+  // Load settings on page load
+  loadSettings()
+
+  // Refresh table
+  const refreshTableButton = document.getElementById("refreshTable")
+  refreshTableButton.addEventListener("click", () => {
+    location.reload()
+  })
+
+  // Helper functions for status classes and icons
+  function getStatusBadgeClass(status) {
+    switch (status) {
+      case "approved":
+        return "bg-success"
+      case "pending":
+        return "bg-warning"
+      case "rejected":
+        return "bg-danger"
+      default:
+        return "bg-secondary"
+    }
+  }
+
+  function getStatusIcon(status) {
+    switch (status) {
+      case "approved":
+        return "fa-check-circle"
+      case "pending":
+        return "fa-clock"
+      case "rejected":
+        return "fa-times-circle"
+      default:
+        return "fa-question-circle"
+    }
+  }
+
+  // Toast notification
+  function showToast(type, message) {
+    // Create toast element
+    const toast = document.createElement("div")
+    toast.className = `toast-notification ${type}`
+
+    let iconClass = "fa-info-circle"
+    if (type === "success") {
+      iconClass = "fa-check-circle"
+    } else if (type === "error") {
+      iconClass = "fa-exclamation-circle"
+    }
+
+    toast.innerHTML = `
+      <div class="toast-icon bg-${type === "success" ? "success" : "danger"}-soft">
+        <i class="fas ${iconClass} text-${type === "success" ? "success" : "danger"}"></i>
+      </div>
+      <div class="toast-content">
+        <p>${message}</p>
+      </div>
+      <button class="toast-close">
+        <i class="fas fa-times"></i>
+      </button>
+    `
+
+    // Add to document
+    document.body.appendChild(toast)
+
+    // Show toast
+    setTimeout(() => {
+      toast.classList.add("show")
+    }, 100)
+
+    // Add close event
+    toast.querySelector(".toast-close").addEventListener("click", () => {
+      toast.classList.remove("show")
+      setTimeout(() => {
+        toast.remove()
+      }, 300)
+    })
+
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+      if (document.body.contains(toast)) {
+        toast.classList.remove("show")
+        setTimeout(() => {
+          if (document.body.contains(toast)) {
+            toast.remove()
+          }
+        }, 300)
+      }
+    }, 5000)
+  }
+})
+
+
+</script>
+</body>
+</html>

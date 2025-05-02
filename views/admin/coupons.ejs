@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELITE WEAR - Coupons Management</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css">
+    <!-- Animate.css for enhanced animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/adminStyle/coupons.css">
+    <!-- Pagination CSS -->
+    <style>
+        /* Pagination styles */
+        .custom-pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .custom-pagination-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        .pagination-info {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-right: 1rem;
+        }
+
+        .custom-pagination {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            background: white;
+            border-radius: 50px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .pagination-item {
+            margin: 0;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            min-width: 40px;
+            padding: 0 12px;
+            color: #333;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-item:hover:not(.disabled):not(.active) .pagination-link {
+            background-color: #f1f1f1;
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        .pagination-item.active .pagination-link {
+            background-color: #000;
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 2;
+        }
+
+        .pagination-item.disabled .pagination-link {
+            color: #ccc;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Jump to page section */
+        .pagination-jump {
+            display: flex;
+            align-items: center;
+            margin-left: 1rem;
+        }
+
+        .pagination-jump span {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
+
+        .jump-form {
+            display: flex;
+            align-items: center;
+        }
+
+        .jump-input {
+            width: 50px;
+            height: 36px;
+            padding: 0 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .jump-btn {
+            height: 36px;
+            width: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .jump-btn:hover {
+            background-color: #333;
+        }
+
+        /* Loading indicator */
+        .pagination-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, #000, transparent);
+            z-index: 9999;
+            animation: loading 1.5s infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .pagination-loading.active {
+            opacity: 1;
+        }
+
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Pagination Loading Indicator -->
+    <div class="pagination-loading" id="paginationLoading"></div>
+
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" id="mobileToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <%- include("../partials/admin/header") %>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="content-header">
+                <div class="header-container">
+                    <div>
+                        <h1 class="page-title">Coupon Management</h1>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                            <li class="breadcrumb-separator"><i class="fas fa-chevron-right"></i></li>
+                            <li class="breadcrumb-item">Coupons</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="user-profile">
+                        <div class="profile-info">
+                            <p class="user-name">Ajmal</p>
+                            <p class="user-role">Admin</p>
+                        </div>
+                        <div class="profile-image">
+                            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WEARiT-ICKNdKFXCOrFbNFOEQqzgceGbY4QKK.png" alt="Admin Profile">
+                        </div>
+                        <div class="dropdown-icon">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Row -->
+            <div class="stats-row animate-fade-in">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <h3 class="stat-value" id="totalCoupons">0</h3>
+                    <p class="stat-label">Total Coupons</p>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3 class="stat-value" id="activeCoupons">0</h3>
+                    <p class="stat-label">Active Coupons</p>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3 class="stat-value" id="expiringCoupons">0</h3>
+                    <p class="stat-label">Expiring Soon</p>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon red">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <h3 class="stat-value" id="expiredCoupons">0</h3>
+                    <p class="stat-label">Expired Coupons</p>
+                </div>
+            </div>
+            
+            <!-- Search and Filters -->
+            <div class="search-filter-row">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search coupon code...">
+                </div>
+                
+                <div class="filter-container">
+                    <button class="filter-btn">
+                        <i class="fas fa-sliders-h"></i>
+                        <span>Filters</span>
+                    </button>
+                    <div class="filter-options">
+                        <button class="filter-option active" id="filterAll">ALL</button>
+                        <button class="filter-option" id="filterActive">ACTIVE</button>
+                        <button class="filter-option" id="filterInactive">INACTIVE</button>
+                        <button class="filter-option" id="filterExpiring">EXPIRING</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- View Selector -->
+            <div class="view-selector">
+                <span class="view-selector-label">View:</span>
+                <div class="view-selector-options">
+                    <button class="view-option active" id="tableView" title="Table View">
+                        <i class="fas fa-table"></i>
+                    </button>
+                    <button class="view-option" id="cardView" title="Card View">
+                        <i class="fas fa-th-large"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Table View -->
+            <div id="tableViewContainer" class="animate-fade-in content-fade">
+                <div class="coupons-container">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="section-title">Available Coupons</h2>
+                        <div class="bulk-select px-4">
+                            <input type="checkbox" id="selectAllCoupons" class="form-check-input">
+                            <label for="selectAllCoupons" class="bulk-select-label ms-2">Select All</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Bulk Actions (Initially Hidden) -->
+                    <div class="bulk-actions" id="bulkActionsBar" style="display: none;">
+                        <div class="bulk-select">
+                            <span id="selectedCount" class="bulk-select-label">0 selected</span>
+                        </div>
+                        <div class="bulk-actions-buttons">
+                            <button class="bulk-action-btn" id="bulkActivate">
+                                <i class="fas fa-check-circle"></i> Activate
+                            </button>
+                            <button class="bulk-action-btn" id="bulkDeactivate">
+                                <i class="fas fa-ban"></i> Deactivate
+                            </button>
+                            <button class="bulk-action-btn delete" id="bulkDelete">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table coupons-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;">
+                                        <input type="checkbox" id="selectAllHeader" class="form-check-input">
+                                    </th>
+                                    <th>Code</th>
+                                    <th>Discount</th>
+                                    <th>Min Purchase</th>
+                                    <th>Max Discount</th>
+                                    <th>Usage</th>
+                                    <th>Status</th>
+                                    <th>Expiry Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="couponTableBody">
+                                <!-- This will be populated by JavaScript -->
+                                <tr>
+                                    <td colspan="9" class="text-center py-4">
+                                        <div class="loading-spinner">
+                                            <div class="spinner"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Card View (Initially Hidden) -->
+            <div id="cardViewContainer" class="animate-fade-in content-fade" style="display: none;">
+                <div class="coupons-container">
+                    <h2 class="section-title">Available Coupons</h2>
+                    <div class="coupon-cards" id="couponCardsContainer">
+                        <!-- This will be populated by JavaScript -->
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Empty State (Initially Hidden) -->
+            <div id="emptyState" class="coupons-container" style="display: none;">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <h3 class="empty-title">No Coupons Found</h3>
+                    <p class="empty-text">You haven't created any coupons yet or none match your current filters.</p>
+                    <a href="/admin/addCoupon" class="btn-add-coupon">
+                        <i class="fas fa-plus"></i> Create Your First Coupon
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Simplified Pagination -->
+            <div class="custom-pagination-container">
+                <div class="pagination-info">
+                    <%
+                    const totalItems = totalcoupons || 0;
+                    const currentPageNum = parseInt(currentPage) || 1;
+                    const safeItemsPerPage = parseInt(itemsPerPage) || 7;
+                  
+                    const totalPages = Math.ceil(totalItems / safeItemsPerPage) || 1;
+                  
+                    const startItem = totalItems === 0 ? 0 : ((currentPageNum - 1) * safeItemsPerPage) + 1;
+                    const endItem = Math.min(currentPageNum * safeItemsPerPage, totalItems);
+                    %>
+                  
+                    <% if (totalItems > 0) { %>
+                      Showing <span class="fw-bold"><%= startItem %></span> to 
+                      <span class="fw-bold"><%= endItem %></span> of 
+                      <span class="fw-bold"><%= totalItems %></span> coupons
+                    <% } else { %>
+                      No coupons to display
+                    <% } %>
+                </div>
+              
+                <% if (totalItems > 0 && totalPages > 1) { %>
+                  <ul class="custom-pagination">
+                    <%
+                    // Calculate page range
+                    let startPage = Math.max(1, currentPageNum - 2);
+                    let endPage = Math.min(totalPages, startPage + 4);
+                    
+                    if (endPage - startPage < 4 && totalPages > 4) {
+                      startPage = Math.max(1, endPage - 4);
+                    }
+                    
+                    // Determine if prev/next buttons should be enabled
+                    const hasPrevPage = currentPageNum > 1;
+                    const hasNextPage = currentPageNum < totalPages;
+                    %>
+                    
+                    <!-- First Page Button -->
+                    <li class="pagination-item <%= !hasPrevPage ? 'disabled' : '' %>">
+                      <a href="/admin/coupons?page=1" 
+                         class="pagination-link" 
+                         <%= !hasPrevPage ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+                        <i class="fas fa-angle-double-left"></i>
+                      </a>
+                    </li>
+                    
+                    <!-- Previous Button -->
+                    <li class="pagination-item <%= !hasPrevPage ? 'disabled' : '' %>">
+                      <a href="/admin/coupons?page=<%= currentPageNum - 1 %>" 
+                         class="pagination-link" 
+                         <%= !hasPrevPage ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+                        <i class="fas fa-angle-left"></i>
+                      </a>
+                    </li>
+                    
+                    <!-- Page Numbers -->
+                    <% for (let i = startPage; i <= endPage; i++) { %>
+                      <li class="pagination-item <%= i === currentPageNum ? 'active' : '' %>">
+                        <a href="/admin/coupons?page=<%= i %>" class="pagination-link">
+                          <%= i %>
+                        </a>
+                      </li>
+                    <% } %>
+                    
+                    <!-- Next Button -->
+                    <li class="pagination-item <%= !hasNextPage ? 'disabled' : '' %>">
+                      <a href="/admin/coupons?page=<%= currentPageNum + 1 %>" 
+                         class="pagination-link" 
+                         <%= !hasNextPage ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+                        <i class="fas fa-angle-right"></i>
+                      </a>
+                    </li>
+                    
+                    <!-- Last Page Button -->
+                    <li class="pagination-item <%= !hasNextPage ? 'disabled' : '' %>">
+                      <a href="/admin/coupons?page=<%= totalPages %>" 
+                         class="pagination-link" 
+                         <%= !hasNextPage ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+                        <i class="fas fa-angle-double-right"></i>
+                      </a>
+                    </li>
+                  </ul>
+                  
+                  <!-- Jump to Page -->
+                  <div class="pagination-jump">
+                    <span>Go to:</span>
+                    <form action="/admin/coupons" method="GET">
+                      <input type="number" name="page" min="1" max="<%= totalPages %>" 
+                             class="jump-input" value="<%= currentPageNum %>">
+                      <button type="submit" class="jump-btn">
+                        <i class="fas fa-arrow-right"></i>
+                      </button>
+                    </form>
+                  </div>
+                <% } %>
+            </div>
+            
+            <!-- Add Coupon Button -->
+            <div class="add-coupon-container">
+                <a href="/admin/addCoupon" class="btn-add-coupon">
+                    <i class="fas fa-plus"></i> Add New Coupon
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile sidebar toggle
+            document.getElementById('mobileToggle').addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('show');
+            });
+            
+            // View toggle
+            const tableViewBtn = document.getElementById('tableView');
+            const cardViewBtn = document.getElementById('cardView');
+            const tableViewContainer = document.getElementById('tableViewContainer');
+            const cardViewContainer = document.getElementById('cardViewContainer');
+            
+            tableViewBtn.addEventListener('click', function() {
+                tableViewBtn.classList.add('active');
+                cardViewBtn.classList.remove('active');
+                tableViewContainer.style.display = 'block';
+                cardViewContainer.style.display = 'none';
+                localStorage.setItem('couponViewPreference', 'table');
+            });
+            
+            cardViewBtn.addEventListener('click', function() {
+                cardViewBtn.classList.add('active');
+                tableViewBtn.classList.remove('active');
+                cardViewContainer.style.display = 'block';
+                tableViewContainer.style.display = 'none';
+                localStorage.setItem('couponViewPreference', 'card');
+            });
+            
+            // Load user preference if exists
+            const viewPreference = localStorage.getItem('couponViewPreference');
+            if (viewPreference === 'card') {
+                cardViewBtn.click();
+            }
+            
+            // Variables
+            let allCoupons = [];
+            let selectedCoupons = new Set();
+            
+            // Fetch and render coupons
+            async function fetchCoupons() {
+                try {
+                    // Show loading state
+                    document.getElementById('couponTableBody').innerHTML = `
+                        <tr>
+                            <td colspan="9" class="text-center py-4">
+                                <div class="loading-spinner">
+                                    <div class="spinner"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    document.getElementById('couponCardsContainer').innerHTML = `
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                        </div>
+                    `;
+                    
+                    const response = await fetch('/admin/getAllCoupons');
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Process coupons to add calculated fields
+                        allCoupons = result.data.map(coupon => {
+                            const usedCount = coupon.usedBy ? coupon.usedBy.reduce((total, user) => total + (user.usedCount || 0), 0) : 0;
+                            return { ...coupon, usedCount };
+                        });
+                        
+                        updateStats(allCoupons);
+                        renderCoupons(allCoupons);
+                    } else {
+                        showToast('error', result.message || 'Failed to load coupons');
+                        showEmptyState();
+                    }
+                } catch (error) {
+                    console.error('Error fetching coupons:', error);
+                    showToast('error', 'Server error');
+                    showEmptyState();
+                }
+            }
+            
+            function showEmptyState() {
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('tableViewContainer').style.display = 'none';
+                document.getElementById('cardViewContainer').style.display = 'none';
+            }
+            
+            // Update stats
+            function updateStats(coupons) {
+                const now = new Date();
+                const nextWeek = new Date();
+                nextWeek.setDate(nextWeek.getDate() + 7);
+                
+                const totalCount = coupons.length;
+                const activeCount = coupons.filter(c => c.isActive && new Date(c.startingDate) <= now && new Date(c.expiryDate) >= now).length;
+                const expiredCount = coupons.filter(c => new Date(c.expiryDate) < now).length;
+                const expiringCount = coupons.filter(c => {
+                    const expiryDate = new Date(c.expiryDate);
+                    return c.isActive && expiryDate >= now && expiryDate <= nextWeek;
+                }).length;
+                
+                document.getElementById('totalCoupons').textContent = totalCount;
+                document.getElementById('activeCoupons').textContent = activeCount;
+                document.getElementById('expiredCoupons').textContent = expiredCount;
+                document.getElementById('expiringCoupons').textContent = expiringCount;
+            }
+            
+            // Render coupons
+            function renderCoupons(coupons) {
+                const tableBody = document.getElementById('couponTableBody');
+                const cardsContainer = document.getElementById('couponCardsContainer');
+                const emptyState = document.getElementById('emptyState');
+                
+                // Clear containers
+                tableBody.innerHTML = '';
+                cardsContainer.innerHTML = '';
+                
+                // Show empty state if no coupons
+                if (coupons.length === 0) {
+                    emptyState.style.display = 'block';
+                    tableViewContainer.style.display = 'none';
+                    cardViewContainer.style.display = 'none';
+                    return;
+                }
+                
+                // Hide empty state
+                emptyState.style.display = 'none';
+                
+                // Show appropriate view
+                if (tableViewBtn.classList.contains('active')) {
+                    tableViewContainer.style.display = 'block';
+                } else {
+                    cardViewContainer.style.display = 'block';
+                }
+                
+                // Get current page from URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const currentPage = parseInt(urlParams.get('page')) || 1;
+                const itemsPerPage = <%= itemsPerPage || 7 %>;
+                
+                // Calculate pagination
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const endIndex = startIndex + itemsPerPage;
+                const paginatedCoupons = coupons.slice(startIndex, endIndex);
+                
+                // Render table rows
+                paginatedCoupons.forEach(coupon => {
+                    const row = document.createElement('tr');
+                    
+                    // Calculate expiry status
+                    const now = new Date();
+                    const startDate = new Date(coupon.startingDate);
+                    const expiryDate = new Date(coupon.expiryDate);
+                    const nextWeek = new Date();
+                    nextWeek.setDate(nextWeek.getDate() + 7);
+                    
+                    let expiryStatus = '';
+                    let statusClass = '';
+                    
+                    if (now < startDate) {
+                        expiryStatus = 'upcoming';
+                        statusClass = 'bg-info';
+                    } else if (expiryDate < now) {
+                        expiryStatus = 'expired';
+                        statusClass = 'bg-danger';
+                    } else if (expiryDate <= nextWeek) {
+                        expiryStatus = 'expiring-soon';
+                        statusClass = 'bg-warning text-dark';
+                    }
+                    
+                    // Calculate usage percentage
+                    const usedCount = coupon.usedCount || 0;
+                    const usagePercentage = coupon.limit > 0 ? Math.min(Math.round((usedCount / coupon.limit) * 100), 100) : 0;
+                    
+                    row.innerHTML = `
+                        <td>
+                            <input type="checkbox" class="form-check-input coupon-checkbox" data-id="${coupon._id}" ${selectedCoupons.has(coupon._id) ? 'checked' : ''}>
+                        </td>
+                        <td>
+                            <strong>${coupon.coupencode}</strong>
+                            ${expiryStatus === 'expired' ? '<span class="badge bg-danger ms-2">Expired</span>' : ''}
+                            ${expiryStatus === 'expiring-soon' ? '<span class="badge bg-warning text-dark ms-2">Expiring Soon</span>' : ''}
+                            ${expiryStatus === 'upcoming' ? '<span class="badge bg-info ms-2">Upcoming</span>' : ''}
+                        </td>
+                        <td>${coupon.couponpercent}%</td>
+                        <td>₹${coupon.minimumPurchase}</td>
+                        <td>₹${coupon.maxRedeemable}</td>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <div class="usage-text">
+                                    <span>${usedCount} / ${coupon.limit}</span>
+                                    <span>${usagePercentage}%</span>
+                                </div>
+                                <div class="usage-progress">
+                                    <div class="usage-bar" style="width: ${usagePercentage}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <label class="toggle-switch">
+                                <input type="checkbox" class="status-toggle" data-id="${coupon._id}" ${coupon.isActive ? 'checked' : ''}>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </td>
+                        <td>${formatDate(coupon.expiryDate)}</td>
+                        <td class="action-buttons">
+                            <button class="btn-view" onclick="viewCouponDetails('${coupon._id}')" title="View details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <a href="/admin/editCoupon/${coupon._id}" class="btn-edit" title="Edit coupon">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button class="btn-delete" onclick="confirmDeleteCoupon('${coupon._id}', '${coupon.coupencode}')" title="Delete coupon">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                    
+                    // Create card for card view
+                    const card = document.createElement('div');
+                    card.className = 'coupon-card';
+                    
+                    // Add ribbon if expired or expiring soon
+                    if (expiryStatus) {
+                        const ribbonClass = expiryStatus === 'expired' ? 'ribbon-expired' : 
+                                           expiryStatus === 'upcoming' ? 'ribbon-upcoming' : 'ribbon-soon';
+                        const ribbonText = expiryStatus === 'expired' ? 'Expired' : 
+                                          expiryStatus === 'upcoming' ? 'Upcoming' : 'Expiring Soon';
+                        
+                        card.innerHTML += `
+                            <div class="ribbon ${ribbonClass}">
+                                <span class="ribbon-content">${ribbonText}</span>
+                            </div>
+                        `;
+                    }
+                    
+                    card.innerHTML += `
+                        <div class="coupon-header">
+                            <div class="coupon-code">
+                                ${coupon.coupencode}
+                                <button class="copy-code-btn" onclick="copyCouponCode('${coupon.coupencode}')" title="Copy code">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="coupon-body">
+                            <div class="coupon-discount">${coupon.couponpercent}% OFF</div>
+                            <div class="coupon-details">
+                                <div class="coupon-detail">
+                                    <span class="detail-label">Min. Purchase:</span>
+                                    <span class="detail-value">₹${coupon.minimumPurchase}</span>
+                                </div>
+                                <div class="coupon-detail">
+                                    <span class="detail-label">Max. Discount:</span>
+                                    <span class="detail-value">₹${coupon.maxRedeemable}</span>
+                                </div>
+                                <div class="coupon-detail">
+                                    <span class="detail-label">Usage:</span>
+                                    <span class="detail-value">${usedCount} / ${coupon.limit}</span>
+                                </div>
+                                <div class="coupon-detail">
+                                    <span class="detail-label">Start Date:</span>
+                                    <span class="detail-value">${formatDate(coupon.startingDate)}</span>
+                                </div>
+                                <div class="coupon-detail">
+                                    <span class="detail-label">Expires:</span>
+                                    <span class="detail-value">${formatDate(coupon.expiryDate)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="coupon-footer">
+                            <div class="coupon-status">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" class="status-toggle" data-id="${coupon._id}" ${coupon.isActive ? 'checked' : ''}>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span class="ms-2">${coupon.isActive ? 'Active' : 'Inactive'}</span>
+                            </div>
+                            <div class="coupon-actions">
+                                <button class="btn-view" onclick="viewCouponDetails('${coupon._id}')" title="View details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <a href="/admin/editCoupon/${coupon._id}" class="btn-edit" title="Edit coupon">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn-delete" onclick="confirmDeleteCoupon('${coupon._id}', '${coupon.coupencode}')" title="Delete coupon">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    cardsContainer.appendChild(card);
+                });
+                
+                // Add event listeners to checkboxes and toggle switches
+                document.querySelectorAll('.coupon-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const couponId = this.getAttribute('data-id');
+                        if (this.checked) {
+                            selectedCoupons.add(couponId);
+                        } else {
+                            selectedCoupons.delete(couponId);
+                        }
+                        updateBulkActionsBar();
+                    });
+                });
+                
+                document.querySelectorAll('.status-toggle').forEach(toggle => {
+                    toggle.addEventListener('change', function() {
+                        const couponId = this.getAttribute('data-id');
+                        confirmToggleCouponStatus(couponId, this.checked);
+                    });
+                });
+            }
+            
+            // Format date
+            function formatDate(dateString) {
+                try {
+                    const date = new Date(dateString);
+                    if (isNaN(date.getTime())) {
+                        return 'Invalid Date';
+                    }
+                    return date.toLocaleDateString('en-US', {
+                        month: '2-digit',
+                        day: '2-digit',
+                        year: 'numeric'
+                    });
+                } catch (error) {
+                    console.error('Error formatting date:', error);
+                    return 'Invalid Date';
+                }
+            }
+            
+            // Copy coupon code
+            window.copyCouponCode = function(code) {
+                navigator.clipboard.writeText(code).then(() => {
+                    showToast('success', 'Coupon code copied to clipboard');
+                }).catch(err => {
+                    console.error('Could not copy text: ', err);
+                    showToast('error', 'Failed to copy coupon code');
+                });
+            };
+            
+            // View coupon details
+            window.viewCouponDetails = function(couponId) {
+                const coupon = allCoupons.find(c => c._id === couponId);
+                if (!coupon) {
+                    showToast('error', 'Coupon not found');
+                    return;
+                }
+                
+                const usedCount = coupon.usedCount || 0;
+                const usagePercentage = coupon.limit > 0 ? Math.min(Math.round((usedCount / coupon.limit) * 100), 100) : 0;
+                
+                const now = new Date();
+                const startDate = new Date(coupon.startingDate);
+                const expiryDate = new Date(coupon.expiryDate);
+                const daysLeft = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                
+                let expiryStatus = '';
+                if (now < startDate) {
+                    expiryStatus = `<span class="badge bg-info">Starts in ${Math.ceil((startDate - now) / (1000 * 60 * 60 * 24))} days</span>`;
+                } else if (expiryDate < now) {
+                    expiryStatus = '<span class="badge bg-danger">Expired</span>';
+                } else if (daysLeft <= 7) {
+                    expiryStatus = `<span class="badge bg-warning text-dark">Expires in ${daysLeft} days</span>`;
+                } else {
+                    expiryStatus = `<span class="badge bg-success">Valid for ${daysLeft} days</span>`;
+                }
+                
+                Swal.fire({
+                    title: `Coupon: ${coupon.coupencode}`,
+                    html: `
+                        <div class="coupon-details-modal">
+                            <div class="row mb-3">
+                                <div class="col-6 text-start">Discount:</div>
+                                <div class="col-6 text-end"><strong>${coupon.couponpercent}%</strong></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6 text-start">Min. Purchase:</div>
+                                <div class="col-6 text-end"><strong>₹${coupon.minimumPurchase}</strong></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6 text-start">Max. Discount:</div>
+                                <div class="col-6 text-end"><strong>₹${coupon.maxRedeemable}</strong></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6 text-start">Usage:</div>
+                                <div class="col-6 text-end"><strong>${usedCount} / ${coupon.limit}</strong></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6 text-start">Status:</div>
+                                <div class="col-6 text-end"><strong>${coupon.isActive ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>'}</strong></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6 text-start">Start Date:</div>
+                                <div class="col-6 text-end"><strong>${formatDate(coupon.startingDate)}</strong></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6 text-start">Expiry:</div>
+                                <div class="col-6 text-end"><strong>${formatDate(coupon.expiryDate)} ${expiryStatus}</strong></div>
+                            </div>
+                            ${coupon.description ? `
+                            <div class="row mb-3">
+                                <div class="col-12 text-start">Description:</div>
+                                <div class="col-12 mt-1"><em>${coupon.description}</em></div>
+                            </div>
+                            ` : ''}
+                            <div class="progress mt-3">
+                                <div class="progress-bar" role="progressbar" style="width: ${usagePercentage}%" aria-valuenow="${usagePercentage}" aria-valuemin="0" aria-valuemax="100">${usagePercentage}%</div>
+                            </div>
+                        </div>
+                    `,
+                    confirmButtonText: 'Close',
+                    confirmButtonColor: '#000000',
+                    showCancelButton: true,
+                    cancelButtonText: 'Edit',
+                    cancelButtonColor: '#6c757d',
+                }).then((result) => {
+                    if (result.dismiss === Swal.DismissReason.cancel) {
+                        window.location.href = `/admin/editCoupon/${coupon._id}`;
+                    }
+                });
+            };
+            
+            // Confirm before toggling coupon status
+            function confirmToggleCouponStatus(couponId, newStatus) {
+                const coupon = allCoupons.find(c => c._id === couponId);
+                if (!coupon) return;
+                
+                document.querySelectorAll(`.status-toggle[data-id="${couponId}"]`).forEach(toggle => {
+                    toggle.checked = coupon.isActive;
+                });
+                
+                const statusText = newStatus ? 'activate' : 'deactivate';
+                
+                Swal.fire({
+                    title: `${statusText.charAt(0).toUpperCase() + statusText.slice(1)} Coupon?`,
+                    html: `Are you sure you want to ${statusText} the coupon <strong class="coupon-code">${coupon.coupencode}</strong>?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, ' + statusText,
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#000000',
+                    cancelButtonColor: '#6c757d',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        toggleCouponStatus(couponId, newStatus);
+                    }
+                });
+            }
+            
+            // Toggle coupon status
+            async function toggleCouponStatus(couponId, isActive) {
+                try {
+                    const response = await fetch(`/admin/toggleCouponStatus/${couponId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ isActive })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const couponIndex = allCoupons.findIndex(c => c._id === couponId);
+                        if (couponIndex !== -1) {
+                            allCoupons[couponIndex].isActive = isActive;
+                        }
+                        
+                        document.querySelectorAll(`.status-toggle[data-id="${couponId}"]`).forEach(toggle => {
+                            toggle.checked = isActive;
+                        });
+                        
+                        showToast('success', `Coupon ${isActive ? 'activated' : 'deactivated'} successfully`);
+                        updateStats(allCoupons);
+                    } else {
+                        showToast('error', result.message || 'Failed to update coupon status');
+                        const coupon = allCoupons.find(c => c._id === couponId);
+                        if (coupon) {
+                            document.querySelectorAll(`.status-toggle[data-id="${couponId}"]`).forEach(toggle => {
+                                toggle.checked = coupon.isActive;
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error toggling coupon:', error);
+                    showToast('error', 'Server error');
+                    const coupon = allCoupons.find(c => c._id === couponId);
+                    if (coupon) {
+                        document.querySelectorAll(`.status-toggle[data-id="${couponId}"]`).forEach(toggle => {
+                            toggle.checked = coupon.isActive;
+                        });
+                    }
+                }
+            }
+            
+            // Confirm before deleting coupon
+            window.confirmDeleteCoupon = function(couponId, code) {
+                Swal.fire({
+                    title: 'Delete Coupon?',
+                    html: `Are you sure you want to delete the coupon <strong class="coupon-code">${code}</strong>?<br>This action cannot be undone.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, delete it',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        deleteCoupon(couponId);
+                    }
+                });
+            }
+            
+            // Delete coupon
+            async function deleteCoupon(couponId) {
+                try {
+                    const response = await fetch(`/admin/deleteCoupon/${couponId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        allCoupons = allCoupons.filter(c => c._id !== couponId);
+                        selectedCoupons.delete(couponId);
+                        updateBulkActionsBar();
+                        renderCoupons(allCoupons);
+                        updateStats(allCoupons);
+                        
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: 'Coupon has been deleted successfully.',
+                            icon: 'success',
+                            confirmButtonColor: '#000000'
+                        });
+                    } else {
+                        showToast('error', result.message || 'Failed to delete coupon');
+                    }
+                } catch (error) {
+                    console.error('Error deleting coupon:', error);
+                    showToast('error', 'Server error');
+                }
+            }
+            
+            // Show toast notification
+            function showToast(icon, title) {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
+                
+                Toast.fire({
+                    icon: icon,
+                    title: title
+                });
+            }
+            
+            // Bulk actions
+            const selectAllHeader = document.getElementById('selectAllHeader');
+            const selectAllCoupons = document.getElementById('selectAllCoupons');
+            const bulkActionsBar = document.getElementById('bulkActionsBar');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            selectAllHeader.addEventListener('change', function() {
+                document.querySelectorAll('.coupon-checkbox').forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                    const couponId = checkbox.getAttribute('data-id');
+                    if (this.checked) {
+                        selectedCoupons.add(couponId);
+                    } else {
+                        selectedCoupons.delete(couponId);
+                    }
+                });
+                
+                selectAllCoupons.checked = this.checked;
+                updateBulkActionsBar();
+            });
+            
+            selectAllCoupons.addEventListener('change', function() {
+                document.querySelectorAll('.coupon-checkbox').forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                    const couponId = checkbox.getAttribute('data-id');
+                    if (this.checked) {
+                        selectedCoupons.add(couponId);
+                    } else {
+                        selectedCoupons.delete(couponId);
+                    }
+                });
+                
+                selectAllHeader.checked = this.checked;
+                updateBulkActionsBar();
+            });
+            
+            function updateBulkActionsBar() {
+                selectedCount.textContent = `${selectedCoupons.size} selected`;
+                
+                if (selectedCoupons.size > 0) {
+                    bulkActionsBar.style.display = 'flex';
+                } else {
+                    bulkActionsBar.style.display = 'none';
+                }
+            }
+            
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const filteredCoupons = allCoupons.filter(coupon => 
+                    coupon.coupencode.toLowerCase().includes(searchTerm)
+                );
+                renderCoupons(filteredCoupons);
+            });
+            
+            // Filter buttons functionality
+            document.getElementById('filterAll').addEventListener('click', function() {
+                setActiveFilter(this);
+                renderCoupons(allCoupons);
+            });
+            
+            document.getElementById('filterActive').addEventListener('click', function() {
+                setActiveFilter(this);
+                const now = new Date();
+                const filteredCoupons = allCoupons.filter(c => 
+                    c.isActive && new Date(c.startingDate) <= now && new Date(c.expiryDate) >= now
+                );
+                renderCoupons(filteredCoupons);
+            });
+            
+            document.getElementById('filterInactive').addEventListener('click', function() {
+                setActiveFilter(this);
+                const now = new Date();
+                const filteredCoupons = allCoupons.filter(c => 
+                    !c.isActive || new Date(c.startingDate) > now || new Date(c.expiryDate) < now
+                );
+                renderCoupons(filteredCoupons);
+            });
+            
+            document.getElementById('filterExpiring').addEventListener('click', function() {
+                setActiveFilter(this);
+                const now = new Date();
+                const nextWeek = new Date();
+                nextWeek.setDate(nextWeek.getDate() + 7);
+                
+                const filteredCoupons = allCoupons.filter(c => {
+                    const expiryDate = new Date(c.expiryDate);
+                    return c.isActive && expiryDate >= now && expiryDate <= nextWeek;
+                });
+                renderCoupons(filteredCoupons);
+            });
+            
+            function setActiveFilter(element) {
+                document.querySelectorAll('.filter-option').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                element.classList.add('active');
+            }
+            
+            // Add loading indicator for pagination links
+            document.querySelectorAll('.pagination-link').forEach(link => {
+                link.addEventListener('click', function() {
+                    // Only show loading if the link is not disabled
+                    if (!this.closest('.pagination-item').classList.contains('disabled')) {
+                        const loadingIndicator = document.getElementById('paginationLoading');
+                        loadingIndicator.classList.add('active');
+                    }
+                });
+            });
+            
+            // Add loading indicator for "Go to page" form
+            document.querySelector('.pagination-jump form')?.addEventListener('submit', function() {
+                const loadingIndicator = document.getElementById('paginationLoading');
+                loadingIndicator.classList.add('active');
+            });
+            
+            // Initial load
+            fetchCoupons();
+        });
+    </script>
+</body>
+</html>

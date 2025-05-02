@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pure Threads - Add Coupon</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Flatpickr Date Picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css">
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Tippy.js for tooltips -->
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --border-radius: 0.5rem;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: var(--gray-700);
+            line-height: 1.5;
+        }
+        
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background-color: white;
+            border-right: 1px solid var(--gray-200);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            background-color: var(--gray-50);
+            min-height: 100vh;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .page-title {
+            font-weight: 600;
+            color: var(--gray-900);
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        
+        .breadcrumb {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .breadcrumb-item a {
+            color: var(--gray-500);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: var(--primary);
+        }
+        
+        .breadcrumb-item.active {
+            color: var(--gray-700);
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        .user-role {
+            color: var(--gray-500);
+            margin: 0;
+            font-size: 0.8rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: none;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1.25rem 1.5rem;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0;
+            font-size: 1.25rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .form-control {
+            border-radius: 0.375rem;
+            border: 1px solid var(--gray-300);
+            padding: 0.625rem 0.875rem;
+            font-size: 0.875rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+        
+        .form-control.is-invalid {
+            border-color: var(--danger);
+            background-image: none;
+            padding-right: 0.875rem;
+        }
+        
+        .form-control.is-invalid:focus {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+        }
+        
+        .error-message {
+            color: var(--danger);
+            font-size: 0.75rem;
+            margin-top: 0.375rem;
+            display: none;
+        }
+        
+        .btn {
+            font-weight: 500;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+        
+        .btn-outline-secondary {
+            color: var(--secondary);
+            border-color: var(--gray-300);
+            background-color: white;
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: var(--gray-100);
+            color: var(--gray-700);
+            border-color: var(--gray-400);
+        }
+        
+        .input-group-text {
+            background-color: var(--gray-100);
+            border-color: var(--gray-300);
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+        
+        .form-text {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-top: 0.375rem;
+        }
+        
+        .form-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .form-section-title {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 1.25rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .form-section-title i {
+            color: var(--primary);
+            font-size: 1.125rem;
+        }
+        
+        .coupon-preview {
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .coupon-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+        
+        .coupon-preview-header {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .coupon-preview-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .coupon-preview-code {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        
+        .coupon-preview-details {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .coupon-preview-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .coupon-preview-detail-label {
+            opacity: 0.8;
+        }
+        
+        .coupon-preview-detail-value {
+            font-weight: 500;
+        }
+        
+        .coupon-preview-discount {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin: 1rem 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .coupon-preview-footer {
+            position: relative;
+            z-index: 1;
+            font-size: 0.75rem;
+            opacity: 0.8;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .coupon-preview-dates {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .help-icon {
+            color: var(--gray-400);
+            font-size: 0.875rem;
+            margin-left: 0.375rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        
+        .help-icon:hover {
+            color: var(--primary);
+        }
+        
+        .tippy-box {
+            background-color: var(--gray-800);
+            color: white;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            padding: 0.5rem 0.75rem;
+            max-width: 300px !important;
+        }
+        
+        .tippy-arrow {
+            color: var(--gray-800);
+        }
+        
+        .form-floating > .form-control {
+            padding-top: 1.625rem;
+            padding-bottom: 0.625rem;
+            height: calc(3.5rem + 2px);
+        }
+        
+        .form-floating > label {
+            padding: 1rem 0.875rem;
+        }
+        
+        .input-group > .form-control:focus {
+            z-index: 3;
+        }
+        
+        .flatpickr-input {
+            background-color: white !important;
+        }
+        
+        .flatpickr-calendar {
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .flatpickr-day.selected {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .flatpickr-day.selected:hover {
+            background: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+        
+        .add-coupon-swal-popup {
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow-lg);
+            padding: 1.5rem;
+            width: 32em;
+            background: white;
+        }
+        
+        .add-coupon-swal-title {
+            font-size: 1.5rem;
+            color: var(--gray-900);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .add-coupon-swal-content {
+            font-size: 1rem;
+            line-height: 1.6;
+            padding: 0.5rem 0;
+            color: var(--gray-700);
+        }
+        
+        .add-coupon-swal-confirm {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .add-coupon-swal-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+        
+        .add-coupon-swal-cancel {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            color: var(--gray-700);
+            background-color: white;
+            border-color: var(--gray-300);
+        }
+        
+        .add-coupon-swal-cancel:hover {
+            transform: translateY(-2px);
+            background-color: var(--gray-100);
+        }
+        
+        .coupon-code-highlight {
+            color: var(--primary);
+            font-size: 1.125rem;
+            background-color: rgba(79, 70, 229, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 240px;
+            }
+            
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.show {
+                width: 240px;
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .user-profile {
+                margin-top: 1rem;
+                align-self: flex-end;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .card-body {
+                padding: 1.25rem;
+            }
+            
+            .coupon-preview {
+                margin-top: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar (placeholder) -->
+        <div class="sidebar">
+        <%- include("../partials/admin/header") %>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Add New Coupon</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="/admin/coupons">Coupons</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Add Coupon</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="user-profile">
+                    <div class="user-info">
+                        <p class="user-name">Ajmal</p>
+                        <p class="user-role">Administrator</p>
+                    </div>
+                    <img src="/api/placeholder/40/40" alt="User Profile" class="user-avatar">
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Coupon Details</h2>
+                        </div>
+                        <div class="card-body">
+                            <form id="addCouponForm" novalidate>
+                                <!-- Basic Information -->
+                                <div class="form-section">
+                                    <h3 class="form-section-title">
+                                        <i class="fas fa-tag"></i> Basic Information
+                                    </h3>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="coupencode" class="form-label">
+                                                Coupon Code
+                                                <i class="fas fa-info-circle help-icon" data-tippy-content="Enter a unique code that customers will use to apply the discount. Use uppercase letters, numbers, and hyphens for better readability."></i>
+                                            </label>
+                                            <input type="text" id="coupencode" name="coupencode" class="form-control text-uppercase" required>
+                                            <div class="error-message" id="coupencode-error">Please enter a valid coupon code.</div>
+                                            <div class="form-text">3-15 characters, letters, numbers, hyphens, and underscores only.</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="couponpercent" class="form-label">
+                                                Discount Percentage
+                                                <i class="fas fa-info-circle help-icon" data-tippy-content="The percentage discount that will be applied to the order total."></i>
+                                            </label>
+                                            <div class="input-group">
+                                                <input type="number" id="couponpercent" name="couponpercent" class="form-control" min="1" max="100" required>
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                            <div class="error-message" id="couponpercent-error">Discount must be between 1% and 100%.</div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="description" class="form-label">
+                                                Description
+                                                <i class="fas fa-info-circle help-icon" data-tippy-content="A brief description of the coupon that explains its purpose or conditions."></i>
+                                            </label>
+                                            <textarea id="description" name="description" class="form-control" rows="2" required></textarea>
+                                            <div class="error-message" id="description-error">Please enter a description.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Usage Limits -->
+                                <div class="form-section">
+                                    <h3 class="form-section-title">
+                                        <i class="fas fa-sliders-h"></i> Usage Limits
+                                    </h3>
+                                    <div class="row g-3">
+                                        <div class="col-md-4">
+                                            <label for="limit" class="form-label">
+                                                Usage Limit
+                                                <i class="fas fa-info-circle help-icon" data-tippy-content="The maximum number of times this coupon can be used across all customers."></i>
+                                            </label>
+                                            <input type="number" id="limit" name="limit" class="form-control" min="1" max="10" value="1" required>
+                                            <div class="error-message" id="limit-error">Limit must be between 1 and 10.</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="minimumPurchase" class="form-label">
+                                                Minimum Purchase (₹)
+                                                <i class="fas fa-info-circle help-icon" data-tippy-content="The minimum order total required to use this coupon."></i>
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">₹</span>
+                                                <input type="number" id="minimumPurchase" name="minimumPurchase" class="form-control" min="1" value="1">
+                                            </div>
+                                            <div class="error-message" id="minimumPurchase-error">Minimum purchase must be at least 1.</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="maxRedeemable" class="form-label">
+                                                Max Redeemable (₹)
+                                                <i class="fas fa-info-circle help-icon" data-tippy-content="The maximum discount amount that can be applied, regardless of the percentage."></i>
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">₹</span>
+                                                <input type="number" id="maxRedeemable" name="maxRedeemable" class="form-control" min="1" value="1">
+                                            </div>
+                                            <div class="error-message" id="maxRedeemable-error">Maximum redeemable amount must be at least 1.</div>
+                                            <div class="form-text">Must be less than minimum purchase.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Validity Period -->
+                                <div class="form-section">
+                                    <h3 class="form-section-title">
+                                        <i class="fas fa-calendar-alt"></i> Validity Period
+                                    </h3>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="startingDate" class="form-label">
+                                                Start Date
+                                                <i class="fas fa-info-circle help-icon" data-tippy-content="The date from which the coupon becomes valid."></i>
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                                <input type="text" id="startingDate" name="startingDate" class="form-control datepicker" placeholder="YYYY-MM-DD" required>
+                                            </div>
+                                            <div class="error-message" id="startingDate-error">Please select a valid start date.</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="expiryDate" class="form-label">
+                                                Expiry Date
+                                                <i class="fas fa-info-circle help-icon" data-tippy-content="The date after which the coupon will no longer be valid."></i>
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                                                <input type="text" id="expiryDate" name="expiryDate" class="form-control datepicker" placeholder="YYYY-MM-DD" required>
+                                            </div>
+                                            <div class="error-message" id="expiryDate-error">Please select a valid expiry date.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-end gap-2 mt-4">
+                                    <a href="/admin/coupons" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-1"></i> Cancel
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-plus me-1"></i> Create Coupon
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Coupon Preview</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="coupon-preview">
+                                <div class="coupon-preview-header">
+                                    <div class="coupon-preview-title">Pure Threads Discount</div>
+                                    <div class="coupon-preview-code" id="preview-code">SUMMER2023</div>
+                                </div>
+                                
+                                <div class="coupon-preview-discount" id="preview-discount">20% OFF</div>
+                                
+                                <div class="coupon-preview-details">
+                                    <div class="coupon-preview-detail">
+                                        <span class="coupon-preview-detail-label">Min. Purchase:</span>
+                                        <span class="coupon-preview-detail-value" id="preview-min-purchase">₹1000</span>
+                                    </div>
+                                    <div class="coupon-preview-detail">
+                                        <span class="coupon-preview-detail-label">Max. Discount:</span>
+                                        <span class="coupon-preview-detail-value" id="preview-max-discount">₹200</span>
+                                    </div>
+                                    <div class="coupon-preview-detail">
+                                        <span class="coupon-preview-detail-label">Usage Limit:</span>
+                                        <span class="coupon-preview-detail-value" id="preview-limit">1 time</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="coupon-preview-footer">
+                                    <div id="preview-description">Get a special discount on your purchase!</div>
+                                    <div class="coupon-preview-dates">
+                                        <span id="preview-start-date">Valid from: 2023-07-01</span>
+                                        <span id="preview-expiry-date">Until: 2023-07-31</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
+    
+    <script>
+        $(document).ready(function () {
+            // Initialize tooltips
+            tippy('[data-tippy-content]', {
+                placement: 'top',
+                arrow: true,
+                animation: 'scale',
+                theme: 'light',
+                maxWidth: 300
+            });
+            
+            // Initialize date pickers
+            flatpickr(".datepicker", {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                allowInput: true,
+                disableMobile: true
+            });
+
+            // Update coupon preview in real-time
+            function updateCouponPreview() {
+                const couponCode = $('#coupencode').val().toUpperCase() || 'SAMPLE';
+                const discount = $('#couponpercent').val() || '0';
+                const minPurchase = $('#minimumPurchase').val() || '0';
+                const maxRedeemable = $('#maxRedeemable').val() || '0';
+                const limit = $('#limit').val() || '1';
+                const description = $('#description').val() || 'Get a special discount on your purchase!';
+                const startDate = $('#startingDate').val() || 'Today';
+                const expiryDate = $('#expiryDate').val() || 'N/A';
+                
+                $('#preview-code').text(couponCode);
+                $('#preview-discount').text(`${discount}% OFF`);
+                $('#preview-min-purchase').text(`₹${minPurchase}`);
+                $('#preview-max-discount').text(`₹${maxRedeemable}`);
+                $('#preview-limit').text(`${limit} ${limit > 1 ? 'times' : 'time'}`);
+                $('#preview-description').text(description);
+                $('#preview-start-date').text(`Valid from: ${startDate}`);
+                $('#preview-expiry-date').text(`Until: ${expiryDate}`);
+            }
+            
+            // Update preview on input change
+            $('input, textarea').on('input change', function() {
+                updateCouponPreview();
+            });
+            
+            // Initial preview update
+            updateCouponPreview();
+
+            // Form validation
+            function validateForm() {
+                let isValid = true;
+                
+                // Validate coupon code
+                const couponCode = $('#coupencode').val().trim();
+                if (!couponCode) {
+                    showError('coupencode', 'Coupon code is required.');
+                    isValid = false;
+                } else if (!/^[A-Za-z0-9_-]{3,15}$/.test(couponCode)) {
+                    showError('coupencode', 'Coupon code must be 3-15 characters and can only contain letters, numbers, hyphens, and underscores.');
+                    isValid = false;
+                } else {
+                    hideError('coupencode');
+                }
+                
+                // Validate description
+                const description = $('#description').val().trim();
+                if (!description) {
+                    showError('description', 'Description is required.');
+                    isValid = false;
+                } else {
+                    hideError('description');
+                }
+                
+                // Validate limit
+                const limit = parseInt($('#limit').val());
+                if (isNaN(limit) || limit < 1 || limit > 10) {
+                    showError('limit', 'Limit must be between 1 and 10.');
+                    isValid = false;
+                } else {
+                    hideError('limit');
+                }
+                
+                // Validate discount percentage
+                const discount = parseInt($('#couponpercent').val());
+                if (isNaN(discount) || discount < 1 || discount > 100) {
+                    showError('couponpercent', 'Discount must be between 1% and 100%.');
+                    isValid = false;
+                } else {
+                    hideError('couponpercent');
+                }
+                
+                // Validate start date
+                const startDate = $('#startingDate').val();
+                if (!startDate) {
+                    showError('startingDate', 'Start date is required.');
+                    isValid = false;
+                } else {
+                    hideError('startingDate');
+                }
+                
+                // Validate expiry date
+                const expiryDate = $('#expiryDate').val();
+                if (!expiryDate) {
+                    showError('expiryDate', 'Expiry date is required.');
+                    isValid = false;
+                } else {
+                    hideError('expiryDate');
+                }
+                
+                // Additional date validation
+                if (startDate && expiryDate) {
+                    const startDateObj = new Date(startDate);
+                    const expiryDateObj = new Date(expiryDate);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    
+                    // Check if dates are valid
+                    if (isNaN(startDateObj.getTime())) {
+                        showError('startingDate', 'Invalid start date format. Use YYYY-MM-DD.');
+                        isValid = false;
+                    } else if (startDateObj < today) {
+                        showError('startingDate', 'Start date cannot be in the past.');
+                        isValid = false;
+                    }
+                    
+                    if (isNaN(expiryDateObj.getTime())) {
+                        showError('expiryDate', 'Invalid expiry date format. Use YYYY-MM-DD.');
+                        isValid = false;
+                    }
+                    
+                    // Check if expiry date is too far in the future (more than 1 year)
+                    const oneYearFromNow = new Date();
+                    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+                    
+                    if (expiryDateObj > oneYearFromNow) {
+                        showError('expiryDate', 'Expiry date cannot be more than 1 year in the future.');
+                        isValid = false;
+                    }
+                    
+                    // Check if there's a reasonable duration between start and expiry (at least 1 day)
+                    const timeDiff = expiryDateObj.getTime() - startDateObj.getTime();
+                    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                    
+                    if (daysDiff < 1) {
+                        showError('expiryDate', 'Coupon must be valid for at least 1 day.');
+                        isValid = false;
+                    }
+                }
+                
+                // Validate minimum purchase
+                const minPurchase = parseInt($('#minimumPurchase').val());
+                if (isNaN(minPurchase) || minPurchase < 1) {
+                    showError('minimumPurchase', 'Minimum purchase must be at least 1.');
+                    isValid = false;
+                } else {
+                    hideError('minimumPurchase');
+                }
+                
+                // Validate max redeemable
+                const maxRedeemable = parseInt($('#maxRedeemable').val());
+                if (isNaN(maxRedeemable) || maxRedeemable < 1) {
+                    showError('maxRedeemable', 'Maximum redeemable amount must be at least 1.');
+                    isValid = false;
+                } else {
+                    hideError('maxRedeemable');
+                }
+                
+                // Validate that minimum purchase is greater than max redeemable
+                if (minPurchase <= maxRedeemable) {
+                    showError('minimumPurchase', 'Minimum purchase must be greater than maximum redeemable amount.');
+                    isValid = false;
+                }
+                
+                return isValid;
+            }
+            
+            // Show error message
+            function showError(fieldId, message) {
+                $(`#${fieldId}`).addClass('is-invalid');
+                $(`#${fieldId}-error`).text(message).css('display', 'block');
+            }
+            
+            // Hide error message
+            function hideError(fieldId) {
+                $(`#${fieldId}`).removeClass('is-invalid');
+                $(`#${fieldId}-error`).css('display', 'none');
+            }
+            
+            // Real-time validation on input change
+            $('input, textarea').on('input change', function() {
+                const fieldId = $(this).attr('id');
+                
+                // Specific validation for each field
+                switch(fieldId) {
+                    case 'coupencode':
+                        const couponCode = $(this).val().trim();
+                        if (!couponCode) {
+                            showError(fieldId, 'Coupon code is required.');
+                        } else if (!/^[A-Za-z0-9_-]{3,15}$/.test(couponCode)) {
+                            showError(fieldId, 'Coupon code must be 3-15 characters and can only contain letters, numbers, hyphens, and underscores.');
+                        } else {
+                            hideError(fieldId);
+                        }
+                        break;
+                        
+                    case 'description':
+                        const description = $(this).val().trim();
+                        if (!description) {
+                            showError(fieldId, 'Description is required.');
+                        } else {
+                            hideError(fieldId);
+                        }
+                        break;
+                        
+                    case 'limit':
+                        const limit = parseInt($(this).val());
+                        if (isNaN(limit) || limit < 1 || limit > 10) {
+                            showError(fieldId, 'Limit must be between 1 and 10.');
+                        } else {
+                            hideError(fieldId);
+                        }
+                        break;
+                        
+                    case 'couponpercent':
+                        const discount = parseInt($(this).val());
+                        if (isNaN(discount) || discount < 1 || discount > 100) {
+                            showError(fieldId, 'Discount must be between 1% and 100%.');
+                        } else {
+                            hideError(fieldId);
+                        }
+                        break;
+                        
+                    case 'startingDate':
+                    case 'expiryDate':
+                        const startDate = $('#startingDate').val();
+                        const expiryDate = $('#expiryDate').val();
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        
+                        if (fieldId === 'startingDate') {
+                            if (!startDate) {
+                                showError('startingDate', 'Start date is required.');
+                            } else {
+                                const startDateObj = new Date(startDate);
+                                if (isNaN(startDateObj.getTime())) {
+                                    showError('startingDate', 'Invalid start date format. Use YYYY-MM-DD.');
+                                } else if (startDateObj < today) {
+                                    showError('startingDate', 'Start date cannot be in the past.');
+                                } else {
+                                    hideError('startingDate');
+                                }
+                            }
+                        }
+                        
+                        if (fieldId === 'expiryDate') {
+                            if (!expiryDate) {
+                                showError('expiryDate', 'Expiry date is required.');
+                            } else {
+                                const expiryDateObj = new Date(expiryDate);
+                                if (isNaN(expiryDateObj.getTime())) {
+                                    showError('expiryDate', 'Invalid expiry date format. Use YYYY-MM-DD.');
+                                } else {
+                                    hideError('expiryDate');
+                                }
+                            }
+                        }
+                        
+                        if (startDate && expiryDate) {
+                            const startDateObj = new Date(startDate);
+                            const expiryDateObj = new Date(expiryDate);
+                            
+                            if (!isNaN(startDateObj.getTime()) && !isNaN(expiryDateObj.getTime())) {
+                                // Check if expiry date is after start date
+                                if (startDateObj > expiryDateObj) {
+                                    showError('expiryDate', 'Expiry date must be after the start date.');
+                                } else {
+                                    // Check if expiry date is too far in the future (more than 1 year)
+                                    const oneYearFromNow = new Date();
+                                    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+                                    
+                                    if (expiryDateObj > oneYearFromNow) {
+                                        showError('expiryDate', 'Expiry date cannot be more than 1 year in the future.');
+                                    } else {
+                                        // Check if there's a reasonable duration between start and expiry (at least 1 day)
+                                        const timeDiff = expiryDateObj.getTime() - startDateObj.getTime();
+                                        const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                                        
+                                        if (daysDiff < 1) {
+                                            showError('expiryDate', 'Coupon must be valid for at least 1 day.');
+                                        } else {
+                                            hideError('expiryDate');
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                        
+                    case 'minimumPurchase':
+                    case 'maxRedeemable':
+                        const minPurchase = parseInt($('#minimumPurchase').val());
+                        const maxRedeemable = parseInt($('#maxRedeemable').val());
+                        
+                        // Validate minimum purchase
+                        if (fieldId === 'minimumPurchase') {
+                            if (isNaN(minPurchase) || minPurchase < 1) {
+                                showError('minimumPurchase', 'Minimum purchase must be at least 1.');
+                            } else {
+                                hideError('minimumPurchase');
+                            }
+                        }
+                        
+                        // Validate max redeemable
+                        if (fieldId === 'maxRedeemable') {
+                            if (isNaN(maxRedeemable) || maxRedeemable < 1) {
+                                showError('maxRedeemable', 'Maximum redeemable amount must be at least 1.');
+                            } else {
+                                hideError('maxRedeemable');
+                            }
+                        }
+                        
+                        // Check relationship between min purchase and max redeemable
+                        if (!isNaN(minPurchase) && !isNaN(maxRedeemable)) {
+                            if (minPurchase <= maxRedeemable) {
+                                showError('minimumPurchase', 'Minimum purchase must be greater than maximum redeemable amount.');
+                            }
+                        }
+                        break;
+                }
+            });
+
+            // Form submission
+            $('#addCouponForm').submit(async function (e) {
+                e.preventDefault();
+                
+                // Validate form
+                if (!validateForm()) {
+                    // Scroll to the first error
+                    const firstError = $('.is-invalid:first');
+                    if (firstError.length) {
+                        $('html, body').animate({
+                            scrollTop: firstError.offset().top - 100
+                        }, 500);
+                    }
+                    return false;
+                }
+                
+                const couponCode = $('#coupencode').val().toUpperCase();
+                const discount = parseInt($('#couponpercent').val());
+                
+                // Show SweetAlert confirmation
+                Swal.fire({
+                    title: 'Add New Coupon?',
+                    html: `Are you sure you want to add the coupon <span class="coupon-code-highlight">${couponCode}</span> with ${discount}% discount?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, add it',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#4f46e5',
+                    cancelButtonColor: '#64748b',
+                    reverseButtons: true,
+                    customClass: {
+                        container: 'add-coupon-swal-container',
+                        popup: 'add-coupon-swal-popup',
+                        header: 'add-coupon-swal-header',
+                        title: 'add-coupon-swal-title',
+                        closeButton: 'add-coupon-swal-close',
+                        icon: 'add-coupon-swal-icon',
+                        image: 'add-coupon-swal-image',
+                        content: 'add-coupon-swal-content',
+                        input: 'add-coupon-swal-input',
+                        actions: 'add-coupon-swal-actions',
+                        confirmButton: 'add-coupon-swal-confirm',
+                        cancelButton: 'add-coupon-swal-cancel',
+                        footer: 'add-coupon-swal-footer'
+                    },
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown'
+                    },
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp'
+                    }
+                }).then(async (result) => {
+                    if (result.isConfirmed) {
+                        const formData = {
+                            coupencode: couponCode,
+                            couponpercent: discount,
+                            minimumPurchase: parseInt($('#minimumPurchase').val()) || 1,
+                            startingDate: $('#startingDate').val(),
+                            expiryDate: $('#expiryDate').val(),
+                            description: $('#description').val(),
+                            limit: parseInt($('#limit').val()) || 1,
+                            maxRedeemable: parseInt($('#maxRedeemable').val()) || 1
+                        };
+
+                        try {
+                            // Show loading state
+                            Swal.fire({
+                                title: 'Adding Coupon...',
+                                text: 'Please wait while we process your request.',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false,
+                                showConfirmButton: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            const response = await fetch('/admin/createCoupon', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(formData)
+                            });
+                            
+                            const result = await response.json();
+                            
+                            if (result.success) {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: 'Coupon added successfully',
+                                    icon: 'success',
+                                    confirmButtonColor: '#4f46e5',
+                                    customClass: {
+                                        popup: 'add-coupon-swal-popup',
+                                        title: 'add-coupon-swal-title',
+                                        confirmButton: 'add-coupon-swal-confirm'
+                                    }
+                                }).then(() => {
+                                    window.location.href = '/admin/coupons';
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: result.message || 'Failed to add coupon',
+                                    icon: 'error',
+                                    confirmButtonColor: '#4f46e5'
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error adding coupon:', error);
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Server error occurred',
+                                icon: 'error',
+                                confirmButtonColor: '#4f46e5'
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

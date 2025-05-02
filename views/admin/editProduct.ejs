@@ -1,395 +1,1186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Product - Admin Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-</head>
-<body class="bg-gray-50 p-6">
-    <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-8">
-        <% if (locals.error) { %>
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <span class="block sm:inline"><%= error %></span>
-            </div>
-        <% } %>
-
-
-        <div id="loadingIndicator" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-            <div class="bg-white p-4 rounded-lg flex items-center space-x-3">
-                <svg class="animate-spin h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Updating product...</span>
-            </div>
-        </div>
-
-        <form id="productForm" method="post" action="/admin/editProduct/<%= product._id %>" enctype="multipart/form-data" novalidate>
-    
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold mb-4">General Information</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2" for="productName">Product Name</label>
-                        <input type="text" id="productName" name="productName" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= product.name %>" placeholder="Enter product name" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2" for="productPrice">Base Price (₹)</label>
-                        <input type="number" id="productPrice" name="productPrice" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= product.variants[0]?.varientPrice || '' %>" placeholder="Enter price" min="0" step="0.01">
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2" for="productDescription">Product Description</label>
-                    <textarea id="productDescription" name="productDescription" class="form-input w-full border rounded px-3 py-2" rows="4" 
-                        placeholder="Enter product description" required><%= product.description %></textarea>
-                </div>
-            </div>
-
-    
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold mb-4">Product Images</h2>
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="col-span-2">
-                        <div class="upload-zone h-64 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
-                            <% const mainImage = product.images && product.images.find(img => img.isMain); %>
-                            <% if (mainImage) { %>
-                                <img src="<%= mainImage.url %>" data-url="<%= mainImage.url %>" class="h-full w-full object-cover" alt="Main Product Image" 
-                                    onerror="this.onerror=null;this.src='/images/placeholder.jpg';">
-                                <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center" 
-                                        onclick="markImageForRemoval(this, 'mainImage')">×</button>
-                                <input type="hidden" name="existingImages[mainImage][url]" value="<%= mainImage.url %>">
-                                <input type="hidden" name="existingImages[mainImage][isMain]" value="true">
-                            <% } else { %>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01"/>
-                                </svg>
-                                <p class="text-gray-500">Drag and drop main product image or click to upload</p>
-                            <% } %>
-                            <input type="file" name="mainImage" class="hidden" accept="image/*">
-                        </div>
-                    </div>
-                    <div class="grid grid-rows-3 gap-4">
-                        <% const additionalImages = product.images ? product.images.filter(img => !img.isMain) : []; %>
-                        <% for (let i = 0; i < 3; i++) { %>
-                            <div class="upload-zone h-20 border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer relative">
-                                <% if (additionalImages[i]) { %>
-                                    <img src="<%= additionalImages[i].url %>" data-url="<%= additionalImages[i].url %>" class="h-full w-full object-cover" 
-                                        alt="Additional Product Image <%= i + 1 %>" onerror="this.onerror=null;this.src='/images/placeholder.jpg';">
-                                    <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                                            onclick="markImageForRemoval(this, 'additionalImage<%= i + 1 %>')">×</button>
-                                    <input type="hidden" name="existingImages[additionalImage<%= i + 1 %>][url]" value="<%= additionalImages[i].url %>">
-                                    <input type="hidden" name="existingImages[additionalImage<%= i + 1 %>][isMain]" value="false">
-                                <% } else { %>
-                                    <p class="text-gray-500 text-sm">Additional Image <%= i + 1 %></p>
-                                <% } %>
-                                <input type="file" name="additionalImage<%= i + 1 %>" class="hidden" accept="image/*">
-                            </div>
-                        <% } %>
-                    </div>
-                </div>
-            </div>
-            
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Edit Product | Admin Dashboard</title>
+   <!-- Bootstrap CSS -->
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+   <!-- Font Awesome -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+   <!-- Cropper.js -->
+   <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+   <!-- Custom CSS -->
+   <style>
+       :root {
+           --primary-color: #6366f1;
+           --primary-hover: #4f46e5;
+           --secondary-color: #f3f4f6;
+           --success-color: #10b981;
+           --danger-color: #ef4444;
+           --warning-color: #f59e0b;
+           --dark-color: #111827;
+           --light-color: #f9fafb;
+           --border-color: #e5e7eb;
+           --text-color: #374151;
+           --text-muted: #6b7280;
+       }
        
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold mb-4">Product Options</h2>
-                <div class="grid grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2" for="productCategory">Category</label>
-                        <select id="productCategory" name="productCategory" class="form-input w-full border rounded px-3 py-2" required>
-                            <option value="">Select Category</option>
-                            <% if (locals.categories && categories.length > 0) { %>
-                                <% categories.forEach(function(category) { %>
-                                    <option value="<%= category.name %>" <%= product.categoryId && product.categoryId.name === category.name ? 'selected' : '' %>>
-                                        <%= category.name %>
-                                    </option>
-                                <% }); %>
-                            <% } else { %>
-                                <option disabled>No categories available</option>
-                            <% } %>
-                        </select>
-                    </div>
-                </div>
-            </div>
+       body {
+           background-color: #f9fafb;
+           color: var(--text-color);
+           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+       }
+       
+       .form-container {
+           background: white;
+           border-radius: 12px;
+           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+           max-width: 1200px;
+           margin: 0 auto;
+       }
+       
+       .form-header {
+           border-bottom: 1px solid var(--border-color);
+           padding-bottom: 1rem;
+           margin-bottom: 2rem;
+       }
+       
+       .form-section {
+           margin-bottom: 2.5rem;
+           position: relative;
+           padding: 1.5rem;
+           border-radius: 8px;
+           background-color: rgba(249, 250, 251, 0.5);
+           border: 1px solid var(--border-color);
+           transition: all 0.3s ease;
+       }
+       
+       .form-section:hover {
+           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+           background-color: rgba(249, 250, 251, 0.8);
+       }
+       
+       .section-title {
+           font-weight: 600;
+           margin-bottom: 1.5rem;
+           display: flex;
+           align-items: center;
+           gap: 0.5rem;
+           color: var(--primary-color);
+       }
+       
+       .section-title i {
+           color: var(--primary-color);
+           background-color: rgba(99, 102, 241, 0.1);
+           padding: 0.5rem;
+           border-radius: 50%;
+       }
+       
+       .form-label {
+           font-weight: 500;
+           margin-bottom: 0.5rem;
+           color: var(--dark-color);
+       }
+       
+       .form-control, .form-select {
+           border: 1px solid var(--border-color);
+           border-radius: 0.5rem;
+           padding: 0.75rem 1rem;
+           transition: all 0.2s ease;
+           box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+       }
+       
+       .form-control:focus, .form-select:focus {
+           border-color: var(--primary-color);
+           box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+       }
+       
+       .form-control.is-invalid, .form-select.is-invalid {
+           border-color: var(--danger-color);
+           background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23ef4444'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23ef4444' stroke='none'/%3e%3c/svg%3e");
+           background-repeat: no-repeat;
+           background-position: right calc(0.375em + 0.1875rem) center;
+           background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+       }
+       
+       .form-control.is-valid, .form-select.is-valid {
+           border-color: var(--success-color);
+           background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2310b981' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+           background-repeat: no-repeat;
+           background-position: right calc(0.375em + 0.1875rem) center;
+           background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+       }
+       
+       .invalid-feedback {
+           color: var(--danger-color);
+           font-size: 0.875rem;
+           margin-top: 0.25rem;
+           display: none;
+       }
+       
+       .form-control.is-invalid ~ .invalid-feedback,
+       .form-select.is-invalid ~ .invalid-feedback {
+           display: block;
+       }
+       
+       .btn-primary {
+           background-color: var(--primary-color);
+           border-color: var(--primary-color);
+           box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+           transition: all 0.2s ease;
+       }
+       
+       .btn-primary:hover, .btn-primary:focus {
+           background-color: var(--primary-hover);
+           border-color: var(--primary-hover);
+           transform: translateY(-1px);
+           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+       }
+       
+       .btn-outline-secondary {
+           color: var(--text-color);
+           border-color: var(--border-color);
+           box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+           transition: all 0.2s ease;
+       }
+       
+       .btn-outline-secondary:hover {
+           background-color: var(--secondary-color);
+           color: var(--text-color);
+           transform: translateY(-1px);
+           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+       }
+       
+       .upload-zone {
+           border: 2px dashed var(--border-color);
+           border-radius: 0.5rem;
+           padding: 1.5rem;
+           text-align: center;
+           cursor: pointer;
+           transition: all 0.3s ease;
+           position: relative;
+           background-size: cover;
+           background-position: center;
+           background-repeat: no-repeat;
+           overflow: hidden;
+       }
+       
+       .upload-zone:hover:not(.has-image) {
+           border-color: var(--primary-color);
+           background-color: rgba(99, 102, 241, 0.05);
+       }
+       
+       .upload-zone.has-image {
+           border-style: solid;
+           border-color: var(--primary-color);
+           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+           cursor: default;
+       }
+       
+       .upload-zone .upload-content {
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           justify-content: center;
+           height: 100%;
+           background-color: rgba(255, 255, 255, 0.8);
+           border-radius: 0.25rem;
+           padding: 1rem;
+           transition: all 0.3s ease;
+       }
+       
+       .upload-zone:hover:not(.has-image) .upload-content {
+           background-color: rgba(255, 255, 255, 0.9);
+       }
+       
+       .upload-zone .upload-icon {
+           font-size: 2rem;
+           color: var(--primary-color);
+           margin-bottom: 0.5rem;
+           transition: all 0.3s ease;
+       }
+       
+       .upload-zone:hover:not(.has-image) .upload-icon {
+           transform: scale(1.1);
+       }
+       
+       .upload-zone .upload-text {
+           color: var(--text-muted);
+           font-size: 0.875rem;
+           transition: all 0.3s ease;
+       }
+       
+       .upload-zone:hover:not(.has-image) .upload-text {
+           color: var(--text-color);
+       }
+       
+       .upload-zone .clear-image {
+           position: absolute;
+           top: 0.5rem;
+           right: 0.5rem;
+           background: var(--danger-color);
+           color: white;
+           border: none;
+           border-radius: 50%;
+           width: 2rem;
+           height: 2rem;
+           font-size: 1rem;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           cursor: pointer;
+           transition: all 0.3s ease;
+           z-index: 10;
+           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+       }
+       
+       .upload-zone.has-image .clear-image {
+           opacity: 1;
+       }
+       
+       .clear-image:hover {
+           background: #dc2626;
+           transform: scale(1.1);
+       }
+       
+       .main-image-container {
+           height: 300px;
+       }
+       
+       .additional-image-container {
+           height: 150px;
+       }
+       
+       .variant-row {
+           background-color: var(--light-color);
+           border-radius: 0.5rem;
+           padding: 1.25rem;
+           margin-bottom: 1rem;
+           position: relative;
+           transition: all 0.3s ease;
+           border: 1px solid var(--border-color);
+       }
+       
+       .variant-row:hover {
+           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+           border-color: var(--primary-color);
+       }
+       
+       .remove-variant {
+           position: absolute;
+           top: 0.5rem;
+           right: 0.5rem;
+           background: none;
+           border: none;
+           color: var(--danger-color);
+           cursor: pointer;
+           font-size: 1.25rem;
+           transition: all 0.2s ease;
+           z-index: 5;
+       }
+       
+       .remove-variant:hover {
+           color: #dc2626;
+           transform: scale(1.1);
+       }
+       
+       .size-btn {
+           border: 1px solid var(--border-color);
+           background-color: white;
+           color: var(--text-color);
+           border-radius: 0.5rem;
+           padding: 0.5rem 1rem;
+           margin-right: 0.5rem;
+           margin-bottom: 0.5rem;
+           cursor: pointer;
+           transition: all 0.3s ease;
+           font-weight: 500;
+           min-width: 3rem;
+           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+       }
+       
+       .size-btn:hover {
+           background-color: var(--secondary-color);
+           border-color: var(--primary-color);
+           transform: translateY(-1px);
+       }
+       
+       .size-btn.active {
+           background-color: var(--primary-color);
+           color: white;
+           border-color: var(--primary-color);
+       }
+       
+       .size-btn.disabled {
+           opacity: 0.5;
+           cursor: not-allowed;
+           transform: none;
+       }
+       
+       #cropModal .modal-content {
+           border-radius: 0.75rem;
+           border: none;
+           box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+       }
+       
+       #cropModal .modal-header {
+           border-bottom: 1px solid var(--border-color);
+           padding: 1rem 1.5rem;
+       }
+       
+       #cropModal .modal-body {
+           padding: 1.5rem;
+           max-height: 80vh;
+           overflow: hidden;
+       }
+       
+       #cropModal .modal-footer {
+           border-top: 1px solid var(--border-color);
+           padding: 1rem 1.5rem;
+       }
+       
+       #cropModal .modal-dialog {
+           max-width: 90%;
+           width: 900px;
+           margin: 1.75rem auto;
+       }
+       
+       #imageToCrop {
+           max-width: 100%;
+           max-height: 65vh;
+           display: block;
+           margin: 0 auto;
+       }
+       
+       .img-container {
+           height: 65vh;
+           width: 100%;
+           overflow: hidden;
+           background-color: #f3f4f6;
+           border-radius: 0.5rem;
+       }
+       
+       .cropper-container {
+           border-radius: 0.5rem;
+           overflow: hidden;
+           height: 100% !important;
+           width: 100% !important;
+       }
+       
+       .form-floating > .form-control {
+           height: calc(3.5rem + 2px);
+           line-height: 1.25;
+       }
+       
+       .form-floating > label {
+           padding: 1rem;
+       }
+       
+       .form-floating > .form-control:focus ~ label,
+       .form-floating > .form-control:not(:placeholder-shown) ~ label {
+           transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
+       }
+       
+       textarea.form-control {
+           min-height: 120px;
+       }
+       
+       .animate-fade-in { 
+           animation: fadeIn 0.3s ease-in forwards; 
+       }
+       
+       .animate-slide-in { 
+           animation: slideIn 0.3s ease-out forwards; 
+       }
+       
+       .animate-slide-out { 
+           animation: slideOut 0.3s ease-in forwards; 
+       }
+       
+       @keyframes fadeIn { 
+           from { opacity: 0; } 
+           to { opacity: 1; } 
+       }
+       
+       @keyframes slideIn { 
+           from { transform: translateY(20px); opacity: 0; } 
+           to { transform: translateY(0); opacity: 1; } 
+       }
+       
+       @keyframes slideOut { 
+           from { transform: translateY(0); opacity: 1; } 
+           to { transform: translateY(-20px); opacity: 0; } 
+       }
+       
+       .toast-container {
+           position: fixed;
+           top: 1rem;
+           right: 1rem;
+           z-index: 1050;
+       }
+       
+       .custom-toast {
+           min-width: 300px;
+           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+           border-radius: 0.5rem;
+       }
+       
+       .validation-tooltip {
+           position: absolute;
+           top: 100%;
+           left: 0;
+           z-index: 5;
+           max-width: 100%;
+           padding: 0.25rem 0.5rem;
+           margin-top: 0.1rem;
+           font-size: 0.875rem;
+           color: #fff;
+           background-color: rgba(220, 53, 69, 0.9);
+           border-radius: 0.25rem;
+           pointer-events: none;
+           opacity: 0;
+           transition: opacity 0.2s ease;
+       }
+       
+       .form-control:hover + .validation-tooltip,
+       .form-control:focus + .validation-tooltip {
+           opacity: 1;
+       }
+       
+       .crop-controls {
+           display: flex;
+           justify-content: center;
+           gap: 1rem;
+           margin-top: 1rem;
+       }
+       
+       .crop-control-btn {
+           background-color: var(--secondary-color);
+           border: none;
+           border-radius: 50%;
+           width: 2.5rem;
+           height: 2.5rem;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           cursor: pointer;
+           transition: all 0.2s ease;
+       }
+       
+       .crop-control-btn:hover {
+           background-color: var(--primary-color);
+           color: white;
+       }
+       
+       .crop-aspect-btn {
+           background-color: var(--secondary-color);
+           border: 1px solid var(--border-color);
+           border-radius: 0.25rem;
+           padding: 0.25rem 0.5rem;
+           font-size: 0.875rem;
+           cursor: pointer;
+           transition: all 0.2s ease;
+       }
+       
+       .crop-aspect-btn.active {
+           background-color: var(--primary-color);
+           color: white;
+           border-color: var(--primary-color);
+       }
+       
+       .required-field::after {
+           content: "*";
+           color: var(--danger-color);
+           margin-left: 0.25rem;
+       }
+       
+       .field-hint {
+           font-size: 0.75rem;
+           color: var(--text-muted);
+           margin-top: 0.25rem;
+       }
 
+       /* Enhanced offer information styles */
+       .offer-info {
+           margin-top: 0.75rem;
+           padding: 0.75rem;
+           border-radius: 0.5rem;
+           background-color: rgba(99, 102, 241, 0.1);
+           border: 1px dashed var(--primary-color);
+           font-size: 0.875rem;
+           transition: all 0.3s ease;
+       }
 
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold mb-4">Product Variants</h2>
-                <div id="variantContainer" class="space-y-4">
-                    <% product.variants.forEach((variant, index) => { %>
-                        <div class="variant-row flex space-x-4 items-end">
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Size</label>
-                                <input type="text" name="variants[<%= index %>][size]" value="<%= variant.size %>" 
-                                    class="form-input w-full border rounded px-3 py-2" placeholder="e.g., S, M, L" required>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
-                                <input type="number" name="variants[<%= index %>][varientPrice]" value="<%= variant.varientPrice %>" 
-                                    class="form-input w-full border rounded px-3 py-2" placeholder="Enter price" min="0" step="0.01" required>
-                            </div>
-                            <div class="flex-1">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Stock</label>
-                                <input type="number" name="variants[<%= index %>][varientquatity]" value="<%= variant.varientquatity %>" 
-                                    class="form-input w-full border rounded px-3 py-2" placeholder="Enter stock" min="0" required>
-                            </div>
-                            <button type="button" class="remove-variant px-3 py-2 bg-red-500 text-white rounded-lg">Remove</button>
-                        </div>
-                    <% }); %>
-                </div>
-                <button type="button" id="addVariant" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg">Add Variant</button>
-            </div>
+       .offer-info:hover {
+           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+           transform: translateY(-1px);
+       }
 
+       .offer-info.effective-discount {
+           background-color: rgba(16, 185, 129, 0.15);
+           border: 1px dashed var(--success-color);
+       }
 
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold mb-4">Product Specifications</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2" for="sku">SKU</label>
-                        <input type="text" id="sku" name="sku" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= product.sku || '' %>" placeholder="Enter SKU">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2" for="brand">Brand</label>
-                        <input type="text" id="brand" name="brand" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= product.brand || '' %>" placeholder="Enter brand">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2" for="color">Color</label>
-                        <input type="text" id="color" name="color" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= product.color || '' %>" placeholder="Enter color" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2" for="productFabric">Fabric</label>
-                        <input type="text" id="productFabric" name="fabric" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= product.fabric || '' %>" placeholder="Enter fabric type" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2" for="productOffer">Product Offer (%)</label>
-                        <input type="number" id="productOffer" name="productOffer" class="form-input w-full border rounded px-3 py-2" 
-                            value="<%= product.offer || 0 %>" placeholder="Enter offer percentage" min="0" max="100">
-                    </div>
-                </div>
-            </div>
+       .offer-info-title {
+           font-weight: 600;
+           color: var(--primary-color);
+           margin-bottom: 0.25rem;
+           display: flex;
+           align-items: center;
+           gap: 0.5rem;
+       }
 
-            <div class="flex justify-end space-x-4">
-                <button type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg" 
-                    onclick="window.location.href='/admin/productManagment'">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-black text-white rounded-lg">Update Product</button>
-            </div>
-        </form>
-    </div>
+       .effective-discount .offer-info-title {
+           color: var(--success-color);
+       }
 
+       .offer-badge {
+           display: inline-block;
+           padding: 0.25rem 0.5rem;
+           border-radius: 0.25rem;
+           font-size: 0.75rem;
+           font-weight: 600;
+           margin-left: auto;
+       }
 
-    <div id="cropModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white p-4 rounded-lg max-w-2xl w-full">
-            <h3 class="text-lg font-semibold mb-4">Crop Image</h3>
-            <img id="imageToCrop" class="max-w-full max-h-[70vh] mx-auto" alt="Image to crop">
-            <div class="mt-4 flex justify-end space-x-2">
-                <button id="cancelCrop" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition-colors" 
-                    aria-label="Cancel crop">Cancel</button>
-                <button id="cropImage" class="px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors" 
-                    aria-label="Crop and upload image">Crop & Upload</button>
-            </div>
-        </div>
-    </div>
+       .offer-badge.product {
+           background-color: rgba(99, 102, 241, 0.2);
+           color: var(--primary-color);
+       }
 
-    <script>
+       .offer-badge.category {
+           background-color: rgba(16, 185, 129, 0.2);
+           color: var(--success-color);
+       }
 
-        function markImageForRemoval(button, fieldName) {
-            const zone = button.closest('.upload-zone');
-            const img = zone.querySelector('img');
-            
-            if (img) {
+       /* Enhanced discount preview styles */
+       .discount-preview {
+           margin-top: 1rem;
+           padding: 1rem;
+           border-radius: 0.5rem;
+           background-color: rgba(16, 185, 129, 0.1);
+           border: 1px solid var(--success-color);
+           transition: all 0.3s ease;
+       }
 
-                const removeInput = document.createElement('input');
-                removeInput.type = 'hidden';
-                removeInput.name = 'removeImages[]';
-                removeInput.value = fieldName;
-                document.getElementById('productForm').appendChild(removeInput);
-                
+       .discount-preview:hover {
+           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+       }
 
-                img.remove();
-                button.remove();
-                
-                const p = document.createElement('p');
-                p.className = 'text-gray-500 text-sm';
-                p.textContent = fieldName === 'mainImage' ? 
-                    'Drag and drop main product image or click to upload' : 
-                    `Additional Image ${fieldName.replace('additionalImage', '')}`;
-                zone.appendChild(p);
-            }
-        }
+       .discount-preview.hidden {
+           display: none;
+       }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const uploadZones = document.querySelectorAll('.upload-zone');
-            const cropModal = document.getElementById('cropModal');
-            const imageToCrop = document.getElementById('imageToCrop');
-            const cancelCrop = document.getElementById('cancelCrop');
-            const cropImage = document.getElementById('cropImage');
-            const productForm = document.getElementById('productForm');
-            const variantContainer = document.getElementById('variantContainer');
-            const addVariantBtn = document.getElementById('addVariant');
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            let cropper;
-            let currentFileInput;
-            let variantCount = <%= product.variants.length %>;
+       .discount-preview-title {
+           font-weight: 600;
+           color: var(--success-color);
+           margin-bottom: 0.75rem;
+           display: flex;
+           align-items: center;
+           gap: 0.5rem;
+       }
 
-          
-            uploadZones.forEach(zone => {
-                const fileInput = zone.querySelector('input[type="file"]');
-                const clearBtn = zone.querySelector('button');
+       .discount-preview-content {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+       }
 
-                zone.addEventListener('click', (e) => {
-                    if (e.target !== clearBtn && !e.target.closest('button')) {
-                        fileInput.click();
-                    }
-                });
+       .original-price {
+           text-decoration: line-through;
+           color: var(--text-muted);
+           font-size: 0.9rem;
+       }
 
-                fileInput.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    if (!file.type.startsWith('image/')) {
-                        alert('Please upload a valid image file');
-                        fileInput.value = '';
-                        return;
-                    }
-                    if (file.size > 5 * 1024 * 1024) {
-                        alert('File size should not exceed 5MB');
-                        fileInput.value = '';
-                        return;
-                    }
-                    currentFileInput = fileInput;
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        imageToCrop.src = event.target.result;
-                        cropModal.classList.remove('hidden');
-                        if (cropper) cropper.destroy();
-                        cropper = new Cropper(imageToCrop, {
-                            aspectRatio: 1,
-                            viewMode: 1,
-                            autoCropArea: 0.8,
-                            responsive: true
-                        });
-                    };
-                    reader.readAsDataURL(file);
-                });
-            });
+       .discounted-price {
+           font-weight: 600;
+           color: var(--success-color);
+           font-size: 1.2rem;
+       }
+       
+       /* Loading overlay */
+       .loading-overlay {
+           position: fixed;
+           top: 0;
+           left: 0;
+           width: 100%;
+           height: 100%;
+           background-color: rgba(0, 0, 0, 0.5);
+           display: flex;
+           justify-content: center;
+           align-items: center;
+           z-index: 9999;
+       }
 
-            cancelCrop.addEventListener('click', () => {
-                cropModal.classList.add('hidden');
-                currentFileInput.value = '';
-                if (cropper) cropper.destroy();
-            });
+       .loading-spinner {
+           background-color: white;
+           padding: 1.5rem;
+           border-radius: 0.5rem;
+           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+           gap: 1rem;
+       }
 
-            cropImage.addEventListener('click', () => {
-                cropper.getCroppedCanvas({
-                    width: 800,
-                    height: 800
-                }).toBlob((blob) => {
-                    const file = new File([blob], currentFileInput.files[0].name, { type: 'image/webp' });
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(file);
-                    currentFileInput.files = dataTransfer.files;
+       .spinner-border {
+           width: 3rem;
+           height: 3rem;
+       }
+       
+       /* Loading spinner for SKU check */
+       .sku-check-spinner {
+           display: none;
+           width: 1rem;
+           height: 1rem;
+           margin-left: 0.5rem;
+       }
+       
+       .sku-check-spinner.show {
+           display: inline-block;
+       }
+       
+       /* Enhanced offer comparison styles */
+       .offer-comparison {
+           margin-top: 1rem;
+           padding: 1rem;
+           border-radius: 0.5rem;
+           background-color: #f8fafc;
+           border: 1px solid var(--border-color);
+           transition: all 0.3s ease;
+       }
+       
+       .offer-comparison-title {
+           font-weight: 600;
+           margin-bottom: 1rem;
+           color: var(--dark-color);
+       }
+       
+       .offer-comparison-item {
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+           padding: 0.5rem 0;
+           border-bottom: 1px solid var(--border-color);
+       }
+       
+       .offer-comparison-item:last-child {
+           border-bottom: none;
+       }
+       
+       .offer-comparison-label {
+           display: flex;
+           align-items: center;
+           gap: 0.5rem;
+       }
+       
+       .offer-comparison-value {
+           font-weight: 600;
+       }
+       
+       .offer-comparison-winner {
+           background-color: rgba(16, 185, 129, 0.1);
+           border-color: var(--success-color);
+       }
+       
+       .offer-comparison-winner .offer-comparison-value {
+           color: var(--success-color);
+       }
+       
+       .offer-icon {
+           width: 1.5rem;
+           height: 1.5rem;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           border-radius: 50%;
+       }
+       
+       .offer-icon.product {
+           background-color: rgba(99, 102, 241, 0.2);
+           color: var(--primary-color);
+       }
+       
+       .offer-icon.category {
+           background-color: rgba(16, 185, 129, 0.2);
+           color: var(--success-color);
+       }
+       
+       .offer-icon.winner {
+           background-color: rgba(16, 185, 129, 0.2);
+           color: var(--success-color);
+       }
+       
+       /* Variant price with discount */
+       .variant-price-container {
+           position: relative;
+       }
+       
+       .variant-original-price {
+           position: absolute;
+           top: -1.2rem;
+           right: 0.5rem;
+           text-decoration: line-through;
+           color: var(--text-muted);
+           font-size: 0.8rem;
+       }
+       
+       .variant-discount-badge {
+           position: absolute;
+           bottom: -1.2rem;
+           right: 0.5rem;
+           background-color: var(--success-color);
+           color: white;
+           font-size: 0.7rem;
+           padding: 0.1rem 0.4rem;
+           border-radius: 0.25rem;
+       }
+   </style>
+</head>
+<body>
+   <div class="container py-5">
+       <div class="form-container p-4 p-md-5">
+           <div class="form-header mb-4">
+               <h1 class="h3 fw-bold">Edit Product</h1>
+               <p class="text-muted">Update the details of your product</p>
+           </div>
 
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const zone = currentFileInput.closest('.upload-zone');
-                        const existingImg = zone.querySelector('img');
-                        if (existingImg) existingImg.remove();
-                        const p = zone.querySelector('p');
-                        if (p) p.remove();
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.className = 'h-full w-full object-cover';
-                        img.onerror = function() { this.src = '/images/placeholder.jpg'; };
-                        zone.appendChild(img);
-                        
-              
-                        if (!zone.querySelector('button')) {
-                            const fieldName = currentFileInput.name;
-                            const removeBtn = document.createElement('button');
-                            removeBtn.type = 'button';
-                            removeBtn.className = fieldName === 'mainImage' ? 
-                                'absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center' : 
-                                'absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs';
-                            removeBtn.innerHTML = '×';
-                            removeBtn.onclick = () => markImageForRemoval(removeBtn, fieldName);
-                            zone.appendChild(removeBtn);
-                        }
-                    };
-                    reader.readAsDataURL(file);
+           <% if (locals.error) { %>
+               <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                   <i class="fas fa-exclamation-circle me-2"></i> <%= error %>
+                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+               </div>
+           <% } %>
 
-                    cropModal.classList.add('hidden');
-                    cropper.destroy();
-                }, 'image/webp', 0.8);
-            });
+           <!-- Loading Overlay -->
+           <div id="loadingOverlay" class="loading-overlay d-none">
+               <div class="loading-spinner">
+                   <div class="spinner-border text-primary" role="status">
+                       <span class="visually-hidden">Loading...</span>
+                   </div>
+                   <p class="mb-0">Updating product...</p>
+               </div>
+           </div>
 
+           <form id="productForm" method="post" action="/admin/editProduct/<%= product._id %>" enctype="multipart/form-data" class="needs-validation" novalidate>
+               <!-- Store original SKU for comparison -->
+               <input type="hidden" id="originalSku" value="<%= product.sku || '' %>">
+               
+               <!-- General Information Section -->
+               <div class="form-section animate-fade-in">
+                   <h2 class="section-title">
+                       <i class="fas fa-info-circle"></i> General Information
+                   </h2>
+                   <div class="row g-4">
+                       <div class="col-md-6">
+                           <div class="form-floating">
+                               <input type="text" class="form-control" id="productName" name="productName" placeholder="Product Name" required minlength="3" maxlength="100" value="<%= product.name %>">
+                               <label for="productName" class="required-field">Product Name</label>
+                               <div class="invalid-feedback">Please enter a product name (3-100 characters)</div>
+                               <div class="field-hint">Enter a descriptive name for your product</div>
+                           </div>
+                       </div>
+                       <div class="col-md-6">
+                           <div class="form-floating">
+                               <input type="number" class="form-control" id="productPrice" name="productPrice" placeholder="Price" min="0.01" max="1000000" step="0.01" required value="<%= product.regularPrice || (product.variants && product.variants.length > 0 ? product.variants[0].varientPrice : '') %>">
+                               <label for="productPrice" class="required-field">Price (₹)</label>
+                               <div class="invalid-feedback">Please enter a valid price (₹0.01 - ₹1,000,000)</div>
+                               <div class="field-hint">Enter the base price of your product (maximum ₹1,000,000)</div>
+                           </div>
+                       </div>
+                       <div class="col-12">
+                           <div class="form-floating">
+                               <textarea class="form-control" id="productDescription" name="productDescription" placeholder="Description" required minlength="10" maxlength="2000"><%= product.description %></textarea>
+                               <label for="productDescription" class="required-field">Product Description</label>
+                               <div class="invalid-feedback">Please enter a product description (minimum 10 characters)</div>
+                               <div class="field-hint">Provide a detailed description of your product</div>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Product Images Section -->
+               <div class="form-section animate-fade-in">
+                   <h2 class="section-title">
+                       <i class="fas fa-images"></i> Product Images
+                   </h2>
+                   <div class="row g-4">
+                       <div class="col-md-6">
+                           <label class="form-label required-field">Main Product Image</label>
+                           <div class="upload-zone main-image-container <%= product.images && product.images.find(img => img.isMain) ? 'has-image' : '' %>" data-name="mainImage">
+                               <% const mainImage = product.images && product.images.find(img => img.isMain); %>
+                               <% if (mainImage) { %>
+                                   <div class="upload-content d-none"></div>
+                                   <button type="button" class="clear-image">
+                                       <i class="fas fa-times"></i>
+                                   </button>
+                                   <input type="hidden" name="existingImages[mainImage][url]" value="<%= mainImage.url %>">
+                                   <input type="hidden" name="existingImages[mainImage][isMain]" value="true">
+                               <% } else { %>
+                                   <div class="upload-content">
+                                       <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                       <p class="upload-text">Drag and drop or click to upload</p>
+                                       <p class="upload-text text-muted">Recommended: 1000x1000px</p>
+                                   </div>
+                                   <button type="button" class="clear-image d-none">
+                                       <i class="fas fa-times"></i>
+                                   </button>
+                               <% } %>
+                               <input type="file" name="mainImage" class="d-none" accept="image/*" <%= !mainImage ? 'required' : '' %>>
+                               <div class="invalid-feedback">Please upload a main product image</div>
+                           </div>
+                           <div class="field-hint mt-2">This will be the primary image shown to customers</div>
+                       </div>
+                       <div class="col-md-6">
+                           <label class="form-label">Additional Images</label>
+                           <div class="row g-3">
+                               <% const additionalImages = product.images ? product.images.filter(img => !img.isMain) : []; %>
+                               <% for (let i = 0; i < 3; i++) { %>
+                                   <div class="col-4">
+                                       <div class="upload-zone additional-image-container <%= additionalImages[i] ? 'has-image' : '' %>" data-name="additionalImage<%= i+1 %>">
+                                           <% if (additionalImages[i]) { %>
+                                               <div class="upload-content d-none"></div>
+                                               <button type="button" class="clear-image">
+                                                   <i class="fas fa-times"></i>
+                                               </button>
+                                               <input type="hidden" name="existingImages[additionalImage<%= i+1 %>][url]" value="<%= additionalImages[i].url %>">
+                                               <input type="hidden" name="existingImages[additionalImage<%= i+1 %>][isMain]" value="false">
+                                           <% } else { %>
+                                               <div class="upload-content">
+                                                   <i class="fas fa-plus upload-icon"></i>
+                                                   <p class="upload-text small">Image <%= i+1 %></p>
+                                               </div>
+                                               <button type="button" class="clear-image d-none">
+                                                   <i class="fas fa-times"></i>
+                                               </button>
+                                           <% } %>
+                                           <input type="file" name="additionalImage<%= i+1 %>" class="d-none" accept="image/*">
+                                       </div>
+                                   </div>
+                               <% } %>
+                           </div>
+                           <div class="field-hint mt-2">Additional images will be shown in the product gallery</div>
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Product Options Section -->
+               <div class="form-section animate-fade-in">
+                   <h2 class="section-title">
+                       <i class="fas fa-tags"></i> Product Options
+                   </h2>
+                   <div class="row g-4">
+                       <div class="col-md-6">
+                           <div class="form-floating">
+                               <select class="form-select" id="productCategory" name="productCategory" required>
+                                   <option value="" disabled>Select a category</option>
+                                   <% if (locals.categories && categories.length > 0) { %>
+                                       <% categories.forEach(category => { %>
+                                           <option value="<%= category.name %>" 
+                                               data-offer="<%= category.offer || 0 %>" 
+                                               <%= product.categoryId && product.categoryId.name === category.name ? 'selected' : '' %>>
+                                               <%= category.name %> <%= category.offer > 0 ? `(${category.offer}% OFF)` : '' %>
+                                           </option>
+                                       <% }); %>
+                                   <% } else { %>
+                                       <option value="" disabled>No categories available</option>
+                                   <% } %>
+                               </select>
+                               <label for="productCategory" class="required-field">Category</label>
+                               <div class="invalid-feedback">Please select a category</div>
+                               <div class="field-hint">Choose the category that best fits your product</div>
+                               
+                               <!-- Category Offer Information -->
+                               <% if (product.categoryId && product.categoryId.offer > 0) { %>
+                               <div class="offer-info">
+                                   <div class="offer-info-title">
+                                       <i class="fas fa-tag"></i> Category Offer
+                                       <span class="offer-badge category"><%= product.categoryId.offer %>% OFF</span>
+                                   </div>
+                                   <p class="mb-0">This product has a category offer of <%= product.categoryId.offer %>%</p>
+                               </div>
+                               <% } %>
+                           </div>
+                       </div>
+                       <div class="col-md-6">
+                            
+                           <div class="form-floating">
+                               <input type="number" class="form-control" id="productOffer" name="offer" placeholder="Offer" min="0" max="100" value="<%= product.offer || 0 %>" step="1">
+                               <label for="productOffer">Product Offer (%)</label>
+                               <div class="invalid-feedback">Offer must be between 0 and 100</div>
+                               <div class="field-hint">Enter a discount percentage (0-100)</div>
+                           </div>
+                           
+                           <!-- Product Offer Information -->
+                           <% if (product.productOffer > 0) { %>
+                           <div class="offer-info">
+                               <div class="offer-info-title">
+                                   <i class="fas fa-percent"></i> Product Offer
+                                   <span class="offer-badge product"><%= product.productOffer %>% OFF</span>
+                               </div>
+                               <p class="mb-0">This product has a specific offer of <%= product.productOffer %>%</p>
+                           </div>
+                           <% } %>
+                           
+                           <!-- Offer Comparison Section - New -->
+                           <div class="offer-comparison mt-3">
+                               <div class="offer-comparison-title">
+                                   <i class="fas fa-balance-scale me-2"></i> Offer Comparison
+                               </div>
+                               <div class="offer-comparison-item">
+                                   <div class="offer-comparison-label">
+                                       <span class="offer-icon product"><i class="fas fa-percent"></i></span>
+                                       Product Offer
+                                   </div>
+                                   <div class="offer-comparison-value" id="productOfferValue">
+                                       <%= product.productOffer || 0 %>%
+                                   </div>
+                               </div>
+                               <div class="offer-comparison-item">
+                                   <div class="offer-comparison-label">
+                                       <span class="offer-icon category"><i class="fas fa-tag"></i></span>
+                                       Category Offer
+                                   </div>
+                                   <div class="offer-comparison-value" id="categoryOfferValue">
+                                       <%= product.categoryId && product.categoryId.offer ? product.categoryId.offer : 0 %>%
+                                   </div>
+                               </div>
+                               <div class="offer-comparison-item offer-comparison-winner">
+                                   <div class="offer-comparison-label">
+                                       <span class="offer-icon winner"><i class="fas fa-trophy"></i></span>
+                                       Effective Discount
+                                   </div>
+                                   <div class="offer-comparison-value" id="effectiveDiscountValue">
+                                       <%= product.effectiveDiscount || 0 %>%
+                                       <span class="ms-2 badge <%= product.discountSource === 'product' ? 'bg-primary' : 'bg-success' %>">
+                                           <%= product.discountSource === 'product' ? 'Product' : 'Category' %>
+                                       </span>
+                                   </div>
+                               </div>
+                           </div>
+                           
+                           <!-- Discount preview section -->
+                           <div id="discountPreview" class="discount-preview <%= (product.productOffer > 0 || (product.categoryId && product.categoryId.offer > 0)) ? '' : 'hidden' %>">
+                               <div class="discount-preview-title">
+                                   <i class="fas fa-tag"></i> Discount Preview
+                               </div>
+                               <div class="discount-preview-content">
+                                   <div>
+                                       <div class="original-price">₹<span id="originalPrice"><%= product.regularPrice || (product.variants && product.variants.length > 0 ? product.variants[0].varientPrice : 0) %></span></div>
+                                       <div class="discounted-price">₹<span id="discountedPrice"><%= product.salePrice || 0 %></span></div>
+                                   </div>
+                                   <div>
+                                       <span class="badge bg-success" id="discountBadge"><%= product.effectiveDiscount || 0 %>% OFF</span>
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Product Variants Section -->
+               <div class="form-section animate-fade-in">
+                   <h2 class="section-title">
+                       <i class="fas fa-cubes"></i> Product Variants
+                   </h2>
+                   <div class="mb-4">
+                       <label class="form-label required-field">Available Sizes</label>
+                       <div class="d-flex flex-wrap">
+                           <button type="button" class="size-btn" data-size="S">S</button>
+                           <button type="button" class="size-btn" data-size="M">M</button>
+                           <button type="button" class="size-btn" data-size="L">L</button>
+                           <button type="button" class="size-btn" data-size="XL">XL</button>
+                           <button type="button" class="size-btn" data-size="XXL">XXL</button>
+                       </div>
+                       <div class="field-hint">Click on sizes to add variants</div>
+                   </div>
+                   <div id="variantContainer" class="mt-4">
+                       <!-- Variant rows will be added here -->
+                   </div>
+                   <div id="noVariantsMessage" class="alert alert-warning mt-3 <%= product.variants && product.variants.length > 0 ? 'd-none' : '' %>">
+                       <i class="fas fa-exclamation-triangle me-2"></i> Please add at least one size variant
+                   </div>
+               </div>
+
+               <!-- Product Specifications Section -->
+               <div class="form-section animate-fade-in">
+                   <h2 class="section-title">
+                       <i class="fas fa-clipboard-list"></i> Product Specifications
+                   </h2>
+                   <div class="row g-4">
+                       <div class="col-md-6">
+                           <div class="form-floating">
+                               <input type="text" class="form-control" id="sku" name="sku" placeholder="SKU" pattern="[A-Za-z0-9-_]+" title="Only letters, numbers, hyphens and underscores are allowed" value="<%= product.sku || '' %>">
+                               <label for="sku">SKU (Optional)</label>
+                               <div class="invalid-feedback">SKU can only contain letters, numbers, hyphens and underscores</div>
+                               <div class="field-hint">Stock Keeping Unit - unique identifier for your product</div>
+                           </div>
+                       </div>
+                       <div class="col-md-6">
+                           <div class="form-floating">
+                               <input type="text" class="form-control" id="brand" name="brand" placeholder="Brand" value="<%= product.brand || '' %>">
+                               <label for="brand">Brand (Optional)</label>
+                               <div class="field-hint">Enter the brand name of the product</div>
+                           </div>
+                       </div>
+                       <div class="col-md-6">
+                           <div class="form-floating">
+                               <input type="text" class="form-control" id="color" name="color" placeholder="Color" required value="<%= product.color || '' %>">
+                               <label for="color" class="required-field">Color</label>
+                               <div class="invalid-feedback">Please specify the color</div>
+                               <div class="field-hint">Enter the primary color of the product</div>
+                           </div>
+                       </div>
+                       <div class="col-md-6">
+                           <div class="form-floating">
+                               <input type="text" class="form-control" id="fabric" name="fabric" placeholder="Fabric" required value="<%= product.fabric || '' %>">
+                               <label for="fabric" class="required-field">Fabric</label>
+                               <div class="invalid-feedback">Please specify the fabric</div>
+                               <div class="field-hint">Enter the fabric material of the product</div>
+                           </div>
+                       </div>
+                   </div>
+               </div>
+
+               <!-- Form Actions -->
+               <div class="d-flex justify-content-end gap-3 mt-5">
+                   <button type="button" class="btn btn-outline-secondary px-4 py-2" onclick="window.location.href='/admin/productManagment'">
+                       <i class="fas fa-times me-2"></i> Cancel
+                   </button>
+                   <button type="button" id="submitBtn" class="btn btn-primary px-4 py-2">
+                       <i class="fas fa-save me-2"></i> Update Product
+                   </button>
+               </div>
+           </form>
+       </div>
+   </div>
+
+   <!-- Crop Modal -->
+   <div class="modal fade" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
+       <div class="modal-dialog modal-xl modal-dialog-centered">
+           <div class="modal-content">
+               <div class="modal-header">
+                   <h5 class="modal-title" id="cropModalLabel">Crop Image</h5>
+                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+               </div>
+               <div class="modal-body">
+                   <div class="img-container">
+                       <img id="imageToCrop" src="/placeholder.svg" alt="Image to crop">
+                   </div>
+                   <div class="crop-controls mt-3">
+                       <button type="button" class="crop-control-btn" id="zoomIn" title="Zoom In">
+                           <i class="fas fa-search-plus"></i>
+                       </button>
+                       <button type="button" class="crop-control-btn" id="zoomOut" title="Zoom Out">
+                           <i class="fas fa-search-minus"></i>
+                       </button>
+                       <button type="button" class="crop-control-btn" id="rotateLeft" title="Rotate Left">
+                           <i class="fas fa-undo"></i>
+                       </button>
+                       <button type="button" class="crop-control-btn" id="rotateRight" title="Rotate Right">
+                           <i class="fas fa-redo"></i>
+                       </button>
+                       <button type="button" class="crop-control-btn" id="flipHorizontal" title="Flip Horizontal">
+                           <i class="fas fa-arrows-alt-h"></i>
+                       </button>
+                       <button type="button" class="crop-control-btn" id="flipVertical" title="Flip Vertical">
+                           <i class="fas fa-arrows-alt-v"></i>
+                       </button>
+                   </div>
+                   <div class="d-flex justify-content-center gap-2 mt-3">
+                       <button type="button" class="crop-aspect-btn active" data-ratio="1">1:1</button>
+                       <button type="button" class="crop-aspect-btn" data-ratio="4/3">4:3</button>
+                       <button type="button" class="crop-aspect-btn" data-ratio="16/9">16:9</button>
+                       <button type="button" class="crop-aspect-btn" data-ratio="NaN">Free</button>
+                   </div>
+               </div>
+               <div class="modal-footer">
+                   <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                   <button type="button" id="cropImage" class="btn btn-primary">
+                       <i class="fas fa-crop-alt me-2"></i> Crop & Save
+                   </button>
+               </div>
+           </div>
+       </div>
+   </div>
+
+   <!-- Toast Container -->
+   <div class="toast-container"></div>
+
+   <!-- Bootstrap Bundle with Popper -->
+   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+   <!-- Cropper.js -->
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+   <!-- SweetAlert2 -->
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   
+   <script>
+       document.addEventListener('DOMContentLoaded', () => {
+           // Initialize variables
+           const uploadZones = document.querySelectorAll('.upload-zone');
+           const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
+           const imageToCrop = document.getElementById('imageToCrop');
+           const cropImageBtn = document.getElementById('cropImage');
+           const productForm = document.getElementById('productForm');
+           const submitBtn = document.getElementById('submitBtn');
+           const variantContainer = document.getElementById('variantContainer');
+           const sizeButtons = document.querySelectorAll('.size-btn');
+           const noVariantsMessage = document.getElementById('noVariantsMessage');
+           const productOfferInput = document.getElementById('productOffer');
+           const productPriceInput = document.getElementById('productPrice');
+           const productCategorySelect = document.getElementById('productCategory');
+           const discountPreview = document.getElementById('discountPreview');
+           const originalPriceSpan = document.getElementById('originalPrice');
+           const discountedPriceSpan = document.getElementById('discountedPrice');
+           const discountBadge = document.getElementById('discountBadge');
+           const loadingOverlay = document.getElementById('loadingOverlay');
+           const skuInput = document.getElementById('sku');
+           const originalSku = document.getElementById('originalSku').value;
            
-            function addVariantRow(size = '', price = '', stock = '') {
-                const variantDiv = document.createElement('div');
-                variantDiv.className = 'variant-row flex space-x-4 items-end';
-                variantDiv.innerHTML = `
-                    <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Size</label>
-                        <input type="text" name="variants[${variantCount}][size]" value="${size}" 
-                            class="form-input w-full border rounded px-3 py-2" placeholder="e.g., S, M, L" required>
-                    </div>
-                    <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Price (₹)</label>
-                        <input type="number" name="variants[${variantCount}][varientPrice]" value="${price}" 
-                            class="form-input w-full border rounded px-3 py-2" placeholder="Enter price" min="0" step="0.01" required>
-                    </div>
-                    <div class="flex-1">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Stock</label>
-                        <input type="number" name="variants[${variantCount}][varientquatity]" value="${stock}" 
-                            class="form-input w-full border rounded px-3 py-2" placeholder="Enter stock" min="0" required>
-                    </div>
-                    <button type="button" class="remove-variant px-3 py-2 bg-red-500 text-white rounded-lg">Remove</button>
-                `;
-                variantContainer.appendChild(variantDiv);
-                variantCount++;
-
-                variantDiv.querySelector('.remove-variant').addEventListener('click', () => {
-                    variantDiv.remove();
-                });
-            }
-
-            document.querySelectorAll('.remove-variant').forEach(button => {
-                button.addEventListener('click', () => {
-                    button.closest('.variant-row').remove();
-                });
-            });
-
-            addVariantBtn.addEventListener('click', () => addVariantRow());
-
+           // Offer comparison elements
+           const productOfferValue = document.getElementById('productOfferValue');
+           const categoryOfferValue = document.getElementById('categoryOfferValue');
+           const effectiveDiscountValue = document.getElementById('effectiveDiscountValue');
            
-            productForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const requiredFields = productForm.querySelectorAll('[required]');
-                const variantRows = variantContainer.querySelectorAll('.variant-row');
-                let isValid = true;
+           let cropper;
+           let currentFileInput;
+           let variantCount = 0;
+           const uploadedFiles = new Set();
+           const addedSizes = new Set();
+           let isSkuValid = true;
+           let skuCheckTimeout;
 
-                productForm.querySelectorAll('.border-red-500').forEach(field => {
-                    field.classList.remove('border-red-500');
-                });
+           // Initialize existing variants
+           <% if (product.variants && product.variants.length > 0) { %>
+               <% product.variants.forEach((variant, index) => { %>
+                   addVariantRow('<%= variant.size %>', '<%= variant.varientPrice %>', '<%= variant.varientquatity %>');
+                   addedSizes.add('<%= variant.size %>');
+               <% }); %>
+               updateSizeButtons();
+           <% } %>
 
-                requiredFields.forEach(field => {
-                    if (!field.value) {
-                        field.classList.add('border-red-500');
-                        isValid = false;
-                    }
-                });
+           // Initialize upload zones with existing images
+           uploadZones.forEach(zone => {
+               if (zone.classList.contains('has-image')) {
+                   const fieldName = zone.dataset.name;
+                   const existingImageInput = document.querySelector(`input[name="existingImages[${fieldName}][url]"]`);
+                   if (existingImageInput) {
+                       zone.style.backgroundImage = `url(${existingImageInput.value})`;
+                   }
+               }
+           });
 
-                if (variantRows.length === 0) {
-                    alert('Please add at least one variant');
-                    isValid = false;
-                }
+           // Function to calculate discounted price
+           function calculateDiscountedPrice(price, discount) {
+               if (!price || isNaN(price) || price <= 0) return 0;
+               if (!discount || isNaN(discount) || discount < 0 || discount > 100) return price;
+               
+               const discountAmount = (price * discount) / 100;
+               return price - discountAmount;
+           }
 
+<<<<<<< Updated upstream
                 variantRows.forEach(row => {
                     const size = row.querySelector('input[name$="[size]"]').value;
                     const price = row.querySelector('input[name$="[varientPrice]"]').value;
@@ -401,54 +1192,879 @@
                         isValid = false;
                     }
                 });
+=======
+           // Function to update discount preview
+           function updateDiscountPreview() {
+               const price = parseFloat(productPriceInput.value);
+               const offer = parseInt(productOfferInput.value);
+               let categoryOffer = 0;
+               
+               // Get category offer if a category is selected
+               if (productCategorySelect.value) {
+                   const selectedOption = productCategorySelect.options[productCategorySelect.selectedIndex];
+                   categoryOffer = parseInt(selectedOption.dataset.offer || 0);
+               }
+               
+               // Use the higher of product offer or category offer
+               const effectiveDiscount = Math.max(offer, categoryOffer);
+               
+               // Update the offer comparison section
+               productOfferValue.textContent = `${offer}%`;
+               categoryOfferValue.textContent = `${categoryOffer}%`;
+               effectiveDiscountValue.innerHTML = `${effectiveDiscount}% <span class="ms-2 badge ${offer > categoryOffer ? 'bg-primary' : 'bg-success'}">${offer > categoryOffer ? 'Product' : 'Category'}</span>`;
+               
+               if (!isNaN(price) && price > 0) {
+                   const discountedPrice = calculateDiscountedPrice(price, effectiveDiscount);
+                   
+                   originalPriceSpan.textContent = price.toFixed(2);
+                   discountedPriceSpan.textContent = discountedPrice.toFixed(2);
+                   discountBadge.textContent = `${effectiveDiscount}% OFF`;
+                   
+                   if (effectiveDiscount > 0) {
+                       discountPreview.classList.remove('hidden');
+                   } else {
+                       discountPreview.classList.add('hidden');
+                   }
+                   
+                   // Update all variant prices with the effective discount
+                   updateVariantPricesWithDiscount(effectiveDiscount);
+               } else {
+                   discountPreview.classList.add('hidden');
+               }
+           }
+           
+           // Function to update variant prices with discount
+           function updateVariantPricesWithDiscount(discount) {
+               const variantRows = variantContainer.querySelectorAll('.variant-row');
+               variantRows.forEach(row => {
+                   const priceInput = row.querySelector('input[name$="[varientPrice]"]');
+                   const originalPrice = parseFloat(priceInput.value);
+                   
+                   if (!isNaN(originalPrice) && originalPrice > 0) {
+                       const discountedPrice = calculateDiscountedPrice(originalPrice, discount);
+                       
+                       // Update or create the original price display
+                       let originalPriceDisplay = row.querySelector('.variant-original-price');
+                       if (!originalPriceDisplay && discount > 0) {
+                           originalPriceDisplay = document.createElement('div');
+                           originalPriceDisplay.className = 'variant-original-price';
+                           priceInput.parentNode.appendChild(originalPriceDisplay);
+                       }
+                       
+                       // Update or create the discount badge
+                       let discountBadge = row.querySelector('.variant-discount-badge');
+                       if (!discountBadge && discount > 0) {
+                           discountBadge = document.createElement('div');
+                           discountBadge.className = 'variant-discount-badge';
+                           priceInput.parentNode.appendChild(discountBadge);
+                       }
+                       
+                       if (discount > 0) {
+                           originalPriceDisplay.textContent = `₹${originalPrice.toFixed(2)}`;
+                           discountBadge.textContent = `${discount}% OFF`;
+                           originalPriceDisplay.style.display = 'block';
+                           discountBadge.style.display = 'block';
+                       } else if (originalPriceDisplay) {
+                           originalPriceDisplay.style.display = 'none';
+                           if (discountBadge) discountBadge.style.display = 'none';
+                       }
+                   }
+               });
+           }
+>>>>>>> Stashed changes
 
-                const hasMainImage = document.querySelector('input[name="existingImages[mainImage][url]"]') || 
-                                     document.querySelector('input[name="mainImage"]')?.files.length > 0;
-                
-                if (!hasMainImage) {
-                    alert('Please upload at least one main product image');
-                    isValid = false;
-                }
+           // Add event listeners for discount preview
+           productPriceInput.addEventListener('input', updateDiscountPreview);
+           productOfferInput.addEventListener('input', updateDiscountPreview);
+           productCategorySelect.addEventListener('change', updateDiscountPreview);
 
-                if (!isValid) {
-                    alert('Please fill in all required fields');
-                    return;
-                }
+           // Initialize discount preview
+           updateDiscountPreview();
 
-                const formData = new FormData(productForm);
+           // Function to check if SKU already exists
+           async function checkSkuExists(sku) {
+               if (!sku) return false;
+               
+               // If the SKU is the same as the original, it's valid
+               if (sku === originalSku) {
+                   skuInput.classList.remove('is-invalid');
+                   skuInput.classList.add('is-valid');
+                   isSkuValid = true;
+                   return false;
+               }
+               
+               try {
+                   const response = await fetch(`/admin/check-sku?sku=${encodeURIComponent(sku)}`);
+                   const data = await response.json();
+                   
+                   if (data.exists) {
+                       skuInput.classList.add('is-invalid');
+                       skuInput.nextElementSibling.nextElementSibling.textContent = 'This SKU already exists. Please use a different one.';
+                       isSkuValid = false;
+                       
+                       // Show SweetAlert2 message for SKU already exists
+                       Swal.fire({
+                           title: 'SKU Already Exists',
+                           text: 'The SKU you entered is already in use. Please use a different SKU.',
+                           icon: 'error',
+                           confirmButtonColor: '#6366f1'
+                       });
+                       
+                       return true;
+                   } else {
+                       if (skuInput.value.match(/^[A-Za-z0-9-_]+$/)) {
+                           skuInput.classList.remove('is-invalid');
+                           skuInput.classList.add('is-valid');
+                           isSkuValid = true;
+                       }
+                       return false;
+                   }
+               } catch (error) {
+                   console.error('Error checking SKU:', error);
+                   return false;
+               }
+           }
 
-                try {
-                    loadingIndicator.classList.remove('hidden');
-                    const response = await fetch(productForm.action, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    });
+           // Add event listener for SKU input
+           skuInput.addEventListener('input', function() {
+               const sku = this.value.trim();
+               
+               // Clear previous timeout
+               if (skuCheckTimeout) {
+                   clearTimeout(skuCheckTimeout);
+               }
+               
+               // Validate SKU format
+               if (sku && !sku.match(/^[A-Za-z0-9-_]+$/)) {
+                   this.classList.add('is-invalid');
+                   this.nextElementSibling.nextElementSibling.textContent = 'SKU can only contain letters, numbers, hyphens and underscores';
+                   isSkuValid = false;
+                   return;
+               }
+               
+               // Check if SKU exists after a short delay (to avoid too many requests)
+               if (sku && sku !== originalSku) {
+                   skuCheckTimeout = setTimeout(() => {
+                       checkSkuExists(sku);
+                   }, 500);
+               } else if (sku === originalSku) {
+                   // If the SKU is the same as the original, it's valid
+                   this.classList.remove('is-invalid');
+                   this.classList.add('is-valid');
+                   isSkuValid = true;
+               }
+           });
 
-                    const contentType = response.headers.get("content-type");
-                    let result;
+           // Show toast notification
+           function showToast(message, type = 'success') {
+               const toastContainer = document.querySelector('.toast-container');
+               const toast = document.createElement('div');
+               toast.className = `toast custom-toast align-items-center text-white bg-${type} border-0 show animate-fade-in`;
+               toast.setAttribute('role', 'alert');
+               toast.setAttribute('aria-live', 'assertive');
+               toast.setAttribute('aria-atomic', 'true');
+               
+               toast.innerHTML = `
+                   <div class="d-flex">
+                       <div class="toast-body">
+                           <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'} me-2"></i>
+                           ${message}
+                       </div>
+                       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                   </div>
+               `;
+               
+               toastContainer.appendChild(toast);
+               
+               setTimeout(() => {
+                   toast.classList.add('fade');
+                   setTimeout(() => toast.remove(), 300);
+               }, 3000);
+           }
 
-                    if (contentType && contentType.indexOf("application/json") !== -1) {
-                        result = await response.json();
-                    } else {
-                        const text = await response.text();
-                        result = { success: response.ok, message: text };
-                    }
+           // Enhanced form validation
+           function validateForm() {
+               let isValid = true;
+               const form = document.getElementById('productForm');
+               
+               // Reset all validation states
+               const allInputs = form.querySelectorAll('input, textarea, select');
+               allInputs.forEach(input => {
+                   input.classList.remove('is-invalid');
+                   input.classList.remove('is-valid');
+               });
+               
+               // Check all required fields
+               const requiredFields = form.querySelectorAll('[required]');
+               requiredFields.forEach(field => {
+                   if (!field.value.trim()) {
+                       field.classList.add('is-invalid');
+                       isValid = false;
+                   }
+               });
+               
+               // Validate offer percentage (0-100)
+               const offerValue = parseInt(productOfferInput.value);
+               if (isNaN(offerValue) || offerValue < 0 || offerValue > 100) {
+                   productOfferInput.classList.add('is-invalid');
+                   isValid = false;
+               }
+               
+               // Validate price (must be greater than 0 and less than 1,000,000)
+               const priceValue = parseFloat(productPriceInput.value);
+               if (isNaN(priceValue) || priceValue <= 0 || priceValue > 1000000) {
+                   productPriceInput.classList.add('is-invalid');
+                   isValid = false;
+               }
+               
+               // Check if at least one variant exists
+               if (variantContainer.children.length === 0) {
+                   noVariantsMessage.classList.remove('d-none');
+                   isValid = false;
+               } else {
+                   noVariantsMessage.classList.add('d-none');
+                   
+                   // Validate each variant
+                   const variantRows = variantContainer.querySelectorAll('.variant-row');
+                   variantRows.forEach(row => {
+                       const priceInput = row.querySelector('input[name$="[varientPrice]"]');
+                       const stockInput = row.querySelector('input[name$="[varientquatity]"]');
+                       
+                       if (!priceInput.value || isNaN(parseFloat(priceInput.value)) || parseFloat(priceInput.value) <= 0 || parseFloat(priceInput.value) > 1000000) {
+                           priceInput.classList.add('is-invalid');
+                           isValid = false;
+                       }
+                       
+                       if (!stockInput.value || isNaN(parseInt(stockInput.value)) || parseInt(stockInput.value) < 0) {
+                           stockInput.classList.add('is-invalid');
+                           isValid = false;
+                       }
+                   });
+               }
+               
+               // Check if main image exists
+               const mainImageExists = document.querySelector('input[name="existingImages[mainImage][url]"]') || 
+                                      document.querySelector('input[name="mainImage"]').files.length > 0;
+               
+               if (!mainImageExists) {
+                   const mainImageInput = document.querySelector('input[name="mainImage"]');
+                   mainImageInput.classList.add('is-invalid');
+                   isValid = false;
+               }
+               
+               // Check SKU validity if provided
+               if (skuInput.value.trim() && !isSkuValid) {
+                   skuInput.classList.add('is-invalid');
+                   isValid = false;
+               }
+               
+               return isValid;
+           }
 
-                    if (response.ok && (result.success || response.redirected)) {
-                        window.location.href = result.redirectUrl || '/admin/productManagment';
-                    } else {
-                        alert('Error updating product: ' + (result.error || 'Unknown error'));
-                    }
-                } catch (error) {
-                    alert('An error occurred while updating the product: ' + error.message);
-                } finally {
-                    loadingIndicator.classList.add('hidden');
-                }
-            });
-        });
-    </script>
+           // Handle image uploads
+           uploadZones.forEach(zone => {
+               const fileInput = zone.querySelector('input[type="file"]');
+               const clearBtn = zone.querySelector('.clear-image');
+               const uploadContent = zone.querySelector('.upload-content');
+               
+               zone.addEventListener('click', (e) => {
+                   // Only allow clicking if there's no image or if clicking the clear button
+                   if (!zone.classList.contains('has-image') || e.target === clearBtn || e.target === clearBtn.querySelector('i')) {
+                       if (!zone.classList.contains('has-image')) {
+                           fileInput.click();
+                       }
+                   }
+               });
+               
+               zone.addEventListener('dragover', (e) => {
+                   // Only allow drag if there's no image
+                   if (!zone.classList.contains('has-image')) {
+                       e.preventDefault();
+                       zone.classList.add('border-primary');
+                   }
+               });
+               
+               zone.addEventListener('dragleave', () => {
+                   zone.classList.remove('border-primary');
+               });
+               
+               zone.addEventListener('drop', (e) => {
+                   // Only allow drop if there's no image
+                   if (!zone.classList.contains('has-image')) {
+                       e.preventDefault();
+                       zone.classList.remove('border-primary');
+                       
+                       if (e.dataTransfer.files.length) {
+                           fileInput.files = e.dataTransfer.files;
+                           handleFileSelect(fileInput);
+                       }
+                   }
+               });
+               
+               fileInput.addEventListener('change', () => {
+                   // Only process if there's no image or if the file input has a file
+                   if (!zone.classList.contains('has-image') || fileInput.files.length > 0) {
+                       handleFileSelect(fileInput);
+                   }
+               });
+               
+               if (clearBtn) {
+                   clearBtn.addEventListener('click', (e) => {
+                       e.preventDefault();
+                       e.stopPropagation();
+                       
+                       const fieldName = zone.dataset.name;
+                       
+                       // If there's an existing image, add a hidden input to mark it for removal
+                       const existingImageInput = document.querySelector(`input[name="existingImages[${fieldName}][url]"]`);
+                       if (existingImageInput) {
+                           const removeInput = document.createElement('input');
+                           removeInput.type = 'hidden';
+                           removeInput.name = 'removeImages[]';
+                           removeInput.value = fieldName;
+                           productForm.appendChild(removeInput);
+                           
+                           // Remove the existing image inputs
+                           existingImageInput.remove();
+                           document.querySelector(`input[name="existingImages[${fieldName}][isMain]"]`).remove();
+                       }
+                       
+                       // Clear the file input
+                       fileInput.value = '';
+                       zone.style.backgroundImage = '';
+                       zone.classList.remove('has-image');
+                       
+                       // Show the upload content
+                       if (uploadContent) {
+                           uploadContent.classList.remove('d-none');
+                       } else {
+                           // Create upload content if it doesn't exist
+                           const newUploadContent = document.createElement('div');
+                           newUploadContent.className = 'upload-content';
+                           
+                           if (fieldName === 'mainImage') {
+                               newUploadContent.innerHTML = `
+                                   <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                   <p class="upload-text">Drag and drop or click to upload</p>
+                                   <p class="upload-text text-muted">Recommended: 1000x1000px</p>
+                               `;
+                           } else {
+                               newUploadContent.innerHTML = `
+                                   <i class="fas fa-plus upload-icon"></i>
+                                   <p class="upload-text small">Image ${fieldName.replace('additionalImage', '')}</p>
+                               `;
+                           }
+                           
+                           zone.appendChild(newUploadContent);
+                       }
+                       
+                       // Hide the clear button
+                       clearBtn.classList.add('d-none');
+                       
+                       // If the input is required, mark it as invalid
+                       if (fileInput.hasAttribute('required')) {
+                           fileInput.classList.add('is-invalid');
+                       }
+                   });
+               }
+           });
+
+           function handleFileSelect(fileInput) {
+               const file = fileInput.files[0];
+               if (!file) return;
+               
+               const fileHash = `${file.name}-${file.size}`;
+               const zone = fileInput.closest('.upload-zone');
+               
+               // Check if the zone already has an image
+               if (zone.classList.contains('has-image')) {
+                   showToast('Please remove the current image first', 'warning');
+                   fileInput.value = '';
+                   return;
+               }
+               
+               // Validate file
+               if (!file.type.startsWith('image/')) {
+                   showToast('Please upload a valid image file', 'danger');
+                   fileInput.value = '';
+                   return;
+               }
+               
+               if (file.size > 5 * 1024 * 1024) {
+                   showToast('File size must be under 5MB', 'danger');
+                   fileInput.value = '';
+                   return;
+               }
+               
+               if (uploadedFiles.has(fileHash)) {
+                   showToast('This image is already uploaded', 'warning');
+                   fileInput.value = '';
+                   return;
+               }
+               
+               uploadedFiles.add(fileHash);
+               currentFileInput = fileInput;
+               
+               // Open cropper modal
+               const reader = new FileReader();
+               reader.onload = (e) => {
+                   imageToCrop.src = e.target.result;
+                   cropModal.show();
+                   
+                   if (cropper) {
+                       cropper.destroy();
+                   }
+                   
+                   // Initialize cropper with a slight delay to ensure the modal is fully visible
+                   setTimeout(() => {
+                       cropper = new Cropper(imageToCrop, {
+                           aspectRatio: 1,
+                           viewMode: 1,
+                           autoCropArea: 0.9,
+                           responsive: true,
+                           zoomable: true,
+                           scalable: true,
+                           rotatable: true,
+                           minContainerWidth: 800,
+                           minContainerHeight: 500
+                       });
+                   }, 300);
+               };
+               reader.readAsDataURL(file);
+           }
+
+           // Enhanced image cropping with controls
+           document.getElementById('zoomIn').addEventListener('click', () => {
+               if (cropper) cropper.zoom(0.1);
+           });
+           
+           document.getElementById('zoomOut').addEventListener('click', () => {
+               if (cropper) cropper.zoom(-0.1);
+           });
+           
+           document.getElementById('rotateLeft').addEventListener('click', () => {
+               if (cropper) cropper.rotate(-45);
+           });
+           
+           document.getElementById('rotateRight').addEventListener('click', () => {
+               if (cropper) cropper.rotate(45);
+           });
+           
+           document.getElementById('flipHorizontal').addEventListener('click', () => {
+               if (cropper) cropper.scaleX(-cropper.getData().scaleX || -1);
+           });
+           
+           document.getElementById('flipVertical').addEventListener('click', () => {
+               if (cropper) cropper.scaleY(-cropper.getData().scaleY || -1);
+           });
+           
+           // Aspect ratio buttons
+           document.querySelectorAll('.crop-aspect-btn').forEach(btn => {
+               btn.addEventListener('click', () => {
+                   document.querySelectorAll('.crop-aspect-btn').forEach(b => b.classList.remove('active'));
+                   btn.classList.add('active');
+                   
+                   const ratio = btn.dataset.ratio;
+                   if (cropper) {
+                       cropper.setAspectRatio(ratio === 'NaN' ? NaN : eval(ratio));
+                   }
+               });
+           });
+
+           // Handle image cropping
+           cropImageBtn.addEventListener('click', () => {
+               cropper.getCroppedCanvas({
+                   width: 2000,
+                   height: 2000,
+                   fillColor: '#fff',
+                   imageSmoothingEnabled: true,
+                   imageSmoothingQuality: 'high'
+               }).toBlob((blob) => {
+                   const originalFile = currentFileInput.files[0];
+                   const file = new File([blob], originalFile.name, { type: 'image/webp' });
+                   const dataTransfer = new DataTransfer();
+                   dataTransfer.items.add(file);
+                   currentFileInput.files = dataTransfer.files;
+                   
+                   const zone = currentFileInput.closest('.upload-zone');
+                   const uploadContent = zone.querySelector('.upload-content');
+                   const clearBtn = zone.querySelector('.clear-image');
+                   
+                   // Create preview
+                   const reader = new FileReader();
+                   reader.onload = (e) => {
+                       zone.style.backgroundImage = `url(${e.target.result})`;
+                       zone.classList.add('has-image');
+                       
+                       if (uploadContent) {
+                           uploadContent.classList.add('d-none');
+                       }
+                       
+                       if (clearBtn) {
+                           clearBtn.classList.remove('d-none');
+                       } else {
+                           // Create clear button if it doesn't exist
+                           const newClearBtn = document.createElement('button');
+                           newClearBtn.type = 'button';
+                           newClearBtn.className = 'clear-image';
+                           newClearBtn.innerHTML = '<i class="fas fa-times"></i>';
+                           
+                           newClearBtn.addEventListener('click', (e) => {
+                               e.preventDefault();
+                               e.stopPropagation();
+                               
+                               currentFileInput.value = '';
+                               zone.style.backgroundImage = '';
+                               zone.classList.remove('has-image');
+                               
+                               if (uploadContent) {
+                                   uploadContent.classList.remove('d-none');
+                               }
+                               
+                               newClearBtn.classList.add('d-none');
+                               
+                               if (currentFileInput.hasAttribute('required')) {
+                                   currentFileInput.classList.add('is-invalid');
+                               }
+                           });
+                           
+                           zone.appendChild(newClearBtn);
+                       }
+                       
+                       if (currentFileInput.hasAttribute('required')) {
+                           currentFileInput.classList.remove('is-invalid');
+                       }
+                   };
+                   reader.readAsDataURL(file);
+                   
+                   cropModal.hide();
+                   if (cropper) {
+                       cropper.destroy();
+                       cropper = null;
+                   }
+                   
+                   showToast('Image cropped successfully', 'success');
+               }, 'image/webp', 0.9);
+           });
+
+           // Handle variant management
+           function updateSizeButtons() {
+               sizeButtons.forEach(btn => {
+                   const size = btn.dataset.size;
+                   if (addedSizes.has(size)) {
+                       btn.classList.add('disabled');
+                       btn.classList.remove('active');
+                   } else {
+                       btn.classList.remove('disabled');
+                   }
+               });
+           }
+
+           function addVariantRow(size = '', price = '', stock = '') {
+               if (size && addedSizes.has(size)) {
+                   return false;
+               }
+               
+               if (size) {
+                   addedSizes.add(size);
+               }
+               
+               const variantDiv = document.createElement('div');
+               variantDiv.className = 'variant-row animate-slide-in';
+               variantDiv.dataset.size = size;
+               
+               // Get the current product offer
+               const productOffer = parseInt(productOfferInput.value) || 0;
+               
+               // Get the category offer if a category is selected
+               let categoryOffer = 0;
+               if (productCategorySelect.value) {
+                   const selectedOption = productCategorySelect.options[productCategorySelect.selectedIndex];
+                   categoryOffer = parseInt(selectedOption.dataset.offer || 0);
+               }
+               
+               // Use the higher of product offer or category offer
+               const effectiveDiscount = Math.max(productOffer, categoryOffer);
+               
+               // Calculate discounted price if applicable
+               const originalPrice = parseFloat(price);
+               const discountedPrice = !isNaN(originalPrice) && effectiveDiscount > 0 ? 
+                   calculateDiscountedPrice(originalPrice, effectiveDiscount) : originalPrice;
+               
+               // Fix: Ensure proper naming convention for form fields to match backend expectations
+               variantDiv.innerHTML = `
+                   <div class="row g-3">
+                       <div class="col-md-4">
+                           <div class="form-floating">
+                               <input type="text" class="form-control" name="variants[${variantCount}][size]" value="${size}" ${size ? 'readonly' : ''} required>
+                               <label>Size</label>
+                               <div class="invalid-feedback">Please enter a size</div>
+                           </div>
+                       </div>
+                       <div class="col-md-4">
+                           <div class="form-floating variant-price-container">
+                               <input type="number" class="form-control variant-price" name="variants[${variantCount}][varientPrice]" value="${price}" placeholder="Price" min="0.01" max="1000000" step="0.01" required>
+                               <label>Price (₹)</label>
+                               <div class="invalid-feedback">Please enter a valid price (₹0.01 - ₹1,000,000)</div>
+                               ${effectiveDiscount > 0 && !isNaN(originalPrice) ? `
+                                   <div class="variant-original-price">₹${originalPrice.toFixed(2)}</div>
+                                   <div class="variant-discount-badge">${effectiveDiscount}% OFF</div>
+                               ` : ''}
+                           </div>
+                       </div>
+                       <div class="col-md-4">
+                           <div class="form-floating">
+                               <input type="number" class="form-control variant-stock" name="variants[${variantCount}][varientquatity]" value="${stock}" placeholder="Stock" min="0" required>
+                               <label>Stock</label>
+                               <div class="invalid-feedback">Please enter a valid stock quantity (minimum 0)</div>
+                           </div>
+                       </div>
+                   </div>
+                   <button type="button" class="remove-variant" title="Remove Variant">
+                       <i class="fas fa-times-circle"></i>
+                   </button>
+               `;
+               
+               variantContainer.appendChild(variantDiv);
+               noVariantsMessage.classList.add('d-none');
+               
+               // Add event listeners to variant inputs
+               const priceInput = variantDiv.querySelector('.variant-price');
+               const stockInput = variantDiv.querySelector('.variant-stock');
+               
+               priceInput.addEventListener('input', () => {
+                   const value = parseFloat(priceInput.value);
+                   if (isNaN(value) || value <= 0 || value > 1000000) {
+                       priceInput.classList.add('is-invalid');
+                   } else {
+                       priceInput.classList.remove('is-invalid');
+                       
+                       // Update discount display if applicable
+                       const productOffer = parseInt(productOfferInput.value) || 0;
+                       let categoryOffer = 0;
+                       if (productCategorySelect.value) {
+                           const selectedOption = productCategorySelect.options[productCategorySelect.selectedIndex];
+                           categoryOffer = parseInt(selectedOption.dataset.offer || 0);
+                       }
+                       const effectiveDiscount = Math.max(productOffer, categoryOffer);
+                       
+                       let originalPriceDisplay = variantDiv.querySelector('.variant-original-price');
+                       let discountBadge = variantDiv.querySelector('.variant-discount-badge');
+                       
+                       if (effectiveDiscount > 0) {
+                           if (!originalPriceDisplay) {
+                               originalPriceDisplay = document.createElement('div');
+                               originalPriceDisplay.className = 'variant-original-price';
+                               priceInput.parentNode.appendChild(originalPriceDisplay);
+                           }
+                           
+                           if (!discountBadge) {
+                               discountBadge = document.createElement('div');
+                               discountBadge.className = 'variant-discount-badge';
+                               priceInput.parentNode.appendChild(discountBadge);
+                           }
+                           
+                           originalPriceDisplay.textContent = `₹${value.toFixed(2)}`;
+                           discountBadge.textContent = `${effectiveDiscount}% OFF`;
+                           originalPriceDisplay.style.display = 'block';
+                           discountBadge.style.display = 'block';
+                       } else if (originalPriceDisplay) {
+                           originalPriceDisplay.style.display = 'none';
+                           if (discountBadge) discountBadge.style.display = 'none';
+                       }
+                   }
+               });
+               
+               stockInput.addEventListener('input', () => {
+                   const value = parseInt(stockInput.value);
+                   if (isNaN(value) || value < 0) {
+                       stockInput.classList.add('is-invalid');
+                   } else {
+                       stockInput.classList.remove('is-invalid');
+                   }
+               });
+               
+               variantDiv.querySelector('.remove-variant').addEventListener('click', () => {
+                   const sizeToRemove = variantDiv.dataset.size;
+                   if (sizeToRemove) {
+                       addedSizes.delete(sizeToRemove);
+                       updateSizeButtons();
+                   }
+                   
+                   variantDiv.classList.add('animate-slide-out');
+                   setTimeout(() => {
+                       variantDiv.remove();
+                       if (variantContainer.children.length === 0) {
+                           noVariantsMessage.classList.remove('d-none');
+                       }
+                   }, 300);
+               });
+               
+               variantCount++;
+               updateSizeButtons();
+               return true;
+           }
+           
+           // Size button click handlers
+           sizeButtons.forEach(btn => {
+               btn.addEventListener('click', () => {
+                   const size = btn.dataset.size;
+                   if (!addedSizes.has(size)) {
+                       if (addVariantRow(size)) {
+                           btn.classList.add('active');
+                           setTimeout(() => {
+                               btn.classList.remove('active');
+                           }, 300);
+                       }
+                   }
+               });
+           });
+           
+           // Additional validation for offer field
+           productOfferInput.addEventListener('input', () => {
+               const value = parseInt(productOfferInput.value);
+               if (isNaN(value) || value < 0) {
+                   productOfferInput.value = 0;
+               } else if (value > 100) {
+                   productOfferInput.value = 100;
+               }
+               
+               if (productOfferInput.value.trim() && !isNaN(parseInt(productOfferInput.value)) && 
+                   parseInt(productOfferInput.value) >= 0 && parseInt(productOfferInput.value) <= 100) {
+                   productOfferInput.classList.remove('is-invalid');
+               } else {
+                   productOfferInput.classList.add('is-invalid');
+               }
+               
+               updateDiscountPreview();
+           });
+           
+           // Additional validation for price field
+           productPriceInput.addEventListener('input', () => {
+               const value = parseFloat(productPriceInput.value);
+               if (isNaN(value) || value <= 0 || value > 1000000) {
+                   productPriceInput.classList.add('is-invalid');
+               } else {
+                   productPriceInput.classList.remove('is-invalid');
+               }
+               
+               updateDiscountPreview();
+           });
+           
+           // Form submission with enhanced validation
+           submitBtn.addEventListener('click', async (e) => {
+               e.preventDefault();
+               
+               // Check if SKU exists before form validation
+               if (skuInput.value.trim() && skuInput.value.trim() !== originalSku) {
+                   const skuExists = await checkSkuExists(skuInput.value.trim());
+                   if (skuExists) {
+                       // SweetAlert2 message is shown in the checkSkuExists function
+                       skuInput.focus();
+                       return;
+                   }
+               }
+               
+               if (!validateForm()) {
+                   showToast('Please fill in all required fields correctly', 'danger');
+                   
+                   // Scroll to the first invalid field
+                   const firstInvalid = document.querySelector('.is-invalid');
+                   if (firstInvalid) {
+                       firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                       firstInvalid.focus();
+                   }
+                   return;
+               }
+               
+               // Ensure at least one variant exists
+               if (variantContainer.children.length === 0) {
+                   showToast('Please add at least one size variant', 'danger');
+                   document.querySelector('.size-btn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                   return;
+               }
+               
+               // Confirm submission with SweetAlert2
+               Swal.fire({
+                   title: 'Update Product?',
+                   text: 'Are you sure you want to update this product?',
+                   icon: 'question',
+                   showCancelButton: true,
+                   confirmButtonColor: '#6366f1',
+                   cancelButtonColor: '#d33',
+                   confirmButtonText: 'Yes, update it!',
+                   cancelButtonText: 'Cancel'
+               }).then(async (result) => {
+                   if (result.isConfirmed) {
+                       submitBtn.disabled = true;
+                       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Updating...';
+                       loadingOverlay.classList.remove('d-none');
+                       
+                       try {
+                           const formData = new FormData(productForm);
+                           
+                           // Log form data for debugging
+                           console.log("Form data being submitted:");
+                           for (let [key, value] of formData.entries()) {
+                               console.log(key, value);
+                           }
+                           
+                           const response = await fetch(productForm.action, {
+                               method: 'POST',
+                               body: formData
+                           });
+                           
+                           if (response.ok) {
+                               Swal.fire({
+                                   title: 'Success!',
+                                   text: 'Product has been updated successfully',
+                                   icon: 'success',
+                                   confirmButtonColor: '#6366f1'
+                               }).then(() => {
+                                   window.location.href = '/admin/productManagment';
+                               });
+                           } else {
+                               let errorMessage = 'Failed to update product';
+                               try {
+                                   const errorData = await response.json();
+                                   errorMessage = errorData.message || errorMessage;
+                               } catch (e) {
+                                   console.error("Error parsing error response:", e);
+                               }
+                               throw new Error(errorMessage);
+                           }
+                       } catch (error) {
+                           Swal.fire({
+                               title: 'Error!',
+                               text: error.message || 'Something went wrong',
+                               icon: 'error',
+                               confirmButtonColor: '#6366f1'
+                           });
+                       } finally {
+                           submitBtn.disabled = false;
+                           submitBtn.innerHTML = '<i class="fas fa-save me-2"></i> Update Product';
+                           loadingOverlay.classList.add('d-none');
+                       }
+                   }
+               });
+           });
+           
+           // Handle modal close event to clean up cropper
+           document.getElementById('cropModal').addEventListener('hidden.bs.modal', function () {
+               if (cropper) {
+                   cropper.destroy();
+                   cropper = null;
+               }
+           });
+           
+           // Prevent modal from closing when clicking outside
+           document.getElementById('cropModal').addEventListener('click', function (e) {
+               if (e.target === this) {
+                   e.stopPropagation();
+               }
+           });
+       });
+   </script>
 </body>
 </html>
+                       

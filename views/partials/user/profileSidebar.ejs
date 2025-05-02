@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<<<<<<< Updated upstream
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -267,9 +268,449 @@
           <span class="icon"><i class="fas fa-gift"></i></span>
           <a href="/referral" class="item-text">Referral Code</a>
         </div>
+=======
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile Sidebar</title>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+  />
+  <style>
+    /* Elite Wear - Premium Sidebar Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Sidebar Container */
+    .sidebar {
+      width: 280px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+      height: 100%;
+    }
+
+    /* Sidebar Header */
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+    }
+
+    .brand-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #000;
+    }
+
+    .brand-name .accent {
+      color: #000;
+      font-weight: 800;
+    }
+
+    /* Profile Section */
+    .profile-info {
+      text-align: center;
+      padding: 25px 20px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      position: relative;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.02), transparent);
+    }
+
+    .profile-info::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 30%;
+      right: 30%;
+      height: 2px;
+      background-color: #000;
+      border-radius: 1px;
+    }
+
+    .profile-avatar {
+      margin-bottom: 15px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .avatar-circle {
+      width: 80px;
+      height: 80px;
+      background-color: #000;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .avatar-circle::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40%;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
+      border-radius: inherit;
+    }
+
+    .avatar-circle:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .initials {
+      color: white;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .profile-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #222;
+      letter-spacing: 0.3px;
+      margin-top: 5px;
+    }
+
+    /* Menu Sections */
+    .sidebar-menu {
+      padding: 15px;
+      overflow-y: auto;
+      max-height: calc(100vh - 220px);
+    }
+
+    .menu-section {
+      margin-bottom: 15px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .menu-section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: #777;
+      margin-bottom: 10px;
+      padding-left: 10px;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    /* Menu Items */
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 5px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .menu-item:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+      transform: translateX(3px);
+    }
+
+    .menu-item.active {
+      background-color: #000;
+      color: white;
+      font-weight: 500;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .menu-item::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 3px;
+      background-color: #000;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .menu-item:hover::before {
+      opacity: 0.5;
+    }
+
+    .menu-item.active::before {
+      opacity: 1;
+    }
+
+    .icon {
+      margin-right: 12px;
+      width: 22px;
+      text-align: center;
+      font-size: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.2s ease;
+    }
+
+    .menu-item:hover .icon {
+      transform: translateX(2px);
+    }
+
+    .item-text {
+      letter-spacing: 0.2px;
+      font-size: 0.95rem;
+      transition: transform 0.2s ease;
+      color: inherit;
+      display: block;
+      width: 100%;
+    }
+
+    .menu-item:hover .item-text {
+      transform: translateX(2px);
+    }
+
+    /* Link styles */
+    .item-link {
+      text-decoration: none;
+      color: #000;
+      display: block;
+    }
+
+    /* Active state for links */
+    .menu-item.active .item-text {
+      color: white;
+    }
+
+    /* Divider */
+    .menu-divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
+      margin: 15px 0;
+    }
+
+    /* Logout Item */
+    .logout-item {
+      margin-top: 10px;
+      background-color: rgba(0, 0, 0, 0.03);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .logout-item:hover {
+      background-color: rgba(0, 0, 0, 0.06);
+    }
+
+    .logout-item .icon {
+      color: #d32f2f;
+    }
+
+    /* Button styles */
+    button {
+      background-color: #000;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Ripple Effect */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      background-color: rgba(255, 255, 255, 0.4);
+      pointer-events: none;
+      animation: rippleEffect 0.6s linear;
+      z-index: 1;
+    }
+
+    @keyframes rippleEffect {
+      to {
+        transform: scale(2);
+        opacity: 0;
+      }
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 100%;
+        max-width: 100%;
+        border-radius: 8px;
+      }
+      
+      .sidebar-menu {
+        max-height: none;
+        overflow-y: visible;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .sidebar-header {
+        padding: 15px;
+      }
+      
+      .profile-info {
+        padding: 20px 15px;
+      }
+      
+      .avatar-circle {
+        width: 70px;
+        height: 70px;
+      }
+      
+      .initials {
+        font-size: 24px;
+      }
+      
+      .menu-item {
+        padding: 10px 12px;
+      }
+    }
+
+    /* Accessibility */
+    .menu-item:focus-visible {
+      outline: 2px solid #000;
+      outline-offset: 2px;
+    }
+
+    /* Hover Effects */
+    .menu-item:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .menu-item.active:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <span class="brand-name">ELITE<span class="accent">WEAR</span></span>
+      </div>
+    </div>
+    
+    <div class="profile-info">
+      <div class="profile-avatar">
+        <div class="avatar-circle">
+          <span class="initials"><%= user && user.fullname && user.fullname.trim() !== '' ?
+            user.fullname.trim().charAt(0).toUpperCase() : 'U' %></span>
+        </div>
+      </div>
+      <div class="profile-name">
+        <%= user && user.fullname && user.fullname.trim() !== '' ? user.fullname : 'Unknown User' %>
       </div>
     </div>
 
+    <div class="sidebar-menu">
+      <div class="menu-section">
+        <h4 class="menu-section-title">Account</h4>
+        <a href="/LoadProfile" class="item-link">
+          <div class="menu-item" data-path="/LoadProfile">
+            <span class="icon"><i class="fas fa-user"></i></span>
+            <span class="item-text">My Profile</span>
+          </div>
+        </a>
+
+        <a href="/address" class="item-link">
+          <div class="menu-item" data-path="/address">
+            <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
+            <span class="item-text">My Address</span>
+          </div>
+        </a>
+
+        <a href="/orders" class="item-link">
+          <div class="menu-item" data-path="/orders">
+            <span class="icon"><i class="fas fa-shopping-bag"></i></span>
+            <span class="item-text">My Orders</span>
+          </div>
+        </a>
+
+        <a href="/wishlist" class="item-link">
+          <div class="menu-item" data-path="/wishlist">
+            <span class="icon"><i class="fas fa-heart"></i></span>
+            <span class="item-text">My Wishlist</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="menu-divider"></div>
+      
+      <div class="menu-section">
+        <h4 class="menu-section-title">Payments</h4>
+        <a href="/wallet" class="item-link">
+          <div class="menu-item" data-path="/wallet">
+            <span class="icon"><i class="fas fa-wallet"></i></span>
+            <span class="item-text">My Wallet</span>
+          </div>
+        </a>
+
+        <a href="/allcoupons" class="item-link">
+          <div class="menu-item" data-path="/allcoupons">
+            <span class="icon"><i class="fas fa-tag"></i></span>
+            <span class="item-text">My Coupons</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="menu-divider"></div>
+      
+      <div class="menu-section">
+        <h4 class="menu-section-title">Settings</h4>
+        <a href="/getupdatePassword" class="item-link">
+          <div class="menu-item" data-path="/getupdatePassword">
+            <span class="icon"><i class="fas fa-lock"></i></span>
+            <span class="item-text">Change Password</span>
+          </div>
+        </a>
+
+        <a href="/referral" class="item-link">
+          <div class="menu-item" data-path="/referral">
+            <span class="icon"><i class="fas fa-gift"></i></span>
+            <span class="item-text">Referral Code</span>
+          </div>
+        </a>
+        
+        <a href="/logoutpage" class="item-link">
+          <div class="menu-item logout-item" data-path="/logoutpage">
+            <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+            <span class="item-text">Log out</span>
+          </div>
+        </a>
+>>>>>>> Stashed changes
+      </div>
+    </div>
+
+<<<<<<< Updated upstream
     <script>
 
       document.querySelectorAll(".menu-item").forEach((item) => {
@@ -334,3 +775,69 @@
     </script>
   </body>
 </html>
+=======
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Clear any existing active classes first
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      // Get current path and set active class
+      const currentPath = window.location.pathname;
+      let activeItemFound = false;
+      
+      // Find the menu item that matches the current path
+      document.querySelectorAll('.menu-item').forEach(item => {
+        const itemPath = item.getAttribute('data-path');
+        
+        if (itemPath && (currentPath === itemPath || currentPath.includes(itemPath))) {
+          item.classList.add('active');
+          activeItemFound = true;
+        }
+      });
+      
+      // If no match found, default to profile for the dashboard
+      if (!activeItemFound && (currentPath === '/' || currentPath === '/profile')) {
+        const profileItem = document.querySelector('[data-path="/LoadProfile"]');
+        if (profileItem) {
+          profileItem.classList.add('active');
+        }
+      }
+      
+      // Add click handler for ripple effect
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('mousedown', createRippleEffect);
+      });
+    });
+    
+    // Ripple effect function
+    function createRippleEffect(event) {
+      // Remove any existing ripples
+      const ripples = document.querySelectorAll('.ripple');
+      ripples.forEach(ripple => ripple.remove());
+      
+      const item = event.currentTarget;
+      const rect = item.getBoundingClientRect();
+      
+      const size = Math.max(rect.width, rect.height) * 2;
+      const x = event.clientX - rect.left - (size / 2);
+      const y = event.clientY - rect.top - (size / 2);
+      
+      const ripple = document.createElement('span');
+      ripple.classList.add('ripple');
+      ripple.style.width = ripple.style.height = `${size}px`;
+      ripple.style.left = `${x}px`;
+      ripple.style.top = `${y}px`;
+      
+      item.appendChild(ripple);
+      
+      // Remove ripple after animation completes
+      setTimeout(() => {
+        ripple.remove();
+      }, 600);
+    }
+  </script>
+</body>
+</html>
+>>>>>>> Stashed changes

@@ -39,6 +39,7 @@
       .status-return-approved { color: #28a745; }
       .status-returned { color: #28a745; }
       .status-return-rejected { color: #dc3545; }
+      .status-payment-failed { color: #dc3545; }
       .action-btn:hover {
         transform: translateY(-3px);
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
@@ -46,6 +47,26 @@
       .refund-info {
         color: #28a745;
         font-size: 0.9rem;
+      }
+      .payment-failed-badge {
+        background-color: #dc3545;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-block;
+        margin-bottom: 8px;
+      }
+      .payment-pending-badge {
+        background-color: #ffc107;
+        color: #212529;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-block;
+        margin-bottom: 8px;
       }
     </style>
   </head>
@@ -102,13 +123,157 @@
               </div>
               <% } else { %>
                 <% orders.forEach((order, index) => { %>
-                  <% order.order_items.forEach((item, itemIndex) => { %>
-                    <div
-                      class="order-card card mb-4 shine-effect animate__animated animate__fadeInUp"
-                      style="animation-delay: <%= (index + itemIndex) * 0.1 %>s"
-                    >
+                  <% if (order.order_items && order.order_items.length > 0) { %>
+                    <% order.order_items.forEach((item, itemIndex) => { %>
+                      <div
+                        class="order-card card mb-4 shine-effect animate__animated animate__fadeInUp"
+                        style="animation-delay: <%= (index + itemIndex) * 0.1 %>s"
+                      >
+                        <div class="card-body p-4">
+                          <div class="row g-4 align-items-center">
+                            <div class="col-lg-2 col-md-3 col-sm-3">
+                            <img 
+                            src="<%= item.productId && item.productId.images && item.productId.images.length > 0 ? item.productId.images[0].url : (item.itemImage || '/api/placeholder/300/300') %>" 
+                            alt="<%= item.productId && item.productId.name ? item.productId.name : (item.product_name || 'Unnamed Product') %>" 
+                            class="product-img img-fluid rounded"
+                        >
+                            </div>
+                            <div class="col-lg-7 col-md-6 col-sm-9">
+                              <h5 class="card-title fw-bold">
+                                <%= item.productId && item.productId.name ? item.productId.name : (item.product_name || 'Unnamed Product') %>
+                              </h5>
+                              <p class="card-text mb-2 fs-5 fw-semibold">
+                                ₹<%= item.price ? item.price.toFixed(2) : '0.00' %>
+                              </p>
+                              <p class="card-text mb-2">
+                                Quantity: <%= item.quantity || 1 %> | Size: <%= item.size || 'N/A' %>
+                              </p>
+                              <p class="card-text mb-0 text-muted">
+                                Order Id: <%= order.orderNumber || 'N/A' %>
+                              </p>
+                              
+                              <% if (order.paymentMethod === 'Online' && order.paymentStatus === 'Failed') { %>
+                                <span class="payment-failed-badge">
+                                  <i class="bi bi-exclamation-triangle-fill me-1"></i>Payment Failed
+                                </span>
+                              <% } else if (order.paymentMethod === 'Online' && order.paymentStatus === 'Pending') { %>
+                                <span class="payment-pending-badge">
+                                  <i class="bi bi-hourglass-split me-1"></i>Payment Pending
+                                </span>
+                              <% } else { %>
+                                <div class="order-progress mt-2">
+                                  <div class="progress">
+                                    <div
+                                      class="progress-bar bg-<%= order.status && (order.status.toLowerCase() === 'delivered' || order.status.toLowerCase() === 'returned') ? 'success' : (order.status.toLowerCase() === 'cancelled' || order.status.toLowerCase() === 'return-rejected') ? 'danger' : 'primary' %>"
+                                      role="progressbar"
+                                      style="width: <%= order.progressWidth || 0 %>%"
+                                      aria-valuenow="<%= order.progressWidth || 0 %>"
+                                      aria-valuemin="0"
+                                      aria-valuemax="100"
+                                    ></div>
+                                  </div>
+                                </div>
+                              <% } %>
+                              
+                              <% if (order.refunded && order.status === 'Returned') { %>
+                                <p class="refund-info mt-2">
+                                  <i class="bi bi-wallet2 me-1"></i>
+                                  Refund of ₹<%= order.total ? order.total.toFixed(2) : '0.00' %> credited to wallet
+                                </p>
+                              <% } %>
+                            </div>
+                            <div class="col-lg-3 col-md-3 col-sm-12 text-lg-end text-md-end text-start mt-sm-3 mt-lg-0">
+                              <% if (order.paymentMethod === 'Online' && (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending')) { %>
+                                <p class="<%= order.paymentStatus === 'Failed' ? 'status-payment-failed' : 'status-pending' %> mb-1 fs-6">
+                                  <i class="bi bi-<%= order.paymentStatus === 'Failed' ? 'exclamation-circle-fill' : 'hourglass-split' %> me-1"></i>
+                                  <%= order.paymentStatus.toUpperCase() %>
+                                </p>
+                                <p class="mb-3">
+                                  <i class="bi bi-calendar me-1"></i>
+                                  <%= new Date(order.orderDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+                                </p>
+                                <button
+                                  class="btn btn-sm btn-outline-dark action-btn mb-2"
+                                  onclick="reOrder('<%= order._id %>')"
+                                >
+                                  <i class="bi bi-arrow-repeat me-1"></i>Try Again
+                                </button>
+                              <% } else { %>
+                                <p class="status-<%= order.status ? order.status.toLowerCase().replace(/\s+/g, '-') : 'pending' %> mb-1 fs-6">
+                                  Status: <%= order.status ? order.status.toUpperCase() : 'PENDING' %>
+                                </p>
+                                <p class="mb-3">
+                                  <% if (order.status === 'Delivered') { %>
+                                    <i class="bi bi-check-circle-fill me-1 text-success"></i>
+                                    Delivered on <%= order.deliveryDate ? new Date(order.deliveryDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) : new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+                                  <% } else if (order.status === 'Processing' || order.status === 'Confirmed' || order.status === 'Shipped') { %>
+                                    <i class="bi bi-truck me-1 text-primary"></i>
+                                    Expected by <%= new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+                                  <% } else if (order.status === 'Cancelled') { %>
+                                    <i class="bi bi-x-circle-fill me-1 text-danger"></i>
+                                    Cancelled
+                                  <% } else if (order.status === 'Return Rejected') { %>
+                                    <i class="bi bi-x-circle-fill me-1 text-danger"></i>
+                                    Return Rejected
+                                  <% } else if (order.status === 'Returned') { %>
+                                    <i class="bi bi-check-circle-fill me-1 text-success"></i>
+                                    Returned
+                                  <% } else if (order.status === 'Return Requested' || order.status === 'Return Approved') { %>
+                                    <i class="bi bi-arrow-return-left me-1 text-warning"></i>
+                                    <%= order.status %>
+                                  <% } %>
+                                </p>
+                                <% if (order.status === 'Delivered' && !order.refunded) { %>
+                                  <button
+                                    class="btn btn-sm btn-outline-dark action-btn mb-2"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#returnModal"
+                                    data-order-id="<%= order._id %>"
+                                  >
+                                    <i class="bi bi-arrow-return-left me-1"></i>Return
+                                  </button>
+                                  <button
+                                    class="btn btn-sm btn-outline-dark action-btn mb-2"
+                                    onclick="downloadInvoice('<%= order._id %>')"
+                                  >
+                                    <i class="bi bi-file-earmark-text me-1"></i>Invoice
+                                  </button>
+                                <% } else if (order.status === 'Pending' || order.status === 'Processing') { %>
+                                  <button
+                                    class="btn btn-sm btn-outline-dark action-btn mb-2"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#cancelModal"
+                                    data-order-id="<%= order._id %>"
+                                  >
+                                    <i class="bi bi-x-circle me-1"></i>Cancel Order
+                                  </button>
+                                <% } else if (order.status === 'Cancelled' || order.status === 'Return Rejected') { %>
+                                  <button
+                                    class="btn btn-sm btn-outline-dark action-btn mb-2"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#reorderModal"
+                                    data-order-id="<%= order._id %>"
+                                  >
+                                    <i class="bi bi-arrow-repeat me-1"></i>Re Order
+                                  </button>
+                                <% } %>
+                              <% } %>
+                              <button
+                                class="btn btn-sm btn-dark action-btn"
+                                onclick="viewDetails('<%= order._id %>')"
+                              >
+                                <i class="bi bi-eye me-1"></i>View Details
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    <% }); %>
+                  <% } else { %>
+                    <div class="order-card card mb-4 shine-effect animate__animated animate__fadeInUp">
                       <div class="card-body p-4">
                         <div class="row g-4 align-items-center">
+<<<<<<< Updated upstream
                           <div class="col-lg-2 col-md-3 col-sm-3">
                             <img
                               src="<%= (item.productId && item.productId.images && item.productId.images.length > 0) ? item.productId.images[0].url : '/api/placeholder/300/300' %>"
@@ -117,94 +282,40 @@
                             />
                           </div>
                           <div class="col-lg-7 col-md-6 col-sm-9">
+=======
+                          <div class="col-lg-9 col-md-9 col-sm-9">
+>>>>>>> Stashed changes
                             <h5 class="card-title fw-bold">
-                              <%= item.productId && item.productId.name ? item.productId.name : 'Unnamed Product' %>
+                              Order #<%= order.orderNumber || 'N/A' %>
                             </h5>
                             <p class="card-text mb-2 fs-5 fw-semibold">
-                              ₹<%= item.price ? item.price.toFixed(2) : '0.00' %>
+                              ₹<%= order.total ? order.total.toFixed(2) : '0.00' %>
                             </p>
                             <p class="card-text mb-2">
-                              Quantity: <%= item.quantity || 1 %> | Size: <%= item.size || 'N/A' %>
+                              Date: <%= new Date(order.orderDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
                             </p>
-                            <p class="card-text mb-0 text-muted">
-                              Order Id: <%= order.orderNumber || 'N/A' %>
-                            </p>
-                            <div class="order-progress mt-2">
-                              <div class="progress">
-                                <div
-                                  class="progress-bar bg-<%= order.status && (order.status.toLowerCase() === 'delivered' || order.status.toLowerCase() === 'returned') ? 'success' : (order.status.toLowerCase() === 'cancelled' || order.status.toLowerCase() === 'return-rejected') ? 'danger' : 'primary' %>"
-                                  role="progressbar"
-                                  style="width: <%= order.progressWidth || 0 %>%"
-                                  aria-valuenow="<%= order.progressWidth || 0 %>"
-                                  aria-valuemin="0"
-                                  aria-valuemax="100"
-                                ></div>
-                              </div>
-                            </div>
-                            <% if (order.refunded && order.status === 'Returned') { %>
-                              <p class="refund-info mt-2">
-                                <i class="bi bi-wallet2 me-1"></i>
-                                Refund of ₹<%= order.total ? order.total.toFixed(2) : '0.00' %> credited to wallet
-                              </p>
+                            
+                            <% if (order.paymentMethod === 'Online' && order.paymentStatus === 'Failed') { %>
+                              <span class="payment-failed-badge">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>Payment Failed
+                              </span>
+                            <% } else if (order.paymentMethod === 'Online' && order.paymentStatus === 'Pending') { %>
+                              <span class="payment-pending-badge">
+                                <i class="bi bi-hourglass-split me-1"></i>Payment Pending
+                              </span>
                             <% } %>
                           </div>
                           <div class="col-lg-3 col-md-3 col-sm-12 text-lg-end text-md-end text-start mt-sm-3 mt-lg-0">
-                            <p class="status-<%= order.status ? order.status.toLowerCase().replace(/\s+/g, '-') : 'pending' %> mb-1 fs-6">
-                              Status: <%= order.status ? order.status.toUpperCase() : 'PENDING' %>
-                            </p>
-                            <p class="mb-3">
-                              <% if (order.status === 'Delivered') { %>
-                                <i class="bi bi-check-circle-fill me-1 text-success"></i>
-                                Delivered on <%= order.deliveryDate ? new Date(order.deliveryDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) : new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
-                              <% } else if (order.status === 'Processing' || order.status === 'Confirmed' || order.status === 'Shipped') { %>
-                                <i class="bi bi-truck me-1 text-primary"></i>
-                                Expected by <%= new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
-                              <% } else if (order.status === 'Cancelled') { %>
-                                <i class="bi bi-x-circle-fill me-1 text-danger"></i>
-                                Cancelled
-                              <% } else if (order.status === 'Return Rejected') { %>
-                                <i class="bi bi-x-circle-fill me-1 text-danger"></i>
-                                Return Rejected
-                              <% } else if (order.status === 'Returned') { %>
-                                <i class="bi bi-check-circle-fill me-1 text-success"></i>
-                                Returned
-                              <% } else if (order.status === 'Return Requested' || order.status === 'Return Approved') { %>
-                                <i class="bi bi-arrow-return-left me-1 text-warning"></i>
-                                <%= order.status %>
-                              <% } %>
-                            </p>
-                            <% if (order.status === 'Delivered' && !order.refunded) { %>
+                            <% if (order.paymentMethod === 'Online' && (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending')) { %>
+                              <p class="<%= order.paymentStatus === 'Failed' ? 'status-payment-failed' : 'status-pending' %> mb-1 fs-6">
+                                <i class="bi bi-<%= order.paymentStatus === 'Failed' ? 'exclamation-circle-fill' : 'hourglass-split' %> me-1"></i>
+                                <%= order.paymentStatus.toUpperCase() %>
+                              </p>
                               <button
                                 class="btn btn-sm btn-outline-dark action-btn mb-2"
-                                data-bs-toggle="modal"
-                                data-bs-target="#returnModal"
-                                data-order-id="<%= order._id %>"
+                                onclick="reOrder('<%= order._id %>')"
                               >
-                                <i class="bi bi-arrow-return-left me-1"></i>Return
-                              </button>
-                              <button
-                                class="btn btn-sm btn-outline-dark action-btn mb-2"
-                                onclick="downloadInvoice('<%= order._id %>')"
-                              >
-                                <i class="bi bi-file-earmark-text me-1"></i>Invoice
-                              </button>
-                            <% } else if (order.status === 'Pending' || order.status === 'Processing') { %>
-                              <button
-                                class="btn btn-sm btn-outline-dark action-btn mb-2"
-                                data-bs-toggle="modal"
-                                data-bs-target="#cancelModal"
-                                data-order-id="<%= order._id %>"
-                              >
-                                <i class="bi bi-x-circle me-1"></i>Cancel Order
-                              </button>
-                            <% } else if (order.status === 'Cancelled' || order.status === 'Return Rejected') { %>
-                              <button
-                                class="btn btn-sm btn-outline-dark action-btn mb-2"
-                                data-bs-toggle="modal"
-                                data-bs-target="#reorderModal"
-                                data-order-id="<%= order._id %>"
-                              >
-                                <i class="bi bi-arrow-repeat me-1"></i>Re Order
+                                <i class="bi bi-arrow-repeat me-1"></i>Try Again
                               </button>
                             <% } %>
                             <button
@@ -217,7 +328,7 @@
                         </div>
                       </div>
                     </div>
-                  <% }); %>
+                  <% } %>
                 <% }); %>
               <% } %>
 
@@ -321,6 +432,7 @@
     <%- include("../partials/user/footer") %>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
       // Debounce utility to prevent multiple rapid clicks
       function debounce(func, wait) {
@@ -364,7 +476,31 @@
           const button = event.relatedTarget;
           const orderId = button.getAttribute("data-order-id");
           const confirmBtn = reorderModal.querySelector("#confirmReorderBtn");
-          confirmBtn.onclick = debounce(() => reOrder(orderId), 1000);
+          confirmBtn.onclick = debounce(() => {
+            // For regular reorders (not failed payments)
+            fetch(`/reorder/${orderId}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+            })
+              .then((res) => {
+                if (!res.ok) {
+                  throw new Error(`HTTP error! Status: ${res.status}`);
+                }
+                return res.json();
+              })
+              .then((data) => {
+                if (data.success) {
+                  showToast("Items added to cart successfully");
+                  setTimeout(() => (window.location.href = data.redirect), 1000);
+                } else {
+                  showToast(data.message || "Failed to reorder", false);
+                }
+              })
+              .catch((err) => {
+                console.error("Error in reOrder:", err);
+                showToast(`Failed to reorder: ${err.message}`, false);
+              });
+          }, 1000);
         });
       });
 
@@ -431,7 +567,8 @@
       }
 
       function reOrder(orderId) {
-        fetch(`/reorder/${orderId}`, {
+        console.log("Retrying payment for order:", orderId);
+        fetch(`/retry-payment/${orderId}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
         })
@@ -443,15 +580,79 @@
           })
           .then((data) => {
             if (data.success) {
-              showToast("Order placed successfully");
-              setTimeout(() => (window.location.href = data.redirect), 1000);
+              // Initialize Razorpay payment
+              const options = {
+                key: data.key,
+                amount: data.order.amount,
+                currency: "INR",
+                name: "ELITE WEAR",
+                description: "Order Payment",
+                order_id: data.order.id,
+                handler: function (response) {
+                  // Verify payment
+                  fetch("/verify-payment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      razorpay_order_id: response.razorpay_order_id,
+                      razorpay_payment_id: response.razorpay_payment_id,
+                      razorpay_signature: response.razorpay_signature,
+                    }),
+                  })
+                    .then((res) => res.json())
+                    .then((verifyData) => {
+                      if (verifyData.success) {
+                        showToast("Payment successful");
+                        setTimeout(() => (window.location.href = verifyData.redirect), 1000);
+                      } else {
+                        showToast(verifyData.message || "Payment verification failed", false);
+                      }
+                    })
+                    .catch((err) => {
+                      console.error("Error verifying payment:", err);
+                      showToast("Failed to verify payment", false);
+                    });
+                },
+                prefill: {
+                  name: data.user.name,
+                  email: data.user.email,
+                  contact: data.user.contact,
+                },
+                theme: {
+                  color: "#2c3e50",
+                },
+                modal: {
+                  ondismiss: function() {
+                    console.log("Payment modal dismissed");
+                    // Handle failed payment
+                    fetch("/handle-failed-payment", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        razorpay_order_id: data.order.id
+                      }),
+                    })
+                      .then(res => res.json())
+                      .then(data => {
+                        if (data.success) {
+                          showToast("Payment cancelled", false);
+                        }
+                      })
+                      .catch(err => {
+                        console.error("Error handling failed payment:", err);
+                      });
+                  }
+                }
+              };
+              const rzp = new Razorpay(options);
+              rzp.open();
             } else {
-              showToast(data.message || "Failed to reorder", false);
+              showToast(data.message || "Failed to initiate payment", false);
             }
           })
           .catch((err) => {
             console.error("Error in reOrder:", err);
-            showToast(`Failed to reorder: ${err.message}`, false);
+            showToast(`Failed to retry payment: ${err.message}`, false);
           });
       }
 

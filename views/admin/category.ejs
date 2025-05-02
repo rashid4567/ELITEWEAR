@@ -3,357 +3,1764 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Category Management</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/adminStyle/category.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
-  
+    <title>Elite Wear - Category Management</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --border-radius: 0.5rem;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--gray-50);
+            color: var(--gray-700);
+            line-height: 1.5;
+        }
+        
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background-color: white;
+            border-right: 1px solid var(--gray-200);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            background-color: var(--gray-50);
+            min-height: 100vh;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .page-title {
+            font-weight: 600;
+            color: var(--gray-900);
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        
+        .breadcrumb {
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .breadcrumb-item a {
+            color: var(--gray-500);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .breadcrumb-item a:hover {
+            color: var(--primary);
+        }
+        
+        .breadcrumb-item.active {
+            color: var(--gray-700);
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        .user-role {
+            color: var(--gray-500);
+            margin: 0;
+            font-size: 0.8rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            font-size: 1.25rem;
+            color: white;
+        }
+        
+        .stat-icon.categories {
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+        }
+        
+        .stat-icon.listed {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .stat-icon.unlisted {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .stat-icon.sales {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+        
+        .stat-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 0;
+            line-height: 1.2;
+        }
+        
+        .stat-info p {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin: 0;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: none;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0;
+            font-size: 1.125rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .search-bar {
+            position: relative;
+            flex-grow: 1;
+            max-width: 400px;
+            margin-right: 1rem;
+        }
+        
+        .search-bar input {
+            width: 100%;
+            padding: 0.625rem 1rem 0.625rem 2.5rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--gray-200);
+            background-color: white;
+            font-size: 0.875rem;
+            color: var(--gray-800);
+            box-shadow: var(--shadow-sm);
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        
+        .search-bar input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+            outline: none;
+        }
+        
+        .search-bar i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            font-size: 0.875rem;
+        }
+        
+        .table-responsive {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table thead th {
+            background-color: var(--gray-50);
+            color: var(--gray-700);
+            font-weight: 600;
+            font-size: 0.875rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            white-space: nowrap;
+        }
+        
+        .table tbody td {
+            padding: 1rem 1.5rem;
+            vertical-align: middle;
+            color: var(--gray-800);
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .table tbody tr {
+            transition: background-color 0.2s;
+        }
+        
+        .table tbody tr:hover {
+            background-color: var(--gray-50);
+        }
+        
+        .badge {
+            padding: 0.35em 0.65em;
+            font-size: 0.75em;
+            font-weight: 600;
+            border-radius: 0.375rem;
+        }
+        
+        .badge-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .badge-danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        .badge-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        
+        .badge-info {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+        }
+        
+        .btn {
+            font-weight: 500;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            border-color: var(--success);
+        }
+        
+        .btn-success:hover {
+            background-color: #0ca678;
+            border-color: #0ca678;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            border-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #dc2626;
+            border-color: #dc2626;
+        }
+        
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+        
+        .btn-icon {
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+        }
+        
+        .btn-icon-sm {
+            width: 1.75rem;
+            height: 1.75rem;
+            font-size: 0.75rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        
+        .action-btn {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.375rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-700);
+            background-color: var(--gray-100);
+            border: 1px solid var(--gray-200);
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .action-btn:hover {
+            background-color: var(--gray-200);
+            color: var(--gray-900);
+        }
+        
+        .action-btn.view:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+        
+        .action-btn.edit:hover {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        
+        .action-btn.delete:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-300);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--success);
+        }
+        
+        input:focus + .toggle-slider {
+            box-shadow: 0 0 1px var(--success);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-badge i {
+            margin-right: 0.375rem;
+            font-size: 0.625rem;
+        }
+        
+        .status-badge.active {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .status-badge.inactive {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1.5rem;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--gray-400);
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state p {
+            color: var(--gray-500);
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-content {
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .modal-header {
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1.25rem 1.5rem;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+            color: var(--gray-900);
+            font-size: 1.25rem;
+        }
+        
+        .modal-body {
+            padding: 1.5rem;
+        }
+        
+        .modal-footer {
+            border-top: 1px solid var(--gray-200);
+            padding: 1.25rem 1.5rem;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .form-control {
+            border-radius: 0.375rem;
+            border: 1px solid var(--gray-300);
+            padding: 0.625rem 0.875rem;
+            font-size: 0.875rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        }
+        
+        .form-control.is-invalid {
+            border-color: var(--danger);
+            background-image: none;
+            padding-right: 0.875rem;
+        }
+        
+        .form-control.is-invalid:focus {
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+        }
+        
+        .invalid-feedback {
+            color: var(--danger);
+            font-size: 0.75rem;
+            margin-top: 0.375rem;
+        }
+        
+        .form-text {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-top: 0.375rem;
+        }
+        
+        .alert {
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+        }
+        
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+        
+        .alert-danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+        }
+        
+        .alert-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+        }
+        
+        .alert-info {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+        }
+        
+        .swal2-popup {
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .swal2-title {
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+        
+        .swal2-html-container {
+            color: var(--gray-700);
+        }
+        
+        .swal2-confirm {
+            background-color: var(--primary) !important;
+            border-radius: 0.375rem !important;
+            font-weight: 500 !important;
+        }
+        
+        .swal2-cancel {
+            background-color: var(--gray-200) !important;
+            color: var(--gray-700) !important;
+            border-radius: 0.375rem !important;
+            font-weight: 500 !important;
+        }
+        
+        /* Pagination Styles */
+        .custom-pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0;
+            padding: 1rem;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        .pagination-info {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            margin-right: 1rem;
+        }
+        
+        .custom-pagination {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            background: var(--gray-50);
+            border-radius: 50px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        
+        .pagination-item {
+            margin: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .pagination-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            min-width: 40px;
+            padding: 0 12px;
+            color: var(--gray-700);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .pagination-item:hover:not(.disabled):not(.active) .pagination-link {
+            background-color: var(--gray-200);
+            color: var(--gray-900);
+            transform: translateY(-2px);
+        }
+        
+        .pagination-item.active .pagination-link {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .pagination-item.disabled .pagination-link {
+            color: var(--gray-400);
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        /* Jump to page section */
+        .pagination-jump {
+            display: flex;
+            align-items: center;
+            margin-left: 1rem;
+        }
+        
+        .pagination-jump span {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
+        
+        .jump-form {
+            display: flex;
+            align-items: center;
+        }
+        
+        .jump-input {
+            width: 50px;
+            height: 36px;
+            padding: 0 10px;
+            border: 1px solid var(--gray-300);
+            border-radius: 4px 0 0 4px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .jump-btn {
+            height: 36px;
+            width: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .jump-btn:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        /* Animation for active page */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pagination-item.active .pagination-link {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Page size selector */
+        .page-size-selector {
+            display: flex;
+            align-items: center;
+            margin-top: 1rem;
+            justify-content: flex-end;
+        }
+        
+        .page-size-selector span {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
+        
+        /* Loading animation for pagination */
+        .pagination-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--primary), transparent);
+            z-index: 9999;
+            animation: loading 1.5s infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .pagination-loading.active {
+            opacity: 1;
+        }
+        
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* Page transition effect */
+        .content-fade {
+            transition: opacity 0.3s ease;
+        }
+        
+        .content-fade.loading {
+            opacity: 0.6;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 240px;
+            }
+            
+            .main-content {
+                margin-left: 240px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.show {
+                width: 240px;
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .user-profile {
+                margin-top: 1rem;
+                align-self: flex-end;
+            }
+            
+            .table-actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1rem;
+            }
+            
+            .search-bar {
+                max-width: none;
+                margin-right: 0;
+            }
+            
+            .custom-pagination-container {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+            
+            .pagination-info {
+                margin-right: 0;
+                margin-bottom: 0.5rem;
+                text-align: center;
+            }
+            
+            .pagination-jump {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .table thead th,
+            .table tbody td {
+                padding: 0.75rem;
+            }
+            
+            .action-buttons {
+                flex-wrap: wrap;
+            }
+            
+            .custom-pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+                border-radius: 8px;
+            }
+            
+            .pagination-link {
+                height: 36px;
+                min-width: 36px;
+                padding: 0 10px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <%- include("../partials/admin/header") %>
-    <div class="container mt-4">
-      
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="fw-bold">CATEGORY</h2>
-            <button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addCategoryModal">Add Category</button>
-        </div>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/">Dashboard</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Category</li>
-            </ol>
-        </nav>
-
+    <!-- Pagination Loading Indicator -->
+    <div class="pagination-loading" id="paginationLoading"></div>
     
-        <div id="alertContainer" class="mb-3" style="display: none;">
-            <div id="statusAlert" class="alert" role="alert"></div>
+    <div class="admin-layout">
+        <!-- Sidebar (placeholder) -->
+        <div class="sidebar">
+        <%- include("../partials/admin/header") %>
         </div>
         
-        <div class="table-responsive">
-            <table class="table table-bordered text-center">
-                <thead class="table-dark">
-                    <tr>
-                        <th>SNO</th>
-                        <th>Category Name</th>
-                        <th>Description</th>
-                        <th>Sales</th>
-                        <th>Stock</th>
-                        <th>Offer</th>
-                        <th>Added Date</th>
-                        <th>List / Unlist</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (cat.length === 0) { %>
-                        <tr>
-                            <td colspan="9" class="text-center">No categories available</td>
-                        </tr>
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Category Management</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Categories</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div class="user-profile">
+                    <div class="user-info">
+                        <p class="user-name">Admin</p>
+                        <p class="user-role">Administrator</p>
+                    </div>
+                    <img src="/api/placeholder/40/40?query=profile" alt="User Profile" class="user-avatar">
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon categories">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3><%= cat.length %></h3>
+                        <p>Total Categories</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon listed">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3><%= cat.filter(c => c.isListed).length %></h3>
+                        <p>Listed Categories</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon unlisted">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3><%= cat.filter(c => !c.isListed).length %></h3>
+                        <p>Unlisted Categories</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon sales">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3><%= cat.reduce((sum, c) => sum + c.sales, 0) %></h3>
+                        <p>Total Sales</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alert Container -->
+            <div id="alertContainer" class="mb-3" style="display: none;">
+                <div id="statusAlert" class="alert" role="alert"></div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Categories</h3>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                        <i class="fas fa-plus me-2"></i> Add Category
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="d-flex justify-content-between align-items-center p-3 table-actions">
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="categorySearch" placeholder="Search categories...">
+                        </div>
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm" id="statusFilter">
+                                <option value="all">All Status</option>
+                                <option value="listed">Listed</option>
+                                <option value="unlisted">Unlisted</option>
+                            </select>
+                            <select class="form-select form-select-sm" id="sortBy">
+                                <option value="name">Sort by Name</option>
+                                <option value="sales">Sort by Sales</option>
+                                <option value="stock">Sort by Stock</option>
+                                <option value="date">Sort by Date</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-responsive content-fade" id="categoryTableContainer">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Category Name</th>
+                                    <th>Description</th>
+                                    <th>Sales</th>
+                                    <th>Stock</th>
+                                    <th>Offer</th>
+                                    <th>Added Date</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (cat.length === 0) { %>
+                                    <tr>
+                                        <td colspan="9" class="empty-state">
+                                            <i class="fas fa-tags"></i>
+                                            <p>No categories available</p>
+                                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                                                <i class="fas fa-plus me-2"></i> Add Your First Category
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <% } else { %>
+                                    <% cat.forEach((category, index) => { %>
+                                        <tr class="category-row" 
+                                            data-name="<%= category.name.toLowerCase() %>" 
+                                            data-status="<%= category.isListed ? 'listed' : 'unlisted' %>">
+                                            <td><%= index + 1 %></td>
+                                            <td>
+                                                <div class="fw-medium"><%= category.name %></div>
+                                            </td>
+                                            <td>
+                                                <div class="text-truncate" style="max-width: 200px;" title="<%= category.description %>">
+                                                    <%= category.description %>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-info"><%= category.sales %></span>
+                                            </td>
+                                            <td>
+                                                <span class="badge <%= category.stock > 0 ? 'badge-success' : 'badge-danger' %>">
+                                                    <%= category.stock %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-warning"><%= category.offer %>%</span>
+                                            </td>
+                                            <td><%= category.addedDate.toDateString() %></td>
+                                            <td>
+                                                <span class="status-badge <%= category.isListed ? 'active' : 'inactive' %>">
+                                                    <i class="fas <%= category.isListed ? 'fa-check-circle' : 'fa-times-circle' %>"></i>
+                                                    <%= category.isListed ? 'Listed' : 'Unlisted' %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="action-btn view" title="View Category">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                    <a href="/admin/editCategory?id=<%= category._id %>" class="action-btn edit" title="Edit Category">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <button class="action-btn delete delete-category" 
+                                                            title="Delete Category"
+                                                            data-id="<%= category._id %>" 
+                                                            data-name="<%= category.name %>">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                    <button class="action-btn <%= category.isListed ? 'btn-outline-danger' : 'btn-outline-success' %> toggle-category"
+                                                            data-id="<%= category._id %>"
+                                                            title="<%= category.isListed ? 'Unlist Category' : 'List Category' %>">
+                                                        <i class="fas <%= category.isListed ? 'fa-ban' : 'fa-check' %>"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Enhanced Pagination -->
+            <div class="custom-pagination-container">
+                <div class="pagination-info">
+                    <% 
+                    // Define all variables before using them
+                    // Handle both camelCase and lowercase variable names with fallbacks
+                    const totalItems = typeof totalCategory !== 'undefined' ? totalCategory : 
+                                      (typeof totalcategory !== 'undefined' ? totalcategory : 0);
+                    
+                    const currentPageNum = typeof currentPage !== 'undefined' ? currentPage : 
+                                          (typeof currentpage !== 'undefined' ? currentpage : 1);
+                    
+                    // Define itemsPerPage BEFORE using it in any calculations
+                    const itemsPerPage = typeof limit !== 'undefined' ? limit : 4;
+                    
+                    // Ensure all values are valid numbers
+                    const safeCurrentPage = isNaN(Number(currentPageNum)) ? 1 : Number(currentPageNum);
+                    const safeTotalItems = isNaN(Number(totalItems)) ? 0 : Number(totalItems);
+                    const safeItemsPerPage = isNaN(Number(itemsPerPage)) || Number(itemsPerPage) <= 0 ? 4 : Number(itemsPerPage);
+                    
+                    // Calculate start and end item numbers safely
+                    const startItem = safeTotalItems === 0 ? 0 : ((safeCurrentPage - 1) * safeItemsPerPage) + 1;
+                    const endItem = Math.min(safeCurrentPage * safeItemsPerPage, safeTotalItems);
+                    %>
+                    
+                    <% if (safeTotalItems > 0) { %>
+                      Showing <span class="fw-bold"><%= startItem %></span> to 
+                      <span class="fw-bold"><%= endItem %></span> of 
+                      <span class="fw-bold"><%= safeTotalItems %></span> categories
                     <% } else { %>
-                        <% cat.forEach((category, index) => { %>
-                            <tr>
-                                <td><%= index + 1 %></td>
-                                <td><%= category.name %></td>
-                                <td><%= category.description %></td>
-                                <td><%= category.sales %></td>
-                                <td><%= category.stock %></td>
-                                <td><%= category.offer %>%</td>
-                                <td><%= category.addedDate.toDateString() %></td>
-                                <td>
-                                    <button class="btn btn-sm <%= category.isListed ? 'btn-success' : 'btn-danger' %> toggle-category"
-                                            data-id="<%= category._id %>">
-                                        <%= category.isListed ? 'UNLIST' : 'LIST' %>
-                                    </button>
-                                </td>
-                                <td>
-                                    <i class="bi bi-eye mx-2"></i>
-
-                                    <a href="/admin/editCategory?id=<%= category._id %>">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                    
-                                    <i class="bi bi-trash text-danger mx-2 delete-category" 
-                                       data-id="<%= category._id %>" 
-                                       data-name="<%= category.name %>"
-                                       style="cursor: pointer;"></i>
-                                </td>
-                            </tr>
-                        <% }); %>
+                      No categories to display
                     <% } %>
-                </tbody>
-            </table>
+                </div>
+                
+                <% if (safeTotalItems > 0) { %>
+                    <ul class="custom-pagination">
+                      <% 
+                      // Handle both camelCase and lowercase for total pages
+                      const totalPagesNum = typeof totalPages !== 'undefined' ? totalPages : 
+                                          (typeof totalpages !== 'undefined' ? totalpages : 
+                                          (Math.ceil(safeTotalItems / safeItemsPerPage) || 1));
+                      
+                      // Ensure total pages is a valid number
+                      const safeTotalPages = isNaN(Number(totalPagesNum)) || Number(totalPagesNum) <= 0 ? 1 : Number(totalPagesNum);
+                      
+                      // Calculate page range with proper bounds checking
+                      let startPage = Math.max(1, safeCurrentPage - 2);
+                      let endPage = Math.min(safeTotalPages, startPage + 4);
+                      
+                      if (endPage - startPage < 4 && safeTotalPages > 4) {
+                        startPage = Math.max(1, endPage - 4);
+                      }
+                      
+                      // Determine if prev/next buttons should be enabled
+                      const hasPrevPage = safeCurrentPage > 1;
+                      const hasNextPage = safeCurrentPage < safeTotalPages;
+                      %>
+                      
+                      <!-- First Page Button -->
+                      <li class="pagination-item <%= !hasPrevPage ? 'disabled' : '' %>">
+                        <a href="<%= hasPrevPage ? '/admin/categories?page=1' : '#' %>" 
+                           class="pagination-link" 
+                           <%= !hasPrevPage ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+                          <i class="fas fa-angle-double-left"></i>
+                        </a>
+                      </li>
+                      
+                      <!-- Previous Button -->
+                      <li class="pagination-item <%= !hasPrevPage ? 'disabled' : '' %>">
+                        <a href="<%= hasPrevPage ? `/admin/categories?page=${safeCurrentPage - 1}` : '#' %>" 
+                           class="pagination-link" 
+                           <%= !hasPrevPage ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+                          <i class="fas fa-angle-left"></i>
+                        </a>
+                      </li>
+                      
+                      <!-- Page Numbers -->
+                      <% for (let i = startPage; i <= endPage; i++) { %>
+                        <li class="pagination-item <%= i === safeCurrentPage ? 'active' : '' %>">
+                          <a href="/admin/categories?page=<%= i %>" class="pagination-link">
+                            <%= i %>
+                          </a>
+                        </li>
+                      <% } %>
+                      
+                      <!-- Next Button -->
+                      <li class="pagination-item <%= !hasNextPage ? 'disabled' : '' %>">
+                        <a href="<%= hasNextPage ? `/admin/categories?page=${safeCurrentPage + 1}` : '#' %>" 
+                           class="pagination-link" 
+                           <%= !hasNextPage ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+                          <i class="fas fa-angle-right"></i>
+                        </a>
+                      </li>
+                      
+                      <!-- Last Page Button -->
+                      <li class="pagination-item <%= !hasNextPage ? 'disabled' : '' %>">
+                        <a href="<%= hasNextPage ? `/admin/categories?page=${safeTotalPages}` : '#' %>" 
+                           class="pagination-link" 
+                           <%= !hasNextPage ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+                          <i class="fas fa-angle-double-right"></i>
+                        </a>
+                      </li>
+                    </ul>
+                    
+                    <!-- Jump to Page -->
+                    <div class="pagination-jump">
+                      <span>Go to:</span>
+                      <form action="/admin/categories" method="GET" class="jump-form">
+                        <input type="number" name="page" min="1" max="<%= safeTotalPages %>" 
+                               class="jump-input" value="<%= safeCurrentPage %>">
+                        <button type="submit" class="jump-btn">
+                          <i class="fas fa-arrow-right"></i>
+                        </button>
+                      </form>
+                    </div>
+                <% } %>
+            </div>
+            
+            <!-- Page Size Selector -->
+            <div class="page-size-selector">
+              <span>Items per page:</span>
+              <select id="pageSizeSelector" class="form-select form-select-sm" onchange="changePageSize(this.value)">
+                <option value="4" <%= safeItemsPerPage === 4 ? 'selected' : '' %>>4</option>
+                <option value="8" <%= safeItemsPerPage === 8 ? 'selected' : '' %>>8</option>
+                <option value="12" <%= safeItemsPerPage === 12 ? 'selected' : '' %>>12</option>
+                <option value="20" <%= safeItemsPerPage === 20 ? 'selected' : '' %>>20</option>
+              </select>
+            </div>
         </div>
     </div>
 
-   
-    <div class="modal fade" id="addCategoryModal" tabindex="-1">
-        <div class="modal-dialog">
+    <!-- Add Category Modal -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add Category</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                  
                     <div id="formFeedback" class="alert alert-danger mb-3" style="display: none;"></div>
                     
                     <form id="addCategoryForm">
                         <div class="mb-3">
-                            <label class="form-label">Category Name</label>
-                            <input type="text" class="form-control" id="categoryName">
-                            <div class="invalid-feedback">Please enter a category name.</div>
+                            <label for="categoryName" class="form-label">Category Name</label>
+                            <input type="text" class="form-control" id="categoryName" placeholder="Enter category name">
+                            <div class="invalid-feedback">Please enter a valid category name.</div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" id="categoryDescription" ></textarea>
+                            <label for="categoryDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="categoryDescription" rows="3" placeholder="Enter category description"></textarea>
                             <div class="invalid-feedback">Please enter a description.</div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Initial Stock</label>
+                            <label for="categoryStock" class="form-label">Initial Stock</label>
                             <input type="number" class="form-control" id="categoryStock" value="0" min="0">
+                            <div class="form-text">Set the initial stock quantity for this category.</div>
                         </div>
-                        <button type="submit" class="btn btn-dark w-100">Add Category</button>
+                        <div class="mb-3">
+                            <label for="categoryOffer" class="form-label">Initial Offer (%)</label>
+                            <input type="number" class="form-control" id="categoryOffer" value="0" min="0" max="100">
+                            <div class="form-text">Set an initial discount percentage for this category.</div>
+                        </div>
                     </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitCategory">Add Category</button>
                 </div>
             </div>
         </div>
     </div>
 
- 
-    <div class="modal fade" id="confirmationModal" tabindex="-1">
-        <div class="modal-dialog">
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="confirmTitle">Confirm Action</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p id="confirmMessage"></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" id="confirmButton">Confirm</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
     <script>
-      
-        function showAlert(message, type) {
-            const alertContainer = document.getElementById('alertContainer');
-            const statusAlert = document.getElementById('statusAlert');
-            
-            statusAlert.className = `alert alert-${type}`;
-            statusAlert.textContent = message;
-            alertContainer.style.display = 'block';
-            
-          
-            setTimeout(() => {
-                alertContainer.style.display = 'none';
-            }, 5000);
-        }
-        
-    
-        document.getElementById("addCategoryForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            
-            const categoryName = document.getElementById("categoryName");
-            const categoryDescription = document.getElementById("categoryDescription");
-            const categoryStock = document.getElementById("categoryStock").value || 0;
-            const formFeedback = document.getElementById("formFeedback");
-            
-            
-            formFeedback.style.display = 'none';
-            categoryName.classList.remove('is-invalid');
-            categoryDescription.classList.remove('is-invalid');
-            
-           
-            let isValid = true;
-            let errorMessage = '';
-            
-            if (!categoryName.value.trim()) {
-                categoryName.classList.add('is-invalid');
-                isValid = false;
-                errorMessage = 'Please enter a category name.';
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show alert function
+            function showAlert(message, type) {
+                const alertContainer = document.getElementById('alertContainer');
+                const statusAlert = document.getElementById('statusAlert');
+                
+                statusAlert.className = `alert alert-${type}`;
+                statusAlert.textContent = message;
+                alertContainer.style.display = 'block';
+                
+                setTimeout(() => {
+                    alertContainer.style.display = 'none';
+                }, 5000);
             }
             
-            if (!categoryDescription.value.trim()) {
-                categoryDescription.classList.add('is-invalid');
-                isValid = false;
-                errorMessage = errorMessage ? 'Please fill in all required fields.' : 'Please enter a description.';
-            }
-            
-            if (!isValid) {
-                formFeedback.textContent = errorMessage;
-                formFeedback.style.display = 'block';
-                return;
-            }
-
-           
-            fetch('/admin/addcategory', {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/json" 
-                },
-                body: JSON.stringify({
-                    name: categoryName.value.trim(),
-                    description: categoryDescription.value.trim(),
-                    stock: parseInt(categoryStock)
-                })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(data => {
-                        throw new Error(data.message || 'Failed to add category');
-                    });
+            // Add Category Form Submission
+            document.getElementById('submitCategory').addEventListener('click', function() {
+                const categoryName = document.getElementById('categoryName');
+                const categoryDescription = document.getElementById('categoryDescription');
+                const categoryStock = document.getElementById('categoryStock').value || 0;
+                const categoryOffer = document.getElementById('categoryOffer').value || 0;
+                const formFeedback = document.getElementById('formFeedback');
+                
+                formFeedback.style.display = 'none';
+                categoryName.classList.remove('is-invalid');
+                categoryDescription.classList.remove('is-invalid');
+                
+                let isValid = true;
+                let errorMessage = '';
+                
+                if (!categoryName.value.trim()) {
+                    categoryName.classList.add('is-invalid');
+                    isValid = false;
+                    errorMessage = 'Please enter a category name.';
                 }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                  
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
-                    modal.hide();
-                    
-                    
-                    showAlert(data.message, 'success');
-                    
-           
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    formFeedback.textContent = data.message;
+                
+                if (!categoryDescription.value.trim()) {
+                    categoryDescription.classList.add('is-invalid');
+                    isValid = false;
+                    errorMessage = errorMessage ? 'Please fill in all required fields.' : 'Please enter a description.';
+                }
+                
+                if (!isValid) {
+                    formFeedback.textContent = errorMessage;
                     formFeedback.style.display = 'block';
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                formFeedback.textContent = error.message || "Server issue!";
-                formFeedback.style.display = 'block';
-            });
-        });
 
-    
-        const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
-        let pendingAction = null;
-        
-        document.getElementById('confirmButton').addEventListener('click', function() {
-            if (!pendingAction) return;
+                // Show loading state
+                const submitBtn = this;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Adding...';
+                
+                fetch('/admin/addcategory', {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json" 
+                    },
+                    body: JSON.stringify({
+                        name: categoryName.value.trim(),
+                        description: categoryDescription.value.trim(),
+                        stock: parseInt(categoryStock),
+                        offer: parseInt(categoryOffer)
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Failed to add category');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Close modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addCategoryModal'));
+                        modal.hide();
+                        
+                        // Show success message with SweetAlert2
+                        Swal.fire({
+                            title: 'Success!',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonColor: '#4f46e5'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        formFeedback.textContent = data.message;
+                        formFeedback.style.display = 'block';
+                        
+                        // Reset button state
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = 'Add Category';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    formFeedback.textContent = error.message || "Server issue!";
+                    formFeedback.style.display = 'block';
+                    
+                    // Reset button state
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Add Category';
+                });
+            });
             
-         
-            confirmationModal.hide();
+            // Confirmation Modal Setup
+            const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+            let pendingAction = null;
             
-          
-            if (pendingAction.type === 'toggle') {
-                toggleCategory(pendingAction.id);
-            } else if (pendingAction.type === 'delete') {
-                deleteCategory(pendingAction.id);
+            document.getElementById('confirmButton').addEventListener('click', function() {
+                if (!pendingAction) return;
+                
+                // Hide modal
+                confirmationModal.hide();
+                
+                // Execute the pending action
+                if (pendingAction.type === 'toggle') {
+                    toggleCategory(pendingAction.id);
+                } else if (pendingAction.type === 'delete') {
+                    deleteCategory(pendingAction.id);
+                }
+                
+                // Clear pending action
+                pendingAction = null;
+            });
+            
+            // Toggle Category Status
+            document.querySelectorAll('.toggle-category').forEach(button => {
+                button.addEventListener('click', function() {
+                    const categoryId = this.getAttribute('data-id');
+                    const isListed = this.classList.contains('btn-outline-danger'); // If danger, it's currently listed
+                    const action = isListed ? "Unlist" : "List";
+                    
+                    // Set confirmation modal content
+                    document.getElementById('confirmTitle').textContent = `${action} Category`;
+                    document.getElementById('confirmMessage').textContent = `Are you sure you want to ${action.toLowerCase()} this category? ${isListed ? 'Products in this category will not be visible to customers.' : 'Products in this category will become visible to customers.'}`;
+                    
+                    // Set button style based on action
+                    const confirmBtn = document.getElementById('confirmButton');
+                    confirmBtn.className = `btn ${isListed ? 'btn-danger' : 'btn-success'}`;
+                    confirmBtn.textContent = action;
+                    
+                    // Set pending action
+                    pendingAction = {
+                        type: 'toggle',
+                        id: categoryId
+                    };
+                    
+                    // Show confirmation modal
+                    confirmationModal.show();
+                });
+            });
+            
+            // Toggle Category Function
+            function toggleCategory(categoryId) {
+                // Show loading overlay
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Please wait while we update the category status.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                fetch('/admin/toggle-category', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: categoryId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Success!',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonColor: '#4f46e5'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message,
+                            icon: 'error',
+                            confirmButtonColor: '#4f46e5'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: "Server issue! Please try again.",
+                        icon: 'error',
+                        confirmButtonColor: '#4f46e5'
+                    });
+                });
             }
             
-          
-            pendingAction = null;
-        });
-        
-       
-        document.querySelectorAll('.toggle-category').forEach(button => {
-            button.addEventListener('click', function() {
-                const categoryId = this.getAttribute('data-id');
-                const isListed = this.classList.contains('btn-success'); 
-                const action = isListed ? "Unlist" : "List";
-                
-               
-                document.getElementById('confirmTitle').textContent = `${action} Category`;
-                document.getElementById('confirmMessage').textContent = `Are you sure you want to ${action.toLowerCase()} this category?`;
-                
-               
-                pendingAction = {
-                    type: 'toggle',
-                    id: categoryId
-                };
-                
-             
-                confirmationModal.show();
+            // Delete Category
+            document.querySelectorAll('.delete-category').forEach(icon => {
+                icon.addEventListener('click', function() {
+                    const categoryId = this.getAttribute('data-id');
+                    const categoryName = this.getAttribute('data-name');
+                    
+                    // Use SweetAlert2 for delete confirmation
+                    Swal.fire({
+                        title: 'Delete Category?',
+                        html: `Are you sure you want to delete the category <strong>${categoryName}</strong>?<br><br>This action cannot be undone and may affect products in this category.`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#ef4444',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Yes, delete it!',
+                        cancelButtonText: 'Cancel',
+                        reverseButtons: true
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            deleteCategory(categoryId);
+                        }
+                    });
+                });
             });
-        });
-        
-       
-        function toggleCategory(categoryId) {
-            fetch('/admin/toggle-category', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: categoryId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showAlert(data.message, 'success');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    showAlert(data.message, 'danger');
+            
+            // Delete Category Function
+            function deleteCategory(categoryId) {
+                // Show loading overlay
+                Swal.fire({
+                    title: 'Deleting...',
+                    text: 'Please wait while we delete the category.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                fetch('/admin/delete-category', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: categoryId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonColor: '#4f46e5'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message,
+                            icon: 'error',
+                            confirmButtonColor: '#4f46e5'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: "Server issue! Please try again.",
+                        icon: 'error',
+                        confirmButtonColor: '#4f46e5'
+                    });
+                });
+            }
+            
+            // Search functionality
+            const searchInput = document.getElementById('categorySearch');
+            searchInput.addEventListener('input', filterCategories);
+            
+            // Status filter
+            const statusFilter = document.getElementById('statusFilter');
+            statusFilter.addEventListener('change', filterCategories);
+            
+            // Sort functionality
+            const sortBy = document.getElementById('sortBy');
+            sortBy.addEventListener('change', sortCategories);
+            
+            function filterCategories() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const statusValue = statusFilter.value;
+                
+                document.querySelectorAll('.category-row').forEach(row => {
+                    const name = row.getAttribute('data-name');
+                    const status = row.getAttribute('data-status');
+                    
+                    const nameMatch = name.includes(searchTerm);
+                    const statusMatch = statusValue === 'all' || status === statusValue;
+                    
+                    if (nameMatch && statusMatch) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+            
+            function sortCategories() {
+                const sortValue = sortBy.value;
+                const tbody = document.querySelector('table tbody');
+                const rows = Array.from(tbody.querySelectorAll('.category-row'));
+                
+                rows.sort((a, b) => {
+                    let aValue, bValue;
+                    
+                    switch(sortValue) {
+                        case 'name':
+                            aValue = a.querySelector('td:nth-child(2)').textContent.trim().toLowerCase();
+                            bValue = b.querySelector('td:nth-child(2)').textContent.trim().toLowerCase();
+                            return aValue.localeCompare(bValue);
+                        
+                        case 'sales':
+                            aValue = parseInt(a.querySelector('td:nth-child(4)').textContent.trim());
+                            bValue = parseInt(b.querySelector('td:nth-child(4)').textContent.trim());
+                            return bValue - aValue; // Descending order for sales
+                        
+                        case 'stock':
+                            aValue = parseInt(a.querySelector('td:nth-child(5)').textContent.trim());
+                            bValue = parseInt(b.querySelector('td:nth-child(5)').textContent.trim());
+                            return bValue - aValue; // Descending order for stock
+                        
+                        case 'date':
+                            aValue = new Date(a.querySelector('td:nth-child(7)').textContent.trim());
+                            bValue = new Date(b.querySelector('td:nth-child(7)').textContent.trim());
+                            return bValue - aValue; // Newest first
+                    }
+                });
+                
+                // Re-append rows in the new order
+                rows.forEach(row => tbody.appendChild(row));
+            }
+            
+            // Reset form when modal is closed
+            document.getElementById('addCategoryModal').addEventListener('hidden.bs.modal', function () {
+                document.getElementById('addCategoryForm').reset();
+                document.getElementById('formFeedback').style.display = 'none';
+                document.getElementById('categoryName').classList.remove('is-invalid');
+                document.getElementById('categoryDescription').classList.remove('is-invalid');
+                document.getElementById('submitCategory').disabled = false;
+                document.getElementById('submitCategory').innerHTML = 'Add Category';
+            });
+            
+            // Pagination loading animation
+            function showPaginationLoading() {
+                const loadingIndicator = document.getElementById('paginationLoading');
+                loadingIndicator.classList.add('active');
+                
+                // Add loading class to content
+                document.getElementById('categoryTableContainer').classList.add('loading');
+                
+                // Remove loading after animation completes
+                setTimeout(() => {
+                    loadingIndicator.classList.remove('active');
+                    document.getElementById('categoryTableContainer').classList.remove('loading');
+                }, 500);
+            }
+            
+            // Add loading animation when clicking pagination links
+            document.addEventListener('click', function(e) {
+                const paginationLink = e.target.closest('.pagination-link');
+                if (paginationLink && !paginationLink.parentElement.classList.contains('disabled')) {
+                    showPaginationLoading();
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert("Server issue! Please try again.", 'danger');
             });
-        }
-        
-      
-        document.querySelectorAll('.delete-category').forEach(icon => {
-            icon.addEventListener('click', function() {
-                const categoryId = this.getAttribute('data-id');
-                const categoryName = this.getAttribute('data-name');
+            
+            // Change page size
+            window.changePageSize = function(size) {
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('limit', size);
+                currentUrl.searchParams.set('page', '1'); // Reset to first page
                 
-                
-                document.getElementById('confirmTitle').textContent = 'Delete Category';
-                document.getElementById('confirmMessage').textContent = `Are you sure you want to delete the category "${categoryName}"? This action cannot be undone.`;
-                
-              
-                document.getElementById('confirmButton').className = 'btn btn-danger';
-                
-              
-                pendingAction = {
-                    type: 'delete',
-                    id: categoryId
-                };
-                
-               
-                confirmationModal.show();
-            });
-        });
-        
-       
-        function deleteCategory(categoryId) {
-            fetch('/admin/delete-category', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: categoryId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showAlert(data.message, 'success');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1000);
-                } else {
-                    showAlert(data.message, 'danger');
+                showPaginationLoading();
+                window.location.href = currentUrl.toString();
+            };
+            
+            // Add keyboard navigation for pagination
+            document.addEventListener('keydown', function(e) {
+                // Only if not in an input field
+                if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                    if (e.key === 'ArrowLeft') {
+                        // Previous page
+                        const prevLink = document.querySelector('.pagination-item:nth-child(2):not(.disabled) .pagination-link');
+                        if (prevLink) {
+                            showPaginationLoading();
+                            window.location.href = prevLink.getAttribute('href');
+                        }
+                    } else if (e.key === 'ArrowRight') {
+                        // Next page
+                        const nextLink = document.querySelector('.pagination-item:nth-last-child(2):not(.disabled) .pagination-link');
+                        if (nextLink) {
+                            showPaginationLoading();
+                            window.location.href = nextLink.getAttribute('href');
+                        }
+                    }
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showAlert("Server issue! Please try again.", 'danger');
             });
-        }
-        
-        
-        document.getElementById('confirmationModal').addEventListener('hidden.bs.modal', function () {
-            document.getElementById('confirmButton').className = 'btn btn-primary';
+            
+            // Error handling for pagination
+            try {
+                // Check if pagination elements exist
+                const paginationContainer = document.querySelector('.custom-pagination-container');
+                if (paginationContainer) {
+                    console.log('Pagination initialized successfully');
+                }
+            } catch (error) {
+                console.error('Error initializing pagination:', error);
+                // Fallback to simple pagination if there's an error
+                const fallbackPagination = `
+                    <div class="d-flex justify-content-center mt-4">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
+                                    <a class="page-link" href="/admin/categories?page=${currentPage - 1}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item active"><a class="page-link" href="#">${currentPage}</a></li>
+                                <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
+                                    <a class="page-link" href="/admin/categories?page=${currentPage + 1}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                `;
+                
+                // Only append fallback if custom pagination failed
+                if (!document.querySelector('.custom-pagination')) {
+                    document.querySelector('.main-content').insertAdjacentHTML('beforeend', fallbackPagination);
+                }
+            }
         });
     </script>
 </body>

@@ -1,0 +1,209 @@
+<div class="payment-card mt-4">
+  <h4 class="payment-title">Complete Payment</h4>
+  <div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    Your payment for this order was not successful. Please complete the payment to process your order.
+  </div>
+  
+  <div id="paymentAlert"></div>
+  
+  <div class="payment-methods">
+    <div class="payment-option">
+      <input type="radio" name="payment" id="razorpay" value="razorpay" checked>
+      <label for="razorpay"><i class="fas fa-credit-card payment-icon"></i> Pay Online</label>
+    </div>
+    <p class="payment-description">Credit/Debit Card, UPI, Netbanking via Razorpay</p>
+    <div class="razorpay-logos">
+      <img src="/uploads/visaCard.png" alt="Visa">
+      <img src="/uploads/mastercard.jpeg" alt="Mastercard">
+      <img src="/uploads/Rupay-Logo.png" alt="RuPay">
+      <img src="/uploads/upi.jpeg" alt="UPI">
+    </div>
+    
+    <div class="payment-option">
+      <input type="radio" name="payment" id="wallet" value="wallet" 
+        <%= (user.walletBalance < order.total) ? 'disabled' : '' %>>
+      <label for="wallet" <%= (user.walletBalance < order.total) ? 'class="text-muted"' : '' %>>
+        <i class="fas fa-wallet payment-icon"></i> Wallet
+        <span class="wallet-badge <%= (user.walletBalance < order.total) ? 'bg-danger' : 'bg-success' %> text-white">
+          Balance: ₹<%= user.walletBalance ? user.walletBalance.toFixed(2) : '0.00' %>
+        </span>
+      </label>
+    </div>
+    <% if (user.walletBalance < order.total) { %>
+      <p class="payment-description text-danger">
+        Insufficient wallet balance. You need ₹<%= (order.total - user.walletBalance).toFixed(2) %> more.
+        <a href="/wallet" class="text-primary">Add money</a>
+      </p>
+    <% } else { %>
+      <p class="payment-description">Pay using your wallet balance</p>
+    <% } %>
+  </div>
+  
+  <button class="btn btn-primary w-100 mt-3" id="completePaymentBtn" data-order-id="<%= order._id %>">
+    Complete Payment - ₹<%= order.total.toFixed(2) %>
+  </button>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const completePaymentBtn = document.getElementById('completePaymentBtn');
+    const paymentOptions = document.querySelectorAll('input[name="payment"]');
+    
+    function showAlert(type, message) {
+      const alertDiv = document.getElementById('paymentAlert');
+      alertDiv.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      
+      // Auto dismiss after 5 seconds
+      setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) {
+          const bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        }
+      }, 5000);
+    }
+    
+    async function handleWalletPayment(orderId) {
+      try {
+        const response = await fetch('/complete-payment/' + orderId, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            orderId: orderId,
+            paymentMethod: 'wallet'
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          showAlert('success', 'Payment completed successfully');
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        } else {
+          throw new Error(data.message || 'Failed to complete payment');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showAlert('danger', error.message || 'An error occurred while processing your payment');
+        completePaymentBtn.disabled = false;
+        completePaymentBtn.innerHTML = `Complete Payment - ₹<%= order.total.toFixed(2) %>`;
+      }
+    }
+    
+    async function handleRazorpayPayment(orderId) {
+      try {
+        const response = await fetch('/create-razorpay-order-for-failed-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ orderId })
+        });
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.message || 'Failed to create Razorpay order');
+        }
+        
+        const options = {
+          key: data.key,
+          amount: data.order.amount,
+          currency: data.order.currency,
+          name: 'Elite Wear',
+          description: 'Complete payment for order #<%= order.orderNumber %>',
+          image: '/Uploads/ChatGPT Image Apr 13, 2025, 06_50_48 PM.png',
+          order_id: data.order.id,
+          prefill: {
+            name: data.user.name,
+            email: data.user.email,
+            contact: data.user.mobile || ''
+          },
+          theme: {
+            color: '#333333'
+          },
+          modal: {
+            ondismiss: function() {
+              completePaymentBtn.disabled = false;
+              completePaymentBtn.innerHTML = `Complete Payment - ₹<%= order.total.toFixed(2) %>`;
+            }
+          },
+          handler: async function(response) {
+            try {
+              const verifyResponse = await fetch('/verify-payment-for-failed-order', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_signature: response.razorpay_signature,
+                  orderId: orderId
+                })
+              });
+              
+              const verifyData = await verifyResponse.json();
+              
+              if (verifyData.success) {
+                showAlert('success', 'Payment completed successfully');
+                setTimeout(() => {
+                  window.location.href = verifyData.redirect || window.location.href;
+                }, 2000);
+              } else {
+                throw new Error(verifyData.message || 'Payment verification failed');
+              }
+            } catch (error) {
+              console.error('Verification error:', error);
+              showAlert('danger', error.message || 'Payment verification failed');
+              completePaymentBtn.disabled = false;
+              completePaymentBtn.innerHTML = `Complete Payment - ₹<%= order.total.toFixed(2) %>`;
+            }
+          }
+        };
+        
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function(response) {
+          console.error('Payment failed:', response.error);
+          showAlert('danger', response.error.description || 'Payment failed. Please try again.');
+          completePaymentBtn.disabled = false;
+          completePaymentBtn.innerHTML = `Complete Payment - ₹<%= order.total.toFixed(2) %>`;
+        });
+        
+        rzp.open();
+      } catch (error) {
+        console.error('Error:', error);
+        showAlert('danger', error.message || 'An error occurred while processing your payment');
+        completePaymentBtn.disabled = false;
+        completePaymentBtn.innerHTML = `Complete Payment - ₹<%= order.total.toFixed(2) %>`;
+      }
+    }
+    
+    if (completePaymentBtn) {
+      completePaymentBtn.addEventListener('click', function() {
+        const orderId = this.getAttribute('data-order-id');
+        const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked').value;
+        
+        completePaymentBtn.disabled = true;
+        completePaymentBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+        
+        if (selectedPaymentMethod === 'wallet') {
+          handleWalletPayment(orderId);
+        } else if (selectedPaymentMethod === 'razorpay') {
+          handleRazorpayPayment(orderId);
+        }
+      });
+    }
+  });
+</script>

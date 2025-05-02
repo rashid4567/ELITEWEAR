@@ -6,8 +6,424 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ELITE WEAR - Premium Men's Shirts</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<<<<<<< Updated upstream
     <link rel="stylesheet" href="/userStyle/home.css">
     
+=======
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+    /* Elite Wear - Premium Header Styles */
+
+    :root {
+        --primary-color: #000;
+        --secondary-color: #fff;
+        --accent-color: #ff4757;
+        --gray-light: #f8f9fa;
+        --gray-medium: #e9ecef;
+        --gray-dark: #6c757d;
+        --border-color: #dee2e6;
+        --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s ease;
+        --font-primary: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+          "Open Sans", "Helvetica Neue", sans-serif;
+        --header-height: 70px; /* Define header height variable */
+    }
+      
+    /* Header Styles */
+    header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1050; /* Higher than sidebar */
+        background-color: transparent;
+        transition: var(--transition);
+        padding: 12px 0;
+        height: var(--header-height);
+    }
+      
+    /* Add margin to body to prevent content from being hidden under header */
+    body {
+        padding-top: var(--header-height);
+        margin: 0;
+    }
+      
+    /* Header states */
+    header.transparent {
+        background-color: transparent;
+    }
+      
+    header.dark {
+        background-color: var(--primary-color);
+    }
+      
+    header.light {
+        background-color: var(--secondary-color);
+        box-shadow: var(--box-shadow);
+    }
+      
+    header.scrolled {
+        padding: 8px 0; /* Reduced padding when scrolled */
+    }
+      
+    .nav-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        height: 100%;
+    }
+      
+    .logo {
+        font-family: var(--font-primary);
+        font-size: 1.8rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        transition: var(--transition);
+    }
+      
+    /* Logo color based on header state */
+    header.transparent .logo,
+    header.dark .logo {
+        color: var(--secondary-color);
+    }
+      
+    header.light .logo {
+        color: var(--primary-color);
+    }
+      
+    .menu-toggle {
+        display: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+      
+    /* Menu toggle color based on header state */
+    header.transparent .menu-toggle,
+    header.dark .menu-toggle {
+        color: var(--secondary-color);
+    }
+      
+    header.light .menu-toggle {
+        color: var(--primary-color);
+    }
+      
+    .nav-menu {
+        display: flex;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+      
+    .nav-item {
+        margin: 0 15px;
+    }
+      
+    .nav-link {
+        font-family: var(--font-primary);
+        font-size: 1rem;
+        font-weight: 500;
+        text-decoration: none !important; /* Remove underline */
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 5px 0;
+        position: relative;
+        transition: var(--transition);
+    }
+      
+    /* Nav link color based on header state */
+    header.transparent .nav-link,
+    header.dark .nav-link {
+        color: var(--secondary-color);
+    }
+      
+    header.light .nav-link {
+        color: var(--primary-color);
+    }
+      
+    /* Remove underline effect completely */
+    .nav-link::after {
+        display: none !important; /* Remove the underline effect */
+    }
+      
+    .nav-link:hover {
+        color: var(--accent-color);
+    }
+      
+    /* Auth Buttons */
+    .auth-buttons {
+        display: flex;
+        align-items: center;
+    }
+      
+    .auth-button {
+        font-family: var(--font-primary);
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none !important; /* Remove underline */
+        padding: 8px 16px;
+        border-radius: 4px;
+        transition: var(--transition);
+        margin-left: 10px;
+    }
+      
+    /* Login button color based on header state */
+    header.transparent .login-button,
+    header.dark .login-button {
+        color: var(--secondary-color);
+        border: 1px solid var(--secondary-color);
+    }
+      
+    header.light .login-button {
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+    }
+      
+    header.transparent .login-button:hover,
+    header.dark .login-button:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: translateY(-2px);
+    }
+      
+    header.light .login-button:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
+    }
+      
+    .signup-button {
+        background-color: var(--primary-color); /* Changed to black */
+        color: var(--secondary-color);
+        border: 1px solid var(--primary-color);
+    }
+      
+    .signup-button:hover {
+        background-color: #333; /* Darker black on hover */
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+      
+    /* Nav Buttons (for logged in users) */
+    .nav-buttons {
+        display: flex;
+        align-items: center;
+    }
+      
+    .nav-buttons .nav-link {
+        font-size: 1.2rem;
+        margin-left: 15px;
+        padding: 5px;
+        text-decoration: none !important; /* Ensure no underline */
+    }
+      
+    .nav-buttons .nav-link:hover {
+        color: var(--accent-color);
+        transform: translateY(-2px);
+    }
+      
+    /* Profile Dropdown */
+    .dropdown {
+        position: relative;
+    }
+      
+    .dropdown-content {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background-color: var(--secondary-color);
+        min-width: 180px;
+        box-shadow: var(--box-shadow);
+        border-radius: 4px;
+        padding: 10px 0;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px);
+        transition: var(--transition);
+    }
+      
+    .dropdown-content.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+      
+    .dropdown-content a {
+        display: block;
+        padding: 10px 20px;
+        color: var(--primary-color);
+        text-decoration: none !important; /* Remove underline */
+        font-family: var(--font-primary);
+        font-size: 0.9rem;
+        transition: var(--transition);
+    }
+      
+    .dropdown-content a:hover {
+        background-color: var(--gray-light);
+        color: var(--accent-color);
+    }
+      
+    .dropdown-content a i {
+        margin-right: 10px;
+        width: 16px;
+        text-align: center;
+    }
+      
+    /* Responsive Styles */
+    @media (max-width: 991px) {
+        .nav-menu {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100vh;
+            background-color: var(--secondary-color);
+            flex-direction: column;
+            padding: 80px 20px 20px;
+            transition: 0.4s;
+            box-shadow: var(--box-shadow);
+            z-index: 1001;
+        }
+      
+        .nav-menu.active {
+            left: 0;
+        }
+      
+        .nav-item {
+            margin: 15px 0;
+        }
+      
+        .nav-menu .nav-link {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+      
+        .menu-toggle {
+            display: block;
+            z-index: 1002;
+        }
+      
+        .menu-toggle.active {
+            color: var(--primary-color);
+        }
+      
+        .auth-buttons {
+            margin-left: auto;
+        }
+      
+        .auth-button {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+    }
+      
+    @media (max-width: 768px) {
+        :root {
+            --header-height: 60px; /* Smaller header on mobile */
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+        }
+    }
+      
+    @media (max-width: 576px) {
+        .logo {
+            font-size: 1.3rem;
+        }
+      
+        .auth-button {
+            padding: 5px 10px;
+            font-size: 0.75rem;
+        }
+      
+        .nav-buttons .nav-link {
+            font-size: 1rem;
+            margin-left: 10px;
+        }
+    }
+      
+    /* Animation for menu toggle */
+    @keyframes menuFade {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+      
+    .nav-menu.active .nav-item {
+        animation: menuFade 0.4s ease forwards;
+        opacity: 0;
+    }
+      
+    .nav-menu.active .nav-item:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+      
+    .nav-menu.active .nav-item:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+      
+    .nav-menu.active .nav-item:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+      
+    .nav-menu.active .nav-item:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+      
+    /* Overlay for mobile menu */
+    .menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: var(--transition);
+    }
+      
+    .menu-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Fix for links */
+    a {
+        text-decoration: none !important;
+        color: inherit;
+    }
+    
+    /* Active nav item */
+    .nav-item.active .nav-link {
+        color: var(--accent-color);
+        font-weight: 600;
+    }
+    
+    /* Black button styles */
+    .auth-button.signup-button {
+        background-color: #000;
+        color: #fff;
+        border-color: #000;
+    }
+    
+    .auth-button.signup-button:hover {
+        background-color: #333;
+        border-color: #333;
+    }
+    </style>
+>>>>>>> Stashed changes
 </head>
 
 <body>
@@ -72,6 +488,7 @@
                     clearButton.style.display = this.value ? 'block' : 'none';
                 });
 
+<<<<<<< Updated upstream
                 clearButton.addEventListener('click', function () {
                     searchInput.value = '';
                     clearButton.style.display = 'none';
@@ -81,6 +498,227 @@
                 clearButton.style.display = searchInput.value ? 'block' : 'none';
             }
         });
+=======
+    if (isAtTop) {
+      // At the top of the page - use transparent with text color based on background
+      header.classList.add("transparent")
+
+      // If the background is light, add the light class for dark text
+      if (isLightColor(bgColor)) {
+        header.classList.add("light")
+      } else {
+        header.classList.add("dark")
+      }
+    } else {
+      // Scrolled down - use solid background
+      header.classList.add("scrolled")
+      header.classList.add("light") // Default to light background with dark text
+    }
+  }
+
+  // Function to determine if a color is light or dark
+  function isLightColor(color) {
+    // Default to dark if we can't determine
+    if (!color) return false
+
+    // Extract RGB components
+    let r, g, b
+
+    if (color.startsWith("rgb")) {
+      // Handle rgb() format
+      const match = color.match(/rgba?$$(\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?$$/)
+      if (match) {
+        r = Number.parseInt(match[1])
+        g = Number.parseInt(match[2])
+        b = Number.parseInt(match[3])
+      }
+    } else if (color.startsWith("#")) {
+      // Handle hex format
+      const hex = color.replace("#", "")
+      r = Number.parseInt(hex.substr(0, 2), 16)
+      g = Number.parseInt(hex.substr(2, 2), 16)
+      b = Number.parseInt(hex.substr(4, 2), 16)
+    }
+
+    // Calculate perceived brightness using the formula
+    // (299*R + 587*G + 114*B) / 1000
+    // Values > 125 are considered light
+    if (r !== undefined && g !== undefined && b !== undefined) {
+      const brightness = (299 * r + 587 * g + 114 * b) / 1000
+      return brightness > 125
+    }
+
+    return false
+  }
+
+  // Function to get the background color behind the header
+  function getBackgroundColorBehindHeader() {
+    // Check if there's a data attribute specifying the background type
+    const bgType = document.body.getAttribute("data-header-bg") || "dark"
+
+    if (bgType === "light") {
+      return "#ffffff"
+    } else {
+      return "#000000"
+    }
+  }
+
+  // Listen for scroll events
+  window.addEventListener("scroll", updateHeaderState)
+
+  // Mobile menu toggle
+  const menuToggle = document.querySelector(".menu-toggle")
+  const navMenu = document.querySelector(".nav-menu")
+
+  if (menuToggle && navMenu) {
+    // Create overlay element if it doesn't exist
+    let overlay = document.querySelector(".menu-overlay")
+    if (!overlay) {
+      overlay = document.createElement("div")
+      overlay.className = "menu-overlay"
+      document.body.appendChild(overlay)
+    }
+
+    menuToggle.addEventListener("click", () => {
+      navMenu.classList.toggle("active")
+      menuToggle.classList.toggle("active")
+      overlay.classList.toggle("active")
+
+      // Toggle body scroll
+      if (navMenu.classList.contains("active")) {
+        document.body.style.overflow = "hidden"
+      } else {
+        document.body.style.overflow = ""
+      }
+
+      // Toggle menu icon
+      if (navMenu.classList.contains("active")) {
+        menuToggle.innerHTML = '<i class="fas fa-times"></i>'
+      } else {
+        menuToggle.innerHTML = '<i class="fas fa-bars"></i>'
+      }
+    })
+
+    // Close menu when clicking on overlay
+    overlay.addEventListener("click", () => {
+      navMenu.classList.remove("active")
+      menuToggle.classList.remove("active")
+      overlay.classList.remove("active")
+      document.body.style.overflow = ""
+      menuToggle.innerHTML = '<i class="fas fa-bars"></i>'
+    })
+  }
+
+  // Set active state for nav items
+  const navLinks = document.querySelectorAll('.nav-link')
+  const currentPath = window.location.pathname
+  
+  navLinks.forEach(link => {
+    const href = link.getAttribute('href')
+    if (href === currentPath || (href !== '/' && currentPath.includes(href))) {
+      link.parentElement.classList.add('active')
+    }
+    
+    // Add click handler to set active state with single click
+    link.addEventListener('click', function() {
+      // Remove active class from all nav items
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active')
+      })
+      
+      // Add active class to clicked nav item
+      this.parentElement.classList.add('active')
+    })
+  })
+
+  // Profile dropdown functionality
+  const profileIcon = document.querySelector(".nav-buttons .fa-user-circle, .nav-buttons .fa-user")
+
+  if (profileIcon) {
+    // Find the parent anchor element
+    const profileLink = profileIcon.closest("a")
+
+    if (profileLink) {
+      // Find the parent container (likely a div with class nav-buttons)
+      const parentContainer = profileLink.parentElement
+
+      if (parentContainer) {
+        // Check if dropdown already exists
+        let dropdownContent = parentContainer.querySelector(".dropdown-content")
+
+        // Create dropdown if it doesn't exist
+        if (!dropdownContent) {
+          // Add dropdown class to parent
+          parentContainer.classList.add("dropdown")
+
+          // Create dropdown content
+          dropdownContent = document.createElement("div")
+          dropdownContent.className = "dropdown-content"
+          dropdownContent.innerHTML = `
+            <a href="/LoadProfile"><i class="fas fa-user"></i> My Profile</a>
+            <a href="/orders"><i class="fas fa-shopping-bag"></i> My Orders</a>
+            <a href="/address"><i class="fas fa-map-marker-alt"></i> My Addresses</a>
+            <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+          `
+
+          // Append dropdown to parent
+          parentContainer.appendChild(dropdownContent)
+        }
+
+        // Toggle dropdown on click
+        profileLink.addEventListener("click", (e) => {
+          e.preventDefault()
+          e.stopPropagation() // Prevent event from bubbling up
+          dropdownContent.classList.toggle("show")
+        })
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", (e) => {
+          // Check if click is outside dropdown and profile icon
+          if (!dropdownContent.contains(e.target) && !profileLink.contains(e.target)) {
+            dropdownContent.classList.remove("show")
+          }
+        })
+      }
+    }
+  }
+
+  // Close dropdowns when pressing escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      // Close mobile menu if open
+      if (navMenu && navMenu.classList.contains("active")) {
+        navMenu.classList.remove("active")
+        if (menuToggle) {
+          menuToggle.classList.remove("active")
+          menuToggle.innerHTML = '<i class="fas fa-bars"></i>'
+        }
+        const overlay = document.querySelector(".menu-overlay")
+        if (overlay) overlay.classList.remove("active")
+        document.body.style.overflow = ""
+      }
+
+      // Close any open dropdowns
+      const openDropdowns = document.querySelectorAll(".dropdown-content.show")
+      openDropdowns.forEach((dropdown) => {
+        dropdown.classList.remove("show")
+      })
+    }
+  })
+
+  // Add accessibility support for dropdowns
+  const dropdownLinks = document.querySelectorAll(".dropdown > a")
+  dropdownLinks.forEach((link) => {
+    link.setAttribute("aria-haspopup", "true")
+    link.setAttribute("aria-expanded", "false")
+
+    link.addEventListener("click", () => {
+      const expanded = link.getAttribute("aria-expanded") === "true"
+      link.setAttribute("aria-expanded", !expanded)
+    })
+  })
+})
+>>>>>>> Stashed changes
     </script>
 </body>
 

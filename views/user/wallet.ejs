@@ -15,6 +15,135 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/userStyle/wallet.css" />
+<<<<<<< Updated upstream
+=======
+    <link rel="stylesheet" href="/userStyle/header.css">
+    <link rel="stylesheet" href="/userStyle/footer.css">
+    <style>
+      /* Pagination Styles */
+      .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin: 25px 0;
+      }
+      
+      .pagination {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      
+      .pagination li {
+        margin: 0;
+      }
+      
+      .pagination li a,
+      .pagination li span {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        height: 40px;
+        padding: 0 12px;
+        color: #333;
+        text-decoration: none;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        margin-left: -1px;
+        transition: all 0.2s ease;
+      }
+      
+      .pagination li:first-child a,
+      .pagination li:first-child span {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+        margin-left: 0;
+      }
+      
+      .pagination li:last-child a,
+      .pagination li:last-child span {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+      }
+      
+      .pagination li.active a,
+      .pagination li.active span {
+        background-color: #2c3e50;
+        color: #fff;
+        border-color: #2c3e50;
+        font-weight: 600;
+        z-index: 3;
+      }
+      
+      .pagination li a:hover {
+        background-color: #f5f5f5;
+        z-index: 2;
+      }
+      
+      .pagination li.disabled span {
+        color: #aaa;
+        cursor: not-allowed;
+        background-color: #f8f8f8;
+      }
+      
+      .pagination-info {
+        text-align: center;
+        color: #666;
+        font-size: 0.9rem;
+        margin-top: 10px;
+      }
+      
+      /* Responsive pagination */
+      @media (max-width: 576px) {
+        .pagination li.page-number:not(.active) {
+          display: none;
+        }
+        
+        .pagination li.page-number.active {
+          display: block;
+        }
+        
+        .pagination li.page-number.active a,
+        .pagination li.page-number.active span {
+          border-radius: 0;
+        }
+        
+        .pagination-info {
+          display: block;
+        }
+      }
+      
+      /* Empty state styling */
+      .empty-transactions {
+        text-align: center;
+        padding: 30px 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      
+      .empty-transactions i {
+        font-size: 48px;
+        color: #ccc;
+        margin-bottom: 15px;
+      }
+      
+      .empty-transactions h4 {
+        color: #555;
+        margin-bottom: 10px;
+      }
+      
+      .empty-transactions p {
+        color: #777;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+    </style>
+>>>>>>> Stashed changes
   </head>
   <body>
     <%- include("../partials/user/header") %> <%-
@@ -26,12 +155,160 @@
           <a href="/profile" class="breadcrumb-item">Profile</a>
           <a href="/wallet" class="breadcrumb-item active">Wallet</a>
         </div>
+<<<<<<< Updated upstream
 
         <div class="wallet-card">
           <h3>My Wallet</h3>
 
           <div class="balance-container">
             <p>Available wallet balance: ₹<%= wallet.amount.toFixed(2) %></p>
+=======
+        
+        <!-- Main Content Column -->
+        <div class="col-lg-9 col-md-8">
+          <div class="wallet-section">
+            <!-- Breadcrumb -->
+            <div class="breadcrumb-container">
+              <a href="/profile">profile</a> 
+              <i class="fas fa-chevron-right small-icon"></i>
+              <a href="/wallet" class="active">wallet</a>
+            </div>
+            
+            <!-- Wallet Card -->
+            <div class="wallet-card">
+              <h2 class="wallet-title">My Wallet</h2>
+              
+              <!-- Balance Container -->
+              <div class="balance-container">
+                <p class="balance-text">Available wallet balance : <span class="balance-amount">₹<%= wallet.amount.toFixed(2) %></span></p>
+              </div>
+              
+              <!-- Transaction History -->
+              <div class="transaction-history">
+                <% if (wallet.transactions && wallet.transactions.length > 0) { %>
+                  <table class="table transaction-table">
+                    <thead>
+                      <tr>
+                        <th>Transaction ID</th>
+                        <th>Transaction Date</th>
+                        <th>Amount</th>
+                        <th>Description</th>
+                        <th>Debit / Credit</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% wallet.transactions.forEach(transaction => { %>
+                        <tr>
+                          <td><%= transaction.transactionRef %></td>
+                          <td><%= transaction.formattedDate %></td>
+                          <td>₹<%= transaction.amount.toFixed(2) %></td>
+                          <td><%= transaction.description %></td>
+                          <td class="<%= transaction.type === 'credit' ? 'amount-credited' : 'amount-debited' %>">
+                            <%= transaction.typeDisplay %>
+                          </td>
+                        </tr>
+                      <% }) %>
+                    </tbody>
+                  </table>
+                  
+                  <!-- Pagination -->
+                  <% if (totalPages > 1) { %>
+                    <div class="pagination-container">
+                      <ul class="pagination">
+                        <!-- Previous Page -->
+                        <li class="<%= currentPage === 1 ? 'disabled' : '' %>">
+                          <% if (currentPage === 1) { %>
+                            <span aria-label="Previous"><i class="fas fa-chevron-left"></i></span>
+                          <% } else { %>
+                            <a href="/wallet?page=<%= currentPage - 1 %>" aria-label="Previous">
+                              <i class="fas fa-chevron-left"></i>
+                            </a>
+                          <% } %>
+                        </li>
+                        
+                        <!-- First Page -->
+                        <% if (currentPage > 3) { %>
+                          <li class="page-number">
+                            <a href="/wallet?page=1">1</a>
+                          </li>
+                          <% if (currentPage > 4) { %>
+                            <li class="disabled">
+                              <span>...</span>
+                            </li>
+                          <% } %>
+                        <% } %>
+                        
+                        <!-- Page Numbers -->
+                        <% 
+                          let startPage = Math.max(1, currentPage - 1);
+                          let endPage = Math.min(totalPages, currentPage + 1);
+                          
+                          // Ensure we always show at least 3 pages if available
+                          if (endPage - startPage + 1 < 3) {
+                            if (currentPage < totalPages) {
+                              endPage = Math.min(totalPages, currentPage + 2);
+                            } else {
+                              startPage = Math.max(1, totalPages - 2);
+                            }
+                          }
+                          
+                          for (let i = startPage; i <= endPage; i++) {
+                        %>
+                          <li class="page-number <%= i === currentPage ? 'active' : '' %>">
+                            <% if (i === currentPage) { %>
+                              <span><%= i %></span>
+                            <% } else { %>
+                              <a href="/wallet?page=<%= i %>"><%= i %></a>
+                            <% } %>
+                          </li>
+                        <% } %>
+                        
+                        <!-- Last Page -->
+                        <% if (currentPage < totalPages - 2) { %>
+                          <% if (currentPage < totalPages - 3) { %>
+                            <li class="disabled">
+                              <span>...</span>
+                            </li>
+                          <% } %>
+                          <li class="page-number">
+                            <a href="/wallet?page=<%= totalPages %>"><%= totalPages %></a>
+                          </li>
+                        <% } %>
+                        
+                        <!-- Next Page -->
+                        <li class="<%= currentPage === totalPages ? 'disabled' : '' %>">
+                          <% if (currentPage === totalPages) { %>
+                            <span aria-label="Next"><i class="fas fa-chevron-right"></i></span>
+                          <% } else { %>
+                            <a href="/wallet?page=<%= currentPage + 1 %>" aria-label="Next">
+                              <i class="fas fa-chevron-right"></i>
+                            </a>
+                          <% } %>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    <div class="pagination-info">
+                      Showing page <%= currentPage %> of <%= totalPages %>
+                    </div>
+                  <% } %>
+                <% } else { %>
+                  <div class="empty-transactions">
+                    <i class="fas fa-wallet"></i>
+                    <h4>No Transactions Yet</h4>
+                    <p>Your transaction history will appear here once you start using your wallet.</p>
+                  </div>
+                <% } %>
+              </div>
+              
+              <!-- Add Money Button -->
+              <div class="text-center mt-4">
+                <button class="btn add-money-btn" data-bs-toggle="modal" data-bs-target="#addMoneyModal">
+                  ADD Money
+                </button>
+              </div>
+            </div>
+>>>>>>> Stashed changes
           </div>
 
           <table class="transaction-table table table-striped">

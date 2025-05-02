@@ -184,9 +184,295 @@ const getUserOrders = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
+<<<<<<< Updated upstream
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = 5;
     const skip = (page - 1) * limit;
+=======
+    const cart = await Cart.findOne({ userId }).populate({
+      path: "items.productId",
+      select: "name images variants",
+    });
+
+    if (!cart || cart.items.length === 0) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Your cart is empty" });
+    }
+
+    for (const item of cart.items) {
+      const variant = item.productId.variants.find((v) => v.size === item.size);
+      if (!variant) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid variant for product ${item.productId.name}`,
+        });
+      }
+      if (variant.varientquatity < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Only ${variant.varientquatity} units of ${item.productId.name} (${item.size}) are available`,
+        });
+      }
+    }
+
+    let totalPrice = 0;
+    for (const item of cart.items) {
+      const variant = item.productId.variants.find((v) => v.size === item.size);
+      totalPrice += variant.salePrice * item.quantity;
+    }
+
+    const deliveryCharge = totalPrice > 8000 ? 0 : 200;
+    let grandTotal = totalPrice + deliveryCharge;
+
+    let discount = 0;
+    let appliedCoupon = null;
+
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ coupencode: couponCode });
+      if (!coupon) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid coupon code" });
+      }
+
+      const now = new Date();
+      if (
+        now < new Date(coupon.startingDate) ||
+        now > new Date(coupon.expiryDate)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "Coupon is not valid at this time",
+        });
+      }
+
+      if (totalPrice < coupon.minimumPurchase) {
+        return res.status(400).json({
+          success: false,
+          message: `Minimum purchase of ₹${coupon.minimumPurchase} required for this coupon`,
+        });
+      }
+
+      const userUsage = coupon.usedBy.find(
+        (usage) => usage.userId.toString() === userId.toString()
+      );
+      if (userUsage && userUsage.usageCount >= coupon.limit) {
+        return res.status(400).json({
+          success: false,
+          message: "You have already used this coupon",
+        });
+      }
+
+      discount = (totalPrice * coupon.couponpercent) / 100;
+      if (discount > coupon.maxDiscount) {
+        discount = coupon.maxDiscount;
+      }
+
+      grandTotal -= discount;
+      appliedCoupon = coupon;
+    }
+
+    const addressId = req.session.checkout?.addressId;
+    if (!addressId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Delivery address not selected" });
+    }
+
+    if (paymentMethod === "Wallet") {
+      if (user.walletBalance === undefined) {
+        user.walletBalance = 0;
+        await user.save();
+      }
+
+      if (user.walletBalance < grandTotal) {
+        return res.status(400).json({
+          success: false,
+          message: "Insufficient wallet balance",
+        });
+      }
+    }
+
+    const orderNumber = generateOrderNumber();
+    const newOrder = new Order({
+      userId: userId,
+      orderNumber,
+      paymentMethod,
+      address: addressId,
+      total: grandTotal,
+      discount: discount,
+      paymentStatus: paymentMethod === "COD" ? "Pending" : "Paid",
+      orderDate: new Date(),
+      status: "Processing",
+      statusHistory: [
+        {
+          status: "Processing",
+          date: new Date(),
+          note: "Order placed successfully",
+        },
+      ],
+    });
+
+    await newOrder.save();
+
+    const orderItems = [];
+    for (const item of cart.items) {
+      const variant = item.productId.variants.find((v) => v.size === item.size);
+      const orderItem = new OrderItem({
+        productId: item.productId._id,
+        orderId: newOrder._id,
+        product_name: item.productId.name,
+        quantity: item.quantity,
+        size: item.size,
+        price: variant.salePrice,
+        total_amount: variant.salePrice * item.quantity,
+        itemImage:
+          item.productId.images && item.productId.images.length > 0
+            ? item.productId.images[0].url
+            : null,
+        status: "Processing",
+        statusHistory: [
+          {
+            status: "Processing",
+            date: new Date(),
+            note: "Order item created",
+          },
+        ],
+      });
+      await orderItem.save();
+      orderItems.push(orderItem._id);
+    }
+
+    newOrder.order_items = orderItems;
+    await newOrder.save();
+
+    for (const item of cart.items) {
+      const product = await Product.findById(item.productId._id);
+      if (product) {
+        const variantIndex = product.variants.findIndex(
+          (v) => v.size === item.size
+        );
+        if (variantIndex !== -1) {
+          product.variants[variantIndex].varientquatity -= item.quantity;
+          await product.save();
+        }
+      }
+    }
+
+    if (appliedCoupon) {
+      const userIndex = appliedCoupon.usedBy.findIndex(
+        (usage) => usage.userId.toString() === userId.toString()
+      );
+      if (userIndex !== -1) {
+        appliedCoupon.usedBy[userIndex].usageCount += 1;
+      } else {
+        appliedCoupon.usedBy.push({ userId, usageCount: 1 });
+      }
+      await appliedCoupon.save();
+    }
+
+    if (paymentMethod === "Wallet") {
+      user.walletBalance -= grandTotal;
+      await user.save();
+
+      let wallet = await Wallet.findOne({ userId });
+      if (!wallet) {
+        wallet = new Wallet({
+          userId,
+          amount: 0,
+          transactions: [],
+        });
+      }
+
+      wallet.transactions.push({
+        amount: grandTotal,
+        type: "debit",
+        description: `Payment for order #${orderNumber}`,
+        transactionRef: generateTransactionId(),
+        date: new Date(),
+      });
+      await wallet.save();
+    }
+
+    await Cart.findOneAndUpdate({ userId }, { $set: { items: [] } });
+
+    delete req.session.checkout;
+
+    req.session.lastOrderId = newOrder._id;
+
+    return res.status(200).json({
+      success: true,
+      message: "Order placed successfully",
+      redirect: "/order-success",
+    });
+  } catch (error) {
+    console.error("Error placing order:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to place order. Please try again.",
+    });
+  }
+};
+
+const loadOrderSuccess = async (req, res) => {
+  try {
+    const userId = req.session.user || req.user._id;
+    const orderId = req.session.lastOrderId;
+
+    if (!orderId) {
+      return res.redirect("/orders");
+    }
+
+    const order = await Order.findById(orderId)
+      .populate("userId") 
+      .populate("address") 
+      .populate({
+        path: "order_items", 
+        populate: {
+          path: "productId", 
+          select: "name", 
+        },
+      });
+
+    if (!order) {
+      return res.redirect("/orders");
+    }
+
+    const user = await User.findById(userId);
+
+    res.render("order-success", {
+      title: "Order Success",
+      user,
+      order,
+      page: "order-success",
+    });
+
+    delete req.session.lastOrderId;
+  } catch (error) {
+    console.error("Error loading order success page:", error);
+    res.redirect("/orders");
+  }
+};
+
+
+const getUserOrders = async (req, res) => {
+  try {
+    const userId = req.session.user || req.user._id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = 3;
+    const skip = (page - 1) * limit;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.redirect("/login");
+    }
+
+   
+    const totalOrders = await Order.countDocuments({ userId });
+    const totalPages = Math.ceil(totalOrders / limit);
+
+>>>>>>> Stashed changes
 
     const orders = await Order.find({ userId })
       .populate({
@@ -202,6 +488,7 @@ const getUserOrders = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
+<<<<<<< Updated upstream
     const totalOrders = await Order.countDocuments({ userId });
     const totalPages = Math.ceil(totalOrders / limit);
 
@@ -224,11 +511,391 @@ const getUserOrders = async (req, res) => {
     }));
 
     res.render("Orders", {
+=======
+    console.log(`Found ${orders.length} orders for user ${userId}`);
+    
+
+    orders.forEach(order => {
+      console.log(`Order ${order._id}: Payment Method: ${order.paymentMethod}, Payment Status: ${order.paymentStatus}, Status: ${order.status}`);
+    });
+
+   
+    const ordersWithProgress = orders.map((order) => {
+ 
+      if (order.paymentMethod === 'Online' && 
+          (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending')) {
+        console.log(`Order ${order._id} has failed/pending payment status`);
+        return { ...order.toObject(), progressWidth: 0 };
+      }
+
+      // Determine progress width based on order status
+      let progressWidth = 0;
+      switch (order.status) {
+        case "Pending":
+          progressWidth = 20;
+          break;
+        case "Processing":
+          progressWidth = 40;
+          break;
+        case "Shipped":
+          progressWidth = 60;
+          break;
+        case "Out for Delivery":
+          progressWidth = 80;
+          break;
+        case "Delivered":
+        case "Returned":
+          progressWidth = 100;
+          break;
+        case "Cancelled":
+        case "Return Rejected":
+          progressWidth = 100;
+          break;
+        case "Return Requested":
+          progressWidth = 70;
+          break;
+        case "Return Approved":
+          progressWidth = 85;
+          break;
+        case "Partially Cancelled":
+        case "Partially Returned":
+        case "Partially Delivered":
+        case "Partially Shipped":
+          progressWidth = 75;
+          break;
+        default:
+          progressWidth = 0;
+      }
+      return { ...order.toObject(), progressWidth };
+    });
+
+    // Render the orders view with necessary data
+    res.render("orders", {
+      title: "My Orders",
+      user,
+>>>>>>> Stashed changes
       orders: ordersWithProgress,
       user,
       currentPage: page,
       totalPages,
+<<<<<<< Updated upstream
       hasOrders: orders.length > 0,
+=======
+      page: "orders",
+    });
+  } catch (error) {
+    console.error("Error getting user orders:", error);
+    res.redirect("/");
+  }
+};
+const getOrderDetails = async (req, res) => {
+  try {
+    const userId = req.session.user || req.user._id;
+    const orderId = req.params.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.redirect("/login");
+    }
+
+    const order = await Order.findOne({
+      _id: orderId,
+      userId,
+    })
+      .populate({
+        path: "order_items",
+        populate: {
+          path: "productId",
+        },
+      })
+      .populate("address");
+
+    if (!order) {
+      return res.redirect("/orders");
+    }
+
+    const orderItems = await OrderItem.find({ orderId: order._id }).populate(
+      "productId"
+    );
+
+    res.render("orderDetails", {
+      title: "Order Details",
+      user,
+      order,
+      orderItems,
+      page: "order-details",
+    });
+  } catch (error) {
+    console.error("Error getting order details:", error);
+    res.redirect("/orders");
+  }
+};
+
+const trackOrder = async (req, res) => {
+  try {
+    const userId = req.session.user || req.user._id;
+    const orderId = req.params.id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.redirect("/login");
+    }
+
+    const order = await Order.findOne({
+      _id: orderId,
+      userId,
+    })
+      .populate({
+        path: "order_items",
+        populate: {
+          path: "productId",
+        },
+      })
+      .populate("address");
+
+    if (!order) {
+      return res.redirect("/orders");
+    }
+
+    let trackingSteps = [];
+    let progressWidth = 0;
+
+    if (order.status === "Cancelled") {
+      trackingSteps = [
+        {
+          status: "Order Placed",
+          date: order.orderDate.toLocaleDateString(),
+          icon: "fa-shopping-bag",
+          active: true,
+        },
+        {
+          status: "Cancelled",
+          date: order.updatedAt.toLocaleDateString(),
+          icon: "fa-times-circle",
+          active: true,
+        },
+      ];
+      progressWidth = 100;
+    } else if (
+      order.status === "Return Requested" ||
+      order.status === "Return Approved" ||
+      order.status === "Returned" ||
+      order.status === "Return Rejected"
+    ) {
+      trackingSteps = [
+        {
+          status: "Order Placed",
+          date: order.orderDate.toLocaleDateString(),
+          icon: "fa-shopping-bag",
+          active: true,
+        },
+        {
+          status: "Processing",
+          date: new Date(
+            order.orderDate.getTime() + 86400000
+          ).toLocaleDateString(),
+          icon: "fa-cog",
+          active: true,
+        },
+        {
+          status: "Shipped",
+          date: new Date(
+            order.orderDate.getTime() + 172800000
+          ).toLocaleDateString(),
+          icon: "fa-truck",
+          active: true,
+        },
+        {
+          status: "Delivered",
+          date: new Date(
+            order.orderDate.getTime() + 432000000
+          ).toLocaleDateString(),
+          icon: "fa-check-circle",
+          active: true,
+        },
+      ];
+
+      if (order.status === "Return Requested") {
+        trackingSteps.push({
+          status: "Return Requested",
+          date: order.updatedAt.toLocaleDateString(),
+          icon: "fa-undo-alt",
+          active: true,
+        });
+        progressWidth = 70;
+      } else if (order.status === "Return Approved") {
+        trackingSteps.push({
+          status: "Return Requested",
+          date: new Date(
+            order.updatedAt.getTime() - 86400000
+          ).toLocaleDateString(),
+          icon: "fa-undo-alt",
+          active: true,
+        });
+        trackingSteps.push({
+          status: "Return Approved",
+          date: order.updatedAt.toLocaleDateString(),
+          icon: "fa-check",
+          active: true,
+        });
+        progressWidth = 85;
+      } else if (order.status === "Returned") {
+        trackingSteps.push({
+          status: "Return Requested",
+          date: new Date(
+            order.updatedAt.getTime() - 172800000
+          ).toLocaleDateString(),
+          icon: "fa-undo-alt",
+          active: true,
+        });
+        trackingSteps.push({
+          status: "Return Approved",
+          date: new Date(
+            order.updatedAt.getTime() - 86400000
+          ).toLocaleDateString(),
+          icon: "fa-check",
+          active: true,
+        });
+        trackingSteps.push({
+          status: "Returned",
+          date: order.updatedAt.toLocaleDateString(),
+          icon: "fa-box",
+          active: true,
+        });
+        progressWidth = 100;
+      } else if (order.status === "Return Rejected") {
+        trackingSteps.push({
+          status: "Return Requested",
+          date: new Date(
+            order.updatedAt.getTime() - 86400000
+          ).toLocaleDateString(),
+          icon: "fa-undo-alt",
+          active: true,
+        });
+        trackingSteps.push({
+          status: "Return Rejected",
+          date: order.updatedAt.toLocaleDateString(),
+          icon: "fa-times-circle",
+          active: true,
+        });
+        progressWidth = 100;
+      }
+    } else if (
+      order.status === "Partially Cancelled" ||
+      order.status === "Partially Returned" ||
+      order.status === "Partially Delivered" ||
+      order.status === "Partially Shipped"
+    ) {
+      trackingSteps = [
+        {
+          status: "Order Placed",
+          date: order.orderDate.toLocaleDateString(),
+          icon: "fa-shopping-bag",
+          active: true,
+        },
+        {
+          status: "Processing",
+          date: new Date(
+            order.orderDate.getTime() + 86400000
+          ).toLocaleDateString(),
+          icon: "fa-cog",
+          active: true,
+        },
+        {
+          status: order.status,
+          date: order.updatedAt.toLocaleDateString(),
+          icon: "fa-random",
+          active: true,
+          note: "Some items have different statuses. Check order details for more information.",
+        },
+      ];
+      progressWidth = 75;
+    } else {
+      trackingSteps = [
+        {
+          status: "Order Placed",
+          date: order.orderDate.toLocaleDateString(),
+          icon: "fa-shopping-bag",
+          active: true,
+        },
+        {
+          status: "Processing",
+          date:
+            order.status === "Pending"
+              ? "Pending"
+              : new Date(
+                  order.orderDate.getTime() + 86400000
+                ).toLocaleDateString(),
+          icon: "fa-cog",
+          active: order.status !== "Pending",
+        },
+        {
+          status: "Shipped",
+          date:
+            order.status === "Pending" || order.status === "Processing"
+              ? "Pending"
+              : new Date(
+                  order.orderDate.getTime() + 172800000
+                ).toLocaleDateString(),
+          icon: "fa-truck",
+          active: order.status !== "Pending" && order.status !== "Processing",
+        },
+        {
+          status: "Out for Delivery",
+          date:
+            order.status === "Pending" ||
+            order.status === "Processing" ||
+            order.status === "Shipped"
+              ? "Pending"
+              : new Date(
+                  order.orderDate.getTime() + 345600000
+                ).toLocaleDateString(),
+          icon: "fa-truck-loading",
+          active:
+            order.status === "Out for Delivery" || order.status === "Delivered",
+        },
+        {
+          status: "Delivered",
+          date:
+            order.status === "Delivered"
+              ? new Date(
+                  order.orderDate.getTime() + 432000000
+                ).toLocaleDateString()
+              : "Pending",
+          icon: "fa-check-circle",
+          active: order.status === "Delivered",
+        },
+      ];
+
+      switch (order.status) {
+        case "Pending":
+          progressWidth = 20;
+          break;
+        case "Processing":
+          progressWidth = 40;
+          break;
+        case "Shipped":
+          progressWidth = 60;
+          break;
+        case "Out for Delivery":
+          progressWidth = 80;
+          break;
+        case "Delivered":
+          progressWidth = 100;
+          break;
+        default:
+          progressWidth = 0;
+      }
+    }
+
+    res.render("orderTracking", {
+      title: "Track Order",
+      user,
+      order,
+      trackingSteps,
+      progressWidth,
+      page: "order-tracking",
+>>>>>>> Stashed changes
     });
   } catch (error) {
     console.error("getUserOrders Error:", error.message);

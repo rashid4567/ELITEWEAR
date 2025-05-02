@@ -6,6 +6,428 @@
     <title>Edit Category</title>
     <link rel="stylesheet" href="/adminStyle/editCategory.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<<<<<<< Updated upstream
+=======
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --success: #10b981;
+            --success-hover: #059669;
+            --warning: #f59e0b;
+            --warning-hover: #d97706;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --radius: 0.375rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .main-content {
+            padding: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background-color: var(--bg-primary);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .form-group-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .input-error {
+            border: 1px solid #e74c3c !important;
+            background-color: #ffeaea !important;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .cancel {
+            background-color: #f3f4f6;
+            color: var(--text-primary);
+        }
+
+        .cancel:hover {
+            background-color: #e5e7eb;
+        }
+
+        .update {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .update:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .image-upload {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .image-upload:hover {
+            border-color: var(--primary);
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+
+        .image-upload .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .image-upload p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .image-upload button {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .image-upload button:hover {
+            background-color: var(--bg-primary);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .image-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .image-preview.visible {
+            display: block;
+        }
+
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon input {
+            padding-left: 2.5rem;
+        }
+
+        .input-with-icon .icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .input-with-icon.offer-input::before {
+            content: "%";
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .input-with-icon.price-input::before {
+            content: "₹";
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .input-with-icon.price-input input {
+            padding-left: 2rem;
+        }
+
+        .form-info {
+            background-color: rgba(79, 70, 229, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+
+        .form-info p {
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        /* Loading indicator */
+        .loading {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 0.5rem;
+            color: var(--text-secondary);
+            cursor: help;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 0.5rem;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.75rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .form-group-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+
+        /* Info box for category offer explanation */
+        .info-box {
+            background-color: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #3498db;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+
+        .info-box i {
+            color: #3498db;
+            margin-right: 8px;
+        }
+
+        .info-box strong {
+            color: #2c3e50;
+        }
+
+        /* Tooltip styles */
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            cursor: help;
+        }
+
+        .tooltip-icon {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Loading spinner */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+    </style>
+>>>>>>> Stashed changes
 </head>
 <body>
 
@@ -20,20 +442,50 @@
             <div class="container">
                 <h2>EDIT CATEGORY</h2>
                 
-                <div class="image-upload">
+                <div class="info-box">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Offer System:</strong> Category offers apply to all products in this category. If a product has both a product offer and a category offer, the <strong>higher discount</strong> will be applied.
+                </div>
+                
+                <div class="image-upload" id="imageUploadArea">
                     <div class="icon">📷</div>
-                    <p>Drag and drop image here, or click add image</p>
-                    <button type="button">Add Image</button>
+                    <img id="categoryImagePreview" class="image-preview" src="<%= category.image || '' %>" alt="Category Image">
+                    <p>Drag and drop image here, or click to select</p>
+                    <input type="file" id="categoryImage" name="categoryImage" accept="image/*" style="display: none;">
+                    <button type="button" id="selectImageBtn">Select Image</button>
                 </div>
 
                 <div class="form-group-row">
                     <div class="form-group">
+<<<<<<< Updated upstream
                         <label>Category Offer:</label>
                         <input type="text" name="offer" value="<%= category.offer %>">
                     </div>
                     <div class="form-group">
                         <label>Max Redeemable:</label>
                         <input type="text" >
+=======
+                        <label>
+                            Category Offer (%)
+                            <span class="tooltip-container">
+                                <i class="fas fa-question-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Discount percentage applied to all products in this category. If a product has its own offer, the higher discount will be applied.</span>
+                            </span>
+                        </label>
+                        <input type="number" name="offer" id="categoryOffer" value="<%= category.offer %>" min="0" max="100" step="0.01">
+                        <span class="error-message" id="offerError"></span>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            Max Redeemable (₹)
+                            <span class="tooltip-container">
+                                <i class="fas fa-question-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Maximum discount amount that can be applied, regardless of the percentage.</span>
+                            </span>
+                        </label>
+                        <input type="number" name="maxRedeemable" id="maxRedeemable" value="<%= category.maxRedeemable || 0 %>" min="0" step="0.01">
+                        <span class="error-message" id="maxRedeemableError"></span>
+>>>>>>> Stashed changes
                     </div>
                 </div>
 
@@ -46,6 +498,12 @@
                     <label>Description</label>
                     <textarea name="description" placeholder="Type category description here..." required><%= category.description %></textarea>
                 </div>
+                
+                <div class="form-group">
+                    <label>Stock</label>
+                    <input type="number" name="stock" id="categoryStock" placeholder="Enter stock quantity" value="<%= category.stock %>" min="0" required>
+                    <span class="error-message" id="stockError"></span>
+                </div>
 
                 <div class="buttons">
                     <button type="button" class="cancel" onclick="window.location.href='/admin/categories'">CANCEL</button>
@@ -56,6 +514,7 @@
     </div>
 
     <script>
+<<<<<<< Updated upstream
         function confirmUpdate(event) {
             event.preventDefault(); 
 
@@ -74,6 +533,342 @@
                 }
             });
         }
+=======
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('editCategoryForm');
+            const categoryOffer = document.getElementById('categoryOffer');
+            const maxRedeemable = document.getElementById('maxRedeemable');
+            const categoryName = document.getElementById('categoryName');
+            const categoryDescription = document.getElementById('categoryDescription');
+            const categoryStock = document.getElementById('categoryStock');
+            const updateButton = document.getElementById('updateButton');
+            const imageUploadArea = document.getElementById('imageUploadArea');
+            const categoryImage = document.getElementById('categoryImage');
+            const selectImageBtn = document.getElementById('selectImageBtn');
+            const categoryImagePreview = document.getElementById('categoryImagePreview');
+            
+            // Show image preview if it exists
+            if (categoryImagePreview.src && !categoryImagePreview.src.endsWith('null') && !categoryImagePreview.src.endsWith('undefined')) {
+                categoryImagePreview.classList.add('visible');
+            }
+            
+            // Error message elements
+            const offerError = document.getElementById('offerError');
+            const maxRedeemableError = document.getElementById('maxRedeemableError');
+            const nameError = document.getElementById('nameError');
+            const descriptionError = document.getElementById('descriptionError');
+            const stockError = document.getElementById('stockError');
+            
+            // Image upload handling
+            selectImageBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                categoryImage.click();
+            });
+            
+            imageUploadArea.addEventListener('click', function(e) {
+                if (e.target === imageUploadArea || e.target.tagName !== 'BUTTON') {
+                    categoryImage.click();
+                }
+            });
+            
+            imageUploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                imageUploadArea.style.borderColor = 'var(--primary)';
+                imageUploadArea.style.backgroundColor = 'rgba(79, 70, 229, 0.05)';
+            });
+            
+            imageUploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                imageUploadArea.style.borderColor = 'var(--border)';
+                imageUploadArea.style.backgroundColor = '';
+            });
+            
+            imageUploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                imageUploadArea.style.borderColor = 'var(--border)';
+                imageUploadArea.style.backgroundColor = '';
+                
+                if (e.dataTransfer.files.length) {
+                    categoryImage.files = e.dataTransfer.files;
+                    handleImagePreview(e.dataTransfer.files[0]);
+                }
+            });
+            
+            categoryImage.addEventListener('change', function() {
+                if (this.files.length) {
+                    handleImagePreview(this.files[0]);
+                }
+            });
+            
+            function handleImagePreview(file) {
+                if (!file.type.match('image.*')) {
+                    showError('Please select an image file');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    categoryImagePreview.src = e.target.result;
+                    categoryImagePreview.classList.add('visible');
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // Add input event listeners for real-time validation
+            categoryOffer.addEventListener('input', validateOffer);
+            maxRedeemable.addEventListener('input', validateMaxRedeemable);
+            categoryName.addEventListener('input', validateName);
+            categoryDescription.addEventListener('input', validateDescription);
+            categoryStock.addEventListener('input', validateStock);
+            
+            // Validate offer percentage
+            function validateOffer() {
+                const offerValue = parseFloat(categoryOffer.value);
+                
+                // Clear previous error
+                offerError.textContent = '';
+                categoryOffer.classList.remove('input-error');
+                
+                // Check if empty
+                if (categoryOffer.value.trim() === '') {
+                    categoryOffer.value = '0';
+                    return true;
+                }
+                
+                // Check if it's a valid number
+                if (isNaN(offerValue)) {
+                    offerError.textContent = 'Please enter a valid number';
+                    categoryOffer.classList.add('input-error');
+                    return false;
+                }
+                
+                // Check range (0-100)
+                if (offerValue < 0 || offerValue > 100) {
+                    offerError.textContent = 'Offer must be between 0 and 100%';
+                    categoryOffer.classList.add('input-error');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Validate max redeemable amount
+            function validateMaxRedeemable() {
+                const maxValue = parseFloat(maxRedeemable.value);
+                
+                // Clear previous error
+                maxRedeemableError.textContent = '';
+                maxRedeemable.classList.remove('input-error');
+                
+                // Check if empty
+                if (maxRedeemable.value.trim() === '') {
+                    maxRedeemable.value = '0';
+                    return true;
+                }
+                
+                // Check if it's a valid number
+                if (isNaN(maxValue)) {
+                    maxRedeemableError.textContent = 'Please enter a valid amount';
+                    maxRedeemable.classList.add('input-error');
+                    return false;
+                }
+                
+                // Check if it's positive
+                if (maxValue < 0) {
+                    maxRedeemableError.textContent = 'Amount cannot be negative';
+                    maxRedeemable.classList.add('input-error');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Validate category name
+            function validateName() {
+                // Clear previous error
+                nameError.textContent = '';
+                categoryName.classList.remove('input-error');
+                
+                // Check if empty
+                if (categoryName.value.trim() === '') {
+                    nameError.textContent = 'Category name is required';
+                    categoryName.classList.add('input-error');
+                    return false;
+                }
+                
+                // Check length
+                if (categoryName.value.trim().length < 2) {
+                    nameError.textContent = 'Category name must be at least 2 characters';
+                    categoryName.classList.add('input-error');
+                    return false;
+                }
+                
+                // Check if it contains only valid characters
+                const nameRegex = /^[a-zA-Z0-9\s&-]+$/;
+                if (!nameRegex.test(categoryName.value.trim())) {
+                    nameError.textContent = 'Category name contains invalid characters';
+                    categoryName.classList.add('input-error');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Validate description
+            function validateDescription() {
+                // Clear previous error
+                descriptionError.textContent = '';
+                categoryDescription.classList.remove('input-error');
+                
+                // Check if empty
+                if (categoryDescription.value.trim() === '') {
+                    descriptionError.textContent = 'Description is required';
+                    categoryDescription.classList.add('input-error');
+                    return false;
+                }
+                
+                // Check length
+                if (categoryDescription.value.trim().length < 10) {
+                    descriptionError.textContent = 'Description must be at least 10 characters';
+                    categoryDescription.classList.add('input-error');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Validate stock
+            function validateStock() {
+                // Clear previous error
+                stockError.textContent = '';
+                categoryStock.classList.remove('input-error');
+                
+                // Check if empty
+                if (categoryStock.value.trim() === '') {
+                    stockError.textContent = 'Stock quantity is required';
+                    categoryStock.classList.add('input-error');
+                    return false;
+                }
+                
+                // Check if it's a valid number
+                const stockValue = parseInt(categoryStock.value);
+                if (isNaN(stockValue)) {
+                    stockError.textContent = 'Please enter a valid number';
+                    categoryStock.classList.add('input-error');
+                    return false;
+                }
+                
+                // Check if it's positive
+                if (stockValue < 0) {
+                    stockError.textContent = 'Stock cannot be negative';
+                    categoryStock.classList.add('input-error');
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Helper function to show error
+            function showError(message) {
+                Swal.fire({
+                    title: 'Error',
+                    text: message,
+                    icon: 'error',
+                    confirmButtonColor: 'var(--primary)'
+                });
+            }
+            
+            // Validate all fields
+            function validateForm() {
+                const isOfferValid = validateOffer();
+                const isMaxRedeemableValid = validateMaxRedeemable();
+                const isNameValid = validateName();
+                const isDescriptionValid = validateDescription();
+                const isStockValid = validateStock();
+                
+                return isOfferValid && isMaxRedeemableValid && isNameValid && isDescriptionValid && isStockValid;
+            }
+            
+            // Handle form submission
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                // Validate all fields
+                if (validateForm()) {
+                    // Show confirmation dialog
+                    Swal.fire({
+                        title: "Are you sure?",
+                        text: "Do you want to update this category? This will affect all products in this category.",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#3085d6",
+                        cancelButtonColor: "#d33",
+                        confirmButtonText: "Yes, update!",
+                        cancelButtonText: "Cancel"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // If offer is empty, set it to 0
+                            if (categoryOffer.value.trim() === '') {
+                                categoryOffer.value = '0';
+                            }
+                            
+                            // If max redeemable is empty, set it to 0
+                            if (maxRedeemable.value.trim() === '') {
+                                maxRedeemable.value = '0';
+                            }
+                            
+                            // Show loading state
+                            const updateBtn = document.getElementById('updateButton');
+                            updateBtn.innerHTML = '<span class="spinner"></span> Updating...';
+                            updateBtn.disabled = true;
+                            
+                            // Submit the form
+                            form.submit();
+                        }
+                    });
+                } else {
+                    // Show error message
+                    Swal.fire({
+                        title: "Validation Error",
+                        text: "Please fix the errors in the form",
+                        icon: "error",
+                        confirmButtonColor: "#3085d6"
+                    });
+                    
+                    // Focus on the first field with an error
+                    if (!validateName()) {
+                        categoryName.focus();
+                    } else if (!validateDescription()) {
+                        categoryDescription.focus();
+                    } else if (!validateStock()) {
+                        categoryStock.focus();
+                    } else if (!validateOffer()) {
+                        categoryOffer.focus();
+                    } else if (!validateMaxRedeemable()) {
+                        maxRedeemable.focus();
+                    }
+                }
+            });
+            
+            // Handle cancel button
+            window.confirmCancel = function() {
+                Swal.fire({
+                    title: "Discard Changes",
+                    text: "Are you sure you want to discard your changes?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#ef4444",
+                    cancelButtonColor: "#6b7280",
+                    confirmButtonText: "Yes, discard",
+                    cancelButtonText: "No, keep editing"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/admin/categories';
+                    }
+                });
+            };
+        });
+>>>>>>> Stashed changes
     </script>
 
 </body>

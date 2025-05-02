@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Referral Code</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/userStyle/header.css">
+    <link rel="stylesheet" href="/userStyle/footer.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+        }
+        .referral-container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            transform: translate(5vw, -104vh);
+
+        }
+        .referral-code {
+            background-color: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin: 20px 0;
+        }
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+        }
+        .stat-box {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            width: 45%;
+        }
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color:rgb(0, 0, 0);
+        }
+        .stat-label {
+            font-size: 16px;
+            color: #6c757d;
+        }
+        .share-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .share-button {
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .how-it-works {
+            margin-top: 40px;
+        }
+        .step {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .step-number {
+            background-color:rgb(1, 7, 14);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        .step-content {
+            flex: 1;
+        }
+        .copy-tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip-text {
+            visibility: hidden;
+            width: 140px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 150%;
+            left: 50%;
+            margin-left: -70px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+    </style>
+</head>
+<body>
+    <%- include("../partials/user/header") %>
+    <%- include("../partials/user/profileSidebar") %>
+
+    <div class="container">
+        <div class="referral-container">
+            <h2 class="text-center mb-4">Your Referral Program</h2>
+            
+            <p class="text-center">Share your unique referral code with friends and earn rewards when they sign up!</p>
+            
+            <div class="referral-code">
+                <%= user.referralCode %>
+                <button class="btn btn-sm btn-outline-secondary ms-2 copy-tooltip" onclick="copyReferralCode()">
+                    <i class="fas fa-copy"></i>
+                    <span class="tooltip-text" id="copyTooltip">Copy to clipboard</span>
+                </button>
+            </div>
+            
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="referralLink" value="<%= referralUrl %>" readonly>
+                <button class="btn btn-outline-secondary" type="button" onclick="copyReferralLink()">
+                    <i class="fas fa-copy"></i> Copy Link
+                </button>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-number"><%= referralStats.totalReferrals %></div>
+                    <div class="stat-label">Total Referrals</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">₹<%= referralStats.totalEarned %></div>
+                    <div class="stat-label">Total Earned</div>
+                </div>
+            </div>
+            
+            <div class="share-buttons">
+                <button class="share-button btn btn-primary" onclick="shareOnWhatsApp()">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </button>
+                <button class="share-button btn btn-info" onclick="shareOnFacebook()">
+                    <i class="fab fa-facebook-f"></i> Facebook
+                </button>
+                <button class="share-button btn btn-danger" onclick="shareOnEmail()">
+                    <i class="fas fa-envelope"></i> Email
+                </button>
+            </div>
+            
+            <div class="how-it-works">
+                <h4>How It Works</h4>
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h5>Share Your Code</h5>
+                        <p>Share your unique referral code with friends and family.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h5>Friend Signs Up</h5>
+                        <p>When your friend creates an account using your referral code, they get ₹100 in their wallet.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h5>You Get Rewarded</h5>
+                        <p>You'll receive ₹200 in your wallet for each successful referral!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include("../partials/user/footer") %>
+
+    <script>
+        function copyReferralCode() {
+            const referralCode = "<%= user.referralCode %>";
+            navigator.clipboard.writeText(referralCode).then(() => {
+                const tooltip = document.getElementById("copyTooltip");
+                tooltip.innerHTML = "Copied!";
+                tooltip.style.visibility = "visible";
+                tooltip.style.opacity = "1";
+                
+                setTimeout(() => {
+                    tooltip.style.visibility = "hidden";
+                    tooltip.style.opacity = "0";
+                    tooltip.innerHTML = "Copy to clipboard";
+                }, 2000);
+            });
+        }
+        
+        function copyReferralLink() {
+            const referralLink = document.getElementById("referralLink").value;
+            navigator.clipboard.writeText(referralLink).then(() => {
+                alert("Referral link copied to clipboard!");
+            });
+        }
+        
+        function shareOnWhatsApp() {
+            const referralLink = document.getElementById("referralLink").value;
+            const message = encodeURIComponent(`Join Elite Wear using my referral code and get ₹100 in your wallet! ${referralLink}`);
+            window.open(`https://wa.me/?text=${message}`, '_blank');
+        }
+        
+        function shareOnFacebook() {
+            const referralLink = document.getElementById("referralLink").value;
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`, '_blank');
+        }
+        
+        function shareOnEmail() {
+            const referralLink = document.getElementById("referralLink").value;
+            const subject = encodeURIComponent("Join Elite Wear with my referral code");
+            const body = encodeURIComponent(`Hey there!\n\nI thought you might like Elite Wear. Sign up using my referral code and get ₹100 in your wallet!\n\n${referralLink}\n\nEnjoy shopping!`);
+            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+        }
+    </script>
+</body>
+</html>
