@@ -2,35 +2,26 @@ const User = require("../model/userSchema");
 
 const UserAuth = async (req, res, next) => {
   try {
-   
-    if (req.user) {
-      if (!req.user.isBlocked) {
-     
-        next();
-      } else {
-       
-        req.session.destroy(() => res.redirect("/login"));
-      }
-    } else if (req.session.user && req.session.user._id) {
-      const user = await User.findById(req.session.user._id);
+  
+    if (req.session.user) {
+      const user = await User.findById(req.session.user);
       if (user && !user.isBlocked) {
-    
-        req.user = user; 
-        next();
-      } else {
-        
-        req.session.destroy(() => res.redirect("/login"));
+        req.user = user;
+        return next();
       }
+     
+      req.session.destroy(() => {
+        return res.redirect("/login?message=User blocked or not found");
+      });
     } else {
-      
-      res.redirect("/login");
+      console.log("No session.user found");
+      return res.redirect("/login?message=Please log in");
     }
   } catch (error) {
-    console.error("UserAuth: Error:", error.message, error.stack);
-    res.redirect("/login");
+    console.error("UserAuth error:", error);
+    return res.redirect("/login?message=Server error");
   }
 };
-
 const adminAuth = (req, res, next) => {
   if (req.session.admin) {
     User.findById(req.session.admin)

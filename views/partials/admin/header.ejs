@@ -17,7 +17,6 @@
                 <i class="fas fa-tachometer-alt"></i>
                 <a href="/admin/" class="menu-link">Dashboard</a>
             </div>
-            
             <div class="menu-item">
                 <i class="fas fa-box"></i>
                 <a href="/admin/productManagment" class="menu-link">Products</a>
@@ -33,7 +32,6 @@
                 <a href="/admin/customers" class="menu-link">Customer</a>
                 <i class="fas fa-chevron-right arrow"></i>
             </div>
-            
             <div class="menu-item">
                 <i class="fas fa-chart-line"></i>
                 <a href="/admin/sales" class="menu-link">Sales</a>
@@ -54,47 +52,38 @@
                 <a href="/admin/getbannerPage" class="menu-link">Banner</a>
                 <i class="fas fa-chevron-right arrow"></i>
             </div>
+            <div class="menu-item">
+                <i class="fas fa-wallet"></i>
+                <a href="/admin/wallet-transactions" class="menu-link">Wallet</a>
+                <i class="fas fa-chevron-right arrow"></i>
+            </div>
         </div>
         <div class="sidebar-footer">
             <button class="btn">Account</button>
             <a href="/admin/logout" class="btn btn-logout">Logout</a>
         </div>
     </aside>
-
-   
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            
             const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
             
-        
             menuItems.forEach(item => {
                 item.addEventListener('click', function() {
                     menuItems.forEach(menuItem => {
                         menuItem.classList.remove('active');
                     });
-                    
-                   
                     this.classList.add('active');
-                    
-                    
-                    const link = this.querySelector('.menu-link');
-                    if (link) {
-                       
-                    }
                 });
             });
             
-          
             const currentPath = window.location.pathname;
             menuItems.forEach(item => {
                 const link = item.querySelector('.menu-link');
                 if (link && link.getAttribute('href') === currentPath) {
-                    
                     menuItems.forEach(menuItem => {
                         menuItem.classList.remove('active');
                     });
-                   
                     item.classList.add('active');
                 }
             });

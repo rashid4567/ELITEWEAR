@@ -3,13 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Elite Wear - Wallet</title>
+    <title>ELITE WEAR - My Wallet</title>
 
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
       rel="stylesheet"
     />
-
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       rel="stylesheet"
@@ -146,14 +145,13 @@
 >>>>>>> Stashed changes
   </head>
   <body>
-    <%- include("../partials/user/header") %> <%-
-    include("../partials/user/profileSidebar") %>
-
-    <div class="container mt-4 fulloption">
-      <div class="wallet-section">
-        <div class="breadcrumb">
-          <a href="/profile" class="breadcrumb-item">Profile</a>
-          <a href="/wallet" class="breadcrumb-item active">Wallet</a>
+    <%- include("../partials/user/header") %>
+    
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Sidebar Column -->
+        <div class="col-lg-3 col-md-4">
+          <%- include("../partials/user/profileSidebar") %>
         </div>
 <<<<<<< Updated upstream
 
@@ -354,25 +352,13 @@
       </div>
     </div>
 
-    <div
-      class="modal fade"
-      id="addMoneyModal"
-      tabindex="-1"
-      aria-labelledby="addMoneyModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog">
+    <!-- Add Money Modal -->
+    <div class="modal fade" id="addMoneyModal" tabindex="-1" aria-labelledby="addMoneyModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="addMoneyModalLabel">
-              Add Money to Wallet
-            </h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+            <h5 class="modal-title" id="addMoneyModalLabel">Add Money to Wallet</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <form id="addMoneyForm">
@@ -398,7 +384,7 @@
                   required
                 />
               </div>
-              <button type="submit" class="btn btn-primary">Add Money</button>
+              <button type="submit" class="btn btn-primary w-100">Add Money</button>
             </form>
           </div>
         </div>

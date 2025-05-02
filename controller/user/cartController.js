@@ -7,52 +7,56 @@ const Category = require("../../model/categoryScheema");
 
 const loadCart = async (req, res) => {
   try {
-    const user = req.user || req.session.user;
-    const userId = user?._id;
-
-    if (!userId) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Please log in to view your cart" });
-    }
-
-    let userCart = await Cart.findOne({ userId })
+    let userCart = await Cart.findOne({ userId: req.user._id })
       .populate({
         path: "items.productId",
-        select: "name images variants.salePrice variants.size variants.varientquatity salePrice isActive categoryId",
+        select:
+          "name images variants.salePrice variants.size variants.varientquatity salePrice isActive categoryId",
       })
       .lean();
 
     if (!userCart || userCart.items.length === 0) {
-      return res.render("cart", { cart: null, subtotal: "0.00", message: "Your cart is empty" });
+      return res.render("cart", {
+        cart: null,
+        subtotal: "0.00",
+        message: "Your cart is empty",
+      });
     }
 
-    // Fetch all categories for products in the cart
-    const productIds = userCart.items.map(item => item.productId?._id).filter(id => id);
-    const products = await Product.find({ _id: { $in: productIds } }).select('categoryId isActive');
-    const categoryIds = [...new Set(products.map(p => p.categoryId))]; // Unique category IDs
-    const categories = await Category.find({ _id: { $in: categoryIds } }).select('_id isListed');
-    const categoryMap = new Map(categories.map(c => [c._id.toString(), c.isListed]));
+    const productIds = userCart.items
+      .map((item) => item.productId?._id)
+      .filter((id) => id);
+    const products = await Product.find({ _id: { $in: productIds } }).select(
+      "categoryId isActive"
+    );
+    const categoryIds = [...new Set(products.map((p) => p.categoryId))];
+    const categories = await Category.find({
+      _id: { $in: categoryIds },
+    }).select("_id isListed");
+    const categoryMap = new Map(
+      categories.map((c) => [c._id.toString(), c.isListed])
+    );
 
     const removedItems = [];
     const initialItemsLength = userCart.items.length;
     userCart.items = userCart.items.filter((item) => {
       if (!item.productId || !item.productId.isActive) {
-        if (item.productId) removedItems.push(item.productId.name || "Unnamed Product");
+        if (item.productId)
+          removedItems.push(item.productId.name || "Unnamed Product");
         return false;
       }
-      // Check if the product's category is listed
+
       const categoryId = item.productId.categoryId?.toString();
       if (!categoryId || categoryMap.get(categoryId) === false) {
-        if (item.productId) removedItems.push(item.productId.name || "Unnamed Product");
+        if (item.productId)
+          removedItems.push(item.productId.name || "Unnamed Product");
         return false;
       }
       return true;
     });
 
-    // Update cart in database if items were removed
     if (userCart.items.length !== initialItemsLength) {
-      const cartUpdate = await Cart.findOne({ userId });
+      const cartUpdate = await Cart.findOne({ userId: req.user._id });
       cartUpdate.items = userCart.items.map((item) => ({
         productId: item.productId._id,
         quantity: item.quantity,
@@ -64,7 +68,9 @@ const loadCart = async (req, res) => {
 
     let message = null;
     if (removedItems.length > 0) {
-      message = `The following items were removed from your cart because they are no longer available or their category is blocked: ${removedItems.join(", ")}.`;
+      message = `The following items were removed from your cart because they are no longer available or their category is blocked: ${removedItems.join(
+        ", "
+      )}.`;
     }
 
     if (userCart.items.length === 0) {
@@ -76,9 +82,12 @@ const loadCart = async (req, res) => {
     }
 
     const subtotal = userCart.items.reduce((total, item) => {
-      const variant = item.productId?.variants && item.size
-        ? item.productId.variants.find((v) => v.size === item.size)
-        : item.productId?.variants && item.productId.variants[0] || { salePrice: item.productId?.salePrice || 0 };
+      const variant =
+        item.productId?.variants && item.size
+          ? item.productId.variants.find((v) => v.size === item.size)
+          : (item.productId?.variants && item.productId.variants[0]) || {
+              salePrice: item.productId?.salePrice || 0,
+            };
       const price = variant.salePrice || item.productId?.salePrice || 0;
       return total + price * item.quantity;
     }, 0);
@@ -97,44 +106,49 @@ const loadCart = async (req, res) => {
 
 const addToCart = async (req, res) => {
   try {
-    const user = req.user || req.session.user;
-    const userId = user?._id;
-    const { productId, quantity = 1, size, color } = req.body;
+    let { productId, quantity = 1, size, color } = req.body;
 
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Please log in to add items to cart",
-      });
-    }
+    size = size === "" || size === undefined ? null : size;
+    color = color === "" || color === undefined ? null : color;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
-      return res.status(400).json({ success: false, message: "Invalid product ID" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid product ID" });
     }
 
     const parsedQuantity = parseInt(quantity);
     if (isNaN(parsedQuantity) || parsedQuantity < 1) {
-      return res.status(400).json({ success: false, message: "Invalid quantity" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid quantity" });
     }
 
     const product = await Product.findById(productId).select(
-      "name variants color stock salePrice matinée isActive categoryId"
+      "name variants color stock salePrice isActive categoryId"
     );
     if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
     }
     if (!product.isActive) {
       return res
         .status(400)
-        .json({ success: false, message: "This product is no longer available" });
+        .json({
+          success: false,
+          message: "This product is no longer available",
+        });
     }
 
-    // Check if category is listed
     const category = await Category.findById(product.categoryId);
     if (!category || !category.isListed) {
       return res
         .status(400)
-        .json({ success: false, message: "This product's category is not available" });
+        .json({
+          success: false,
+          message: "This product's category is not available",
+        });
     }
 
     if (product.stock <= 0) {
@@ -145,7 +159,9 @@ const addToCart = async (req, res) => {
 
     let selectedVariant = null;
     if (size && product.variants?.length > 0) {
-      selectedVariant = product.variants.find((variant) => variant.size === size);
+      selectedVariant = product.variants.find(
+        (variant) => variant.size === size
+      );
       if (!selectedVariant) {
         return res
           .status(400)
@@ -165,45 +181,92 @@ const addToCart = async (req, res) => {
         .json({ success: false, message: "Selected color not available" });
     }
 
-    let userCart = await Cart.findOne({ userId });
+    let userCart = await Cart.findOne({ userId: req.user._id });
     if (!userCart) {
       userCart = new Cart({
-        userId,
-        items: [{ productId, quantity: parsedQuantity, size: size || null, color: color || null }],
+        userId: req.user._id,
+        items: [{ productId, quantity: parsedQuantity, size, color }],
       });
     } else {
+      const uniqueProductIds = new Set(
+        userCart.items.map((item) => item.productId.toString())
+      );
+      const isNewProduct = !uniqueProductIds.has(productId);
+
+      if (isNewProduct && uniqueProductIds.size >= 10) {
+        return res.status(400).json({
+          success: false,
+          message: "Cart cannot contain more than 10 unique products",
+        });
+      }
+
       const itemIndex = userCart.items.findIndex(
         (item) =>
           item.productId.toString() === productId &&
-          item.size === (size || null) &&
-          item.color === (color || null)
+          item.size === size &&
+          item.color === color
       );
 
       if (itemIndex > -1) {
-        userCart.items[itemIndex].quantity += parsedQuantity;
-        if (
-          selectedVariant &&
-          userCart.items[itemIndex].quantity > selectedVariant.varientquatity
-        ) {
+        const newQuantity = userCart.items[itemIndex].quantity + parsedQuantity;
+        if (selectedVariant && newQuantity > selectedVariant.varientquatity) {
           return res.status(400).json({
             success: false,
             message: `Only ${selectedVariant.varientquatity} items available for this size`,
           });
         }
+        if (!selectedVariant && newQuantity > product.stock) {
+          return res.status(400).json({
+            success: false,
+            message: `Only ${product.stock} items available`,
+          });
+        }
+        userCart.items[itemIndex].quantity = newQuantity;
       } else {
         userCart.items.push({
           productId,
           quantity: parsedQuantity,
-          size: size || null,
-          color: color || null,
+          size,
+          color,
         });
       }
     }
 
+    let wishlistCount = 0;
+    let wishlist = await Wishlist.findOne({ user: req.user._id });
+    if (wishlist && wishlist.products.includes(productId)) {
+      wishlist.products = wishlist.products.filter(
+        (id) => id.toString() !== productId
+      );
+      await wishlist.save();
+      wishlistCount = wishlist.products.length;
+    } else {
+      wishlistCount = wishlist ? wishlist.products.length : 0;
+    }
+
     await userCart.save();
-    return res
-      .status(200)
-      .json({ success: true, message: "Product added to cart successfully" });
+
+    const updatedItem = userCart.items.find(
+      (item) =>
+        item.productId.toString() === productId &&
+        item.size === size &&
+        item.color === color
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Product added to cart and removed from wishlist",
+      wishlistCount,
+      cartItemCount: userCart.items.length,
+      updatedItem: updatedItem
+        ? {
+            productId: updatedItem.productId.toString(),
+            quantity: updatedItem.quantity,
+            size: updatedItem.size,
+            color: updatedItem.color,
+          }
+        : null,
+    });
   } catch (error) {
     console.error("addToCart - Error:", error.message, error.stack);
     return res
@@ -214,15 +277,10 @@ const addToCart = async (req, res) => {
 
 const updateCartQuantity = async (req, res) => {
   try {
-    const user = req.user || req.session.user;
-    const userId = user?._id;
-    const { productId, size, color, change } = req.body;
+    let { productId, size, color, change } = req.body;
 
-    if (!userId) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Please log in to update your cart" });
-    }
+    size = size === "" || size === undefined ? null : size;
+    color = color === "" || color === undefined ? null : color;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res
@@ -237,7 +295,7 @@ const updateCartQuantity = async (req, res) => {
         .json({ success: false, message: "Invalid quantity change" });
     }
 
-    const userCart = await Cart.findOne({ userId });
+    const userCart = await Cart.findOne({ userId: req.user._id });
     if (!userCart) {
       return res
         .status(404)
@@ -247,8 +305,8 @@ const updateCartQuantity = async (req, res) => {
     const itemIndex = userCart.items.findIndex(
       (item) =>
         item.productId.toString() === productId &&
-        item.size === (size || null) &&
-        item.color === (color || null)
+        item.size === size &&
+        item.color === color
     );
 
     if (itemIndex === -1) {
@@ -257,7 +315,9 @@ const updateCartQuantity = async (req, res) => {
         .json({ success: false, message: "Item not found in cart" });
     }
 
-    const product = await Product.findById(productId).select("variants stock salePrice isActive categoryId");
+    const product = await Product.findById(productId).select(
+      "variants stock salePrice isActive categoryId"
+    );
     if (!product) {
       return res
         .status(404)
@@ -271,14 +331,16 @@ const updateCartQuantity = async (req, res) => {
         .json({ success: false, message: "Product is no longer available" });
     }
 
-    // Check if category is listed
     const category = await Category.findById(product.categoryId);
     if (!category || !category.isListed) {
       userCart.items.splice(itemIndex, 1);
       await userCart.save();
       return res
         .status(400)
-        .json({ success: false, message: "This product's category is not available" });
+        .json({
+          success: false,
+          message: "This product's category is not available",
+        });
     }
 
     const newQuantity = userCart.items[itemIndex].quantity + parsedChange;
@@ -318,15 +380,10 @@ const updateCartQuantity = async (req, res) => {
 
 const removeFromCart = async (req, res) => {
   try {
-    const user = req.user || req.session.user;
-    const userId = user?._id;
-    const { productId, size, color } = req.body;
+    let { productId, size, color } = req.body;
 
-    if (!userId) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Please log in to remove items" });
-    }
+    size = size === "" || size === undefined ? null : size;
+    color = color === "" || color === undefined ? null : color;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res
@@ -334,7 +391,7 @@ const removeFromCart = async (req, res) => {
         .json({ success: false, message: "Invalid product ID" });
     }
 
-    const userCart = await Cart.findOne({ userId });
+    const userCart = await Cart.findOne({ userId: req.user._id });
     if (!userCart) {
       return res
         .status(404)
@@ -346,8 +403,8 @@ const removeFromCart = async (req, res) => {
       (item) =>
         !(
           item.productId.toString() === productId &&
-          item.size === (size || null) &&
-          item.color === (color || null)
+          item.size === size &&
+          item.color === color
         )
     );
 
@@ -371,16 +428,7 @@ const removeFromCart = async (req, res) => {
 
 const emptyCart = async (req, res) => {
   try {
-    const user = req.user || req.session.user;
-    const userId = user?._id;
-
-    if (!userId) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Please log in to clear your cart" });
-    }
-
-    const userCart = await Cart.findOne({ userId });
+    const userCart = await Cart.findOne({ userId: req.user._id });
     if (!userCart) {
       return res
         .status(404)
@@ -403,16 +451,10 @@ const emptyCart = async (req, res) => {
 
 const addToCartAndRemoveFromWishlist = async (req, res) => {
   try {
-    const user = req.user || req.session.user;
-    const userId = user?._id;
-    const { productId, quantity = 1, size, color } = req.body;
+    let { productId, quantity = 1, size, color } = req.body;
 
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Please log in to add items to cart",
-      });
-    }
+    size = size === "" || size === undefined ? null : size;
+    color = color === "" || color === undefined ? null : color;
 
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res
@@ -422,7 +464,9 @@ const addToCartAndRemoveFromWishlist = async (req, res) => {
 
     const parsedQuantity = parseInt(quantity);
     if (isNaN(parsedQuantity) || parsedQuantity < 1) {
-      return res.status(400).json({ success: false, message: "Invalid quantity" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid quantity" });
     }
 
     const product = await Product.findById(productId).select(
@@ -436,15 +480,20 @@ const addToCartAndRemoveFromWishlist = async (req, res) => {
     if (!product.isActive) {
       return res
         .status(400)
-        .json({ success: false, message: "This product is no longer available" });
+        .json({
+          success: false,
+          message: "This product is no longer available",
+        });
     }
 
-    // Check if category is listed
     const category = await Category.findById(product.categoryId);
     if (!category || !category.isListed) {
       return res
         .status(400)
-        .json({ success: false, message: "This product's category is not available" });
+        .json({
+          success: false,
+          message: "This product's category is not available",
+        });
     }
 
     if (product.stock <= 0) {
@@ -455,7 +504,9 @@ const addToCartAndRemoveFromWishlist = async (req, res) => {
 
     let selectedVariant = null;
     if (size && product.variants?.length > 0) {
-      selectedVariant = product.variants.find((variant) => variant.size === size);
+      selectedVariant = product.variants.find(
+        (variant) => variant.size === size
+      );
       if (!selectedVariant) {
         return res
           .status(400)
@@ -475,54 +526,98 @@ const addToCartAndRemoveFromWishlist = async (req, res) => {
         .json({ success: false, message: "Selected color not available" });
     }
 
-    let userCart = await Cart.findOne({ userId });
+    let userCart = await Cart.findOne({ userId: req.user._id });
     if (!userCart) {
       userCart = new Cart({
-        userId,
-        items: [{ productId, quantity: parsedQuantity, size: size || null, color: color || null }],
+        userId: req.user._id,
+        items: [{ productId, quantity: parsedQuantity, size, color }],
       });
     } else {
+      const uniqueProductIds = new Set(
+        userCart.items.map((item) => item.productId.toString())
+      );
+      const isNewProduct = !uniqueProductIds.has(productId);
+
+      if (isNewProduct && uniqueProductIds.size >= 10) {
+        return res.status(400).json({
+          success: false,
+          message: "Cart cannot contain more than 10 unique products",
+        });
+      }
+
       const itemIndex = userCart.items.findIndex(
         (item) =>
           item.productId.toString() === productId &&
-          item.size === (size || null) &&
-          item.color === (color || null)
+          item.size === size &&
+          item.color === color
       );
 
       if (itemIndex > -1) {
-        userCart.items[itemIndex].quantity += parsedQuantity;
-        if (
-          selectedVariant &&
-          userCart.items[itemIndex].quantity > selectedVariant.varientquatity
-        ) {
+        const newQuantity = userCart.items[itemIndex].quantity + parsedQuantity;
+        if (selectedVariant && newQuantity > selectedVariant.varientquatity) {
           return res.status(400).json({
             success: false,
             message: `Only ${selectedVariant.varientquatity} items available for this size`,
           });
         }
+        if (!selectedVariant && newQuantity > product.stock) {
+          return res.status(400).json({
+            success: false,
+            message: `Only ${product.stock} items available`,
+          });
+        }
+        userCart.items[itemIndex].quantity = newQuantity;
       } else {
         userCart.items.push({
           productId,
           quantity: parsedQuantity,
-          size: size || null,
-          color: color || null,
+          size,
+          color,
         });
       }
     }
 
-    const wishlist = await Wishlist.findOne({ user: userId });
+    let wishlistCount = 0;
+    const wishlist = await Wishlist.findOne({ user: req.user._id });
     if (wishlist && wishlist.products.includes(productId)) {
-      wishlist.products = wishlist.products.filter((id) => id.toString() !== productId);
+      wishlist.products = wishlist.products.filter(
+        (id) => id.toString() !== productId
+      );
       await wishlist.save();
+      wishlistCount = wishlist.products.length;
+    } else {
+      wishlistCount = wishlist ? wishlist.products.length : 0;
     }
 
     await userCart.save();
+
+    const updatedItem = userCart.items.find(
+      (item) =>
+        item.productId.toString() === productId &&
+        item.size === size &&
+        item.color === color
+    );
+
     return res.status(200).json({
       success: true,
       message: "Product added to cart and removed from wishlist",
+      wishlistCount,
+      cartItemCount: userCart.items.length,
+      updatedItem: updatedItem
+        ? {
+            productId: updatedItem.productId.toString(),
+            quantity: updatedItem.quantity,
+            size: updatedItem.size,
+            color: updatedItem.color,
+          }
+        : null,
     });
   } catch (error) {
-    console.error("addToCartAndRemoveFromWishlist - Error:", error.message, error.stack);
+    console.error(
+      "addToCartAndRemoveFromWishlist - Error:",
+      error.message,
+      error.stack
+    );
     return res
       .status(500)
       .json({ success: false, message: "Server error, please try again" });
@@ -559,9 +654,7 @@ const blockProduct = async (req, res) => {
       .json({ success: true, message: "Product blocked successfully" });
   } catch (error) {
     console.error("blockProduct - Error:", error.message, error.stack);
-    return res
-      .status(500)
-      .json({ success: false, message: "Server error" });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -585,8 +678,8 @@ const blockCategory = async (req, res) => {
     category.isListed = false;
     await category.save();
 
-    const products = await Product.find({ categoryId }).select('_id');
-    const productIds = products.map(p => p._id);
+    const products = await Product.find({ categoryId }).select("_id");
+    const productIds = products.map((p) => p._id);
 
     await Cart.updateMany(
       { "items.productId": { $in: productIds } },
@@ -598,9 +691,7 @@ const blockCategory = async (req, res) => {
       .json({ success: true, message: "Category blocked successfully" });
   } catch (error) {
     console.error("blockCategory - Error:", error.message, error.stack);
-    return res
-      .status(500)
-      .json({ success: false, message: "Server error" });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

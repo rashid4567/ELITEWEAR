@@ -1,0 +1,71 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+.container {
+    max-width: 600px;
+    margin: 50px auto;
+}
+.form-container {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    text-align: center;
+}
+h1 {
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+.description {
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+.form-control {
+    height: 50px;
+    font-size: 18px;
+    text-align: center;
+    letter-spacing: 2px;
+}
+.btn-submit {
+    background-color: #000000;
+    color: white;
+    border: none;
+    height: 50px;
+    font-size: 18px;
+    font-weight: 500;
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+.btn-submit:hover {
+    background-color: #000000;
+}
+.error-message {
+    color: #dc3545;
+    margin-top: 10px;
+    display: none;
+}
+.back-link {
+    display: block;
+    margin-top: 20px;
+    color: #6c757d;
+    text-decoration: none;
+}
+.back-link:hover {
+    color: #343a40;
+}
+.reward-info {
+    background-color: #e9f7fe;
+    border-left: 4px solid #000000;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    text-align: left;
+}
+.reward-amount {
+    font-weight: bold;
+    color: #000000;
+}

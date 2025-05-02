@@ -1,87 +1,116 @@
-const cart = require("../../model/cartScheema");
-const product = require("../../model/productScheema");
+const Cart = require("../../model/cartScheema");
+const Product = require("../../model/productScheema");
 const User = require("../../model/userSchema");
-const address = require("../../model/AddressScheema");
-const Category = require("../../model/categoryScheema")
-const mongoose = require("mongoose");
+const Address = require("../../model/AddressScheema");
+const Category = require("../../model/categoryScheema");
+const Coupon = require("../../model/couponScheema");
 
 const loadcheckOut = async (req, res) => {
   try {
-    let userId;
-    if (req.user && req.user._id) {
-      userId = req.user._id;
-    } else if (req.session.user) {
-      userId =
-        typeof req.session.user === "string" ||
-        req.session.user instanceof mongoose.Types.ObjectId
-          ? req.session.user
-          : req.session.user._id;
-    } else {
-      return res.status(401).json({ success: false, message: "Please log in" });
-    }
+    const userId = req.user._id;
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res
-        .status(401)
-        .json({ success: false, message: "User not found" });
-    }
-
-    const userCart = await cart.findOne({ userId }).populate("items.productId");
+    const userCart = await Cart.findOne({ userId }).populate("items.productId");
     if (!userCart || !userCart.items.length) {
+      delete req.session.checkout;
       return res.status(400).json({ success: false, message: "Cart is empty" });
     }
 
     const validItems = [];
     for (const item of userCart.items) {
       const product = item.productId;
-      if (!product) {
-        continue; 
-      }
+      if (!product || !product.isActive) continue;
 
-     
-      if (!product.isActive) {
-        continue;
-      }
-
-      
       const category = await Category.findById(product.categoryId);
-      if (!category || !category.isListed) {
-        continue; 
-      }
+      if (!category || !category.isListed) continue;
 
       validItems.push(item);
     }
 
-
     userCart.items = validItems;
     await userCart.save();
 
-   if (!userCart.items.length) {
-  req.flash("warning", "Some items were removed from your cart. Please shop again.");
-  return res.redirect("/");
-}
+    if (!userCart.items.length) {
+      delete req.session.checkout;
+      req.flash(
+        "warning",
+        "Some items were removed from your cart. Please shop again."
+      );
+      return res.redirect("/");
+    }
 
-
-    const userAddresses = await address.find({ userId });
+    const userAddresses = await Address.find({ userId });
 
     const cartItems = userCart.items;
-    const totalPrice = cartItems.reduce((total, item) => {
-      const productPrice = item.productId.variants?.[0]?.salePrice || 0;
-      return total + productPrice * item.quantity;
-    }, 0);
+    let totalPrice = 0;
+    for (const item of cartItems) {
+      const productPrice =
+        item.productId.variants.find((v) => v.size === item.size)?.salePrice ||
+        0;
+      totalPrice += productPrice * item.quantity;
+    }
 
     const deliveryCharge = totalPrice > 8000 ? 0 : 200;
-    const grandTotal = totalPrice + deliveryCharge;
+    const discount = req.session.checkout?.coupon?.discount || 0;
+    const grandTotal = totalPrice - discount + deliveryCharge;
+
+    if (!req.session.checkout) {
+      req.session.checkout = {};
+    }
+    req.session.checkout.totalPrice = totalPrice;
+
+    const today = new Date();
+    const coupons = await Coupon.find({}).lean();
+    const couponsWithStatus = coupons.map((coupon) => {
+      const usedBy = coupon.usedBy || [];
+      const userUsage = usedBy.find(
+        (u) => u && u.userId && u.userId.toString() === userId.toString()
+      );
+
+      const isExpired = new Date(coupon.expiryDate) < today;
+      const notStarted = new Date(coupon.startingDate) > today;
+      const isUsed = userUsage && userUsage.usedCount >= coupon.limit;
+      const isActive =
+        coupon.isActive && !isExpired && new Date(coupon.startingDate) <= today;
+
+      return {
+        ...coupon,
+        status: isUsed
+          ? "used"
+          : isExpired
+          ? "expired"
+          : notStarted
+          ? "upcoming"
+          : isActive
+          ? "available"
+          : "inactive",
+        statusText: isUsed
+          ? "Already Used"
+          : isExpired
+          ? "Expired"
+          : notStarted
+          ? "Not Started Yet"
+          : isActive
+          ? "Available"
+          : "Inactive",
+        isEligible: isActive && !isUsed && coupon.minimumPurchase <= totalPrice,
+        userUsageCount: userUsage ? userUsage.usedCount : 0,
+        remainingUses: userUsage
+          ? Math.max(0, coupon.limit - userUsage.usedCount)
+          : coupon.limit,
+      };
+    });
 
     res.render("checkOutpage", {
       cartItems,
       totalPrice,
       deliveryCharge,
+      discount,
       grandTotal,
       addresses: userAddresses,
       orderNumber: `2406`,
-      user: user,
+      user: req.user,
+      appliedCoupon: req.session.checkout?.coupon || null,
+      coupons: couponsWithStatus,
     });
   } catch (error) {
     console.error("Unable to load the checkout page:", error);
@@ -92,21 +121,17 @@ const loadcheckOut = async (req, res) => {
 const selectDeliveryAddress = async (req, res) => {
   try {
     const { addressId } = req.body;
-    const userId = req.user?.id || req.session.user;
+    const userId = req.user._id;
 
-    if (!userId) {
-      return res.status(401).json({ success: false, message: "Please log in" });
-    }
-
-    const selectedAddress = await address.findOne({ _id: addressId, userId });
+    const selectedAddress = await Address.findOne({ _id: addressId, userId });
     if (!selectedAddress) {
       return res
         .status(400)
         .json({ success: false, message: "Invalid address" });
     }
 
-  
-    req.session.checkout = { addressId };
+    req.session.checkout = req.session.checkout || {};
+    req.session.checkout.addressId = addressId;
 
     return res.status(200).json({ success: true, message: "Address selected" });
   } catch (error) {
@@ -117,65 +142,75 @@ const selectDeliveryAddress = async (req, res) => {
 
 const loadCheckoutPayment = async (req, res) => {
   try {
-    const userId = req.user?.id || req.session.user;
-    if (!userId) {
-      return res.redirect("/login");
-    }
+    const userId = req.user._id;
 
-    // Fetch the user's cart and populate product details
-    const userCart = await cart.findOne({ userId }).populate("items.productId");
+    const userCart = await Cart.findOne({ userId }).populate("items.productId");
     if (!userCart || !userCart.items.length) {
       req.flash("warning", "Your cart is empty. Please shop again.");
       return res.redirect("/");
     }
 
-    // Validate cart items
     const validItems = [];
     for (const item of userCart.items) {
       const product = item.productId;
-      if (!product) {
-        continue; // Skip if product is not found
-      }
-
-      if (!product.isActive) {
-        continue; // Skip blocked products
+      if (!product || !product.isActive) {
+        continue;
       }
 
       const category = await Category.findById(product.categoryId);
       if (!category || !category.isListed) {
-        continue; // Skip products from unlisted categories
+        continue;
       }
 
       validItems.push(item);
     }
 
-    // Update cart with valid items
     userCart.items = validItems;
     await userCart.save();
 
-    // If no valid items remain, redirect to home
     if (!userCart.items.length) {
-      req.flash("warning", "Some items were removed from your cart. Please shop again.");
+      req.flash(
+        "warning",
+        "Some items were removed from your cart. Please shop again."
+      );
       return res.redirect("/");
     }
 
-    
     const cartItems = userCart.items;
-    const totalPrice = cartItems.reduce((total, item) => {
-      const productPrice = item.productId.variants?.[0]?.salePrice || 0;
-      return total + productPrice * item.quantity;
-    }, 0);
+    let totalPrice = 0;
+    for (const item of cartItems) {
+      const productPrice =
+        item.productId.variants.find((v) => v.size === item.size)?.salePrice ||
+        0;
+      totalPrice += productPrice * item.quantity;
+    }
 
     const deliveryCharge = totalPrice > 8000 ? 0 : 200;
-    const grandTotal = totalPrice + deliveryCharge;
+    const discount = req.session.checkout?.coupon?.discount || 0;
+    const grandTotal = totalPrice - discount + deliveryCharge;
 
-    
+    let deliveryAddress = null;
+    if (req.session.checkout?.addressId) {
+      deliveryAddress = await Address.findOne({
+        _id: req.session.checkout.addressId,
+        userId,
+      });
+    }
+
+    if (!deliveryAddress) {
+      req.flash("warning", "Please select a delivery address.");
+      return res.redirect("/checkOut");
+    }
+
     res.render("checkoutPayment", {
       cartItems,
       totalPrice,
       deliveryCharge,
+      discount,
       grandTotal,
-      user: await User.findById(userId),
+      user: req.user,
+      appliedCoupon: req.session.checkout?.coupon || null,
+      deliveryAddress,
     });
   } catch (error) {
     console.error("Error loading checkout payment page:", error);

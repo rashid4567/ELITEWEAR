@@ -7,6 +7,7 @@
     <title>ELITE WEAR - Premium Men's Shirts</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<<<<<<< HEAD
     <style>
     /* Elite Wear - Premium Header Styles */
 
@@ -419,70 +420,69 @@
         border-color: #333;
     }
     </style>
+=======
+    <link rel="stylesheet" href="/userStyle/header.css">
+>>>>>>> rezzarpay
 </head>
 
 <body>
-    <header>
-        <div class="container nav-container">
-            <a id="hellowow" href="/">
-                <div class="logo">ELITE WEAR</div>
-            </a>
-            <div class="menu-toggle">
-                <i class="fas fa-bars"></i>
-            </div>
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
-                <li class="nav-item"><a href="/allproduct" class="nav-link">Shop</a></li>
-                <li class="nav-item"><a href="/aboutUs" class="nav-link">About</a></li>
-                <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
-            </ul>
+   <header class="transparent dark">
+  <div class="container nav-container">
+      <a href="/">
+          <div class="logo">ELITE WEAR</div>
+      </a>
+      <div class="menu-toggle">
+          <i class="fas fa-bars"></i>
+      </div>
+      <ul class="nav-menu">
+          <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
+          <li class="nav-item"><a href="/allproduct" class="nav-link">Shop</a></li>
+          <li class="nav-item"><a href="/aboutUs" class="nav-link">About</a></li>
+          <li class="nav-item"><a href="#" class="nav-link">Contact</a></li>
+      </ul>
 
-            <div class="auth-buttons">
-                <% if (user) { %>
-                    <div class="nav-buttons">
-                        <a href="/wishlist" class="nav-link">
-                            <i class="far fa-heart"></i>
-                        </a>
-                        <a href="/cart" class="nav-link">
-                            <i class="fas fa-shopping-cart"></i>
-                        </a>
-                            <a href="/LoadProfile" class="nav-link">
-                                <i class="fas fa-user-circle"></i>
-                            </a>
-                    </div>
-                <% } else { %>
-                    <a href="/login" class="auth-button login-button">Login</a>
-                    <a href="/signup" class="auth-button signup-button">Sign Up</a>
-                <% } %>
-            </div>
-        </div>
-    </header>
+      <div class="auth-buttons">
+          <% if (typeof user !== 'undefined' && user) { %>
+              <div class="nav-buttons">
+                  <a href="/wishlist" class="nav-link" title="Wishlist">
+                      <i class="far fa-heart"></i>
+                  </a>
+                  <a href="/cart" class="nav-link" title="Cart">
+                      <i class="fas fa-shopping-cart"></i>
+                  </a>
+                  <a href="/LoadProfile" class="nav-link" title="My Account">
+                      <i class="fas fa-user-circle"></i>
+                  </a>
+              </div>
+          <% } else { %>
+              <a href="/login" class="auth-button login-button">Login</a>
+              <a href="/signup" class="auth-button signup-button">Sign Up</a>
+          <% } %>
+      </div>
+  </div>
+</header>
+
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const profileIcon = document.getElementById("profileIcon");
-            const profileDropdown = document.getElementById("profileDropdown");
+ document.addEventListener("DOMContentLoaded", () => {
+  // Header state management
+  const header = document.querySelector("header")
 
-            profileIcon.addEventListener("click", function (e) {
-                e.preventDefault();
-                profileDropdown.classList.toggle("show");
-            });
+  // Set initial header state
+  updateHeaderState()
 
-            window.addEventListener("click", function (e) {
-                if (!profileDropdown.contains(e.target)) {
-                    profileDropdown.classList.remove("show");
-                }
-            });
+  // Update header state on scroll
+  function updateHeaderState() {
+    // Check if we're at the top of the page
+    const isAtTop = window.scrollY <= 50
 
-         
-            const searchInput = document.getElementById('searchInput');
-            const clearButton = document.getElementById('clearSearch');
+    // Get the background color behind the header
+    const bgColor = getBackgroundColorBehindHeader()
 
-            if (searchInput && clearButton) {
-                searchInput.addEventListener('input', function () {
-                    clearButton.style.display = this.value ? 'block' : 'none';
-                });
+    // Remove all state classes first
+    header.classList.remove("transparent", "dark", "light", "scrolled")
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
                 clearButton.addEventListener('click', function () {
                     searchInput.value = '';
@@ -714,6 +714,206 @@
   })
 })
 >>>>>>> Stashed changes
+=======
+    if (isAtTop) {
+      // At the top of the page - use transparent with text color based on background
+      header.classList.add("transparent")
+
+      // If the background is light, add the light class for dark text
+      if (isLightColor(bgColor)) {
+        header.classList.add("light")
+      } else {
+        header.classList.add("dark")
+      }
+    } else {
+      // Scrolled down - use solid background
+      header.classList.add("scrolled")
+      header.classList.add("light") // Default to light background with dark text
+    }
+  }
+
+  // Function to determine if a color is light or dark
+  function isLightColor(color) {
+    // Default to dark if we can't determine
+    if (!color) return false
+
+    // Extract RGB components
+    let r, g, b
+
+    if (color.startsWith("rgb")) {
+      // Handle rgb() format
+      const match = color.match(/rgba?$$(\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?$$/)
+      if (match) {
+        r = Number.parseInt(match[1])
+        g = Number.parseInt(match[2])
+        b = Number.parseInt(match[3])
+      }
+    } else if (color.startsWith("#")) {
+      // Handle hex format
+      const hex = color.replace("#", "")
+      r = Number.parseInt(hex.substr(0, 2), 16)
+      g = Number.parseInt(hex.substr(2, 2), 16)
+      b = Number.parseInt(hex.substr(4, 2), 16)
+    }
+
+    // Calculate perceived brightness using the formula
+    // (299*R + 587*G + 114*B) / 1000
+    // Values > 125 are considered light
+    if (r !== undefined && g !== undefined && b !== undefined) {
+      const brightness = (299 * r + 587 * g + 114 * b) / 1000
+      return brightness > 125
+    }
+
+    return false
+  }
+
+  // Function to get the background color behind the header
+  function getBackgroundColorBehindHeader() {
+    // Check if there's a data attribute specifying the background type
+    const bgType = document.body.getAttribute("data-header-bg") || "dark"
+
+    if (bgType === "light") {
+      return "#ffffff"
+    } else {
+      return "#000000"
+    }
+  }
+
+  // Listen for scroll events
+  window.addEventListener("scroll", updateHeaderState)
+
+  // Mobile menu toggle
+  const menuToggle = document.querySelector(".menu-toggle")
+  const navMenu = document.querySelector(".nav-menu")
+
+  if (menuToggle && navMenu) {
+    // Create overlay element if it doesn't exist
+    let overlay = document.querySelector(".menu-overlay")
+    if (!overlay) {
+      overlay = document.createElement("div")
+      overlay.className = "menu-overlay"
+      document.body.appendChild(overlay)
+    }
+
+    menuToggle.addEventListener("click", () => {
+      navMenu.classList.toggle("active")
+      menuToggle.classList.toggle("active")
+      overlay.classList.toggle("active")
+
+      // Toggle body scroll
+      if (navMenu.classList.contains("active")) {
+        document.body.style.overflow = "hidden"
+      } else {
+        document.body.style.overflow = ""
+      }
+
+      // Toggle menu icon
+      if (navMenu.classList.contains("active")) {
+        menuToggle.innerHTML = '<i class="fas fa-times"></i>'
+      } else {
+        menuToggle.innerHTML = '<i class="fas fa-bars"></i>'
+      }
+    })
+
+    // Close menu when clicking on overlay
+    overlay.addEventListener("click", () => {
+      navMenu.classList.remove("active")
+      menuToggle.classList.remove("active")
+      overlay.classList.remove("active")
+      document.body.style.overflow = ""
+      menuToggle.innerHTML = '<i class="fas fa-bars"></i>'
+    })
+  }
+
+  // Profile dropdown functionality
+  const profileIcon = document.querySelector(".nav-buttons .fa-user-circle, .nav-buttons .fa-user")
+
+  if (profileIcon) {
+    // Find the parent anchor element
+    const profileLink = profileIcon.closest("a")
+
+    if (profileLink) {
+      // Find the parent container (likely a div with class nav-buttons)
+      const parentContainer = profileLink.parentElement
+
+      if (parentContainer) {
+        // Check if dropdown already exists
+        let dropdownContent = parentContainer.querySelector(".dropdown-content")
+
+        // Create dropdown if it doesn't exist
+        if (!dropdownContent) {
+          // Add dropdown class to parent
+          parentContainer.classList.add("dropdown")
+
+          // Create dropdown content
+        #   dropdownContent = document.createElement("div")
+        #   dropdownContent.className = "dropdown-content"
+        #   dropdownContent.innerHTML = `
+        #     <a href="/LoadProfile"><i class="fas fa-user"></i> My Profile</a>
+        #     # <a href="/orders"><i class="fas fa-shopping-bag"></i> My Orders</a>
+        #     # <a href="/address"><i class="fas fa-map-marker-alt"></i> My Addresses</a>
+        #     # <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        #   `
+
+          // Append dropdown to parent
+          parentContainer.appendChild(dropdownContent)
+        }
+
+        // Toggle dropdown on click
+        profileLink.addEventListener("click", (e) => {
+          e.preventDefault()
+          e.stopPropagation() // Prevent event from bubbling up
+          dropdownContent.classList.toggle("show")
+        })
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", (e) => {
+          // Check if click is outside dropdown and profile icon
+          if (!dropdownContent.contains(e.target) && !profileLink.contains(e.target)) {
+            dropdownContent.classList.remove("show")
+          }
+        })
+      }
+    }
+  }
+
+  // Close dropdowns when pressing escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      // Close mobile menu if open
+      if (navMenu && navMenu.classList.contains("active")) {
+        navMenu.classList.remove("active")
+        if (menuToggle) {
+          menuToggle.classList.remove("active")
+          menuToggle.innerHTML = '<i class="fas fa-bars"></i>'
+        }
+        const overlay = document.querySelector(".menu-overlay")
+        if (overlay) overlay.classList.remove("active")
+        document.body.style.overflow = ""
+      }
+
+      // Close any open dropdowns
+      const openDropdowns = document.querySelectorAll(".dropdown-content.show")
+      openDropdowns.forEach((dropdown) => {
+        dropdown.classList.remove("show")
+      })
+    }
+  })
+
+  // Add accessibility support for dropdowns
+  const dropdownLinks = document.querySelectorAll(".dropdown > a")
+  dropdownLinks.forEach((link) => {
+    link.setAttribute("aria-haspopup", "true")
+    link.setAttribute("aria-expanded", "false")
+
+    link.addEventListener("click", () => {
+      const expanded = link.getAttribute("aria-expanded") === "true"
+      link.setAttribute("aria-expanded", !expanded)
+    })
+  })
+})
+
+>>>>>>> rezzarpay
     </script>
 </body>
 

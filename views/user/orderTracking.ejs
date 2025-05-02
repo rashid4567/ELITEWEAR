@@ -13,6 +13,8 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/userStyle/orderTracking.css" />
+    <link rel="stylesheet" href="/userStyle/footer.css">
+    <link rel="stylesheet" href="/userStyle/header.css">
   </head>
   <body>
     <%- include("../partials/user/header") %>
@@ -79,10 +81,10 @@
               <div class="order-image">
                 <% if (order.order_items.length > 0) { %>
                 <img
-                  src="<%= order.order_items[0]?.productId?.images[0]?.url || '/api/placeholder/200/250' %>"
-                  alt="<%= order.order_items[0]?.productId?.name || 'Product' %>"
-                  class="mb-3"
-                />
+                src="<%= order.order_items[0]?.productId?.images?.[0]?.url || '/api/placeholder/200/250' %>"
+                alt="<%= order.order_items[0]?.productId?.name || 'Product' %>"
+                class="mb-3"
+              />
                 <% } else { %>
                 <img
                   src="/api/placeholder/200/250"
@@ -254,11 +256,11 @@
       document.addEventListener('DOMContentLoaded', function() {
           const progressBar = document.getElementById('progressBar');
           
-          // Handle progress bar and status styles based on order status
+        
           const status = '<%= order.status.toLowerCase() %>';
           let progressWidth = 0;
           
-          // Calculate progress width based on status
+          
           if (status === 'pending') {
               progressWidth = 25;
           } else if (status === 'processing') {
@@ -268,17 +270,17 @@
           } else if (status === 'delivered') {
               progressWidth = 100;
           } else if (status === 'cancelled' || status === 'returned') {
-              progressWidth = 100; // For cancelled/returned, fill the entire bar
+              progressWidth = 100; 
               progressBar.classList.add('progress-fill-' + status);
           }
           
-          // Apply status-specific styles
+          
           const statusLabel = document.querySelector('.status-label');
           if (statusLabel) {
               statusLabel.classList.add('status-' + status);
           }
           
-          // Animate progress bar
+      
           setTimeout(() => {
               progressBar.style.width = `${progressWidth}%`;
           }, 300);

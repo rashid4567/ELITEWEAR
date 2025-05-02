@@ -1,0 +1,247 @@
+body {
+    background-color: #f8f9fa;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+}
+
+/* Header/Navbar Styles */
+.header {
+    background-color: #000;
+    padding: 15px 0;
+    color: white;
+}
+
+.brand {
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 1px;
+}
+
+.nav-link {
+    color: white !important;
+    margin-right: 20px;
+    font-size: 14px;
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-input {
+    border-radius: 20px;
+    padding-right: 30px;
+    background-color: #fff;
+    font-size: 14px;
+}
+
+.search-icon {
+    position: absolute;
+    right: 10px;
+    top: 8px;
+    color: #777;
+}
+
+.header-icons {
+    color: white;
+    font-size: 18px;
+    margin-left: 15px;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    margin: 20px 0;
+    font-size: 14px;
+}
+
+/* User Profile Section */
+.user-profile {
+    border-radius: 15px;
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #000;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-weight: 500;
+}
+
+.profile-name {
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    color: #333;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+.menu-item i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.menu-item.active {
+    background-color: #000;
+    color: white;
+}
+
+.menu-item:hover:not(.active) {
+    background-color: #f0f0f0;
+}
+
+/* Coupon Section */
+.coupon-section {
+    background-color: #fff;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    font-weight: 600;
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+.coupon-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.coupon-title {
+    color: #28a745;
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 15px;
+}
+
+.coupon-desc {
+    color: #555;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.coupon-badge {
+    background-color: #f0f0f0;
+    color: #555;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    display: inline-block;
+}
+
+.coupon-expiry {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    font-size: 13px;
+    color: #777;
+}
+
+/* Footer */
+.footer {
+    background-color: #000;
+    color: white;
+    padding: 40px 0 20px;
+    margin-top: 50px;
+}
+
+.footer-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+.footer-feature {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.footer-feature i {
+    font-size: 24px;
+    margin-right: 10px;
+}
+
+.footer-feature-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.footer-feature-desc {
+    font-size: 12px;
+    color: #aaa;
+}
+
+.newsletter-input {
+    border-radius: 0;
+    border: 1px solid #333;
+    background-color: transparent;
+    color: #fff;
+}
+
+.newsletter-btn {
+    border-radius: 0;
+    background-color: #fff;
+    color: #000;
+    border: none;
+}
+
+.footer-contact {
+    font-size: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.footer-contact i {
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+.social-icons a {
+    color: #fff;
+    margin-right: 15px;
+    font-size: 18px;
+}
+
+.copyright {
+    font-size: 12px;
+    color: #777;
+    border-top: 1px solid #333;
+    padding-top: 20px;
+    margin-top: 30px;
+}
+
+@media (max-width: 768px) {
+    .coupon-expiry {
+        position: static;
+        margin-top: 10px;
+        display: block;
+    }
+}

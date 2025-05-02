@@ -10,6 +10,9 @@ const checkOutController = require("../controller/user/checkOutController");
 const orderController = require("../controller/user/orderController");
 const cartController = require("../controller/user/cartController");
 const walletController = require("../controller/user/walletController");
+const referralController = require("../controller/user/referalController");
+const CouponController = require("../controller/user/userCouponCoontroller");
+const razorpayController = require("../controller/user/razzerpayController");
 const { UserAuth } = require("../middleware/auth");
 
 const { checkBlockedStatus } = userControllers;
@@ -18,7 +21,8 @@ const { checkBlockedStatus } = userControllers;
 router.get("/signup", userControllers.loadUserSignup);
 router.post("/signup", userControllers.userSignup);
 router.get("/verify-otp", (req, res) => {
-  const email = req.session.registration?.userData?.email || "unknown@email.com";
+  const email =
+    req.session.registration?.userData?.email || "unknown@email.com";
   res.render("verify-otp", { email, context: "signup" });
 });
 router.post("/verify-otp", userControllers.verifyOtp);
@@ -26,10 +30,18 @@ router.post("/resend-otp", userControllers.resendOtp);
 
 router.get("/login", userControllers.userLogin);
 router.post("/login", userControllers.login);
-
+router.post("/apply-referral", UserAuth, userControllers.applyReferralCode);
 router.get("/", checkBlockedStatus, userControllers.loadHomepage);
 router.get("/logout", checkBlockedStatus, userControllers.logout);
 
+// Referral routes
+router.get("/referral", UserAuth, referralController.loadReferralPage);
+router.get("/referralSpace", referralController.loadReferralSpace);
+router.post("/validate-referral-code", referralController.validateReferralCode);
+router.post("/process-signup-referral", referralController.processSignupReferral);
+router.post("/apply-referral", UserAuth, referralController.applyReferralCode);
+router.get("/referral-stats", UserAuth, referralController.getReferralStats);
+router.get("/referral-history", UserAuth, referralController.getReferralHistory);
 // Password reset routes
 router.get("/forgot-password", profileController.forgotPassword);
 router.post("/forgot-email-id", profileController.forgotemailValidations);
@@ -97,13 +109,13 @@ router.post(
   UserAuth,
   profileController.verifyUpdateOtp
 );
-router.post(
-  "/resend-update-otp",
-  UserAuth,
-  profileController.resendUpdateOtp
-);
+router.post("/resend-update-otp", UserAuth, profileController.resendUpdateOtp);
 router.post("/update-profile", UserAuth, profileController.updateProfile);
-router.get("/getupdatepassword", UserAuth, profileController.loadupdatePassword);
+router.get(
+  "/getupdatepassword",
+  UserAuth,
+  profileController.loadupdatePassword
+);
 router.post("/updatePassword", UserAuth, profileController.updatePassword);
 router.get("/logoutpage", UserAuth, profileController.loadLogout);
 
@@ -163,11 +175,50 @@ router.post("/reorder/:id", UserAuth, orderController.reOrder);
 router.get("/order-details/:id", UserAuth, orderController.getOrderDetails);
 router.get("/invoice/:id", UserAuth, orderController.downloadInvoice);
 router.get("/orders/track/:id", UserAuth, orderController.trackOrder);
+router.post("/cancel-order/:id", UserAuth, orderController.cancelOrder);
+router.post("/complete-payment/:id", UserAuth, orderController.completePayment)
+router.post(
+  "/cancel-order-item/:itemId",
+  UserAuth,
+  orderController.cancelOrderItem
+);
+router.post("/return-order/:id", UserAuth, orderController.initiateReturn);
+router.post(
+  "/return-order-item/:itemId",
+  UserAuth,
+  orderController.returnOrderItem
+);
+
+// Keep the original routes for backward compatibility
+router.post(
+  "/orders/item/:orderItemId/cancel",
+  UserAuth,
+  orderController.cancelOrderItem
+);
+router.post(
+  "/orders/item/:orderItemId/return",
+  UserAuth,
+  orderController.returnOrderItem
+);
+
+// Razorpay routes
+router.post(
+  "/create-razorpay-order",
+  UserAuth,
+  razorpayController.createRazorpayOrder
+);
+router.post("/verify-payment", UserAuth, razorpayController.verifyPayment);
 
 // Wallet routes
 router.get("/wallet", UserAuth, walletController.getwallet);
-router.post("/credit", UserAuth, walletController.creditWallet);
-router.post("/debit", UserAuth, walletController.debitWallet);
+router.post("/wallet/credit", UserAuth, walletController.creditWallet);
+router.post("/wallet/debit", UserAuth, walletController.debitWallet);
+
+//coupon Route
+router.get("/allcoupons", UserAuth, CouponController.allCoupons);
+router.get("/coupons", UserAuth, CouponController.getAvailableCoupons);
+router.post("/apply-coupon", UserAuth, CouponController.applyCoupon);
+router.post("/remove-coupon", UserAuth, CouponController.removeCoupon);
 
 // Error handling
 router.get("/page-not-found", userControllers.pageNotfound);

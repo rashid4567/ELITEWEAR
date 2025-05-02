@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - User Wallet</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+   <link rel="stylesheet" href="/adminStyle/adminUserWallet.css">
+</head>
+<body>
+    <%- include("../partials/admin/header") %>
+
+    <div class="container-fluid page-container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin/">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/admin/users">Users</a></li>
+                <li class="breadcrumb-item active" aria-current="page">User Wallet</li>
+            </ol>
+        </nav>
+
+        <div class="wallet-header">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            <%= user.fullname ? user.fullname.charAt(0).toUpperCase() : 'U' %>
+                        </div>
+                        <div class="user-details">
+                            <h2><%= user.fullname || 'Unknown User' %></h2>
+                            <p><i class="fas fa-envelope me-2"></i><%= user.email || 'No Email' %></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <a href="/admin/users/<%= user._id %>" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-user me-1"></i> View User Profile
+                    </a>
+                    <a href="/admin/users/<%= user._id %>/orders" class="btn btn-outline-primary">
+                        <i class="fas fa-shopping-bag me-1"></i> View Orders
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="wallet-balance">
+                    <div class="balance-amount">₹<%= wallet.amount ? wallet.amount.toFixed(2) : '0.00' %></div>
+                    <div class="balance-label">Current Balance</div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="row h-100">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="wallet-card">
+                            <div class="stat-card credit-stat">
+                                <div class="stat-value text-success">₹<%= stats.totalCreditAmount.toFixed(2) %></div>
+                                <div class="stat-label">Total Credits (<%= stats.totalCredits %>)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <div class="wallet-card">
+                            <div class="stat-card debit-stat">
+                                <div class="stat-value text-danger">₹<%= stats.totalDebitAmount.toFixed(2) %></div>
+                                <div class="stat-label">Total Debits (<%= stats.totalDebits %>)</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="wallet-card">
+                            <div class="stat-card refund-stat">
+                                <div class="stat-value text-warning">₹<%= stats.totalRefundAmount.toFixed(2) %></div>
+                                <div class="stat-label">Total Refunds (<%= stats.totalRefunds %>)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card transaction-table mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Transaction History</h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary me-2" id="exportTransactions">
+                        <i class="fas fa-download me-1"></i> Export
+                    </button>
+                    <button class="btn btn-sm btn-primary" id="addManualTransaction">
+                        <i class="fas fa-plus me-1"></i> Add Transaction
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <% if (hasTransactions) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                    <th>Reference</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% wallet.transactions.forEach(transaction => { %>
+                                    <tr>
+                                        <td>
+                                            <% if (transaction.isRefund) { %>
+                                                <span class="transaction-type transaction-refund">Refund</span>
+                                            <% } else if (transaction.type === 'credit') { %>
+                                                <span class="transaction-type transaction-credit">Credit</span>
+                                            <% } else { %>
+                                                <span class="transaction-type transaction-debit">Debit</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <span class="transaction-amount <%= transaction.type === 'credit' ? 'amount-credit' : 'amount-debit' %>">
+                                                <%= transaction.type === 'credit' ? '+' : '-' %>₹<%= transaction.amount.toFixed(2) %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="transaction-description" title="<%= transaction.description %>">
+                                                <%= transaction.description || 'No description' %>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="transaction-reference" title="<%= transaction.transactionRef %>">
+                                                <%= transaction.transactionRef || 'N/A' %>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="transaction-date">
+                                                <%= transaction.formattedDate %>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a href="#" class="transaction-details-btn" 
+                                               data-transaction-id="<%= transaction._id %>"
+                                               data-transaction-ref="<%= transaction.transactionRef %>"
+                                               onclick="viewTransactionDetails(this)">
+                                                View Details
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="empty-state">
+                        <i class="fas fa-wallet"></i>
+                        <h3>No Transactions Yet</h3>
+                        <p>This user doesn't have any wallet transactions yet.</p>
+                        <button class="btn btn-primary mt-3" id="addFirstTransaction">
+                            <i class="fas fa-plus me-1"></i> Add First Transaction
+                        </button>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Details Modal -->
+    <div class="modal fade" id="transactionDetailsModal" tabindex="-1" aria-labelledby="transactionDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="transactionDetailsModalLabel">Transaction Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center" id="transactionDetailsLoader">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading transaction details...</p>
+                    </div>
+                    <div id="transactionDetailsContent" style="display: none;">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6 class="text-muted">Transaction Type</h6>
+                                <p class="mb-3" id="detailsType"></p>
+                                
+                                <h6 class="text-muted">Amount</h6>
+                                <p class="mb-3" id="detailsAmount"></p>
+                                
+                                <h6 class="text-muted">Date & Time</h6>
+                                <p class="mb-3" id="detailsDate"></p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted">Reference ID</h6>
+                                <p class="mb-3" id="detailsReference"></p>
+                                
+                                <h6 class="text-muted">Description</h6>
+                                <p class="mb-3" id="detailsDescription"></p>
+                                
+                                <h6 class="text-muted">Status</h6>
+                                <p class="mb-3" id="detailsStatus"></p>
+                            </div>
+                        </div>
+                        
+                        <div id="refundDetails" style="display: none;">
+                            <hr>
+                            <h5 class="mb-3">Refund Details</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Refund Type</h6>
+                                    <p class="mb-3" id="detailsRefundType"></p>
+                                    
+                                    <h6 class="text-muted">Order Reference</h6>
+                                    <p class="mb-3" id="detailsOrderReference"></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Product</h6>
+                                    <p class="mb-3" id="detailsProduct"></p>
+                                    
+                                    <div id="productImageContainer" style="display: none;">
+                                        <h6 class="text-muted">Product Image</h6>
+                                        <img id="detailsProductImage" src="/placeholder.svg" alt="Product Image" class="img-thumbnail" style="max-width: 100px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="metadataDetails" style="display: none;">
+                            <hr>
+                            <h5 class="mb-3">Additional Information</h5>
+                            <pre id="detailsMetadata" class="bg-light p-3 rounded" style="max-height: 200px; overflow-y: auto;"></pre>
+                        </div>
+                    </div>
+                    <div id="transactionDetailsError" style="display: none;">
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <span id="errorMessage">Failed to load transaction details.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="#" class="btn btn-primary" id="viewOrderBtn" style="display: none;">View Order</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Transaction Modal -->
+    <div class="modal fade" id="addTransactionModal" tabindex="-1" aria-labelledby="addTransactionModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTransactionModalLabel">Add Manual Transaction</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addTransactionForm">
+                        <div class="mb-3">
+                            <label for="transactionType" class="form-label">Transaction Type</label>
+                            <select class="form-select" id="transactionType" required>
+                                <option value="credit">Credit (Add Money)</option>
+                                <option value="debit">Debit (Deduct Money)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transactionAmount" class="form-label">Amount (₹)</label>
+                            <input type="number" class="form-control" id="transactionAmount" min="1" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transactionDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="transactionDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="transactionReference" class="form-label">Reference (Optional)</label>
+                            <input type="text" class="form-control" id="transactionReference" placeholder="e.g., Order ID, Promotion code">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitTransaction">Add Transaction</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            
+            document.getElementById('addManualTransaction').addEventListener('click', function() {
+                const modal = new bootstrap.Modal(document.getElementById('addTransactionModal'));
+                modal.show();
+            });
+
+         
+            const addFirstTransactionBtn = document.getElementById('addFirstTransaction');
+            if (addFirstTransactionBtn) {
+                addFirstTransactionBtn.addEventListener('click', function() {
+                    const modal = new bootstrap.Modal(document.getElementById('addTransactionModal'));
+                    modal.show();
+                });
+            }
+
+            document.getElementById('submitTransaction').addEventListener('click', function() {
+                const form = document.getElementById('addTransactionForm');
+                
+                // Basic form validation
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                const type = document.getElementById('transactionType').value;
+                const amount = document.getElementById('transactionAmount').value;
+                const description = document.getElementById('transactionDescription').value;
+                const reference = document.getElementById('transactionReference').value;
+                const userId = '<%= user._id %>';
+
+           
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+
+               
+                fetch('/admin/users/' + userId + '/wallet/add-transaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        type,
+                        amount,
+                        description,
+                        reference
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    
+                    this.disabled = false;
+                    this.innerHTML = 'Add Transaction';
+                    
+               
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addTransactionModal'));
+                    modal.hide();
+                    
+                    if (data.success) {
+                    
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Transaction Added',
+                            text: data.message,
+                            confirmButtonColor: '#4f46e5'
+                        }).then(() => {
+                       
+                            window.location.reload();
+                        });
+                    } else {
+                    
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Failed to add transaction',
+                            confirmButtonColor: '#4f46e5'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                 
+                    this.disabled = false;
+                    this.innerHTML = 'Add Transaction';
+         
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An unexpected error occurred. Please try again.',
+                        confirmButtonColor: '#4f46e5'
+                    });
+                });
+            });
+
+
+            document.getElementById('exportTransactions').addEventListener('click', function() {
+                const userId = '<%= user._id %>';
+                window.location.href = '/admin/users/' + userId + '/wallet/export';
+            });
+        });
+
+        function viewTransactionDetails(element) {
+            const transactionRef = element.getAttribute('data-transaction-ref');
+            if (!transactionRef) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Transaction reference not found',
+                    confirmButtonColor: '#4f46e5'
+                });
+                return;
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('transactionDetailsModal'));
+            modal.show();
+            
+            document.getElementById('transactionDetailsLoader').style.display = 'block';
+            document.getElementById('transactionDetailsContent').style.display = 'none';
+            document.getElementById('transactionDetailsError').style.display = 'none';
+            document.getElementById('viewOrderBtn').style.display = 'none';
+            
+          
+            fetch('/admin/wallet/transaction/' + transactionRef)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                   
+                        document.getElementById('transactionDetailsLoader').style.display = 'none';
+                        document.getElementById('transactionDetailsContent').style.display = 'block';
+                        
+                 
+                        const transaction = data.transaction;
+                        
+                     
+                        let typeDisplay = transaction.type === 'credit' ? 'Credit' : 'Debit';
+                        if (transaction.isRefund) {
+                            typeDisplay = transaction.refundTypeDisplay || 'Refund';
+                        }
+                        
+                        document.getElementById('detailsType').textContent = typeDisplay;
+                        document.getElementById('detailsAmount').innerHTML = `<span class="${transaction.type === 'credit' ? 'text-success' : 'text-danger'}">${transaction.type === 'credit' ? '+' : '-'}₹${transaction.amount.toFixed(2)}</span>`;
+                        document.getElementById('detailsDate').textContent = transaction.formattedDate;
+                        document.getElementById('detailsReference').textContent = transaction.transactionRef || 'N/A';
+                        document.getElementById('detailsDescription').textContent = transaction.description || 'No description';
+                        document.getElementById('detailsStatus').innerHTML = transaction.status ? 
+                            `<span class="badge bg-${transaction.status === 'completed' ? 'success' : 'warning'}">${transaction.status.toUpperCase()}</span>` : 
+                            '<span class="badge bg-  : 
+                            '<span class="badge bg-success">COMPLETED</span>';
+                        
+                        // Refund details
+                        if (transaction.isRefund) {
+                            document.getElementById('refundDetails').style.display = 'block';
+                            document.getElementById('detailsRefundType').textContent = transaction.refundTypeDisplay || 'Standard Refund';
+                            document.getElementById('detailsOrderReference').textContent = transaction.orderReference || 'N/A';
+                            
+                           
+                            if (data.product) {
+                                document.getElementById('detailsProduct').textContent = data.product.name || 'Unknown Product';
+                                
+                                if (data.product.images && data.product.images.length > 0) {
+                                    document.getElementById('productImageContainer').style.display = 'block';
+                                    document.getElementById('detailsProductImage').src = data.product.images[0].url;
+                                } else if (data.orderItem && data.orderItem.itemImage) {
+                                    document.getElementById('productImageContainer').style.display = 'block';
+                                    document.getElementById('detailsProductImage').src = data.orderItem.itemImage;
+                                } else {
+                                    document.getElementById('productImageContainer').style.display = 'none';
+                                }
+                            } else {
+                                document.getElementById('detailsProduct').textContent = 'N/A';
+                                document.getElementById('productImageContainer').style.display = 'none';
+                            }
+                            
+                      
+                            if (data.order && data.order._id) {
+                                document.getElementById('viewOrderBtn').style.display = 'inline-block';
+                                document.getElementById('viewOrderBtn').href = '/admin/orders/' + data.order._id;
+                            }
+                        } else {
+                            document.getElementById('refundDetails').style.display = 'none';
+                        }
+                        
+                  
+                        if (transaction.metadata && Object.keys(transaction.metadata).length > 0) {
+                            document.getElementById('metadataDetails').style.display = 'block';
+                            document.getElementById('detailsMetadata').textContent = JSON.stringify(transaction.metadata, null, 2);
+                        } else {
+                            document.getElementById('metadataDetails').style.display = 'none';
+                        }
+                    } else {
+                     
+                        document.getElementById('transactionDetailsLoader').style.display = 'none';
+                        document.getElementById('transactionDetailsError').style.display = 'block';
+                        document.getElementById('errorMessage').textContent = data.message || 'Failed to load transaction details';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                 
+                    document.getElementById('transactionDetailsLoader').style.display = 'none';
+                    document.getElementById('transactionDetailsError').style.display = 'block';
+                    document.getElementById('errorMessage').textContent = 'An unexpected error occurred. Please try again.';
+                });
+        }
+    </script>
+</body>
+</html>

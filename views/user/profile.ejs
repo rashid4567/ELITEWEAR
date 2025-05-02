@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User Profile Dashboard</title>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -11,14 +12,29 @@
 
 </head>
 <body>
+=======
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/userStyle/profile.css" />
+    <link rel="stylesheet" href="/userStyle/footer.css">
+    <link rel="stylesheet" href="/userStyle/header.css">
+  </head>
+  <body>
+>>>>>>> rezzarpay
     <%- include("../partials/user/header") %>
     <div class="container-fluid p-0">
-        <div class="row g-0">
-            <button class="sidebar-toggle d-md-none" id="sidebarToggle">
-                <i class="fas fa-bars"></i>
-            </button>
-            
+      <div class="row g-0">
+        <button class="sidebar-toggle d-md-none" id="sidebarToggle">
+          <i class="fas fa-bars"></i>
+        </button>
 
+<<<<<<< HEAD
             <%- include("../partials/user/profileSidebar") %>
     
             <div class="col-md-9 col-lg-10 main-content">
@@ -294,6 +310,10 @@
         </div>
 
         <!-- Main Content -->
+=======
+        <%- include("../partials/user/profileSidebar") %>
+
+>>>>>>> rezzarpay
         <div class="col-md-9 col-lg-10 main-content">
           <h5 class="welcome-text">
             Welcome <%= fullname || 'Unknown User' %>!
@@ -329,12 +349,17 @@
                   type="tel"
                   class="form-control"
                   id="phone"
+<<<<<<< HEAD
                   value="<%= mobile || 'User does not have a mobile number' %>"
+=======
+                  value="<%= mobile || 'User doest have a mobile number' %>"
+>>>>>>> rezzarpay
                   disabled
                 />
               </div>
 
               <div class="text-end">
+<<<<<<< HEAD
                 <a href="/getprofileEdit" class="edit-btn" id="editBtn">EDIT</a>
               </div>
             </form>
@@ -344,13 +369,30 @@
             <button class="message-btn">Your Message</button>
           </div>
 >>>>>>> Stashed changes
+=======
+                <a
+                  type="button"
+                  href="/getprofileEdit"
+                  class="edit-btn"
+                  id="editBtn"
+                  >EDIT</a
+                >
+              </div>
+            </form>
+          </div>
+          <div class="message-btn-container">
+            <button class="message-btn">Your Message</button>
+          </div>
+>>>>>>> rezzarpay
         </div>
+      </div>
     </div>
     
     <%- include("../partials/user/footer") %>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 </body>
 =======
@@ -376,3 +418,7 @@
   </body>
 >>>>>>> Stashed changes
 </html>
+=======
+  </body>
+</html>
+>>>>>>> rezzarpay

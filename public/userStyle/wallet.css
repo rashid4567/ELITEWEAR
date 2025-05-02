@@ -1,258 +1,215 @@
+/* Global Styles */
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-}
-
-.top-navbar {
-    background-color: #000;
-    color: white;
-    padding: 15px 20px;
+    font-family: "Arial", sans-serif;
+    background-color: #fafafa;
+    color: #1a1a1a;
+  }
+  
+  /* Wallet Section */
+  .wallet-section {
+    padding: 20px 0;
+  }
+  
+  /* Breadcrumb Styles */
+  .breadcrumb-container {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo {
-    color: white;
-    font-weight: bold;
-    text-decoration: none;
-    font-size: 22px;
-}
-
-.search-container {
-    position: relative;
-    width: 30%;
-}
-
-.search-input {
-    border-radius: 20px;
-    padding: 8px 15px;
-    width: 100%;
-    border: none;
-}
-
-.search-btn {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: #888;
-}
-
-.nav-icons {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-}
-
-.profile-section {
-    display: flex;
-    margin-top: 20px;
-    gap: 20px;
-}
-
-.profile-card {
-    background-color: white;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    width: 250px;
-}
-
-.profile-info {
-    display: flex;
-    flex-direction: column;
     align-items: center;
     margin-bottom: 20px;
-}
-
-.profile-pic {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    background-color: #000;
-    margin-bottom: 10px;
-}
-
-.menu-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
-    color: #333;
-    text-decoration: none;
-}
-
-.menu-item:last-child {
-    border-bottom: none;
-}
-
-.menu-icon {
-    width: 20px;
-    text-align: center;
-}
-
-.wallet-section {
-    flex-grow: 1;
-}
-
-.wallet-card {
-    background-color: white;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-}
-
-.breadcrumb {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-    align-items: center;
     font-size: 14px;
-    color: #888;
-}
-
-.breadcrumb-item {
-    color: #888;
+    color: #565656;
+  }
+  
+  .breadcrumb-container a {
+    color: #565656;
     text-decoration: none;
-}
-
-.breadcrumb-item:after {
-    content: ">";
-    margin-left: 10px;
-}
-
-.breadcrumb-item:last-child:after {
-    content: "";
-}
-
-.balance-container {
-    padding: 15px;
+    transition: color 0.3s;
+  }
+  
+  .breadcrumb-container a:hover {
+    color: #000;
+  }
+  
+  .breadcrumb-container a.active {
+    color: #000;
+    font-weight: 500;
+  }
+  
+  .small-icon {
+    font-size: 10px;
+    margin: 0 8px;
+  }
+  
+  /* Wallet Card */
+  .wallet-card {
+    background-color: #ffffff;
     border-radius: 10px;
-    border: 1px solid #e0e0e0;
-    margin-top: 15px;
-}
-
-.transaction-table {
-    width: 100%;
-    margin-top: 15px;
-    border-collapse: collapse;
-}
-
-.transaction-table th {
-    background-color: #f5f5f5;
-    padding: 10px;
-    text-align: left;
-    font-weight: normal;
-}
-
-.transaction-table td {
-    padding: 10px;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.amount-debited {
-    color: red;
-}
-
-.amount-credited {
-    color: green;
-}
-
-.add-money-btn {
-    background-color: #000;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    margin-top: 20px;
-    width: 150px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.footer {
-    background-color: #000;
-    color: white;
-    padding: 40px 20px;
-    margin-top: 40px;
-}
-
-.footer-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.newsletter {
-    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 30px;
     margin-bottom: 30px;
-}
-
-.email-input {
-    padding: 10px;
-    width: 300px;
-    border-radius: 5px;
-    border: none;
-    margin-top: 10px;
-}
-
-.features {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
-}
-
-.feature {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    width: 200px;
-}
-
-.feature-icon {
+  }
+  
+  .wallet-title {
     font-size: 24px;
-    margin-bottom: 10px;
-}
-
-.feature-title {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.feature-subtitle {
-    font-size: 12px;
-}
-
-.footer-bottom {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 20px;
-    border-top: 1px solid #333;
-}
-
-.social-icons {
-    display: flex;
-    gap: 15px;
-}
-
-.social-icon {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #010101;
+  }
+  
+  /* Balance Container */
+  .balance-container {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+  }
+  
+  .balance-text {
+    font-size: 18px;
+    margin: 0;
+    color: #1a1a1a;
+  }
+  
+  .balance-amount {
+    font-weight: 600;
+    color: #010101;
+  }
+  
+  /* Transaction Table */
+  .transaction-history {
+    margin-bottom: 25px;
+    overflow-x: auto;
+  }
+  
+  .transaction-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  
+  .transaction-table thead {
+    background-color: #f5f5f5;
+  }
+  
+  .transaction-table th {
+    padding: 15px;
+    font-weight: 600;
+    color: #060606;
+    border-bottom: 1px solid #d9d9d9;
+  }
+  
+  .transaction-table td {
+    padding: 15px;
+    border-bottom: 1px solid #d9d9d9;
+    color: #565656;
+  }
+  
+  .transaction-table tbody tr:hover {
+    background-color: #fafafa;
+  }
+  
+  /* Amount Status */
+  .amount-credited {
+    color: #21aa1e !important;
+    font-weight: 500;
+  }
+  
+  .amount-debited {
+    color: #c12121 !important;
+    font-weight: 500;
+  }
+  
+  /* Add Money Button */
+  .add-money-btn {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+  }
+  
+  .add-money-btn:hover {
     background-color: #333;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.fulloption {
-    transform: translate(6.25rem, -39.375rem); 
-
-}
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Modal Styling */
+  .modal-content {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .modal-header {
+    border-bottom: 1px solid #f5f5f5;
+    padding: 20px 25px;
+  }
+  
+  .modal-title {
+    font-weight: 600;
+    color: #010101;
+  }
+  
+  .modal-body {
+    padding: 25px;
+  }
+  
+  .form-label {
+    font-weight: 500;
+    color: #565656;
+    margin-bottom: 8px;
+  }
+  
+  .form-control {
+    border-radius: 5px;
+    border: 1px solid #d9d9d9;
+    padding: 12px 15px;
+    height: auto;
+  }
+  
+  .form-control:focus {
+    border-color: #000;
+    box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 992px) {
+    .wallet-card {
+      padding: 20px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .balance-text {
+      font-size: 16px;
+    }
+  
+    .transaction-table th,
+    .transaction-table td {
+      padding: 12px 10px;
+      font-size: 14px;
+    }
+  
+    .add-money-btn {
+      padding: 10px 25px;
+      font-size: 15px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .wallet-title {
+      font-size: 22px;
+    }
+  
+    .balance-container {
+      padding: 15px;
+    }
+  
+    .transaction-table {
+      min-width: 650px;
+    }
+  }
+  

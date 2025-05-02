@@ -1,86 +1,103 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose")
 
-const orderSchema = new mongoose.Schema({
+const orderSchema = new mongoose.Schema(
+  {
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    paymentMethod: {
-        type: String,
-        enum: ["COD", "Online", "Wallet"],
-        required: true,
+    orderNumber: {
+      type: String,
+      unique: true,
     },
     orderDate: {
-        type: Date,
-        default: Date.now,
+      type: Date,
+      default: Date.now,
     },
     deliveryDate: {
-        type: Date, 
-    },
-    status: {
-        type: String,
-        enum: [
-            "Pending",
-            "Processing",
-            "Confirmed",
-            "Shipped",
-            "Delivered",
-            "Cancelled",
-            "Return Requested",
-            "Return Approved",
-            "Returned",
-            "Return Rejected",
-        ],
-        default: "Pending",
+      type: Date,
     },
     address: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Address",
-        required: true,
-    },
-    transactionId: {
-        type: String,
-    },
-    couponId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Coupon",
-    },
-    total: {
-        type: Number,
-        required: true,
-        min: 0,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Address",
+      required: true,
     },
     order_items: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "OrderItem",
-        },
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "OrderItem",
+      },
     ],
-    orderNumber: {
-        type: String,
-        required: true,
-        unique: true,
+    total: {
+      type: Number,
+      required: true,
     },
+    paymentMethod: {
+      type: String,
+      required: true,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Completed", "Failed", "Refunded"],
+      default: "Pending",
+    },
+    status: {
+      type: String,
+      enum: [
+        "Pending",
+        "Processing",
+        "Confirmed",
+        "Shipped",
+        "Delivered",
+        "Cancelled",
+        "Return Requested",
+        "Return Approved",
+        "Returned",
+        "Return Rejected",
+        "Partially Cancelled",
+        "Partially Returned",
+        "Partially Delivered",
+        "Partially Shipped",
+      ],
+      default: "Processing",
+    },
+    statusHistory: [
+      {
+        status: {
+          type: String,
+          required: true,
+        },
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+        note: {
+          type: String,
+          default: "",
+        },
+      },
+    ],
     refunded: {
-        type: Boolean,
-        default: false, 
-    },
-    cancelReason: {
-        type: String,
-        maxlength: 500, 
-    },
-    returnReason: {
-        type: String,
-        maxlength: 500, 
+      type: Boolean,
+      default: false,
     },
     returnRejectionReason: {
-        type: String,
-        maxlength: 500, 
+      type: String,
+      default: "",
     },
-    returnRequestedDate: {
-        type: Date,
-    },
-}, { timestamps: true });
+  },
+  {
+    timestamps: true,
+  },
+)
 
-module.exports = mongoose.model("Order", orderSchema);
+orderSchema.pre("save", async function (next) {
+  if (!this.orderNumber) {
+    const count = await mongoose.model("Order").countDocuments()
+    this.orderNumber = `ORD${Date.now().toString().slice(-6)}${(count + 1).toString().padStart(4, "0")}`
+  }
+  next()
+})
+
+module.exports = mongoose.model("Order", orderSchema)

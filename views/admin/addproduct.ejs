@@ -959,20 +959,25 @@
             }
 
             function validateField(input) {
-                const value = input.value.trim();
-                const errorElement = input.nextElementSibling;
-                if (!value) {
-                    showError(input, errorElement, `${input.name.replace(/\[.*\]/, '').replace(/([A-Z])/g, ' $1').trim()} is required`);
-                    return false;
-                } else if (input.type === 'number' && input.name !== 'productOffer') {
-                    if (Number(value) < 0) {
-                        showError(input, errorElement, `${input.name.replace(/\[.*\]/, '').replace(/([A-Z])/g, ' $1').trim()} must be positive`);
-                        return false;
-                    }
-                }
-                hideError(input, errorElement);
-                return true;
-            }
+    const value = input.value.trim();
+    const errorElement = input.nextElementSibling;
+    const fieldName = input.name.replace(/\[.*\]/, '').replace(/([A-Z])/g, ' $1').trim();
+
+    if (!value) {
+        showError(input, errorElement, `${fieldName} is required`);
+        return false;
+    } else if (input.type === 'number' && input.name !== 'productOffer') {
+        const numberValue = Number(value);
+        if (numberValue < 0 || numberValue > 100) {
+            showError(input, errorElement, `${fieldName} must be between 0 and 100`);
+            return false;
+        }
+    }
+
+    hideError(input, errorElement);
+    return true;
+}
+
 
     
             const inputs = productForm.querySelectorAll('input[required], textarea[required], select[required]');

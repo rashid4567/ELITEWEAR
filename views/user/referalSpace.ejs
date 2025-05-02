@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enter Referral Code</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/userStyle/referalSpace.css">
+    <style>
+        /* Add any missing styles here if needed */
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1>Enter Referral Code</h1>
+            
+            <div class="reward-info">
+                <p><strong>Referral Rewards:</strong></p>
+                <p>New users get <span class="reward-amount">₹100</span> in their wallet when they sign up with a referral code.</p>
+                <p>Referrers get <span class="reward-amount">₹200</span> for each friend who signs up using their code.</p>
+            </div>
+            
+            <p class="description">
+                Enter your friend's referral code to unlock exclusive rewards! When you 
+                sign up using a referral code, both you and your friend will receive a 
+                bonus. Don't miss out on this opportunity to start with extra benefits!
+            </p>
+            
+            <form id="referralForm">
+                <div class="mb-4">
+                    <input type="text" class="form-control" id="referralCode" placeholder="Enter code" value="<%= typeof referralCode !== 'undefined' ? referralCode : '' %>" <%= typeof referralCode !== 'undefined' && referralCode ? 'readonly' : '' %>>
+                </div>
+                
+                <button type="submit" class="btn btn-submit">Continue to Sign Up</button>
+                <div id="errorMessage" class="error-message"></div>
+            </form>
+            
+            <a href="/signup" class="back-link" id="backToSignup">← Back to Sign Up</a>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const referralForm = document.getElementById('referralForm');
+            const referralCodeInput = document.getElementById('referralCode');
+            const errorMessage = document.getElementById('errorMessage');
+            const backToSignupLink = document.getElementById('backToSignup');
+            
+            // Handle form submission
+            referralForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                
+                const referralCode = referralCodeInput.value.trim();
+                if (!referralCode) {
+                    showError('Please enter a referral code');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/validate-referral-code', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ referralCode })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        // Redirect back to signup with the referral code
+                        window.location.href = `/signup?referral=${encodeURIComponent(referralCode)}`;
+                    } else {
+                        showError(result.message || 'Invalid referral code');
+                    }
+                } catch (error) {
+                    console.error('Error validating referral code:', error);
+                    showError('An error occurred while validating the referral code');
+                }
+            });
+            
+            // Handle back to signup link - preserve form data
+            backToSignupLink.addEventListener('click', function(event) {
+                // No need to prevent default as we want to navigate back
+                // The stored form data in sessionStorage will be used on the signup page
+            });
+            
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

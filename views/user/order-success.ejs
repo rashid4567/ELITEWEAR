@@ -23,777 +23,20 @@
         .order-illustration img { max-width: 300px; }
         .confetti {
             position: fixed;
-=======
-        :root {
-            --primary: #2c3e50;
-            --secondary: #1abc9c;
-            --accent: #e74c3c;
-            --light: #f8f9fa;
-            --dark: #212529;
-            --success: #2ecc71;
-            --warning: #f39c12;
-            --info: #3498db;
-            --gray-100: #f8f9fa;
-            --gray-200: #e9ecef;
-            --gray-300: #dee2e6;
-            --gray-400: #ced4da;
-            --gray-500: #adb5bd;
-            --gray-600: #6c757d;
-            --gray-700: #495057;
-            --gray-800: #343a40;
-            --gray-900: #212529;
-            --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f8f9fa;
-            color: var(--gray-800);
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* Confetti animation */
-        .confetti {
-            position: fixed;
-            width: 10px;
-            height: 10px;
-            z-index: 1000;
->>>>>>> Stashed changes
             top: -10px;
             animation: fall linear forwards;
             z-index: 1000;
+            top: -10px;
+            animation: fall 3s linear forwards;
         }
+        
         @keyframes fall {
             to {
-<<<<<<< Updated upstream
                 transform: translateY(100vh) rotate(720deg);
                 opacity: 0;
             }
         }
         .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1050; }
-=======
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        /* Success checkmark animation */
-        .checkmark-circle {
-            width: 120px;
-            height: 120px;
-            position: relative;
-            display: inline-block;
-            vertical-align: top;
-            margin-bottom: 20px;
-        }
-        
-        .checkmark-circle .background {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: var(--success);
-            position: absolute;
-        }
-        
-        .checkmark-circle .checkmark {
-            border-radius: 5px;
-        }
-        
-        .checkmark-circle .checkmark.draw:after {
-            animation-delay: 0.3s;
-            animation-duration: 0.8s;
-            animation-timing-function: ease;
-            animation-name: checkmark;
-            transform: scaleX(-1) rotate(135deg);
-            animation-fill-mode: forwards;
-        }
-        
-        .checkmark-circle .checkmark:after {
-            opacity: 0;
-            height: 60px;
-            width: 30px;
-            transform-origin: left top;
-            border-right: 8px solid white;
-            border-top: 8px solid white;
-            border-radius: 2px !important;
-            content: '';
-            left: 30px;
-            top: 60px;
-            position: absolute;
-        }
-        
-        @keyframes checkmark {
-            0% {
-                height: 0;
-                width: 0;
-                opacity: 1;
-            }
-            20% {
-                height: 0;
-                width: 30px;
-                opacity: 1;
-            }
-            40% {
-                height: 60px;
-                width: 30px;
-                opacity: 1;
-            }
-            100% {
-                height: 60px;
-                width: 30px;
-                opacity: 1;
-            }
-        }
-
-        /* Pulse animation for success icon */
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 15px rgba(46, 204, 113, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
-            }
-        }
-
-        /* Toast styles */
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1050;
-        }
-        
-        .custom-toast {
-            min-width: 300px;
-            background-color: white;
-            box-shadow: var(--shadow);
-            border-radius: 12px;
-            overflow: hidden;
-            border-left: 5px solid var(--success);
-        }
-
-        /* Main content styles */
-        .success-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        .success-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .success-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 15px;
-            position: relative;
-            display: inline-block;
-        }
-
-        .success-title::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: var(--secondary);
-            border-radius: 2px;
-        }
-
-        .success-subtitle {
-            font-size: 1.2rem;
-            color: var(--gray-600);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Order details card */
-        .order-card {
-            background-color: white;
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            transition: all 0.3s ease;
-            height: 100%;
-            position: relative;
-        }
-
-        .order-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .order-card-header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            padding: 20px 25px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .order-card-header h3 {
-            font-weight: 600;
-            margin: 0;
-            position: relative;
-            z-index: 1;
-        }
-
-        .order-card-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            z-index: 0;
-        }
-
-        .order-card-body {
-            padding: 25px;
-        }
-
-        .order-detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 15px 0;
-            border-bottom: 1px solid var(--gray-200);
-            transition: all 0.3s ease;
-        }
-
-        .order-detail-row:last-child {
-            border-bottom: none;
-        }
-
-        .order-detail-row:hover {
-            background-color: var(--gray-100);
-            padding-left: 5px;
-            padding-right: 5px;
-            border-radius: 8px;
-        }
-
-        .order-detail-label {
-            font-weight: 500;
-            color: var(--gray-700);
-        }
-
-        .order-detail-value {
-            font-weight: 600;
-            color: var(--gray-900);
-            text-align: right;
-        }
-
-        .total-row {
-            background-color: var(--gray-100);
-            border-radius: 8px;
-            padding: 15px !important;
-            margin-top: 10px;
-        }
-
-        .total-row .order-detail-label,
-        .total-row .order-detail-value {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        /* Action buttons */
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .btn-action {
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .btn-action::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 0%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-            z-index: -1;
-        }
-
-        .btn-action:hover::before {
-            width: 100%;
-        }
-
-        .btn-action:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow);
-        }
-
-        .btn-primary-action {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            border: none;
-            color: white;
-        }
-
-        .btn-secondary-action {
-            background: white;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-
-        .btn-secondary-action:hover {
-            background: var(--gray-100);
-        }
-
-        /* Order summary illustration */
-        .order-illustration {
-            text-align: center;
-            margin: 30px 0;
-            position: relative;
-        }
-
-        .order-illustration img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-        }
-
-        .order-illustration img:hover {
-            transform: scale(1.02);
-            box-shadow: var(--shadow-lg);
-        }
-
-        /* Floating elements */
-        .floating-element {
-            position: absolute;
-            opacity: 0.7;
-            z-index: -1;
-        }
-
-        .floating-element.circle {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--secondary) 0%, rgba(26, 188, 156, 0.3) 100%);
-        }
-
-        .floating-element.square {
-            width: 80px;
-            height: 80px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary) 0%, rgba(44, 62, 80, 0.3) 100%);
-            transform: rotate(45deg);
-        }
-
-        .floating-element.top-left {
-            top: 10%;
-            left: 5%;
-        }
-
-        .floating-element.bottom-right {
-            bottom: 10%;
-            right: 5%;
-        }
-
-        /* Success badge */
-        .success-badge {
-            position: absolute;
-            top: -20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            background: var(--success);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            animation: pulse 2s infinite;
-            z-index: 10;
-        }
-
-        /* Sound control */
-        .sound-control {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-
-        .sound-control:hover {
-            transform: scale(1.1);
-        }
-
-        /* Shimmer effect */
-        .shimmer {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .shimmer::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.3) 50%,
-                rgba(255, 255, 255, 0) 100%
-            );
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            to {
-                left: 150%;
-            }
-        }
-
-        /* Tracking progress */
-        .tracking-progress {
-            margin-top: 30px;
-            padding: 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-        }
-
-        .tracking-steps {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-            position: relative;
-        }
-
-        .tracking-steps::before {
-            content: '';
-            position: absolute;
-            top: 15px;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: var(--gray-300);
-            z-index: 0;
-        }
-
-        .tracking-step {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            width: 25%;
-        }
-
-        .step-icon {
-            width: 35px;
-            height: 35px;
-            background: white;
-            border: 3px solid var(--gray-300);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            transition: all 0.3s ease;
-        }
-
-        .step-active .step-icon {
-            background: var(--success);
-            border-color: var(--success);
-            color: white;
-        }
-
-        .step-active ~ .tracking-step .step-icon {
-            background: white;
-            border-color: var(--gray-300);
-            color: var(--gray-500);
-        }
-
-        .step-label {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--gray-600);
-        }
-
-        .step-active .step-label {
-            color: var(--success);
-            font-weight: 600;
-        }
-
-        /* Estimated delivery */
-        .estimated-delivery {
-            margin-top: 15px;
-            text-align: center;
-            font-size: 0.9rem;
-            color: var(--gray-600);
-        }
-
-        .delivery-date {
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        /* Enhanced Responsive styles */
-        @media (max-width: 1200px) {
-            .success-container {
-                padding: 30px 15px;
-            }
-            
-            .order-card-body {
-                padding: 20px;
-            }
-        }
-
-        @media (max-width: 992px) {
-            .success-title {
-                font-size: 2rem;
-            }
-            
-            .success-subtitle {
-                font-size: 1.1rem;
-            }
-            
-            .order-card {
-                margin-bottom: 30px;
-            }
-            
-            .checkmark-circle, 
-            .checkmark-circle .background {
-                width: 100px;
-                height: 100px;
-            }
-            
-            .checkmark-circle .checkmark:after {
-                height: 50px;
-                width: 25px;
-                left: 25px;
-                top: 50px;
-            }
-            
-            .success-badge {
-                width: 50px;
-                height: 50px;
-                font-size: 20px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .success-title {
-                font-size: 1.8rem;
-            }
-            
-            .success-subtitle {
-                font-size: 1rem;
-                padding: 0 15px;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .btn-action {
-                width: 100%;
-                padding: 10px 20px;
-            }
-            
-            .order-detail-row {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 12px 0;
-            }
-            
-            .order-detail-value {
-                text-align: left;
-                margin-top: 5px;
-            }
-            
-            .total-row .order-detail-label,
-            .total-row .order-detail-value {
-                font-size: 1.1rem;
-            }
-            
-            .toast-container {
-                top: 10px;
-                right: 10px;
-                left: 10px;
-            }
-            
-            .custom-toast {
-                min-width: auto;
-                width: 100%;
-            }
-            
-            .tracking-steps::before {
-                top: 12px;
-            }
-            
-            .step-icon {
-                width: 25px;
-                height: 25px;
-                font-size: 0.7rem;
-            }
-            
-            .step-label {
-                font-size: 0.7rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .success-header {
-                margin-bottom: 30px;
-            }
-            
-            .success-title {
-                font-size: 1.5rem;
-            }
-            
-            .success-title::after {
-                width: 60px;
-                height: 3px;
-            }
-            
-            .checkmark-circle, 
-            .checkmark-circle .background {
-                width: 80px;
-                height: 80px;
-            }
-            
-            .checkmark-circle .checkmark:after {
-                height: 40px;
-                width: 20px;
-                left: 20px;
-                top: 40px;
-                border-right: 6px solid white;
-                border-top: 6px solid white;
-            }
-            
-            .order-card-header {
-                padding: 15px;
-            }
-            
-            .order-card-header h3 {
-                font-size: 1.2rem;
-            }
-            
-            .order-card-body {
-                padding: 15px;
-            }
-            
-            .order-detail-label,
-            .order-detail-value {
-                font-size: 0.9rem;
-            }
-            
-            .floating-element {
-                display: none;
-            }
-            
-            .sound-control {
-                bottom: 10px;
-                right: 10px;
-                width: 40px;
-                height: 40px;
-            }
-            
-            .tracking-step {
-                width: 25%;
-            }
-            
-            .tracking-steps::before {
-                top: 10px;
-                height: 3px;
-            }
-            
-            .step-icon {
-                width: 20px;
-                height: 20px;
-                border-width: 2px;
-                font-size: 0.6rem;
-                margin-bottom: 5px;
-            }
-            
-            .step-label {
-                font-size: 0.6rem;
-            }
-            
-            .estimated-delivery {
-                font-size: 0.8rem;
-            }
-        }
-
-        /* Landscape orientation on mobile */
-        @media (max-height: 500px) and (orientation: landscape) {
-            .success-header {
-                margin-bottom: 20px;
-            }
-            
-            .checkmark-circle {
-                margin-bottom: 10px;
-            }
-            
-            .success-title {
-                font-size: 1.5rem;
-            }
-            
-            .success-subtitle {
-                font-size: 0.9rem;
-            }
-            
-            .tracking-progress {
-                margin-top: 20px;
-                padding: 15px;
-            }
-            
-            .tracking-steps {
-                margin-top: 10px;
-            }
-            
-            .order-illustration {
-                margin: 15px 0;
-            }
-            
-            .action-buttons {
-                margin-top: 15px;
-                flex-direction: row;
-            }
-        }
->>>>>>> Stashed changes
     </style>
 </head>
 <body>
@@ -1080,6 +323,57 @@
                             </p>
                         </div>
                     </div>
+
+                    <div class="detail-row">
+                        <span>Order Time</span>
+                        <span><%= order.orderDate.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %></span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Payment Method</span>
+                        <span><%= order.paymentMethod %></span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Sender Name</span>
+                        <span><%= user.name || 'N/A' %></span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Shipping Address</span>
+                        <span>
+                            <%= order.address?.fullname || 'N/A' %>, 
+                            <%= order.address?.address || '' %>, 
+                            <%= order.address?.city || '' %>, 
+                            <%= order.address?.district || '' %>, 
+                            <%= order.address?.state || '' %> - <%= order.address?.pincode || '' %>
+                        </span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Order Items</span>
+                        <span>
+                            <% order.order_items.forEach((item, index) => { %>
+                                <%= item.product_name %> (Size: <%= item.size %>) x <%= item.quantity %>
+                                <%= index < order.order_items.length - 1 ? ', ' : '' %>
+                            <% }) %>
+                        </span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Subtotal</span>
+                        <span>₹<%= (order.total - (order.total > 8000 ? 0 : 200)).toFixed(2) %></span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Delivery Charge</span>
+                        <span>₹<%= order.total > 8000 ? 0 : 200 %></span>
+                    </div>
+
+                    <div class="detail-row">
+                        <span>Grand Total</span>
+                        <span class="fw-bold">₹<%= order.total.toFixed(2) %></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1206,7 +500,7 @@
             if (successIcon) {
                 successIcon.addEventListener('click', function() {
                     const audio = new Audio('/Uploads/success-sound.mp3');
-                    audio.play().catch(err => console.log('Audio playback failed:', err)
+                    audio.play().catch(err => console.log('Audio playback failed:', err));
 
 =======
         

@@ -21,6 +21,8 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/userStyle/getOrder.css" />
+    <link rel="stylesheet" href="/userStyle/footer.css">
+    <link rel="stylesheet" href="/userStyle/header.css">
     <style>
       .order-progress .progress {
         height: 10px;
@@ -84,7 +86,6 @@
                 My Orders
               </h4>
 
-              <!-- Toast Notification -->
               <div class="toast-container position-fixed top-0 end-0 p-3">
                 <div
                   id="orderToast"
@@ -275,11 +276,11 @@
                         <div class="row g-4 align-items-center">
 <<<<<<< Updated upstream
                           <div class="col-lg-2 col-md-3 col-sm-3">
-                            <img
-                              src="<%= (item.productId && item.productId.images && item.productId.images.length > 0) ? item.productId.images[0].url : '/api/placeholder/300/300' %>"
-                              alt="<%= item.productId && item.productId.name ? item.productId.name : 'Unnamed Product' %>"
-                              class="product-image img-fluid rounded"
-                            />
+                          <img 
+                          src="<%= item.productId && item.productId.images && item.productId.images.length > 0 ? item.productId.images[0].url : '/api/placeholder/300/300' %>" 
+                          alt="<%= item.productId && item.productId.name ? item.productId.name : 'Unnamed Product' %>" 
+                          class="product-img img-fluid rounded"
+                      >
                           </div>
                           <div class="col-lg-7 col-md-6 col-sm-9">
 =======
@@ -332,7 +333,7 @@
                 <% }); %>
               <% } %>
 
-              <!-- Pagination -->
+         
               <% if (hasOrders && totalPages > 1) { %>
                 <nav aria-label="Order pagination" class="mt-4 animate__animated animate__fadeInUp">
                   <ul class="pagination justify-content-center">
@@ -360,7 +361,7 @@
       </div>
     </div>
 
-    <!-- Cancel Order Modal -->
+
     <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -383,7 +384,7 @@
       </div>
     </div>
 
-    <!-- Return Order Modal -->
+
     <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -407,7 +408,7 @@
       </div>
     </div>
 
-    <!-- Reorder Modal -->
+   
     <div class="modal fade" id="reorderModal" tabindex="-1" aria-labelledby="reorderModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -434,7 +435,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
-      // Debounce utility to prevent multiple rapid clicks
+    
       function debounce(func, wait) {
         let timeout;
         return function (...args) {

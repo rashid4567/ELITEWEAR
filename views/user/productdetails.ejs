@@ -13,38 +13,8 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
     <link rel="stylesheet" href="/userStyle/productSelected.css" />
-    <style>
-      .loading-btn {
-        opacity: 0.6;
-        pointer-events: none;
-      }
-      .toast-container {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 1050;
-      }
-
-      /* Simple zoom functionality styles */
-      .product-main-image-container {
-        position: relative;
-        overflow: hidden;
-        padding: 10px;
-      }
-
-      .product-main-image {
-        width: 100%;
-        height: auto;
-        object-fit: contain;
-        cursor: crosshair;
-        transition: transform 0.1s ease-out;
-      }
-
-      /* Remove the existing hover zoom effect */
-      .product-main-image-container:hover .product-main-image {
-        transform: none;
-      }
-    </style>
+    <link rel="stylesheet" href="/userStyle/header.css">
+    <link rel="stylesheet" href="/userStyle/footer.css">
   </head>
   <body>
     <%- include("../partials/user/header") %>

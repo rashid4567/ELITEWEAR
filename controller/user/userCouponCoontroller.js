@@ -3,94 +3,98 @@ const Cart = require("../../model/cartScheema");
 const mongoose = require("mongoose");
 
 const allCoupons = async (req, res) => {
-  try {
-    const today = new Date();
-    const userId = req.user._id.toString();
+    try {
+      const today = new Date();
+      const userId = req.user._id.toString();
+  
+      
+      const page = parseInt(req.query.page) || 1;
+      const limit = 5;
+      const skip = (page - 1) * limit;
+  
+      const coupons = await Coupon.find({})
+        .sort({ createdAt: 1 }) 
+        .limit(10) 
+        .lean();
+  
+      const totalPrice = req.session.checkout?.totalPrice || 0;
+  
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = 5;
-    const skip = (page - 1) * limit;
-
-    const coupons = await Coupon.find({})
-      .sort({ createdAt: 1 })
-      .skip(5)
-      .limit(10)
-      .lean();
-
-    const totalPrice = req.session.checkout?.totalPrice || 0;
-
-    const couponsWithStatus = coupons.map((coupon) => {
-      const usedBy = coupon.usedBy || [];
-      const userUsage = usedBy.find(
-        (u) => u && u.userId && u.userId.toString() === userId
-      );
-
-      const isExpired = new Date(coupon.expiryDate) < today;
-      const notStarted = new Date(coupon.startingDate) > today;
-      const isUsed = userUsage && userUsage.usedCount >= coupon.limit;
-      const isActive =
-        coupon.isActive && !isExpired && new Date(coupon.startingDate) <= today;
-
-      return {
-        ...coupon,
-        status: isUsed
-          ? "used"
-          : isExpired
-          ? "expired"
-          : notStarted
-          ? "upcoming"
-          : isActive
-          ? "available"
-          : "inactive",
-        statusText: isUsed
-          ? "Already Used"
-          : isExpired
-          ? "Expired"
-          : notStarted
-          ? "Not Started Yet"
-          : isActive
-          ? "Available"
-          : "Inactive",
-        isEligible: isActive && !isUsed && coupon.minimumPurchase <= totalPrice,
-        userUsageCount: userUsage ? userUsage.usedCount : 0,
-        remainingUses: userUsage
-          ? Math.max(0, coupon.limit - userUsage.usedCount)
-          : coupon.limit,
+      const couponsWithStatus = coupons.map((coupon) => {
+        const usedBy = coupon.usedBy || [];
+        const userUsage = usedBy.find(
+          (u) => u && u.userId && u.userId.toString() === userId
+        );
+  
+        const isExpired = new Date(coupon.expiryDate) < today;
+        const notStarted = new Date(coupon.startingDate) > today;
+        const isUsed = userUsage && userUsage.usedCount >= coupon.limit;
+        const isActive =
+          coupon.isActive && !isExpired && new Date(coupon.startingDate) <= today;
+  
+        return {
+          ...coupon,
+          status: isUsed
+            ? "used"
+            : isExpired
+            ? "expired"
+            : notStarted
+            ? "upcoming"
+            : isActive
+            ? "available"
+            : "inactive",
+          statusText: isUsed
+            ? "Already Used"
+            : isExpired
+            ? "Expired"
+            : notStarted
+            ? "Not Started Yet"
+            : isActive
+            ? "Available"
+            : "Inactive",
+          isEligible: isActive && !isUsed && coupon.minimumPurchase <= totalPrice,
+          userUsageCount: userUsage ? userUsage.usedCount : 0,
+          remainingUses: userUsage
+            ? Math.max(0, coupon.limit - userUsage.usedCount)
+            : coupon.limit,
+        };
+      });
+  
+     
+      const statusPriority = {
+        available: 1,
+        upcoming: 2,
+        inactive: 3,
+        used: 4,
+        expired: 5,
       };
-    });
-
-    const statusPriority = {
-      available: 1,
-      upcoming: 2,
-      inactive: 3,
-      used: 4,
-      expired: 5,
-    };
-
-    couponsWithStatus.sort((a, b) => {
-      const statusDiff =
-        (statusPriority[a.status] || 10) - (statusPriority[b.status] || 10);
-      if (statusDiff !== 0) return statusDiff;
-      return new Date(a.createdAt) - new Date(b.createdAt);
-    });
-
-    const paginatedCoupons = couponsWithStatus.slice(skip, skip + limit);
-    const totalPages = Math.ceil(couponsWithStatus.length / limit);
-
-    res.render("Usercoupons", {
-      coupons: paginatedCoupons,
-      user: req.user,
-      currentPage: page,
-      totalPages: totalPages,
-    });
-  } catch (error) {
-    console.error("Error in loading allCoupons:", error);
-    res.status(500).render("error", {
-      message: "Failed to load coupons. Please try again later.",
-    });
-  }
-};
-
+  
+      couponsWithStatus.sort((a, b) => {
+        const statusDiff =
+          (statusPriority[a.status] || 10) - (statusPriority[b.status] || 10);
+        if (statusDiff !== 0) return statusDiff;
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      });
+  
+     
+      const paginatedCoupons = couponsWithStatus.slice(skip, skip + limit);
+      const totalPages = Math.ceil(couponsWithStatus.length / limit);
+  
+      res.render("Usercoupons", {
+        coupons: paginatedCoupons,
+        user: req.user,
+        currentPage: page,
+        totalPages: totalPages,
+      });
+    } catch (error) {
+      console.error("Error in loading allCoupons:", error);
+      res.status(500).render("error", {
+        message: "Failed to load coupons. Please try again later.",
+      });
+    }
+  };
+  
+  
 const getAvailableCoupons = async (req, res) => {
   try {
     const userId = req.user._id.toString();
@@ -171,6 +175,7 @@ const applyCoupon = async (req, res) => {
         .json({ success: false, message: "Invalid or expired coupon" });
     }
 
+
     const usedBy = coupon.usedBy || [];
     const userUsage = usedBy.find(
       (u) => u && u.userId && u.userId.toString() === userId
@@ -207,10 +212,12 @@ const applyCoupon = async (req, res) => {
       discount = coupon.maxRedeemable;
     }
 
+ 
     if (!req.session.checkout) {
       req.session.checkout = {};
     }
     req.session.checkout.totalPrice = totalPrice;
+
 
     req.session.checkout.coupon = {
       couponId: coupon._id.toString(),

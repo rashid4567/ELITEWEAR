@@ -4,31 +4,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELITE WEAR - Premium Fashion</title>
+    <title>ELITE WEAR - Premium Collection</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
     <link rel="stylesheet" href="/userStyle/allproduct.css">
+    <link rel="stylesheet" href="/userStyle/header.css">
+    <link rel="stylesheet" href="/userStyle/footer.css">
 </head>
 
 <body>
+    <script>
+        // Set the header background type for the shop page
+        document.body.setAttribute('data-header-bg', 'dark');
+    </script>
+    
     <%- include("../partials/user/header") %>
 
-    <section class="hero">
+    <!-- Hero Section -->
+    <section class="hero-section">
         <div class="hero-content">
-            <h1>Bestselling Products</h1>
-            <p>Elevate your style with our premium collection</p>
+            <h1 class="hero-title">Premium Collection</h1>
+            <p class="hero-subtitle">Discover timeless elegance with our curated selection</p>
         </div>
     </section>
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-dark">Home</a></li>
-        <li class="breadcrumb-item active" aria-current="page">shop</li>
-    </ol>
-    <div class="container shop-section">
+
+    <!-- Breadcrumb -->
+    <div class="container">
+        <nav aria-label="breadcrumb" class="custom-breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Shop</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Main Shop Section -->
+    <div class="container shop-container">
         <div class="row">
-            <div class="col-lg-3">
+            <!-- Mobile Filter Toggle -->
+            <div class="d-block d-lg-none mb-4">
+                <button class="btn filter-toggle-btn w-100" id="mobileFilterToggle">
+                    <i class="fas fa-filter me-2"></i> Show Filters
+                </button>
+            </div>
+
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3 filter-sidebar" id="filterSidebar">
+                <div class="filter-header d-flex d-lg-none justify-content-between align-items-center mb-3">
+                    <h5 class="m-0">Filters</h5>
+                    <button class="btn-close" id="closeFilter"></button>
+                </div>
+
                 <form id="filterForm" action="/filterProducts" method="GET">
                     <div class="filter-section">
-                        <h5 class="filter-title">Filter By</h5>
+                        <h5 class="filter-title">Refine Selection</h5>
 
                         <div class="filter-group">
                             <span class="filter-label">Categories</span>
@@ -42,9 +73,9 @@
 
                         <div class="filter-group">
                             <span class="filter-label">Size</span>
-                            <div class="d-flex flex-wrap gap-2">
-                                <% ['S', 'M', 'L', 'XL'].forEach(size => { %>
-                                    <button type="button" class="btn btn-outline-dark btn-sm size-btn <%= (filters && filters.size === size) ? 'active' : '' %>" data-size="<%= size %>"><%= size %></button>
+                            <div class="size-options">
+                                <% ['S', 'M', 'L', 'XL', 'XXL'].forEach(size => { %>
+                                    <button type="button" class="size-btn <%= (filters && filters.size === size) ? 'active' : '' %>" data-size="<%= size %>"><%= size %></button>
                                 <% }); %>
                             </div>
                             <input type="hidden" name="size" id="selectedSize" value="<%= filters ? filters.size : '' %>">
@@ -52,110 +83,126 @@
 
                         <div class="filter-group">
                             <span class="filter-label">Price Range</span>
-                            <div class="row">
-                                <div class="col">
+                            <div class="price-inputs">
+                                <div class="price-input">
                                     <input type="number" class="form-control" placeholder="Min" name="minPrice" id="minPrice" value="<%= filters ? filters.minPrice : '' %>">
                                 </div>
-                                <div class="col">
+                                <div class="price-divider">-</div>
+                                <div class="price-input">
                                     <input type="number" class="form-control" placeholder="Max" name="maxPrice" id="maxPrice" value="<%= filters ? filters.maxPrice : '' %>">
                                 </div>
                             </div>
                         </div>
 
-                        <div class="d-flex gap-2 mt-3">
-                            <button type="button" class="btn btn-primary flex-grow-1" id="applyFilters">Apply Filters</button>
-                            <a href="/allproduct" class="btn btn-outline-secondary">Reset</a>
+                        <div class="filter-actions">
+                            <button type="button" class="btn btn-shop-now" id="applyFilters">Apply Filters</button>
+                            <a href="/allproduct" class="btn btn-reset mt-2">Reset All</a>
                         </div>
                     </div>
                 </form>
             </div>
 
-            <div class="col-lg-9">
-                <div class="products-header d-flex justify-content-between align-items-center mb-4">
-                    <h4 id="productCount">Products (<%= totalProducts %>)</h4>
-                    <div class="search-container">
-                        <form action="/search" method="GET" class="d-flex" id="searchForm">
-                            <input type="text" name="query" id="searchQuery" placeholder="Search products or brands..." class="search-input" value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>">
-                            <button type="button" class="search-button" id="searchBtn">
-                                <i class="fas fa-search"></i>
-                            </button>
-                            <button type="button" class="btn btn-outline-secondary ms-2" id="resetSearch">Reset</button>
-                        </form>
+            <!-- Products Grid -->
+            <div class="col-lg-9 products-container">
+                <div class="products-header">
+                    <div class="products-count">
+                        <h4 id="productCount">Products (<%= totalProducts %>)</h4>
                     </div>
-        
-                    <div class="sorting-options">
-                        <select class="form-select" id="sortOption" name="sort">
-                            <option value="latest" <%=(filters && filters.sort === 'latest') ? 'selected' : '' %>>New Arrivals</option>
-                            <option value="price-low-high" <%=(filters && filters.sort === 'price-low-high') ? 'selected' : '' %>>Price: Low to High</option>
-                            <option value="price-high-low" <%=(filters && filters.sort === 'price-high-low') ? 'selected' : '' %>>Price: High to Low</option>
-                            <option value="popular" <%=(filters && filters.sort === 'popular') ? 'selected' : '' %>>Most Popular</option>
-                        </select>
+                    
+                    <div class="products-actions">
+                        <div class="search-container">
+                            <form action="/search" method="GET" class="search-form" id="searchForm">
+                                <input type="text" name="query" id="searchQuery" placeholder="Search products..." class="search-input" value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>">
+                                <button type="button" class="search-button" id="searchBtn">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <div class="sorting-container">
+                            <select class="form-select" id="sortOption" name="sort">
+                                <option value="latest" <%=(filters && filters.sort === 'latest') ? 'selected' : '' %>>New Arrivals</option>
+                                <option value="price-low-high" <%=(filters && filters.sort === 'price-low-high') ? 'selected' : '' %>>Price: Low to High</option>
+                                <option value="price-high-low" <%=(filters && filters.sort === 'price-high-low') ? 'selected' : '' %>>Price: High to Low</option>
+                                <option value="popular" <%=(filters && filters.sort === 'popular') ? 'selected' : '' %>>Most Popular</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Products Grid -->
                 <div class="row" id="products-container">
                     <% if (products && products.length > 0) { %>
                         <% products.forEach(product => { %>
                             <div class="col-md-4 col-sm-6 mb-4 product-item">
-                                <a href="/productdetails?id=<%= product._id %>" class="text-decoration-none text-dark product-link">
-                                    <div class="product-card">
-                                        <div class="product-img-container">
-                                            <% const mainImage = product.images && product.images.find(img => img.isMain) || (product.images && product.images[0]) || { url: '/images/placeholder.jpg' }; %>
-                                            <img src="<%= mainImage.url %>" class="product-img" alt="<%= product.name %>">
-                                            <% if (product.offer && product.offer > 0) { %>
-                                                <span class="product-badge"><%= product.offer %>% OFF</span>
-                                            <% } %>
-                                        </div>
-                                        <h5 class="product-title"><%= product.name %></h5>
-                                        <div class="product-pricing">
-                                            <% if (product.offer > 0) { %>
-                                                <span class="product-price">₹<%= (product.salePrice || 0).toFixed(2) %></span>
-                                                <span class="product-original-price">₹<%= (product.regularPrice || 0).toFixed(2) %></span>
-                                            <% } else { %>
-                                                <span class="product-price">₹<%= (product.regularPrice || 0).toFixed(2) %></span>
-                                            <% } %>
-                                        </div>
-                                        <div class="product-rating">
-                                            <% const rating = product.ratings ? (product.ratings.average || 0) : 0; %>
-                                            <% for (let star = 1; star <= 5; star++) { %>
-                                                <% if (star <= Math.floor(rating)) { %>
-                                                    <i class="fas fa-star"></i>
-                                                <% } else if (star <= Math.ceil(rating) && star > Math.floor(rating)) { %>
-                                                    <i class="fas fa-star-half-alt"></i>
-                                                <% } else { %>
-                                                    <i class="far fa-star"></i>
-                                                <% } %>
-                                            <% } %>
-                                            <span class="ms-1">(<%= product.ratings ? (product.ratings.count || 0) : 0 %>)</span>
-                                        </div>
+                                <div class="product-card">
+                                    <div class="wishlist-icon">
+                                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart" data-product-id="<%= product._id %>">
+                                            <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                        </svg>
                                     </div>
-                                </a>
-                                <div class="wishlist-icon">
-                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart" data-product-id="<%= product._id %>">
-                                        <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                                    </svg>
+                                    <a href="/productdetails?id=<%= product._id %>" class="product-image-link">
+                                        <% const mainImage = product.images && product.images.find(img => img.isMain) || (product.images && product.images[0]) || { url: '/images/placeholder.jpg' }; %>
+                                        <img src="<%= mainImage.url %>" class="product-image" alt="<%= product.name %>">
+                                        <% if (product.offer && product.offer > 0) { %>
+                                            <span class="product-badge"><%= product.offer %>% OFF</span>
+                                        <% } %>
+                                        <div class="product-overlay">
+                                            <span class="quick-view">Quick View</span>
+                                        </div>
+                                    </a>
+                                    <div class="product-info">
+                                        <h3 class="product-name"><%= product.name %></h3>
+                                        <div class="product-price-rating">
+                                            <div class="product-pricing">
+                                                <% if (product.offer > 0) { %>
+                                                    <span class="product-price">₹<%= (product.salePrice || 0).toFixed(2) %></span>
+                                                    <span class="product-original-price">₹<%= (product.regularPrice || 0).toFixed(2) %></span>
+                                                <% } else { %>
+                                                    <span class="product-price">₹<%= (product.regularPrice || 0).toFixed(2) %></span>
+                                                <% } %>
+                                            </div>
+                                            <div class="product-rating">
+                                                <% const rating = product.ratings ? (product.ratings.average || 0) : 0; %>
+                                                <% for (let star = 1; star <= 5; star++) { %>
+                                                    <% if (star <= Math.floor(rating)) { %>
+                                                        <i class="fas fa-star"></i>
+                                                    <% } else if (star <= Math.ceil(rating) && star > Math.floor(rating)) { %>
+                                                        <i class="fas fa-star-half-alt"></i>
+                                                    <% } else { %>
+                                                        <i class="far fa-star"></i>
+                                                    <% } %>
+                                                <% } %>
+                                                <span class="rating-count">(<%= product.ratings ? (product.ratings.count || 0) : 0 %>)</span>
+                                            </div>
+                                        </div>
+                                        <a href="/productdetails?id=<%= product._id %>" class="btn-view-product">View Product</a>
+                                    </div>
                                 </div>
                             </div>
                         <% }); %>
                     <% } else { %>
-                        <div class="col-12 text-center py-5">
-                            <div class="alert alert-info">
-                                <% if (typeof noProductsMessage !== 'undefined' && noProductsMessage) { %>
+                        <div class="col-12">
+                            <div class="no-products">
+                                <div class="no-products-icon">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <h3>No Products Found</h3>
+                                <p><% if (typeof noProductsMessage !== 'undefined' && noProductsMessage) { %>
                                     <%= noProductsMessage %>
                                 <% } else { %>
-                                    No products found matching your criteria.
-                                <% } %>
-                                <div class="mt-3">
-                                    <a href="/allproduct" class="btn btn-primary">Go Back</a>
-                                </div>
+                                    We couldn't find any products matching your criteria.
+                                <% } %></p>
+                                <a href="/allproduct" class="btn btn-shop-now">Clear Filters</a>
                             </div>
                         </div>
                     <% } %>
                 </div>
 
+                <!-- Pagination -->
                 <% if (totalPages && totalPages > 1) { %>
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center" id="pagination">
+                    <nav aria-label="Page navigation" class="pagination-container">
+                        <ul class="pagination" id="pagination">
                             <% const buildPageUrl = (pageNum) => {
                                 const params = new URLSearchParams();
                                 if (filters) {
@@ -175,7 +222,7 @@
 
                             <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
                                 <a class="page-link" href="<%= buildPageUrl(currentPage - 1) %>" aria-label="Previous" data-page="<%= currentPage - 1 %>">
-                                    <span aria-hidden="true">«</span>
+                                    <i class="fas fa-chevron-left"></i>
                                 </a>
                             </li>
 
@@ -187,7 +234,7 @@
 
                             <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
                                 <a class="page-link" href="<%= buildPageUrl(currentPage + 1) %>" aria-label="Next" data-page="<%= currentPage + 1 %>">
-                                    <span aria-hidden="true">»</span>
+                                    <i class="fas fa-chevron-right"></i>
                                 </a>
                             </li>
                         </ul>
@@ -197,10 +244,30 @@
         </div>
     </div>
 
+    <!-- Newsletter Section -->
+    <section class="newsletter-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h2 class="newsletter-title">Subscribe to Our Newsletter</h2>
+                    <p class="newsletter-text">Stay updated with our latest collections and exclusive offers.</p>
+                </div>
+                <div class="col-lg-6">
+                    <form class="newsletter-form">
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Your email address" required>
+                            <button class="btn btn-shop-now" type="submit">Subscribe</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <%- include("../partials/user/footer") %>
 
-    <!-- Toast Container -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <!-- Toast Notification -->
+    <div class="toast-container">
         <div id="wishlistToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
                 <strong class="me-auto">Wishlist</strong>
@@ -210,16 +277,87 @@
         </div>
     </div>
 
+    <!-- Quick View Modal -->
+    <div class="modal fade" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="quickViewModalLabel">Quick View</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <img id="quickViewImage" src="/placeholder.svg" alt="Product Image" class="img-fluid">
+                        </div>
+                        <div class="col-md-6">
+                            <h3 id="quickViewName"></h3>
+                            <p id="quickViewPrice" class="product-price"></p>
+                            <div id="quickViewRating" class="star-rating"></div>
+                            <p id="quickViewDescription"></p>
+                            <a id="quickViewLink" href="#" class="btn btn-shop-now">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to Top Button -->
+    <div class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     <script>
-        const filters = <%- JSON.stringify(filters || { category: 'all', size: '', color: '', minPrice: '', maxPrice: '', sort: 'latest' }) %>;
-        let currentPage = <%= currentPage || 1 %>;
-
-        document.addEventListener('DOMContentLoaded', function () {
-            // Initialize toast
+        document.addEventListener('DOMContentLoaded', function() {
+            const filters = <%- JSON.stringify(filters || { category: 'all', size: '', color: '', minPrice: '', maxPrice: '', sort: 'latest' }) %>;
+            let currentPage = <%= currentPage || 1 %>;
+            
+            // Mobile filter toggle
+            const mobileFilterToggle = document.getElementById('mobileFilterToggle');
+            const filterSidebar = document.getElementById('filterSidebar');
+            const closeFilter = document.getElementById('closeFilter');
+            
+            if (mobileFilterToggle) {
+                mobileFilterToggle.addEventListener('click', function() {
+                    filterSidebar.classList.add('show');
+                    document.body.classList.add('filter-open');
+                });
+            }
+            
+            if (closeFilter) {
+                closeFilter.addEventListener('click', function() {
+                    filterSidebar.classList.remove('show');
+                    document.body.classList.remove('filter-open');
+                });
+            }
+            
+            // Size selection
+            const sizeButtons = document.querySelectorAll('.size-btn');
+            const selectedSizeInput = document.getElementById('selectedSize');
+            
+            sizeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const size = this.getAttribute('data-size');
+                    
+                    if (this.classList.contains('active')) {
+                        // Deselect if already active
+                        this.classList.remove('active');
+                        selectedSizeInput.value = '';
+                    } else {
+                        // Select new size
+                        sizeButtons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                        selectedSizeInput.value = size;
+                    }
+                });
+            });
+            
+            // Wishlist functionality
             const wishlistToast = new bootstrap.Toast(document.getElementById('wishlistToast'));
-
-    
+            
             async function loadWishlistState() {
                 try {
                     const response = await fetch('/wishlist/ids');
@@ -235,19 +373,19 @@
                     console.error('Error loading wishlist state:', error);
                 }
             }
+            
             loadWishlistState();
-
-            // Handle wishlist toggle
+            
             document.querySelectorAll('.wishlist-heart').forEach(heart => {
-                heart.addEventListener('click', async function(event) {
+                heart.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     
                     const productId = this.getAttribute('data-product-id');
                     const heartPath = this.querySelector('.heart');
                     const isActive = heartPath.classList.contains('active');
                     const url = isActive ? '/wishlist/remove' : '/addTowhislist';
-
-                
-
+                    
                     try {
                         const response = await fetch(url, {
                             method: 'POST',
@@ -258,16 +396,18 @@
                         });
                         
                         const data = await response.json();
-                
+                        
                         const toastBody = document.getElementById('toastBody');
                         toastBody.textContent = data.message;
                         toastBody.style.color = data.success ? 'green' : 'red';
-                        wishlistToast.show();
+                        
                         if (data.success) {
                             heartPath.classList.toggle('active');
                         }
+                        
+                        wishlistToast.show();
                     } catch (error) {
-                
+                        console.error('Error:', error);
                         const toastBody = document.getElementById('toastBody');
                         toastBody.textContent = 'Operation failed';
                         toastBody.style.color = 'red';
@@ -275,22 +415,64 @@
                     }
                 });
             });
-
+            
+            // Quick View functionality
+            const quickViewModal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+            
+            document.querySelectorAll('.quick-view').forEach(quickViewBtn => {
+                quickViewBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const productCard = this.closest('.product-card');
+                    const productLink = productCard.querySelector('.product-image-link').getAttribute('href');
+                    const productImage = productCard.querySelector('.product-image').getAttribute('src');
+                    const productName = productCard.querySelector('.product-name').textContent;
+                    const productPrice = productCard.querySelector('.product-price').textContent;
+                    const productRating = productCard.querySelector('.product-rating').innerHTML;
+                    
+                    document.getElementById('quickViewImage').setAttribute('src', productImage);
+                    document.getElementById('quickViewName').textContent = productName;
+                    document.getElementById('quickViewPrice').textContent = productPrice;
+                    document.getElementById('quickViewRating').innerHTML = productRating;
+                    document.getElementById('quickViewDescription').textContent = 'Loading product details...';
+                    document.getElementById('quickViewLink').setAttribute('href', productLink);
+                    
+                    quickViewModal.show();
+                });
+            });
+            
+            // Filter functionality
+            const applyFiltersBtn = document.getElementById('applyFilters');
+            const categorySelect = document.getElementById('categorySelect');
+            const minPriceInput = document.getElementById('minPrice');
+            const maxPriceInput = document.getElementById('maxPrice');
+            const sortOption = document.getElementById('sortOption');
+            const searchBtn = document.getElementById('searchBtn');
+            const searchQuery = document.getElementById('searchQuery');
             
             function fetchProducts(isSearch = false) {
                 const filterData = {
-                    category: document.getElementById('categorySelect').value,
-                    size: document.getElementById('selectedSize').value,
-                    minPrice: document.getElementById('minPrice').value,
-                    maxPrice: document.getElementById('maxPrice').value,
-                    sort: document.getElementById('sortOption').value,
-                    query: document.getElementById('searchQuery').value,
+                    category: categorySelect.value,
+                    size: selectedSizeInput.value,
+                    minPrice: minPriceInput.value,
+                    maxPrice: maxPriceInput.value,
+                    sort: sortOption.value,
+                    query: searchQuery.value,
                     page: currentPage
                 };
-
+                
                 const queryString = new URLSearchParams(filterData).toString();
                 const url = isSearch ? `/search?${queryString}` : `/filterProducts?${queryString}`;
-
+                
+                // Show loading state
+                document.getElementById('products-container').innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <div class="loading-spinner"></div>
+                        <p class="mt-3">Loading products...</p>
+                    </div>
+                `;
+                
                 fetch(url, {
                     method: 'GET',
                     headers: {
@@ -303,118 +485,154 @@
                 .then(data => {
                     updateProducts(data);
                     updatePagination(data);
-                    // Reload wishlist state after updating products
+                    
+                    // Close mobile filter if open
+                    if (window.innerWidth < 992) {
+                        filterSidebar.classList.remove('show');
+                        document.body.classList.remove('filter-open');
+                    }
+                    
+                    // Scroll to products section
+                    document.querySelector('.products-header').scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Update wishlist state
                     loadWishlistState();
                 })
                 .catch(error => {
                     console.error('Error fetching products:', error);
+                    document.getElementById('products-container').innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i>
+                                Error loading products. Please try again.
+                            </div>
+                        </div>
+                    `;
                 });
             }
-
-            document.getElementById('categorySelect').addEventListener('change', function () {
-                currentPage = 1;
-                fetchProducts();
-            });
-
-            document.querySelectorAll('.size-btn').forEach(btn => {
-                btn.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const size = this.dataset.size;
-                    const sizeInput = document.getElementById('selectedSize');
-                    
-                    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-                    if (sizeInput.value === size) {
-                        sizeInput.value = '';
-                    } else {
-                        this.classList.add('active');
-                        sizeInput.value = size;
-                    }
+            
+            if (applyFiltersBtn) {
+                applyFiltersBtn.addEventListener('click', function() {
                     currentPage = 1;
                     fetchProducts();
                 });
-            });
-
-            document.getElementById('applyFilters').addEventListener('click', function (e) {
-                e.preventDefault();
-                currentPage = 1;
-                fetchProducts();
-            });
-
-            document.getElementById('sortOption').addEventListener('change', function () {
-                currentPage = 1;
-                fetchProducts();
-            });
-
-            document.getElementById('searchBtn').addEventListener('click', function (e) {
-                e.preventDefault();
-                currentPage = 1;
-                fetchProducts(true); 
-            });
-
-            document.getElementById('resetSearch').addEventListener('click', function () {
-                document.getElementById('searchQuery').value = '';
-                currentPage = 1;
-                fetchProducts(); 
-            });
-
-            document.getElementById('pagination')?.addEventListener('click', function (e) {
-                e.preventDefault();
-                const pageLink = e.target.closest('.page-link');
-                if (pageLink && !pageLink.parentElement.classList.contains('disabled')) {
-                    currentPage = parseInt(pageLink.dataset.page);
-                    fetchProducts(document.getElementById('searchQuery').value.trim() !== '');
-                }
-            });
-
+            }
+            
+            if (sortOption) {
+                sortOption.addEventListener('change', function() {
+                    currentPage = 1;
+                    fetchProducts();
+                });
+            }
+            
+            if (searchBtn) {
+                searchBtn.addEventListener('click', function() {
+                    currentPage = 1;
+                    fetchProducts(true);
+                });
+            }
+            
+            if (searchQuery) {
+                searchQuery.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        currentPage = 1;
+                        fetchProducts(true);
+                    }
+                });
+            }
+            
+            // Pagination
+            const pagination = document.getElementById('pagination');
+            if (pagination) {
+                pagination.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const pageLink = e.target.closest('.page-link');
+                    if (pageLink && !pageLink.parentElement.classList.contains('disabled')) {
+                        currentPage = parseInt(pageLink.dataset.page);
+                        fetchProducts(searchQuery.value.trim() !== '');
+                    }
+                });
+            }
+            
             function updateProducts(data) {
                 const productsContainer = document.getElementById('products-container');
                 productsContainer.innerHTML = '';
-
+                
                 if (data.products && data.products.length > 0) {
                     data.products.forEach(product => {
+                        const mainImage = product.images && product.images.find(img => img.isMain) || 
+                                         (product.images && product.images[0]) || 
+                                         { url: '/images/placeholder.jpg' };
+                        
+                        const rating = product.ratings ? (product.ratings.average || 0) : 0;
+                        let starsHtml = '';
+                        
+                        for (let star = 1; star <= 5; star++) {
+                            if (star <= Math.floor(rating)) {
+                                starsHtml += '<i class="fas fa-star"></i>';
+                            } else if (star <= Math.ceil(rating) && star > Math.floor(rating)) {
+                                starsHtml += '<i class="fas fa-star-half-alt"></i>';
+                            } else {
+                                starsHtml += '<i class="far fa-star"></i>';
+                            }
+                        }
+                        
+                        const pricingHtml = product.offer > 0 
+                            ? `<span class="product-price">₹${product.salePrice.toFixed(2)}</span>
+                               <span class="product-original-price">₹${product.regularPrice.toFixed(2)}</span>`
+                            : `<span class="product-price">₹${product.regularPrice.toFixed(2)}</span>`;
+                        
+                        const badgeHtml = product.offer > 0 
+                            ? `<span class="product-badge">${product.offer}% OFF</span>` 
+                            : '';
+                        
                         const productHtml = `
                             <div class="col-md-4 col-sm-6 mb-4 product-item">
-                                <a href="/productdetails?id=${product._id}" class="text-decoration-none text-dark product-link">
-                                    <div class="product-card">
-                                        <div class="product-img-container">
-                                            <img src="${product.images[0]?.url || '/images/placeholder.jpg'}" class="product-img" alt="${product.name}">
-                                            ${product.offer > 0 ? `<span class="product-badge">${product.offer}% OFF</span>` : ''}
-                                        </div>
-                                        <h5 class="product-title">${product.name}</h5>
-                                        <div class="product-pricing">
-                                            ${product.offer > 0 ? `
-                                                <span class="product-price">₹${product.salePrice.toFixed(2)}</span>
-                                                <span class="product-original-price">₹${product.regularPrice.toFixed(2)}</span>
-                                            ` : `
-                                                <span class="product-price">₹${product.regularPrice.toFixed(2)}</span>
-                                            `}
-                                        </div>
-                                        <div class="product-rating">
-                                            ${generateStars(product.ratings?.average || 0)}
-                                            <span class="ms-1">(${product.ratings?.count || 0})</span>
-                                        </div>
+                                <div class="product-card">
+                                    <div class="wishlist-icon">
+                                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart" data-product-id="${product._id}">
+                                            <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                        </svg>
                                     </div>
-                                </a>
-                                <div class="wishlist-icon">
-                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart" data-product-id="${product._id}">
-                                        <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                                    </svg>
+                                    <a href="/productdetails?id=${product._id}" class="product-image-link">
+                                        <img src="${mainImage.url}" class="product-image" alt="${product.name}">
+                                        ${badgeHtml}
+                                        <div class="product-overlay">
+                                            <span class="quick-view">Quick View</span>
+                                        </div>
+                                    </a>
+                                    <div class="product-info">
+                                        <h3 class="product-name">${product.name}</h3>
+                                        <div class="product-price-rating">
+                                            <div class="product-pricing">
+                                                ${pricingHtml}
+                                            </div>
+                                            <div class="product-rating">
+                                                ${starsHtml}
+                                                <span class="rating-count">(${product.ratings ? (product.ratings.count || 0) : 0})</span>
+                                            </div>
+                                        </div>
+                                        <a href="/productdetails?id=${product._id}" class="btn-view-product">View Product</a>
+                                    </div>
                                 </div>
                             </div>
                         `;
+                        
                         productsContainer.insertAdjacentHTML('beforeend', productHtml);
                     });
-
+                    
+                    // Reattach event listeners for wishlist buttons
                     document.querySelectorAll('.wishlist-heart').forEach(heart => {
-                        heart.addEventListener('click', async function(event) {
+                        heart.addEventListener('click', async function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
                             
                             const productId = this.getAttribute('data-product-id');
                             const heartPath = this.querySelector('.heart');
                             const isActive = heartPath.classList.contains('active');
                             const url = isActive ? '/wishlist/remove' : '/addTowhislist';
-
                             
-
                             try {
                                 const response = await fetch(url, {
                                     method: 'POST',
@@ -423,16 +641,18 @@
                                     },
                                     body: JSON.stringify({ productId: productId }),
                                 });
-                        
+                                
                                 const data = await response.json();
-                            
+                                
                                 const toastBody = document.getElementById('toastBody');
                                 toastBody.textContent = data.message;
                                 toastBody.style.color = data.success ? 'green' : 'red';
-                                wishlistToast.show();
+                                
                                 if (data.success) {
                                     heartPath.classList.toggle('active');
                                 }
+                                
+                                wishlistToast.show();
                             } catch (error) {
                                 console.error('Error:', error);
                                 const toastBody = document.getElementById('toastBody');
@@ -442,37 +662,63 @@
                             }
                         });
                     });
+                    
+                    // Reattach quick view event listeners
+                    document.querySelectorAll('.quick-view').forEach(quickViewBtn => {
+                        quickViewBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            const productCard = this.closest('.product-card');
+                            const productLink = productCard.querySelector('.product-image-link').getAttribute('href');
+                            const productImage = productCard.querySelector('.product-image').getAttribute('src');
+                            const productName = productCard.querySelector('.product-name').textContent;
+                            const productPrice = productCard.querySelector('.product-pricing').textContent.trim();
+                            const productRating = productCard.querySelector('.product-rating').innerHTML;
+                            
+                            document.getElementById('quickViewImage').setAttribute('src', productImage);
+                            document.getElementById('quickViewName').textContent = productName;
+                            document.getElementById('quickViewPrice').textContent = productPrice;
+                            document.getElementById('quickViewRating').innerHTML = productRating;
+                            document.getElementById('quickViewDescription').textContent = 'Premium quality shirt crafted with the finest materials for the modern gentleman.';
+                            document.getElementById('quickViewLink').setAttribute('href', productLink);
+                            
+                            quickViewModal.show();
+                        });
+                    });
                 } else {
                     productsContainer.innerHTML = `
-                        <div class="col-12 text-center py-5">
-                            <div class="alert alert-info">
-                                ${data.noProductsMessage || 'No products found matching your criteria.'}
-                                <div class="mt-3">
-                                    <a href="/allproduct" class="btn btn-primary">Go Back</a>
+                        <div class="col-12">
+                            <div class="no-products">
+                                <div class="no-products-icon">
+                                    <i class="fas fa-search"></i>
                                 </div>
+                                <h3>No Products Found</h3>
+                                <p>${data.noProductsMessage || 'We couldn\'t find any products matching your criteria.'}</p>
+                                <a href="/allproduct" class="btn btn-shop-now">Clear Filters</a>
                             </div>
                         </div>
                     `;
                 }
-
+                
                 document.getElementById('productCount').textContent = `Products (${data.totalProducts})`;
             }
-
+            
             function updatePagination(data) {
                 const pagination = document.getElementById('pagination');
                 if (!pagination) return;
-
+                
                 pagination.innerHTML = '';
-
+                
                 if (data.totalPages > 1) {
                     pagination.innerHTML += `
                         <li class="page-item ${data.currentPage === 1 ? 'disabled' : ''}">
                             <a class="page-link" href="#" aria-label="Previous" data-page="${data.currentPage - 1}">
-                                <span aria-hidden="true">«</span>
+                                <i class="fas fa-chevron-left"></i>
                             </a>
                         </li>
                     `;
-
+                    
                     for (let i = 1; i <= data.totalPages; i++) {
                         pagination.innerHTML += `
                             <li class="page-item ${data.currentPage === i ? 'active' : ''}">
@@ -480,44 +726,53 @@
                             </li>
                         `;
                     }
-
+                    
                     pagination.innerHTML += `
                         <li class="page-item ${data.currentPage === data.totalPages ? 'disabled' : ''}">
                             <a class="page-link" href="#" aria-label="Next" data-page="${data.currentPage + 1}">
-                                <span aria-hidden="true">»</span>
+                                <i class="fas fa-chevron-right"></i>
                             </a>
                         </li>
                     `;
                 }
             }
-
-            function generateStars(rating) {
-                let stars = '';
-                for (let i = 1; i <= 5; i++) {
-                    if (i <= Math.floor(rating)) {
-                        stars += '<i class="fas fa-star"></i>';
-                    } else if (i <= Math.ceil(rating) && i > Math.floor(rating)) {
-                        stars += '<i class="fas fa-star-half-alt"></i>';
-                    } else {
-                        stars += '<i class="far fa-star"></i>';
-                    }
+            
+            // Back to top button
+            const backToTopButton = document.getElementById('backToTop');
+            
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    backToTopButton.classList.add('show');
+                } else {
+                    backToTopButton.classList.remove('show');
                 }
-                return stars;
+            });
+            
+            backToTopButton.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // Newsletter form
+            const newsletterForm = document.querySelector('.newsletter-form');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const email = this.querySelector('input[type="email"]').value;
+                    
+                    // Show success message
+                    const toastBody = document.getElementById('toastBody');
+                    toastBody.textContent = `Thank you for subscribing with ${email}!`;
+                    toastBody.style.color = 'green';
+                    wishlistToast.show();
+                    
+                    // Reset form
+                    this.reset();
+                });
             }
-
-            function initActiveStates() {
-                if (filters.size) {
-                    const sizeBtn = document.querySelector(`.size-btn[data-size="${filters.size}"]`);
-                    if (sizeBtn) sizeBtn.classList.add('active');
-                }
-            }
-
-            initActiveStates();
-
-            // Initial fetch to load products
-            fetchProducts();
         });
-        
     </script>
 </body>
 
