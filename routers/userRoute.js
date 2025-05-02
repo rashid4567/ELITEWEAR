@@ -163,42 +163,6 @@ router.post("/reorder/:id", UserAuth, orderController.reOrder);
 router.get("/order-details/:id", UserAuth, orderController.getOrderDetails);
 router.get("/invoice/:id", UserAuth, orderController.downloadInvoice);
 router.get("/orders/track/:id", UserAuth, orderController.trackOrder);
-<<<<<<< Updated upstream
-=======
-router.post("/cancel-order/:id", UserAuth, orderController.cancelOrder);
-router.post(
-  "/cancel-order-item/:itemId",
-  UserAuth,
-  orderController.cancelOrderItem
-);
-router.post("/return-order/:id", UserAuth, orderController.initiateReturn);
-router.post(
-  "/return-order-item/:itemId",
-  UserAuth,
-  orderController.returnOrderItem
-);
-
-// Keep the original routes for backward compatibility
-router.post(
-  "/orders/item/:orderItemId/cancel",
-  UserAuth,
-  orderController.cancelOrderItem
-);
-router.post(
-  "/orders/item/:orderItemId/return",
-  UserAuth,
-  orderController.returnOrderItem
-);
-
-// Razorpay routes
-router.post(
-  "/create-razorpay-order",
-  UserAuth,
-  razorpayController.createRazorpayOrder
-);
-router.post("/verify-payment", UserAuth, razorpayController.verifyPayment);
-router.post("/retry-payment/:orderId", UserAuth, razorpayController.retryRazorpayPayment);
->>>>>>> Stashed changes
 
 // Wallet routes
 router.get("/wallet", UserAuth, walletController.getwallet);

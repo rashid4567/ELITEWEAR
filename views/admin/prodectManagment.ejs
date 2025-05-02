@@ -6,11 +6,6 @@
     <title>Admin Panel - Product Management</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<<<<<<< Updated upstream
-=======
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
->>>>>>> Stashed changes
     <link rel="stylesheet" href="/adminStyle/productManagment.css">
 </head>
 <body>
@@ -303,7 +298,6 @@
                                             >
                                             <span class="slider"></span>
                                         </label>
-<<<<<<< Updated upstream
                                         <span id="status-<%= product._id %>"><%= product.isActive ? 'Listed' : 'Unlisted' %></span>
                                     </td>
                                     <td>
@@ -329,15 +323,6 @@
                                 <li class="page-item">
                                     <a class="page-link" href="?page=<%= currentPage - 1 %>&search=<%= search %>&category=<%= categoryFilter %>&brand=<%= brandFilter %>&minPrice=<%= minPrice %>&maxPrice=<%= maxPrice %>&sort=<%= sort %>">
                                         <i class="fas fa-chevron-left"></i>
-=======
-                                    </div>
-                                </div>
-                                
-                                <!-- Product Actions -->
-                                <div class="product-actions">
-                                    <a href="/admin/editProduct/<%= product._id %>" class="action-btn btn-edit">
-                                        <i class="fas fa-edit"></i> Edit
->>>>>>> Stashed changes
                                     </a>
                                     <button class="action-btn btn-delete delete-product-btn" data-id="<%= product._id %>">
                                         <i class="fas fa-trash"></i> Delete
@@ -467,7 +452,6 @@
             </ul>
         </div>
     </div>
-<<<<<<< Updated upstream
 
    
     <div class="modal fade custom-modal" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -490,54 +474,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 
-=======
-    
-    <!-- Bulk Offer Modal -->
-    <div class="modal-backdrop" id="bulkOfferModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Update Offers for Selected Products</h5>
-                <button type="button" class="modal-close" id="closeBulkOfferModal">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label for="bulkOfferValue" class="form-label">Offer Percentage</label>
-                    <input type="number" class="form-control" id="bulkOfferValue" min="0" max="100" placeholder="Enter offer percentage (0-100)">
-                </div>
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="overrideExistingOffers">
-                    <label class="form-check-label" for="overrideExistingOffers">
-                        Override existing product offers
-                    </label>
-                </div>
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i> The system will automatically apply the higher of product or category offers.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline" id="cancelBulkOfferBtn">Cancel</button>
-                <button type="button" class="btn btn-primary" id="applyBulkOfferBtn">Apply Offers</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-    </div>
-    
-    <!-- Theme Toggle Button -->
-    <div class="theme-toggle" id="themeToggle">
-        <i class="fas fa-moon"></i>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
->>>>>>> Stashed changes
     <script>
         // Global variables
         let currentPage = <%= currentPage || 1 %>;
@@ -580,7 +516,6 @@
         
         // Initialize the page
         document.addEventListener('DOMContentLoaded', () => {
-<<<<<<< Updated upstream
             const deleteButtons = document.querySelectorAll('.delete-btn');
             const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
             let productIdToDelete = null;
@@ -618,154 +553,6 @@
             const searchInput = document.getElementById("searchInput");
             const clearBtn = document.getElementById('clearBtn');
             clearBtn.style.display = searchInput.value.trim().length > 0 ? "block" : "none";
-=======
-            // Initialize theme
-            initTheme();
-            
-            // Initialize view
-            initView();
-            
-            // Initialize event listeners
-            initEventListeners();
-            
-            // Initialize checkboxes
-            initCheckboxes();
-            
-            // Generate pagination
-            generatePagination(currentPage, totalPages);
-            
-            // Hide checkboxes initially
-            document.querySelectorAll('.custom-checkbox').forEach(el => {
-                el.style.display = 'none';
-            });
-        });
-        
-        // Theme functions
-        function initTheme() {
-            const savedTheme = localStorage.getItem('admin-theme');
-            if (savedTheme) {
-                body.setAttribute('data-theme', savedTheme);
-                updateThemeIcons(savedTheme);
-            }
-        }
-        
-        function toggleTheme() {
-            const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('admin-theme', newTheme);
-            
-            updateThemeIcons(newTheme);
-        }
-        
-        function updateThemeIcons(theme) {
-            if (theme === 'dark') {
-                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-                themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i> Light Mode';
-            } else {
-                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-                themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i> Dark Mode';
-            }
-        }
-        
-        // View functions
-        function initView() {
-            const savedView = localStorage.getItem('productViewType');
-            if (savedView) {
-                switchView(savedView);
-            }
-        }
-        
-        function switchView(viewType) {
-            currentView = viewType;
-            
-            if (viewType === 'grid') {
-                productGrid.style.display = 'grid';
-                productList.style.display = 'none';
-                gridViewBtn.classList.add('active');
-                listViewBtn.classList.remove('active');
-                localStorage.setItem('productViewType', 'grid');
-            } else {
-                productGrid.style.display = 'none';
-                productList.style.display = 'flex';
-                gridViewBtn.classList.remove('active');
-                listViewBtn.classList.add('active');
-                localStorage.setItem('productViewType', 'list');
-            }
-        }
-        
-        // Event listeners
-        function initEventListeners() {
-            // Theme toggle
-            themeToggle.addEventListener('click', toggleTheme);
-            themeToggleBtn.addEventListener('click', toggleTheme);
-            
-            // View toggle
-            gridViewBtn.addEventListener('click', () => switchView('grid'));
-            listViewBtn.addEventListener('click', () => switchView('list'));
-            
-            // Search
-            searchInput.addEventListener('input', debounce(handleSearch, 500));
-            clearBtn.addEventListener('click', clearSearch);
-            
-            // Filters
-            categoryFilter.addEventListener('change', applyFilters);
-            priceFilter.addEventListener('change', applyFilters);
-            stockFilter.addEventListener('change', applyFilters);
-            sortFilter.addEventListener('change', applyFilters);
-            resetFiltersBtn.addEventListener('click', resetFilters);
-            
-            // Bulk actions
-            bulkActionBtn.addEventListener('click', toggleBulkActions);
-            selectAllProducts.addEventListener('change', toggleSelectAll);
-            bulkListBtn.addEventListener('click', () => bulkUpdateStatus(true));
-            bulkUnlistBtn.addEventListener('click', () => bulkUpdateStatus(false));
-            bulkOfferBtn.addEventListener('click', showBulkOfferModal);
-            bulkDeleteBtn.addEventListener('click', confirmBulkDelete);
-            
-            // Bulk offer modal
-            closeBulkOfferModal.addEventListener('click', closeBulkOfferModalFn);
-            cancelBulkOfferBtn.addEventListener('click', closeBulkOfferModalFn);
-            applyBulkOfferBtn.addEventListener('click', applyBulkOffer);
-            
-            // Product actions
-            document.querySelectorAll('.delete-product-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const productId = this.getAttribute('data-id');
-                    confirmDelete(productId);
-                });
-            });
-            
-            document.querySelectorAll('.status-toggle').forEach(toggle => {
-                toggle.addEventListener('change', function() {
-                    const productId = this.getAttribute('data-product-id');
-                    toggleStatus(productId, this.checked);
-                });
-            });
-        }
-        
-        // Initialize checkboxes
-        function initCheckboxes() {
-            document.querySelectorAll('.product-checkbox').forEach(checkbox => {
-                checkbox.addEventListener('change', function() {
-                    const productId = this.getAttribute('data-id');
-                    
-                    if (this.checked) {
-                        selectedProductIds.add(productId);
-                    } else {
-                        selectedProductIds.delete(productId);
-                    }
-                    
-                    updateSelectedCount();
-                    
-                    // Sync checkboxes with the same product ID
-                    document.querySelectorAll(`.product-checkbox[data-id="${productId}"]`).forEach(cb => {
-                        cb.checked = this.checked;
-                    });
-                });
-            });
->>>>>>> Stashed changes
         }
         
         // Search functions

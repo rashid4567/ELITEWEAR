@@ -26,14 +26,8 @@ router.get('/editCategory', adminAuth, CategoryController.geteditCategory);
 router.post('/editCategory', adminAuth, CategoryController.editCategory);
 router.post('/delete-category', adminAuth, CategoryController.deleteCategory);
 
-<<<<<<< Updated upstream
 router.get('/productManagment', adminAuth, productManagment.ProductManagement);
 router.get("/addProduct", adminAuth, productManagment.getaddproduct);
-=======
-router.get("/productManagment", adminAuth, productManagment.ProductManagement)
-router.get("/api/products", adminAuth, productManagment.getProductsAjax)
-router.get("/addProduct", adminAuth, productManagment.getaddproduct)
->>>>>>> Stashed changes
 router.post(
     "/addProduct",
     adminAuth,
@@ -62,20 +56,9 @@ router.delete("/deleteProduct/:id", adminAuth, productManagment.deleteProduct);
 router.post('/listProduct/:id', adminAuth, productManagment.listProduct);
 router.post('/unlistProduct/:id', adminAuth, productManagment.UnlistProduct);
 
-<<<<<<< Updated upstream
 router.get('/getbannerPage', adminAuth, BannerController.getbannerPage);
 router.get("/addBanner", adminAuth, BannerController.getaddBanner);
 router.post("/addBanner", adminAuth, upload.single('posterImage'), BannerController.addBanner);
-=======
-// New routes for product offers and bulk operations
-router.post("/updateProductOffer", adminAuth, productManagment.updateProductOffer)
-router.post("/bulkUpdateStatus", adminAuth, productManagment.bulkUpdateStatus)
-router.delete("/bulkDeleteProducts", adminAuth, productManagment.bulkDeleteProducts)
-
-router.get("/getbannerPage", adminAuth, BannerController.getbannerPage)
-router.get("/addBanner", adminAuth, BannerController.getaddBanner)
-router.post("/addBanner", adminAuth, upload.single("posterImage"), BannerController.addBanner)
->>>>>>> Stashed changes
 
 router.get("/adminorder", adminAuth, adminorderController.getorderController);
 router.post("/orders/update-status", adminAuth, adminorderController.updateOrderStatus);
@@ -83,30 +66,4 @@ router.get("/orders/:id", adminAuth, adminorderController.getOrderDetails);
 router.post("/orders/return/:id", adminAuth, adminorderController.manageReturn);
 router.get("/invoices/:id", adminAuth, adminorderController.admindownloadInvoice);
 
-<<<<<<< Updated upstream
 module.exports = router;
-=======
-// Coupon Routes
-router.get("/coupons", adminAuth, CouponController.renderCouponsPage)
-router.get("/addCoupon", adminAuth, CouponController.renderAddCouponPage)
-router.get("/editCoupon/:id", adminAuth, CouponController.renderEditCouponPage)
-router.post("/createCoupon", adminAuth, CouponController.createCoupon)
-router.get("/getAllCoupons", adminAuth, CouponController.getAllCoupons)
-router.post("/editCoupon/:id", adminAuth, CouponController.editCoupon)
-router.post("/toggleCouponStatus/:id", adminAuth, CouponController.toggleCouponStatus)
-router.delete("/deleteCoupon/:id", adminAuth, CouponController.deleteCoupon)
-
-router.get("/sales", adminAuth, salesontroller.loadsales)
-router.get("/sales/download-pdf", adminAuth, salesontroller.downloadSalesPDF)
-router.get("/sales/download-excel", adminAuth, salesontroller.downloadSalesExcel)
-
-// Wallet and refund management routes
-router.get("/wallet-transactions", adminAuth, adminWalletController.getAllWalletTransactions)
-router.get("/refund-transactions", adminAuth, adminWalletController.getRefundTransactions)
-router.get("/user-wallet/:userId", adminAuth, adminWalletController.getUserWallet)
-router.get("/refund-statistics", adminAuth, adminWalletController.getRefundStatistics)
-router.post("/process-manual-refund", adminAuth, adminWalletController.processManualRefund)
-router.get("/refund-details/:transactionRef", adminAuth, adminWalletController.getRefundDetails)
-
-module.exports = router
->>>>>>> Stashed changes

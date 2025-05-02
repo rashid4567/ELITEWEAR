@@ -1,24 +1,10 @@
 const Category = require("../../model/categoryScheema");
-<<<<<<< Updated upstream
 
 const categoryInfo = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = 4;
         const skip = (page - 1) * limit;
-=======
-const Product = require("../../model/productScheema");
-const {
-  calculateEffectiveDiscount,
-  applyDiscountToVariant,
-} = require("../../utils/offerUtils");
-
-const categoryInfo = async (req, res) => {
-  try {
-    const page = Number.parseInt(req.query.page) || 1;
-    const limit = 4;
-    const skip = (page - 1) * limit;
->>>>>>> Stashed changes
 
         const categoryData = await Category.find({})
             .sort({ addedDate: -1 })
@@ -42,19 +28,8 @@ const categoryInfo = async (req, res) => {
 };
 
 const addCategory = async (req, res) => {
-<<<<<<< Updated upstream
     try {
         const { name, description, stock = 0 } = req.body;
-=======
-  try {
-    const {
-      name,
-      description,
-      stock = 0,
-      offer = 0,
-      maxRedeemable = 0,
-    } = req.body;
->>>>>>> Stashed changes
 
 
         if (!name || !description) {
@@ -111,62 +86,6 @@ const addCategory = async (req, res) => {
             message: "Internal server error"
         });
     }
-<<<<<<< Updated upstream
-=======
-
-    const trimmedName = name.trim().toLowerCase();
-
-    const existingCategory = await Category.findOne({
-      name: { $regex: new RegExp(`^${trimmedName}$`, "i") },
-    });
-
-    if (existingCategory) {
-      return res.status(400).json({
-        success: false,
-        message: "Category already exists",
-      });
-    }
-
-    const newCategory = new Category({
-      name: trimmedName.charAt(0).toUpperCase() + trimmedName.slice(1),
-      description: description.trim(),
-      stock: Number.parseInt(stock) || 0,
-      offer: Number.parseFloat(offer) || 0,
-      maxRedeemable: Number.parseFloat(maxRedeemable) || 0,
-      sales: 0,
-    });
-
-    await newCategory.save();
-
-    // If there's an offer, apply it to all products in this category
-    if (Number.parseFloat(offer) > 0) {
-      await updateProductsWithCategoryOffer(
-        newCategory._id,
-        Number.parseFloat(offer),
-        Number.parseFloat(maxRedeemable)
-      );
-    }
-
-    res.status(201).json({
-      success: true,
-      message: "Category added successfully",
-    });
-  } catch (error) {
-    console.error("Error adding category:", error);
-
-    if (error.name === "ValidationError") {
-      return res.status(400).json({
-        success: false,
-        message: error.message,
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
->>>>>>> Stashed changes
 };
 
 const toggleCategory = async (req, res) => {
@@ -241,41 +160,6 @@ const deleteCategory = async (req, res) => {
             message: "Internal server error"
         });
     }
-<<<<<<< Updated upstream
-=======
-
-    const category = await Category.findById(id);
-    if (!category) {
-      return res.status(404).json({
-        success: false,
-        message: "Category not found",
-      });
-    }
-
-    // Check if there are products in this category
-    const productsCount = await Product.countDocuments({ categoryId: id });
-    if (productsCount > 0) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Cannot delete category with associated products. Please move or delete the products first.",
-      });
-    }
-
-    await Category.findByIdAndDelete(id);
-
-    res.json({
-      success: true,
-      message: "Category deleted successfully",
-    });
-  } catch (error) {
-    console.error("Error deleting category:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
->>>>>>> Stashed changes
 };
 
 const geteditCategory = async (req, res) => {
@@ -344,7 +228,6 @@ const editCategory = async (req, res) => {
 
         const id = req.body.id;
 
-<<<<<<< Updated upstream
         if (!id) {
             return res.status(400).json({ error: "Missing category ID" });
         }
@@ -391,82 +274,3 @@ module.exports = {
     editCategory,
     deleteCategory
 };
-=======
-    const { name, description, offer, stock, maxRedeemable } = req.body;
-    const trimmedName = name.trim();
-    const trimmedDescription = description.trim();
-    const offerValue = Number.parseFloat(offer) || 0;
-    const stockValue = Number.parseInt(stock) || 0;
-    const maxRedeemableValue = Number.parseFloat(maxRedeemable) || 0;
-
-    if (offerValue < 0 || offerValue > 100) {
-      return res
-        .status(400)
-        .json({ error: "Offer must be between 0 and 100%" });
-    }
-
-    if (stockValue < 0) {
-      return res.status(400).json({ error: "Stock cannot be negative" });
-    }
-
-    if (maxRedeemableValue < 0) {
-      return res
-        .status(400)
-        .json({ error: "Max redeemable amount cannot be negative" });
-    }
-
-    const existingCategory = await Category.findOne({
-      name: trimmedName,
-      _id: { $ne: id },
-    });
-
-    if (existingCategory) {
-      return res.status(400).json({ error: "Category already exists" });
-    }
-
-    // Get the old category to check if offer has changed
-    const oldCategory = await Category.findById(id);
-    const offerChanged =
-      oldCategory.offer !== offerValue ||
-      oldCategory.maxRedeemable !== maxRedeemableValue;
-
-    const updatedCategory = await Category.findByIdAndUpdate(
-      id,
-      {
-        $set: {
-          name: trimmedName,
-          description: trimmedDescription,
-          offer: offerValue,
-          stock: stockValue,
-          maxRedeemable: maxRedeemableValue,
-        },
-      },
-      { new: true }
-    );
-
-    if (!updatedCategory) {
-      return res.status(404).json({ error: "Category not found" });
-    }
-
-    // If offer has changed, update all products in this category
-    if (offerChanged) {
-      await updateProductsWithCategoryOffer(id, offerValue, maxRedeemableValue);
-    }
-
-    res.redirect("/admin/categories");
-  } catch (error) {
-    console.error("Error updating category:", error);
-    res.status(500).json({ error: error.message || "Internal server error" });
-  }
-};
-
-module.exports = {
-  categoryInfo,
-  addCategory,
-  toggleCategory,
-  geteditCategory,
-  editCategory,
-  deleteCategory,
-  updateProductsWithCategoryOffer,
-};
->>>>>>> Stashed changes
