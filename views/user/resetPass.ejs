@@ -3,128 +3,407 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enter New Password</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <title>Reset Password | ELITE WEAR</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/userStyle/forgotpassword.css">
+    <link rel="stylesheet" href="/userStyle/reset-password.css">
     <link rel="stylesheet" href="/userStyle/forgot-pass.css">
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/images/favicon.png" type="image/png">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
-                <div class="password-reset-container">
-                    <h2 class="heading">Enter New Password</h2>
-                    <form id="passwordForm">
-                        <div class="mb-3 password-container">
-                            <input type="password" class="form-control" id="newPassword" placeholder="Enter new Password">
-                            <span class="toggle-password" id="toggleNewPassword">👁️</span>
-                            <small id="passwordError" class="text-danger"></small>
+    <div class="forgot-password-wrapper">
+        <!-- Animated Background -->
+        <div class="animated-background">
+            <div class="gradient-bg"></div>
+            <div class="particles">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="forgot-password-card">
+                        <div class="row">
+                            <!-- Brand Panel (Left Side) -->
+                            <div class="col-lg-5 d-none d-lg-block">
+                                <div class="brand-panel">
+                                    <div class="brand-content">
+                                        <div class="logo-container">
+                                            <div class="brand-logo">
+                                                <span class="brand-logo-text">E</span>
+                                            </div>
+                                            <h1 class="brand-name">ELITE WEAR</h1>
+                                        </div>
+                                        <p class="brand-tagline">Redefining Luxury Fashion</p>
+                                        
+                                        
+                                        
+                                        <div class="security-badge">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <span>Secure Password Reset</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Form Panel (Right Side) -->
+                            <div class="col-lg-7">
+                                <div class="form-panel">
+                                    <!-- Mobile Logo (visible only on small screens) -->
+                                    <div class="mobile-logo d-flex d-lg-none">
+                                        <div class="brand-logo">
+                                            <span class="brand-logo-text">E</span>
+                                        </div>
+                                        <h2 class="brand-name">ELITE WEAR</h2>
+                                    </div>
+                                    
+                                    <div class="form-content">
+                                        <h2 class="form-title">Create New Password</h2>
+                                        <p class="form-subtitle">Your new password must be different from previously used passwords.</p>
+                                        
+                                        <!-- Step Indicator -->
+                                        <div class="step-indicator">
+                                            <div class="step">
+                                                <div class="step-number">1</div>
+                                                <div class="step-label">Email</div>
+                                            </div>
+                                            <div class="step-connector"></div>
+                                            <div class="step">
+                                                <div class="step-number">2</div>
+                                                <div class="step-label">Verify</div>
+                                            </div>
+                                            <div class="step-connector"></div>
+                                            <div class="step active">
+                                                <div class="step-number">3</div>
+                                                <div class="step-label">Reset</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Password Form -->
+                                        <form id="passwordForm" class="mt-4">
+                                            <div class="form-group mb-4">
+                                                <label for="newPassword" class="form-label">New Password</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                                    <input 
+                                                        type="password" 
+                                                        class="form-control" 
+                                                        id="newPassword" 
+                                                        placeholder="Enter new password"
+                                                        required
+                                                    >
+                                                    <button 
+                                                        class="btn btn-outline-secondary toggle-password" 
+                                                        type="button" 
+                                                        id="toggleNewPassword"
+                                                        aria-label="Toggle password visibility"
+                                                    >
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="invalid-feedback" id="passwordError"></div>
+                                            </div>
+                                            
+                                            <!-- Password Strength Meter -->
+                                            <div class="password-strength mb-4" id="passwordStrengthContainer">
+                                                <div class="strength-meter">
+                                                    <div class="strength-meter-fill" id="strengthMeter"></div>
+                                                </div>
+                                                <div class="strength-text" id="strengthText">Password strength</div>
+                                            </div>
+                                            
+                                            <div class="form-group mb-4">
+                                                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                                    <input 
+                                                        type="password" 
+                                                        class="form-control" 
+                                                        id="confirmPassword" 
+                                                        placeholder="Confirm new password"
+                                                        required
+                                                    >
+                                                    <button 
+                                                        class="btn btn-outline-secondary toggle-password" 
+                                                        type="button" 
+                                                        id="toggleConfirmPassword"
+                                                        aria-label="Toggle password visibility"
+                                                    >
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="invalid-feedback" id="confirmPasswordError"></div>
+                                            </div>
+                                            
+                                            <div class="password-requirements mb-4">
+                                                <p class="requirements-title">Password must contain:</p>
+                                                <ul class="requirements-list">
+                                                    <li id="req-length"><i class="fas fa-circle"></i> At least 8 characters</li>
+                                                    <li id="req-uppercase"><i class="fas fa-circle"></i> At least one uppercase letter</li>
+                                                    <li id="req-number"><i class="fas fa-circle"></i> At least one number</li>
+                                                    <li id="req-special"><i class="fas fa-circle"></i> At least one special character</li>
+                                                </ul>
+                                            </div>
+                                            
+                                            <div class="form-actions">
+                                                <button type="submit" class="btn btn-primary">
+                                                    <span>Reset Password</span>
+                                                    <i class="fas fa-check-circle ms-2"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                        
+                                        <div class="form-footer">
+                                            <a href="/login" class="back-link">
+                                                <i class="fas fa-chevron-left me-2"></i>
+                                                <span>Back to login</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3 password-container">
-                            <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password">
-                            <span class="toggle-password" id="toggleConfirmPassword">👁️</span>
-                            <small id="confirmPasswordError" class="text-danger"></small>
-                        </div>
-                        <button type="submit" class="btn btn-verify">Verify</button>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
- 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.all.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+    
+    <!-- Custom JavaScript -->
     <script>
-        document.getElementById("passwordForm").addEventListener("submit", function(event) {
-            event.preventDefault(); 
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordForm = document.getElementById('passwordForm');
+            const newPasswordInput = document.getElementById('newPassword');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const passwordError = document.getElementById('passwordError');
+            const confirmPasswordError = document.getElementById('confirmPasswordError');
+            const strengthMeter = document.getElementById('strengthMeter');
+            const strengthText = document.getElementById('strengthText');
+            const passwordStrengthContainer = document.getElementById('passwordStrengthContainer');
             
-            let password = document.getElementById("newPassword").value;
-            let confirmPassword = document.getElementById("confirmPassword").value;
-            let passwordError = document.getElementById("passwordError");
-            let confirmPasswordError = document.getElementById("confirmPasswordError");
-
-            let passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            // Password requirement elements
+            const reqLength = document.getElementById('req-length');
+            const reqUppercase = document.getElementById('req-uppercase');
+            const reqNumber = document.getElementById('req-number');
+            const reqSpecial = document.getElementById('req-special');
             
-            if (!passwordRegex.test(password)) {
-                passwordError.textContent = "Password must be 8+ chars with 1 uppercase, 1 number & 1 special character.";
-                return;
-            } else {
-                passwordError.textContent = "";
-            }
+            // Password toggle functionality
+            document.getElementById('toggleNewPassword').addEventListener('click', function() {
+                const passwordField = document.getElementById('newPassword');
+                const icon = this.querySelector('i');
+                
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    passwordField.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
 
-            if (password !== confirmPassword) {
-                confirmPasswordError.textContent = "Passwords do not match!";
-                return;
-            } else {
-                confirmPasswordError.textContent = "";
-            }
-
-            $.ajax({
-                type: 'POST',
-                url: '/reset-password',
-                contentType: 'application/json',
-                data: JSON.stringify({ newPassword: password, confirmPassword: confirmPassword }),
-                success: function(response) {
-                  
-                    if (response.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Password Reset Successful',
-                            text: response.message,
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            window.location.href = '/login';
-                        });
+            document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
+                const passwordField = document.getElementById('confirmPassword');
+                const icon = this.querySelector('i');
+                
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    passwordField.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+            
+            // Password strength meter
+            newPasswordInput.addEventListener('input', function() {
+                const password = this.value;
+                
+                if (password.length > 0) {
+                    passwordStrengthContainer.style.display = 'block';
+                    
+                    // Check requirements
+                    const hasLength = password.length >= 8;
+                    const hasUppercase = /[A-Z]/.test(password);
+                    const hasNumber = /\d/.test(password);
+                    const hasSpecial = /[@$!%*?&]/.test(password);
+                    
+                    // Update requirement indicators
+                    updateRequirement(reqLength, hasLength);
+                    updateRequirement(reqUppercase, hasUppercase);
+                    updateRequirement(reqNumber, hasNumber);
+                    updateRequirement(reqSpecial, hasSpecial);
+                    
+                    // Calculate strength
+                    let strength = 0;
+                    if (hasLength) strength += 25;
+                    if (hasUppercase) strength += 25;
+                    if (hasNumber) strength += 25;
+                    if (hasSpecial) strength += 25;
+                    
+                    // Update strength meter
+                    strengthMeter.style.width = strength + '%';
+                    
+                    // Update strength text
+                    if (strength < 50) {
+                        strengthMeter.className = 'strength-meter-fill strength-weak';
+                        strengthText.textContent = 'Weak password';
+                    } else if (strength < 75) {
+                        strengthMeter.className = 'strength-meter-fill strength-fair';
+                        strengthText.textContent = 'Fair password';
+                    } else if (strength < 100) {
+                        strengthMeter.className = 'strength-meter-fill strength-good';
+                        strengthText.textContent = 'Good password';
                     } else {
+                        strengthMeter.className = 'strength-meter-fill strength-strong';
+                        strengthText.textContent = 'Strong password';
+                    }
+                } else {
+                    passwordStrengthContainer.style.display = 'none';
+                    resetRequirements();
+                }
+            });
+            
+            // Form submission
+            passwordForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                let password = newPasswordInput.value;
+                let confirmPassword = confirmPasswordInput.value;
+                
+                // Reset error messages
+                passwordError.textContent = '';
+                confirmPasswordError.textContent = '';
+                newPasswordInput.classList.remove('is-invalid');
+                confirmPasswordInput.classList.remove('is-invalid');
+                
+                // Password validation
+                let passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+                
+                if (!passwordRegex.test(password)) {
+                    newPasswordInput.classList.add('is-invalid');
+                    passwordError.textContent = "Password must be 8+ chars with 1 uppercase, 1 number & 1 special character.";
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    confirmPasswordInput.classList.add('is-invalid');
+                    confirmPasswordError.textContent = "Passwords do not match!";
+                    return;
+                }
+                
+                // Show loading state
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Resetting...';
+                submitBtn.disabled = true;
+                
+                // Submit form via AJAX
+                $.ajax({
+                    type: 'POST',
+                    url: '/reset-password',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ newPassword: password, confirmPassword: confirmPassword }),
+                    success: function(response) {
+                        // Reset button state
+                        submitBtn.innerHTML = originalBtnText;
+                        submitBtn.disabled = false;
+                        
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Password Reset Successful',
+                                text: response.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.href = '/login';
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Password Reset Failed',
+                                text: response.message
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        // Reset button state
+                        submitBtn.innerHTML = originalBtnText;
+                        submitBtn.disabled = false;
+                        
+                        console.log("Password reset error:", xhr);
+                        let errorMessage = "Failed to reset password.";
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) errorMessage = response.message;
+                        } catch (e) {
+                            console.error("Error parsing response:", e);
+                        }
                         Swal.fire({
                             icon: 'error',
                             title: 'Password Reset Failed',
-                            text: response.message
+                            text: errorMessage
                         });
                     }
-                },
-                error: function(xhr) {
-                    console.log("Password reset error:", xhr);
-                    let errorMessage = "Failed to reset password.";
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.message) errorMessage = response.message;
-                    } catch (e) {
-                        console.error("Error parsing response:", e);
-                    }
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Password Reset Failed',
-                        text: errorMessage
-                    });
-                }
+                });
             });
-        });
-
-
-        document.getElementById('toggleNewPassword').addEventListener('click', function() {
-            const passwordField = document.getElementById('newPassword');
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                this.textContent = '🙈';
-            } else {
-                passwordField.type = 'password';
-                this.textContent = '👁️';
+            
+            // Helper functions for password requirements
+            function updateRequirement(element, isMet) {
+                if (isMet) {
+                    element.classList.add('requirement-met');
+                    element.querySelector('i').className = 'fas fa-check-circle';
+                } else {
+                    element.classList.remove('requirement-met');
+                    element.querySelector('i').className = 'fas fa-circle';
+                }
             }
-        });
-
-        document.getElementById('toggleConfirmPassword').addEventListener('click', function() {
-            const passwordField = document.getElementById('confirmPassword');
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                this.textContent = '🙈';
-            } else {
-                passwordField.type = 'password';
-                this.textContent = '👁️';
+            
+            function resetRequirements() {
+                const requirements = [reqLength, reqUppercase, reqNumber, reqSpecial];
+                requirements.forEach(req => {
+                    req.classList.remove('requirement-met');
+                    req.querySelector('i').className = 'fas fa-circle';
+                });
             }
+            
+            // Add animation classes after page load
+            setTimeout(() => {
+                document.querySelector('.forgot-password-card').classList.add('animate-in');
+            }, 100);
         });
     </script>
 </body>

@@ -3,231 +3,479 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OTP Verification</title>
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.min.css" rel="stylesheet">
+    <title>OTP Verification | ELITE WEAR</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/userStyle/forgotpassword.css">
     <link rel="stylesheet" href="/userStyle/forgotOtp.css">
+    
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/images/favicon.png" type="image/png">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <div class="card">
-        <h1>Enter the OTP</h1>
-        <p class="description">We've sent an email with an activation<br>code to your email <span class="email"><%= email %></span></p>
+    <div class="forgot-password-wrapper">
+        <!-- Animated Background -->
+        <div class="animated-background">
+            <div class="gradient-bg"></div>
+            <div class="particles">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
         
-        <form id="otpForm" onsubmit="return validateOtpForm()">
-            <div class="otp-container">
-                <input type="text" maxlength="1" class="otp-input" autofocus required>
-                <input type="text" maxlength="1" class="otp-input" required>
-                <input type="text" maxlength="1" class="otp-input" required>
-                <input type="text" maxlength="1" class="otp-input" required>
-                <input type="text" maxlength="1" class="otp-input" required>
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="forgot-password-card">
+                        <div class="row">
+                            <!-- Brand Panel (Left Side) -->
+                            <div class="col-lg-5 d-none d-lg-block">
+                                <div class="brand-panel">
+                                    <div class="brand-content">
+                                        <div class="logo-container">
+                                            <div class="brand-logo">
+                                                <span class="brand-logo-text">E</span>
+                                            </div>
+                                            <h1 class="brand-name">ELITE WEAR</h1>
+                                        </div>
+                                        <p class="brand-tagline">Redefining Luxury Fashion</p>
+                                        
+                                       
+                                        
+                                        <div class="security-badge">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <span>Secure Verification</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Form Panel (Right Side) -->
+                            <div class="col-lg-7">
+                                <div class="form-panel">
+                                    <!-- Mobile Logo (visible only on small screens) -->
+                                    <div class="mobile-logo d-flex d-lg-none">
+                                        <div class="brand-logo">
+                                            <span class="brand-logo-text">E</span>
+                                        </div>
+                                        <h2 class="brand-name">ELITE WEAR</h2>
+                                    </div>
+                                    
+                                    <div class="form-content">
+                                        <h2 class="form-title">Verify Your Email</h2>
+                                        <p class="form-subtitle">We've sent a 5-digit verification code to <strong class="user-email"><%= email %></strong></p>
+                                        
+                                        <!-- Step Indicator -->
+                                        <div class="step-indicator">
+                                            <div class="step">
+                                                <div class="step-number">1</div>
+                                                <div class="step-label">Email</div>
+                                            </div>
+                                            <div class="step-connector"></div>
+                                            <div class="step active">
+                                                <div class="step-number">2</div>
+                                                <div class="step-label">Verify</div>
+                                            </div>
+                                            <div class="step-connector"></div>
+                                            <div class="step">
+                                                <div class="step-number">3</div>
+                                                <div class="step-label">Reset</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- OTP Form -->
+                                        <form id="otpForm" class="mt-4">
+                                            <div class="otp-container">
+                                                <input type="text" maxlength="1" class="otp-input" pattern="[0-9]" inputmode="numeric" autofocus required>
+                                                <input type="text" maxlength="1" class="otp-input" pattern="[0-9]" inputmode="numeric" required>
+                                                <input type="text" maxlength="1" class="otp-input" pattern="[0-9]" inputmode="numeric" required>
+                                                <input type="text" maxlength="1" class="otp-input" pattern="[0-9]" inputmode="numeric" required>
+                                                <input type="text" maxlength="1" class="otp-input" pattern="[0-9]" inputmode="numeric" required>
+                                            </div>
+                                            
+                                            <div class="otp-error" id="otpError">
+                                                <i class="fas fa-exclamation-circle"></i>
+                                                <span>Please enter a valid 5-digit code</span>
+                                            </div>
+                                            
+                                            <div class="timer-container">
+                                                <div class="timer-icon">
+                                                    <i class="fas fa-clock"></i>
+                                                </div>
+                                                <div class="timer-text">
+                                                    Code expires in <span id="countdown">05:00</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-actions">
+                                                <button type="submit" class="btn btn-primary verify-btn">
+                                                    <span>Verify Code</span>
+                                                    <i class="fas fa-check-circle ms-2"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                        
+                                        <div class="resend-container">
+                                            <p>Didn't receive the code?</p>
+                                            <button type="button" id="resendBtn" class="btn-link" disabled>
+                                                <i class="fas fa-paper-plane me-1"></i>
+                                                <span>Resend Code</span>
+                                                <span class="resend-timer" id="resendTimer">(00:60)</span>
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="form-footer">
+                                            <a href="/forgot-password" class="back-link">
+                                                <i class="fas fa-chevron-left me-2"></i>
+                                                <span>Back to forgot password</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <input type="hidden" name="fullOtp" id="fullOtp">
-            <p class="error-message" id="otpError">Please enter a valid OTP code</p>
-            
-            <div class="resend-container">
-                <span class="resend-text">Send code again</span>
-                <span class="timer" id="countdown">00:60</span>
-            </div>
-            
-            <div class="resend-container">
-                <span class="resend-text">I didn't receive a code</span>
-                <button type="button" class="resend-button" id="resendBtn" disabled>Resend</button>
-            </div>
-            
-            <button type="submit" class="verify-button">Verify</button>
-        </form>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.17.2/dist/sweetalert2.all.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
     <script>
-        const otpInputs = document.querySelectorAll('.otp-input');
-        const fullOtpInput = document.getElementById('fullOtp');
-        const resendBtn = document.getElementById('resendBtn');
-        const timerElement = document.getElementById('countdown');
-        const otpError = document.getElementById('otpError');
-        const TOTAL_TIME = 60;
-
-        otpInputs.forEach((input, index) => {
-            input.addEventListener('input', () => {
-                if (input.value.length === 1 && index < otpInputs.length - 1) {
-                    otpInputs[index + 1].focus();
-                }
-            });
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpInputs = document.querySelectorAll('.otp-input');
+            const otpForm = document.getElementById('otpForm');
+            const otpError = document.getElementById('otpError');
+            const resendBtn = document.getElementById('resendBtn');
+            const countdownEl = document.getElementById('countdown');
+            const resendTimerEl = document.getElementById('resendTimer');
             
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && input.value === '' && index > 0) {
-                    otpInputs[index - 1].focus();
-                }
-            });
-        });
-
-        function validateOtpForm() {
-            let otpCode = "";
-            otpInputs.forEach(input => {
-                otpCode += input.value;
-            });
-
-            if (otpCode.length !== 5) {
-                otpError.style.display = "block";
-                return false;
+            // Constants
+            const OTP_EXPIRY_MINUTES = 5;
+            const RESEND_COOLDOWN_SECONDS = 60;
+            
+            // Initialize OTP expiry timer
+            let otpExpiryTime = localStorage.getItem('otpExpiryTime');
+            if (!otpExpiryTime) {
+                otpExpiryTime = Date.now() + (OTP_EXPIRY_MINUTES * 60 * 1000);
+                localStorage.setItem('otpExpiryTime', otpExpiryTime);
             }
             
-            fullOtpInput.value = otpCode;
-            otpError.style.display = "none";
-
+            // Initialize resend cooldown timer
+            let resendCooldownTime = localStorage.getItem('resendCooldownTime');
+            if (!resendCooldownTime) {
+                resendCooldownTime = Date.now() + (RESEND_COOLDOWN_SECONDS * 1000);
+                localStorage.setItem('resendCooldownTime', resendCooldownTime);
+            }
             
-
-            $.ajax({
-                type: 'POST',
-                url: '/forgot-otp',
-                contentType: 'application/json',
-                data: JSON.stringify({ otp: otpCode }),
-                success: function (response) {
+            // Update OTP expiry timer
+            function updateOtpExpiryTimer() {
+                const now = Date.now();
+                const expiryTime = parseInt(localStorage.getItem('otpExpiryTime'));
+                const timeLeft = Math.max(0, expiryTime - now);
                 
-                    if (response.success) {
-                        localStorage.removeItem('forgotOtpStartTime');
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Verification Successful',
-                            text: 'Redirecting you to the reset password page...',
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            window.location.href = response.redirectUrl;
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Verification Failed',
-                            text: response.message
-                        });
-                    }
-                },
-                error: function (xhr) {
+                if (timeLeft <= 0) {
+                    countdownEl.textContent = '00:00';
+                    showToast('Your verification code has expired. Please request a new one.', 'warning');
+                    return;
+                }
+                
+                const minutes = Math.floor(timeLeft / (60 * 1000));
+                const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
+                
+                countdownEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                setTimeout(updateOtpExpiryTimer, 1000);
+            }
+            
+            // Update resend cooldown timer
+            function updateResendCooldownTimer() {
+                const now = Date.now();
+                const cooldownTime = parseInt(localStorage.getItem('resendCooldownTime'));
+                const timeLeft = Math.max(0, cooldownTime - now);
+                
+                if (timeLeft <= 0) {
+                    resendBtn.disabled = false;
+                    resendTimerEl.textContent = '';
+                    return;
+                }
+                
+                const seconds = Math.ceil(timeLeft / 1000);
+                resendTimerEl.textContent = `(00:${seconds.toString().padStart(2, '0')})`;
+                
+                setTimeout(updateResendCooldownTimer, 1000);
+            }
+            
+            // Start timers
+            updateOtpExpiryTimer();
+            updateResendCooldownTimer();
+            
+            // OTP input handling
+            otpInputs.forEach((input, index) => {
+                // Focus next input after entering a digit
+                input.addEventListener('input', (e) => {
+                    // Allow only numbers
+                    input.value = input.value.replace(/[^0-9]/g, '');
                     
-                    let errorMessage = "Invalid OTP. Please try again.";
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.message) errorMessage = response.message;
-                    } catch (e) {
-                        console.error("Error parsing response:", e);
+                    if (input.value && index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
                     }
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Verification Failed',
-                        text: errorMessage
-                    });
-                }
+                    
+                    // Hide error when user starts typing
+                    otpError.classList.remove('show');
+                });
+                
+                // Handle backspace
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !input.value && index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                });
+                
+                // Handle paste event
+                input.addEventListener('paste', (e) => {
+                    e.preventDefault();
+                    const pasteData = e.clipboardData.getData('text').trim();
+                    
+                    // Check if pasted content is a valid OTP
+                    if (/^\d{5}$/.test(pasteData)) {
+                        // Fill all inputs with the pasted OTP
+                        for (let i = 0; i < otpInputs.length; i++) {
+                            otpInputs[i].value = pasteData.charAt(i);
+                        }
+                        
+                        // Focus the last input
+                        otpInputs[otpInputs.length - 1].focus();
+                    }
+                });
             });
-
-            return false;
-        }
-
-        function updateTimer() {
-            const startTime = localStorage.getItem('forgotOtpStartTime');
-            let timeLeft;
-
-            if (startTime) {
-                const elapsed = Math.floor((Date.now() - parseInt(startTime)) / 1000);
-                timeLeft = Math.max(TOTAL_TIME - elapsed, 0);
-            } else {
-                timeLeft = TOTAL_TIME;
-                localStorage.setItem('forgotOtpStartTime', Date.now());
-            }
-
-            displayTime(timeLeft);
-
-            if (timeLeft > 0) {
-                resendBtn.disabled = true;
-                resendBtn.style.opacity = '0.5';
-                resendBtn.style.cursor = 'not-allowed';
-                setTimeout(updateTimer, 1000);
-            } else {
-                resendBtn.disabled = false;
-                resendBtn.style.opacity = '1';
-                resendBtn.style.cursor = 'pointer';
-            }
-        }
-
-        function displayTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = seconds % 60;
-            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-        }
-
-        function initializeTimer() {
-            const savedStartTime = localStorage.getItem('forgotOtpStartTime');
-            if (!savedStartTime) {
             
-                localStorage.setItem('forgotOtpStartTime', Date.now());
-                updateTimer();
-            } else {
-            
-                updateTimer();
-            }
-        }
-
-  
-        resendBtn.addEventListener('click', function () {
-            if (!this.disabled) {
+            // Form submission
+            otpForm.addEventListener('submit', function(e) {
+                e.preventDefault();
                 
+                // Collect OTP from inputs
+                let otpCode = '';
+                let isValid = true;
                 
+                otpInputs.forEach(input => {
+                    if (!input.value || !/^\d$/.test(input.value)) {
+                        isValid = false;
+                    }
+                    otpCode += input.value;
+                });
+                
+                if (!isValid || otpCode.length !== 5) {
+                    otpError.classList.add('show');
+                    return;
+                }
+                
+                // Show loading state
+                const submitBtn = otpForm.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Verifying...';
+                submitBtn.disabled = true;
+                
+                // Send OTP to server for verification
                 $.ajax({
                     type: 'POST',
-                    url: '/resend-forgot-otp',
+                    url: '/forgot-otp',
                     contentType: 'application/json',
-                    data: JSON.stringify({}),
-                    success: function (response) {
+                    data: JSON.stringify({ otp: otpCode }),
+                    success: function(response) {
+                        // Reset button state
+                        submitBtn.innerHTML = originalBtnText;
+                        submitBtn.disabled = false;
                         
                         if (response.success) {
-                            Swal.fire({
-                                icon: "success",
-                                title: "OTP resent successfully!",
-                                showConfirmButton: false,
-                                timer: 1500
-                            });
-
-                            otpInputs.forEach(input => input.value = '');
-                            otpInputs[0].focus();
-
-                            localStorage.setItem('forgotOtpStartTime', Date.now());
-                            updateTimer();
-                            resendBtn.disabled = true;
-                            resendBtn.style.opacity = '0.5';
-                            resendBtn.style.cursor = 'not-allowed';
+                            // Clear timers from localStorage
+                            localStorage.removeItem('otpExpiryTime');
+                            localStorage.removeItem('resendCooldownTime');
+                            
+                            // Show success toast
+                            showToast('Verification successful! Redirecting to reset password...', 'success');
+                            
+                            // Redirect after a short delay
+                            setTimeout(function() {
+                                window.location.href = response.redirectUrl;
+                            }, 2000);
                         } else {
-                            Swal.fire({
-                                icon: "error",
-                                title: "Error",
-                                text: response.message
+                            // Show error toast
+                            showToast(response.message || 'Invalid verification code. Please try again.', 'error');
+                            
+                            // Highlight inputs to indicate error
+                            otpInputs.forEach(input => {
+                                input.classList.add('is-invalid');
+                                setTimeout(() => {
+                                    input.classList.remove('is-invalid');
+                                }, 2000);
                             });
                         }
                     },
-                    error: function (xhr) {
+                    error: function(xhr) {
+                        // Reset button state
+                        submitBtn.innerHTML = originalBtnText;
+                        submitBtn.disabled = false;
                         
-                        let errorMessage = "Failed to resend OTP.";
+                        let errorMessage = "Verification failed. Please try again.";
                         try {
                             const response = JSON.parse(xhr.responseText);
                             if (response.message) errorMessage = response.message;
                         } catch (e) {
                             console.error("Error parsing response:", e);
                         }
-                        Swal.fire({
-                            icon: "error",
-                            title: "Failed to resend OTP",
-                            text: errorMessage
-                        });
+                        
+                        // Show error toast
+                        showToast(errorMessage, 'error');
                     }
                 });
-            }
-        });
-
-      
-        document.addEventListener('DOMContentLoaded', function () {
+            });
             
-            initializeTimer();
+            // Resend OTP
+            resendBtn.addEventListener('click', function() {
+                if (this.disabled) return;
+                
+                // Show loading state
+                const originalBtnText = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Sending...';
+                this.disabled = true;
+                
+                // Send request to resend OTP
+                $.ajax({
+                    type: 'POST',
+                    url: '/resend-forgot-otp',
+                    contentType: 'application/json',
+                    data: JSON.stringify({}),
+                    success: function(response) {
+                        // Reset button state but keep disabled for cooldown
+                        resendBtn.innerHTML = originalBtnText;
+                        
+                        if (response.success) {
+                            // Reset OTP inputs
+                            otpInputs.forEach(input => {
+                                input.value = '';
+                            });
+                            otpInputs[0].focus();
+                            
+                            // Reset timers
+                            const newOtpExpiryTime = Date.now() + (OTP_EXPIRY_MINUTES * 60 * 1000);
+                            localStorage.setItem('otpExpiryTime', newOtpExpiryTime);
+                            
+                            const newResendCooldownTime = Date.now() + (RESEND_COOLDOWN_SECONDS * 1000);
+                            localStorage.setItem('resendCooldownTime', newResendCooldownTime);
+                            
+                            // Restart timers
+                            updateOtpExpiryTimer();
+                            updateResendCooldownTimer();
+                            
+                            // Show success toast
+                            showToast('A new verification code has been sent to your email.', 'success');
+                        } else {
+                            // Enable button if request failed
+                            resendBtn.disabled = false;
+                            
+                            // Show error toast
+                            showToast(response.message || 'Failed to resend verification code.', 'error');
+                        }
+                    },
+                    error: function(xhr) {
+                        // Reset button state and enable
+                        resendBtn.innerHTML = originalBtnText;
+                        resendBtn.disabled = false;
+                        
+                        let errorMessage = "Failed to resend verification code.";
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) errorMessage = response.message;
+                        } catch (e) {
+                            console.error("Error parsing response:", e);
+                        }
+                        
+                        // Show error toast
+                        showToast(errorMessage, 'error');
+                    }
+                });
+            });
+            
+            // Toast notification function
+            function showToast(message, type = 'info') {
+                // Create toast container if it doesn't exist
+                let toastContainer = document.querySelector('.toast-container');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                    document.body.appendChild(toastContainer);
+                }
+                
+                // Create toast element
+                const toastId = 'toast-' + Date.now();
+                const toastEl = document.createElement('div');
+                toastEl.className = `toast ${type}-toast`;
+                toastEl.id = toastId;
+                toastEl.setAttribute('role', 'alert');
+                toastEl.setAttribute('aria-live', 'assertive');
+                toastEl.setAttribute('aria-atomic', 'true');
+                
+                // Set toast icon based on type
+                let icon = 'info-circle';
+                if (type === 'success') icon = 'check-circle';
+                if (type === 'error') icon = 'exclamation-circle';
+                if (type === 'warning') icon = 'exclamation-triangle';
+                
+                // Toast content
+                toastEl.innerHTML = `
+                    <div class="toast-header">
+                        <i class="fas fa-${icon} me-2"></i>
+                        <strong class="me-auto">ELITE WEAR</strong>
+                        <small>Just now</small>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                `;
+                
+                // Add toast to container
+                toastContainer.appendChild(toastEl);
+                
+                // Initialize and show toast
+                const toast = new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: 5000
+                });
+                toast.show();
+                
+                // Remove toast after it's hidden
+                toastEl.addEventListener('hidden.bs.toast', function() {
+                    toastEl.remove();
+                });
+            }
+            
+            // Add animation classes after page load
+            setTimeout(() => {
+                document.querySelector('.forgot-password-card').classList.add('animate-in');
+            }, 100);
         });
     </script>
 </body>

@@ -3,140 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <meta name="description" content="Sign in to your ELITE WEAR account">
+    <title>ELITE WEAR | Login</title>
     <link rel="stylesheet" href="/userStyle/login.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
 </head>
 <body>
     <div class="login-container">
-        <h1 class="Login">Log In</h1>
-
-        <form action="/login" method="POST" id="loginForm" novalidate>
-            <div class="form-group">
-                <label for="email">Email address</label>
-                <div class="input-wrapper">
-                    <input type="email" id="email" name="email" placeholder="helloworld@gmail.com">
-                    <svg class="icon check-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <path d="M8 12l2 2 4-4"></path>
-                    </svg>
-                </div>
-                <div class="error-message" id="emailError"></div>
+        <!-- Image Section -->
+        <div class="image-section" role="img" aria-label="Man in white shirt and beige trousers with sunglasses">
+            <div class="brand-container">
+                <h1 class="brand-name">ELITE WEAR</h1>
+                <p class="brand-tagline">Elevate Your Style</p>
             </div>
-
-            <div class="form-group">
-                <label for="password">Password</label>
-                <div class="input-wrapper">
-                    <input type="password" id="password" name="password" placeholder="•••••••">
-                    <svg class="icon eye-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" 
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                    </svg>
+        </div>
+        
+        <!-- Form Section -->
+        <div class="form-section">
+            <div class="form-container">
+                <div class="header">
+                    <h2 class="welcome-text">Welcome Back</h2>
+                    <p class="subtitle">Sign in to your account</p>
                 </div>
-                <div class="error-message" id="passwordError"></div>
 
-                <% if (message) { %>
-                    <div class="alert alert-danger text-center mt-2">
-                        <%= message %>
+                <form action="/login" method="POST" id="loginForm" novalidate>
+                    <div class="form-group">
+                        <label for="email">Email address</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                placeholder="your@email.com"
+                                autocomplete="email"
+                                aria-describedby="emailError"
+                            >
+                            <svg class="icon check-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M8 12l2 2 4-4"></path>
+                            </svg>
+                        </div>
+                        <div class="error-message" id="emailError" role="alert"></div>
                     </div>
-                <% } %>
 
-                <a href="/forgot-password" class="forgot-password">Forgot password?</a>
+                    <div class="form-group">
+                        <div class="password-header">
+                            <label for="password">Password</label>
+                            <a href="/forgot-password" class="forgot-password">Forgot password?</a>
+                        </div>
+                        <div class="input-wrapper">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                placeholder="••••••••"
+                                autocomplete="current-password"
+                                aria-describedby="passwordError"
+                            >
+                            <button 
+                                type="button" 
+                                class="icon eye-icon" 
+                                id="passwordToggle" 
+                                aria-label="Show password"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" 
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
+                                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="error-message" id="passwordError" role="alert"></div>
+
+                        <% if (typeof message !== 'undefined' && message) { %>
+                            <div class="alert-message" role="alert">
+                                <%= message %>
+                            </div>
+                        <% } %>
+                    </div>
+
+                    <div class="remember-me">
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="remember" id="remember">
+                            <span class="checkmark" aria-hidden="true"></span>
+                            Remember me
+                        </label>
+                    </div>
+
+                    <button type="submit" class="login-button">
+                        <span>Sign In</span>
+                    </button>
+                </form>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <a href="/auth/google" class="google-auth">
+                    <button type="button" class="google-button">
+                        <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                            viewBox="0 0 186.69 190.5" aria-hidden="true">
+                            <g transform="translate(1184.583 765.171)">
+                                <path
+                                    d="M-1089.333-687.239v36.888h51.262c-2.251 11.863-9.006 21.908-19.137 28.662l30.913 23.986c18.011-16.625 28.402-41.044 28.402-70.052 0-6.754-.606-13.249-1.732-19.483z"
+                                    fill="#4285f4" />
+                                <path
+                                    d="M-1142.714-651.791l-6.972 5.337-24.679 19.223h0c15.673 31.086 47.796 52.561 85.03 52.561 25.717 0 47.278-8.486 63.038-23.033l-30.913-23.986c-8.486 5.715-19.31 9.179-32.125 9.179-24.765 0-45.806-16.712-53.34-39.226z"
+                                    fill="#34a853" />
+                                <path
+                                    d="M-1174.365-712.61c-6.494 12.815-10.217 27.276-10.217 42.689s3.723 29.874 10.217 42.689c0 .086 31.693-24.592 31.693-24.592-1.905-5.715-3.031-11.776-3.031-18.098s1.126-12.383 3.031-18.098z"
+                                    fill="#fbbc05" />
+                                <path
+                                    d="M-1089.333-727.244c14.028 0 26.497 4.849 36.455 14.201l27.276-27.276c-16.539-15.413-38.013-24.852-63.731-24.852-37.234 0-69.359 21.388-85.032 52.561l31.692 24.592c7.533-22.514 28.575-39.226 53.34-39.226z"
+                                    fill="#ea4335" />
+                            </g>
+                        </svg>
+                        <span>Continue with Google</span>
+                    </button>
+                </a>
+
+                <p class="signup-text">New to ELITE WEAR? <a href="/signup">Create an account</a></p>
             </div>
-
-            <button type="submit" class="login-button">Log in</button>
-        </form>
-
-        <p class="signup-text">New user? <a href="/signup">Sign up</a></p>
-        <a class="google-time" href="/auth/google">
-            <button class="google-button">
-                <svg class="google-icon" href="/auth/google" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
-                    viewBox="0 0 186.69 190.5">
-                    <g transform="translate(1184.583 765.171)">
-                        <path
-                            d="M-1089.333-687.239v36.888h51.262c-2.251 11.863-9.006 21.908-19.137 28.662l30.913 23.986c18.011-16.625 28.402-41.044 28.402-70.052 0-6.754-.606-13.249-1.732-19.483z"
-                            fill="#4285f4" />
-                        <path
-                            d="M-1142.714-651.791l-6.972 5.337-24.679 19.223h0c15.673 31.086 47.796 52.561 85.03 52.561 25.717 0 47.278-8.486 63.038-23.033l-30.913-23.986c-8.486 5.715-19.31 9.179-32.125 9.179-24.765 0-45.806-16.712-53.34-39.226z"
-                            fill="#34a853" />
-                        <path
-                            d="M-1174.365-712.61c-6.494 12.815-10.217 27.276-10.217 42.689s3.723 29.874 10.217 42.689c0 .086 31.693-24.592 31.693-24.592-1.905-5.715-3.031-11.776-3.031-18.098s1.126-12.383 3.031-18.098z"
-                            fill="#fbbc05" />
-                        <path
-                            d="M-1089.333-727.244c14.028 0 26.497 4.849 36.455 14.201l27.276-27.276c-16.539-15.413-38.013-24.852-63.731-24.852-37.234 0-69.359 21.388-85.032 52.561l31.692 24.592c7.533-22.514 28.575-39.226 53.34-39.226z"
-                            fill="#ea4335" />
-                    </g>
-                </svg>
-                Google
-            </button>
-        </a>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Elements
             const form = document.getElementById('loginForm');
             const emailInput = document.getElementById('email');
             const passwordInput = document.getElementById('password');
             const emailError = document.getElementById('emailError');
             const passwordError = document.getElementById('passwordError');
-            const eyeIcon = document.querySelector('.eye-icon');
+            const passwordToggle = document.getElementById('passwordToggle');
 
-        
+            // Add animation classes after page load
+            setTimeout(() => {
+                document.querySelector('.image-section').classList.add('animate');
+                document.querySelector('.form-container').classList.add('animate');
+            }, 100);
 
-            if (eyeIcon) {
-                eyeIcon.addEventListener('click', function () {
+            // Password visibility toggle
+            if (passwordToggle) {
+                passwordToggle.addEventListener('click', function() {
                     const isPassword = passwordInput.type === 'password';
                     passwordInput.type = isPassword ? 'text' : 'password';
-                
+                    this.classList.toggle('active');
+                    this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
                 });
-            } else {
-                console.error('Eye icon not found in DOM');
             }
 
+            // Form validation
             form.addEventListener('submit', function(e) {
                 let isValid = true;
 
-                emailError.style.display = 'none';
-                passwordError.style.display = 'none';
-                emailInput.parentElement.classList.remove('invalid');
-                passwordInput.parentElement.classList.remove('invalid');
+                // Reset validation states
+                resetValidation(emailInput, emailError);
+                resetValidation(passwordInput, passwordError);
 
+                // Validate email
                 const emailValue = emailInput.value.trim();
                 if (!emailValue) {
-                    emailError.textContent = 'Email is required';
-                    emailError.style.display = 'block';
-                    emailInput.parentElement.classList.add('invalid');
+                    showError(emailInput, emailError, 'Email is required');
                     isValid = false;
                 } else if (!isValidEmail(emailValue)) {
-                    emailError.textContent = 'Please enter a valid email address';
-                    emailError.style.display = 'block';
-                    emailInput.parentElement.classList.add('invalid');
+                    showError(emailInput, emailError, 'Please enter a valid email address');
                     isValid = false;
                 }
 
+                // Validate password
                 const passwordValue = passwordInput.value;
                 if (!passwordValue) {
-                    passwordError.textContent = 'Password is required';
-                    passwordError.style.display = 'block';
-                    passwordInput.parentElement.classList.add('invalid');
+                    showError(passwordInput, passwordError, 'Password is required');
                     isValid = false;
                 } else if (passwordValue.length < 8) {
-                    passwordError.textContent = 'Password must be at least 8 characters long';
-                    passwordError.style.display = 'block';
-                    passwordInput.parentElement.classList.add('invalid');
+                    showError(passwordInput, passwordError, 'Password must be at least 8 characters long');
                     isValid = false;
                 } else if (/\s/.test(passwordValue)) {
-                    passwordError.textContent = 'Password cannot contain spaces';
-                    passwordError.style.display = 'block';
-                    passwordInput.parentElement.classList.add('invalid');
+                    showError(passwordInput, passwordError, 'Password cannot contain spaces');
                     isValid = false;
                 }
 
@@ -145,39 +195,89 @@
                 }
             });
 
+            // Live validation
+            [emailInput, passwordInput].forEach(input => {
+                let debounceTimer;
+                
+                input.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    const wrapper = this.closest('.input-wrapper');
+                    wrapper.classList.remove('invalid', 'valid');
+                    
+                    if (this.value.trim() !== '') {
+                        debounceTimer = setTimeout(() => {
+                            validateField(this);
+                        }, 500);
+                    } else {
+                        const errorElement = this.id === 'email' ? emailError : passwordError;
+                        errorElement.style.display = 'none';
+                        errorElement.textContent = '';
+                    }
+                });
+                
+                input.addEventListener('blur', function() {
+                    if (this.value.trim() !== '') {
+                        validateField(this);
+                    }
+                });
+            });
+
+            // Helper functions
             function isValidEmail(email) {
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 return emailRegex.test(email);
             }
 
-            [emailInput, passwordInput].forEach(input => {
-                input.addEventListener('input', function() {
-                    const errorElement = this.parentElement.nextElementSibling;
-                    const wrapper = this.parentElement;
-                    const value = this.value.trim();
-
-                    errorElement.style.display = 'none';
-                    wrapper.classList.remove('invalid');
-
-                    if (this.id === 'email' && value) {
-                        if (!isValidEmail(value)) {
-                            errorElement.textContent = 'Please enter a valid email address';
-                            errorElement.style.display = 'block';
-                            wrapper.classList.add('invalid');
-                        }
-                    } else if (this.id === 'password' && value) {
-                        if (value.length < 8) {
-                            errorElement.textContent = 'Password must be at least 8 characters long';
-                            errorElement.style.display = 'block';
-                            wrapper.classList.add('invalid');
-                        } else if (/\s/.test(value)) {
-                            errorElement.textContent = 'Password cannot contain spaces';
-                            errorElement.style.display = 'block';
-                            wrapper.classList.add('invalid');
-                        }
+            function validateField(field) {
+                if (field.id === 'email') {
+                    const value = field.value.trim();
+                    if (value === '') {
+                        showError(field, emailError, 'Email is required');
+                    } else if (!isValidEmail(value)) {
+                        showError(field, emailError, 'Please enter a valid email address');
+                    } else {
+                        showSuccess(field, emailError);
                     }
-                });
-            });
+                } else if (field.id === 'password') {
+                    const value = field.value;
+                    if (value === '') {
+                        showError(field, passwordError, 'Password is required');
+                    } else if (value.length < 8) {
+                        showError(field, passwordError, 'Password must be at least 8 characters long');
+                    } else if (/\s/.test(value)) {
+                        showError(field, passwordError, 'Password cannot contain spaces');
+                    } else {
+                        showSuccess(field, passwordError);
+                    }
+                }
+            }
+
+            function showError(input, errorElement, message) {
+                const wrapper = input.closest('.input-wrapper');
+                wrapper.classList.add('invalid');
+                wrapper.classList.remove('valid');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+
+            function showSuccess(input, errorElement) {
+                const wrapper = input.closest('.input-wrapper');
+                wrapper.classList.add('valid');
+                wrapper.classList.remove('invalid');
+                errorElement.style.display = 'none';
+                errorElement.textContent = '';
+            }
+
+            function resetValidation(input, errorElement) {
+                const wrapper = input.closest('.input-wrapper');
+                wrapper.classList.remove('invalid', 'valid');
+                errorElement.style.display = 'none';
+                errorElement.textContent = '';
+            }
+
+            // Preload image for better performance
+            const preloadImage = new Image();
+            preloadImage.src = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-YKPBJc1fEc1j6fQCRSQ1EX8wEtjMak.png';
         });
     </script>
 </body>

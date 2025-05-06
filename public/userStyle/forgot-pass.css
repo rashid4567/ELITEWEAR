@@ -1,54 +1,182 @@
-body {
-    background-color: #fff;
+/* Reset Password Specific Styles
+   ========================================= */
+
+/* Password Strength Meter */
+.password-strength {
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
+    display: none;
+  }
+  
+  .strength-meter {
+    height: 4px;
+    background-color: var(--color-gray-200);
+    border-radius: var(--border-radius-full);
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+  }
+  
+  .strength-meter-fill {
+    height: 100%;
+    border-radius: var(--border-radius-full);
+    transition: width var(--transition-normal), background-color var(--transition-normal);
+    width: 0;
+  }
+  
+  .strength-weak {
+    background-color: var(--color-danger);
+  }
+  
+  .strength-fair {
+    background-color: var(--color-warning);
+  }
+  
+  .strength-good {
+    background-color: var(--color-info);
+  }
+  
+  .strength-strong {
+    background-color: var(--color-success);
+  }
+  
+  .strength-text {
+    font-size: var(--font-size-xs);
+    color: var(--color-gray-500);
+    text-align: right;
+  }
+  
+  /* Password Requirements */
+  .password-requirements {
+    background-color: var(--color-gray-50);
+    border-radius: var(--border-radius-md);
+    padding: 1rem;
+    border: 1px solid var(--color-gray-200);
+  }
+  
+  .requirements-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--color-text);
+  }
+  
+  .requirements-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .requirements-list li {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .requirements-list li i {
+    font-size: 0.6rem;
+    margin-right: 0.5rem;
+    color: var(--color-gray-400);
+  }
+  
+  .requirements-list li.requirement-met {
+    color: var(--color-success);
+  }
+  
+  .requirements-list li.requirement-met i {
+    color: var(--color-success);
+  }
+  
+  /* Form Validation */
+  .form-control.is-invalid {
+    border-color: var(--color-danger);
+    background-image: none;
+  }
+  
+  .invalid-feedback {
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+    margin-top: 0.25rem;
+    display: none;
+  }
+  
+  .form-control.is-invalid + .invalid-feedback {
+    display: block;
+  }
+  
+  /* Toggle Password Button */
+  .toggle-password {
+    border-left: none;
+    color: var(--color-gray-500);
+    transition: color var(--transition-fast);
+  }
+  
+  .toggle-password:hover {
+    color: var(--color-secondary);
+    background-color: transparent;
+  }
+  
+  .toggle-password:focus {
+    box-shadow: none;
+    outline: none;
+  }
+  
+  /* Form Actions */
+  .form-actions {
+    margin-top: 2rem;
+  }
+  
+  .btn-primary {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: var(--color-primary);
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-md);
+    transition: all var(--transition-fast);
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-}
-.password-reset-container {
-    max-width: 450px;
     width: 100%;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-}
-.heading {
-    text-align: center;
-    font-weight: 600;
-    margin-bottom: 30px;
-}
-.btn-verify {
-    background-color: #000;
-    color: #fff;
-    border: none;
-    padding: 10px 0;
-    width: 100%;
-    margin-top: 20px;
-    border-radius: 4px;
-    font-weight: 500;
-}
-.btn-verify:hover {
-    background-color: #333;
-    color: #fff;
-}
-.form-control:focus {
-    box-shadow: 0 0 0 0.25rem rgba(0, 0, 0, 0.1);
-    border-color: #ced4da;
-}
-.form-label {
-    font-weight: 500;
-    margin-bottom: 8px;
-}
-.input-group {
-    margin-bottom: 15px;
-}
-.password-container {
-    position: relative;
-}
-.toggle-password {
-    position: absolute;
-    top: 50%;
-    right: 15px;
-    transform: translateY(-50%);
-    cursor: pointer;
-}
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--color-secondary-dark);
+    border-color: var(--color-secondary-dark);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 991.98px) {
+    .form-panel {
+      padding: 2rem;
+    }
+  }
+  
+  @media (max-width: 767.98px) {
+    .form-panel {
+      padding: 1.5rem;
+    }
+  }
+  
+  @media (max-width: 575.98px) {
+    .form-panel {
+      padding: 1rem;
+    }
+  
+    .form-title {
+      font-size: var(--font-size-xl);
+    }
+  
+    .form-subtitle {
+      font-size: var(--font-size-sm);
+    }
+  }
+  

@@ -1,71 +1,1170 @@
-body {
-    background-color: #f8f9fa;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-.container {
-    max-width: 600px;
-    margin: 50px auto;
-}
-.form-container {
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-    padding: 40px;
-    text-align: center;
-}
-h1 {
-    color: #333;
-    margin-bottom: 20px;
-    font-weight: 600;
-}
-.description {
-    color: #666;
-    margin-bottom: 30px;
-    line-height: 1.6;
-}
-.form-control {
-    height: 50px;
-    font-size: 18px;
-    text-align: center;
-    letter-spacing: 2px;
-}
-.btn-submit {
-    background-color: #000000;
-    color: white;
-    border: none;
-    height: 50px;
-    font-size: 18px;
-    font-weight: 500;
-    width: 100%;
-    margin-top: 10px;
-    border-radius: 5px;
-}
-.btn-submit:hover {
-    background-color: #000000;
-}
-.error-message {
-    color: #dc3545;
-    margin-top: 10px;
-    display: none;
-}
-.back-link {
-    display: block;
-    margin-top: 20px;
-    color: #6c757d;
+/* =========================================
+   ELITE WEAR Referral Program Styles
+   Luxury design with gold accents
+   ========================================= */
+
+/* Base Styles & Variables
+   ========================================= */
+   :root {
+    /* Color Palette - ELITE WEAR Brand Colors */
+    --color-primary: #1a1a1a;
+    --color-primary-dark: #000000;
+    --color-primary-light: #333333;
+    --color-secondary: #c9a96e;
+    --color-secondary-dark: #b08d4f;
+    --color-secondary-light: #d8bc8b;
+    --color-accent: #e74c3c;
+    --color-accent-dark: #c0392b;
+  
+    --color-success: #2ecc71;
+    --color-warning: #f39c12;
+    --color-danger: #e74c3c;
+    --color-info: #3498db;
+  
+    --color-gray-50: #f9fafb;
+    --color-gray-100: #f3f4f6;
+    --color-gray-200: #e5e7eb;
+    --color-gray-300: #d1d5db;
+    --color-gray-400: #9ca3af;
+    --color-gray-500: #6b7280;
+    --color-gray-600: #4b5563;
+    --color-gray-700: #374151;
+    --color-gray-800: #1f2937;
+    --color-gray-900: #111827;
+  
+    --color-background: #f5f5f5;
+    --color-card: #ffffff;
+    --color-text: #1a1a1a;
+    --color-text-light: #666666;
+  
+    /* Social Media Colors */
+    --color-facebook: #1877f2;
+    --color-twitter: #1da1f2;
+    --color-whatsapp: #25d366;
+    --color-email: #ea4335;
+  
+    /* Typography */
+    --font-family-heading: "Cormorant", serif;
+    --font-family-body: "Montserrat", sans-serif;
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+    --font-size-4xl: 2.25rem;
+    --font-size-5xl: 3rem;
+  
+    /* Spacing */
+    --spacing-1: 0.25rem;
+    --spacing-2: 0.5rem;
+    --spacing-3: 0.75rem;
+    --spacing-4: 1rem;
+    --spacing-5: 1.25rem;
+    --spacing-6: 1.5rem;
+    --spacing-8: 2rem;
+    --spacing-10: 2.5rem;
+    --spacing-12: 3rem;
+    --spacing-16: 4rem;
+  
+    /* Borders & Shadows */
+    --border-radius-sm: 0.25rem;
+    --border-radius-md: 0.375rem;
+    --border-radius-lg: 0.5rem;
+    --border-radius-xl: 0.75rem;
+    --border-radius-2xl: 1rem;
+    --border-radius-full: 9999px;
+  
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-gold: 0 5px 15px rgba(201, 169, 110, 0.3);
+  
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Reset & Base Styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: var(--font-family-body);
+    font-size: var(--font-size-base);
+    line-height: 1.5;
+    color: var(--color-text);
+    background-color: var(--color-background);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  a {
     text-decoration: none;
-}
-.back-link:hover {
-    color: #343a40;
-}
-.reward-info {
-    background-color: #e9f7fe;
-    border-left: 4px solid #000000;
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 5px;
+    color: var(--color-secondary);
+    transition: color var(--transition-fast);
+  }
+  
+  a:hover {
+    color: var(--color-secondary-dark);
+  }
+  
+  /* Brand Logo Styles
+     ========================================= */
+  .brand-logo {
+    width: 50px;
+    height: 50px;
+    background-color: var(--color-secondary);
+    border-radius: var(--border-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--spacing-3);
+  }
+  
+  .brand-logo-text {
+    font-family: var(--font-family-heading);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+  
+  .brand-name {
+    font-family: var(--font-family-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+  }
+  
+  .navbar-brand .brand-name {
+    color: white;
+  }
+  
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-4);
+  }
+  
+  .footer-brand .brand-name {
+    color: white;
+  }
+  
+  .brand-logo-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-6);
+  }
+  
+  /* Navbar Styles
+     ========================================= */
+  .navbar {
+    background-color: var(--color-primary);
+    padding: 1rem 0;
+  }
+  
+  .nav-link {
+    color: var(--color-gray-300);
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: color var(--transition-fast);
+  }
+  
+  .nav-link:hover {
+    color: var(--color-secondary);
+  }
+  
+  .nav-link.active {
+    color: var(--color-secondary);
+    font-weight: 600;
+  }
+  
+  /* Referral Container
+     ========================================= */
+  .referral-container {
+    min-height: calc(100vh - 70px);
+    padding: 2rem 0;
+  }
+  
+  /* Hero Section
+     ========================================= */
+  .referral-hero {
+    background-color: var(--color-card);
+    border-radius: var(--border-radius-xl);
+    padding: 3rem;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--color-gray-200);
+  }
+  
+  .referral-hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, var(--color-secondary-light) 0%, rgba(255, 255, 255, 0) 70%);
+    opacity: 0.2;
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+  }
+  
+  .referral-title {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-4xl);
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+  
+  .referral-subtitle {
+    font-size: var(--font-size-xl);
+    color: var(--color-text-light);
+    margin-bottom: 2rem;
+    max-width: 80%;
+  }
+  
+  .referral-stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+  
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .stat-value {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-3xl);
+    font-weight: 700;
+    color: var(--color-secondary);
+  }
+  
+  .stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .referral-illustration img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-lg);
+    transition: transform var(--transition-normal);
+  }
+  
+  .referral-illustration img:hover {
+    transform: scale(1.02);
+  }
+  
+  /* Referral Code Card
+     ========================================= */
+  .referral-code-card {
+    background-color: var(--color-card);
+    border-radius: var(--border-radius-xl);
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 2rem;
+    border: 1px solid var(--color-gray-200);
+  }
+  
+  .section-title {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .section-subtitle {
+    font-size: var(--font-size-base);
+    color: var(--color-text-light);
+    margin-bottom: 1.5rem;
+  }
+  
+  .referral-code-container,
+  .referral-link-container {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-gray-50);
+    border: 1px solid var(--color-gray-200);
+    border-radius: var(--border-radius-lg);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .referral-code,
+  .referral-link {
+    flex: 1;
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-secondary);
+    letter-spacing: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .btn-copy {
+    background-color: transparent;
+    color: var(--color-gray-500);
+    border: none;
+    padding: 0.5rem;
+    margin-left: 0.5rem;
+    border-radius: var(--border-radius-md);
+    transition: all var(--transition-fast);
+  }
+  
+  .btn-copy:hover {
+    color: var(--color-secondary);
+    background-color: var(--color-gray-100);
+  }
+  
+  .share-options {
+    background-color: var(--color-gray-50);
+    border-radius: var(--border-radius-xl);
+    padding: 1.5rem;
+    border: 1px solid var(--color-gray-200);
+  }
+  
+  .share-title {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+  }
+  
+  .social-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .btn-social {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius-full);
+    color: white;
+    font-size: var(--font-size-lg);
+    transition: all var(--transition-fast);
+    border: none;
+  }
+  
+  .btn-facebook {
+    background-color: var(--color-facebook);
+  }
+  
+  .btn-twitter {
+    background-color: var(--color-twitter);
+  }
+  
+  .btn-whatsapp {
+    background-color: var(--color-whatsapp);
+  }
+  
+  .btn-email {
+    background-color: var(--color-email);
+  }
+  
+  .btn-social:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    color: white;
+  }
+  
+  /* How It Works Section
+     ========================================= */
+  .how-it-works-card {
+    background-color: var(--color-card);
+    border-radius: var(--border-radius-xl);
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 2rem;
+    border: 1px solid var(--color-gray-200);
+  }
+  
+  .step-card {
+    background-color: var(--color-gray-50);
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    text-align: center;
+    height: 100%;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    border: 1px solid var(--color-gray-200);
+  }
+  
+  .step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-gold);
+    border-color: var(--color-secondary-light);
+  }
+  
+  .step-icon {
+    width: 64px;
+    height: 64px;
+    background-color: var(--color-secondary-light);
+    color: var(--color-primary);
+    border-radius: var(--border-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: var(--font-size-2xl);
+  }
+  
+  .step-title {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+  }
+  
+  .step-description {
+    color: var(--color-text-light);
+    font-size: var(--font-size-base);
+  }
+  
+  /* Rewards Section
+     ========================================= */
+  .rewards-card {
+    background-color: var(--color-card);
+    border-radius: var(--border-radius-xl);
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 2rem;
+    border: 1px solid var(--color-gray-200);
+  }
+  
+  .rewards-summary {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  .reward-item {
+    flex: 1;
+    min-width: 250px;
+    background-color: var(--color-gray-50);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid var(--color-gray-200);
+    transition: border-color var(--transition-fast);
+  }
+  
+  .reward-item:hover {
+    border-color: var(--color-secondary);
+  }
+  
+  .reward-icon {
+    width: 48px;
+    height: 48px;
+    background-color: var(--color-secondary-light);
+    color: var(--color-primary);
+    border-radius: var(--border-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-xl);
+    flex-shrink: 0;
+  }
+  
+  .reward-details {
+    flex: 1;
+  }
+  
+  .reward-title {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 0.25rem;
+  }
+  
+  .reward-value {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--color-secondary);
+    margin-bottom: 0.25rem;
+  }
+  
+  .reward-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-light);
+    margin: 0;
+  }
+  
+  .btn-redeem {
+    background-color: var(--color-secondary);
+    color: var(--color-primary);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-md);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+  }
+  
+  .btn-redeem:hover {
+    background-color: var(--color-secondary-dark);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .btn-redeem:disabled {
+    background-color: var(--color-gray-300);
+    color: var(--color-gray-600);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .btn-info-outline {
+    background-color: transparent;
+    color: var(--color-info);
+    border: 1px solid var(--color-info);
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-md);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+  }
+  
+  .btn-info-outline:hover {
+    background-color: var(--color-info);
+    color: white;
+  }
+  
+  /* Referral History Section
+     ========================================= */
+  .history-card {
+    background-color: var(--color-card);
+    border-radius: var(--border-radius-xl);
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-gray-200);
+  }
+  
+  .referral-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  
+  .referral-table th {
+    font-weight: 600;
+    color: var(--color-primary);
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-gray-200);
     text-align: left;
-}
-.reward-amount {
-    font-weight: bold;
-    color: #000000;
-}
+    text-transform: uppercase;
+    font-size: var(--font-size-sm);
+    letter-spacing: 1px;
+  }
+  
+  .referral-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-gray-100);
+    color: var(--color-text);
+  }
+  
+  .referral-table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    background-color: var(--color-secondary);
+    color: var(--color-primary);
+    border-radius: var(--border-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--border-radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  
+  .status-completed {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: var(--color-success);
+  }
+  
+  .status-pending {
+    background-color: rgba(243, 156, 18, 0.1);
+    color: var(--color-warning);
+  }
+  
+  .status-failed {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: var(--color-danger);
+  }
+  
+  /* FAQ Section
+     ========================================= */
+  .faq-section {
+    background-color: var(--color-gray-50);
+    padding: 4rem 0;
+    border-top: 1px solid var(--color-gray-200);
+    border-bottom: 1px solid var(--color-gray-200);
+  }
+  
+  .accordion-item {
+    border: none;
+    margin-bottom: 1rem;
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-gray-200);
+  }
+  
+  .accordion-button {
+    padding: 1.25rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    background-color: white;
+    font-family: var(--font-family-heading);
+  }
+  
+  .accordion-button:not(.collapsed) {
+    color: var(--color-secondary);
+    background-color: rgba(201, 169, 110, 0.05);
+    box-shadow: none;
+  }
+  
+  .accordion-button:focus {
+    box-shadow: none;
+    border-color: var(--color-gray-200);
+  }
+  
+  .accordion-body {
+    padding: 1.25rem;
+    background-color: white;
+    color: var(--color-text-light);
+  }
+  
+  /* Footer
+     ========================================= */
+  .footer {
+    background-color: var(--color-primary);
+    color: var(--color-gray-300);
+    padding: 4rem 0 2rem;
+  }
+  
+  .footer h5 {
+    color: white;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    font-family: var(--font-family-heading);
+  }
+  
+  .footer p {
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+  }
+  
+  .footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .footer-links li {
+    margin-bottom: 0.75rem;
+  }
+  
+  .footer-links a {
+    color: var(--color-gray-300);
+    transition: color var(--transition-fast);
+  }
+  
+  .footer-links a:hover {
+    color: var(--color-secondary);
+  }
+  
+  .social-links {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .social-link {
+    width: 36px;
+    height: 36px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: var(--border-radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+  }
+  
+  .social-link:hover {
+    background-color: var(--color-secondary);
+    color: var(--color-primary);
+    transform: translateY(-3px);
+  }
+  
+  .copyright {
+    font-size: var(--font-size-sm);
+    opacity: 0.6;
+  }
+  
+  /* Modal Styles
+     ========================================= */
+  .modal-content {
+    border-radius: var(--border-radius-lg);
+    border: none;
+    box-shadow: var(--shadow-xl);
+  }
+  
+  .modal-header {
+    border-bottom: 1px solid var(--color-gray-200);
+    padding: 1.5rem;
+  }
+  
+  .modal-title {
+    font-weight: 600;
+    color: var(--color-primary);
+    font-family: var(--font-family-heading);
+  }
+  
+  .modal-body {
+    padding: 1.5rem;
+  }
+  
+  .modal-footer {
+    border-top: 1px solid var(--color-gray-200);
+    padding: 1.5rem;
+  }
+  
+  /* Enter Referral Page
+     ========================================= */
+  .enter-referral-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 0;
+    background-color: var(--color-background);
+  }
+  
+  .referral-entry-card {
+    background-color: var(--color-card);
+    border-radius: var(--border-radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--color-gray-200);
+  }
+  
+  .referral-info {
+    background-color: var(--color-primary);
+    color: white;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .referral-info::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, var(--color-secondary) 0%, rgba(0, 0, 0, 0) 70%);
+    opacity: 0.1;
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+  }
+  
+  .entry-title {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-3xl);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--color-secondary);
+  }
+  
+  .entry-description {
+    font-size: var(--font-size-lg);
+    opacity: 0.9;
+    margin-bottom: 2rem;
+  }
+  
+  .rewards-highlight {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  
+  .rewards-highlight .reward-item {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-lg);
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .rewards-highlight .reward-icon {
+    background-color: var(--color-secondary);
+    color: var(--color-primary);
+  }
+  
+  .rewards-highlight .reward-title {
+    color: white;
+  }
+  
+  .rewards-highlight .reward-value {
+    color: var(--color-secondary);
+    font-size: var(--font-size-3xl);
+  }
+  
+  .rewards-highlight .reward-description {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .referral-entry-form {
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .form-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  
+  .form-title {
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-2xl);
+    font-weight: 700;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-subtitle {
+    color: var(--color-text-light);
+  }
+  
+  .form-footer {
+    text-align: center;
+    color: var(--color-text-light);
+    font-size: var(--font-size-sm);
+  }
+  
+  .skip-link {
+    color: var(--color-secondary);
+    font-weight: 500;
+  }
+  
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    color: var(--color-text-light);
+    margin-top: 1rem;
+    font-size: var(--font-size-sm);
+  }
+  
+  .back-link:hover {
+    color: var(--color-secondary);
+  }
+  
+  .error-message {
+    color: var(--color-danger);
+    font-size: var(--font-size-sm);
+    margin-top: 0.5rem;
+    display: none;
+  }
+  
+  /* Responsive Styles
+     ========================================= */
+  @media (max-width: 991.98px) {
+    .referral-hero {
+      padding: 2rem;
+    }
+  
+    .referral-title {
+      font-size: var(--font-size-3xl);
+    }
+  
+    .referral-subtitle {
+      font-size: var(--font-size-lg);
+      max-width: 100%;
+    }
+  
+    .referral-stats {
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+  
+    .rewards-summary {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  
+    .referral-info {
+      padding: 2rem;
+    }
+  }
+  
+  @media (max-width: 767.98px) {
+    .referral-hero {
+      padding: 1.5rem;
+    }
+  
+    .referral-title {
+      font-size: var(--font-size-2xl);
+    }
+  
+    .referral-subtitle {
+      font-size: var(--font-size-base);
+    }
+  
+    .stat-value {
+      font-size: var(--font-size-2xl);
+    }
+  
+    .section-title {
+      font-size: var(--font-size-xl);
+    }
+  
+    .referral-code-card,
+    .how-it-works-card,
+    .rewards-card,
+    .history-card {
+      padding: 1.5rem;
+    }
+  
+    .step-card {
+      margin-bottom: 1rem;
+    }
+  
+    .referral-entry-card {
+      flex-direction: column;
+    }
+  
+    .referral-entry-form,
+    .referral-info {
+      padding: 1.5rem;
+    }
+  
+    .entry-title {
+      font-size: var(--font-size-2xl);
+    }
+  
+    .entry-description {
+      font-size: var(--font-size-base);
+    }
+  }
+  
+  @media (max-width: 575.98px) {
+    .referral-hero {
+      padding: 1rem;
+    }
+  
+    .referral-stats {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  
+    .referral-code-container,
+    .referral-link-container {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  
+    .btn-copy {
+      margin-left: 0;
+      margin-top: 0.5rem;
+      width: 100%;
+    }
+  
+    .social-buttons {
+      justify-content: center;
+    }
+  
+    .referral-entry-form,
+    .referral-info {
+      padding: 1rem;
+    }
+  }
+  
+  /* Animations
+     ========================================= */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  /* Button Styles
+     ========================================= */
+  .btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-md);
+    transition: all var(--transition-fast);
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+  
+  .btn-secondary {
+    background-color: var(--color-gray-200);
+    border-color: var(--color-gray-200);
+    color: var(--color-gray-700);
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-md);
+    transition: all var(--transition-fast);
+  }
+  
+  .btn-secondary:hover {
+    background-color: var(--color-gray-300);
+    border-color: var(--color-gray-300);
+    color: var(--color-gray-800);
+  }
+  
+  /* Form Styles
+     ========================================= */
+  .form-label {
+    font-weight: 500;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-control {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--border-radius-md);
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  }
+  
+  .form-control:focus {
+    border-color: var(--color-secondary);
+    box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.1);
+  }
+  
+  .input-group-text {
+    background-color: var(--color-gray-50);
+    border-color: var(--color-gray-300);
+    color: var(--color-gray-500);
+  }
+  
+  /* Utility Classes
+     ========================================= */
+  .text-primary {
+    color: var(--color-primary) !important;
+  }
+  
+  .text-secondary {
+    color: var(--color-secondary) !important;
+  }
+  
+  .text-success {
+    color: var(--color-success) !important;
+  }
+  
+  .text-warning {
+    color: var(--color-warning) !important;
+  }
+  
+  .text-danger {
+    color: var(--color-danger) !important;
+  }
+  
+  .bg-primary {
+    background-color: var(--color-primary) !important;
+  }
+  
+  .bg-secondary {
+    background-color: var(--color-secondary) !important;
+  }
+  
+  .bg-success {
+    background-color: var(--color-success) !important;
+  }
+  
+  .bg-warning {
+    background-color: var(--color-warning) !important;
+  }
+  
+  .bg-danger {
+    background-color: var(--color-danger) !important;
+  }
+  

@@ -3,287 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
-    <link rel="stylesheet" href="/css/signup.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        html, body {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 15px;
-            box-sizing: border-box;
-        }
-        .signup-container {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            padding: 25px;
-            width: 100%;
-            max-width: 420px; /* Reduced from 500px */
-            margin: auto;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px; /* Reduced from 30px */
-            color: #333;
-            font-weight: 600;
-            font-size: 24px; /* Reduced from default */
-        }
-        .form-group {
-            margin-bottom: 15px; /* Reduced from 20px */
-        }
-        label {
-            display: block;
-            margin-bottom: 5px; /* Reduced from 8px */
-            font-weight: 500;
-            color: #555;
-            font-size: 14px; /* Reduced from default */
-        }
-        .input-wrapper {
-            position: relative;
-        }
-        input {
-            width: 100%;
-            padding: 10px 12px; /* Reduced from 12px 15px */
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px; /* Reduced from 16px */
-            transition: border-color 0.3s;
-        }
-        input:focus {
-            border-color:rgb(0, 2, 3);
-            outline: none;
-        }
-        .icon {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #777;
-            width: 14px; /* Reduced from 16px */
-            height: 14px; /* Reduced from 16px */
-        }
-        .signup-button {
-            width: 100%;
-            padding: 10px; /* Reduced from 12px */
-            background-color:rgb(0, 1, 2);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 15px; /* Reduced from 16px */
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 8px; /* Reduced from 10px */
-        }
-        .signup-button:hover {
-            background-color:rgb(0, 0, 0);
-        }
-        .login-text {
-            text-align: center;
-            margin-top: 15px; /* Reduced from 20px */
-            color: #666;
-            font-size: 13px; /* Reduced from default */
-        }
-        .login-text a {
-            color:rgb(0, 0, 0);
-            text-decoration: none;
-        }
-        .login-text a:hover {
-            text-decoration: underline;
-        }
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 20px 0; /* Reduced from 30px 0 */
-        }
-        .divider::before, .divider::after {
-            content: "";
-            flex: 1;
-            border-bottom: 1px solid #ddd;
-        }
-        .divider span {
-            padding: 0 8px; /* Reduced from 10px */
-            color: #777;
-            font-size: 13px; /* Reduced from 14px */
-        }
-        .google-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            padding: 10px; /* Reduced from 12px */
-            background-color: white;
-            color: #333;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px; /* Reduced from 16px */
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            text-decoration: none;
-        }
-        .google-button:hover {
-            background-color: #f1f1f1;
-        }
-        .google-icon {
-            margin-right: 8px; /* Reduced from 10px */
-            width: 16px; /* Reduced from 18px */
-            height: 16px; /* Reduced from 18px */
-        }
-        .error-message {
-            color: #dc3545;
-            font-size: 12px; /* Reduced from 14px */
-            margin-top: 3px; /* Reduced from 5px */
-            display: none;
-        }
-        .referral-section {
-            text-align: center;
-            margin-bottom: 15px; /* Reduced from 20px */
-            font-size: 13px; /* Reduced from default */
-        }
-        .referral-btn {
-            background-color:rgb(0, 0, 0);
-            color: white;
-            border: none;
-            padding: 8px 16px; /* Reduced from 10px 20px */
-            border-radius: 5px;
-            font-size: 14px; /* Reduced from 16px */
-            cursor: pointer;
-        }
-        .referral-btn:hover {
-            background-color:rgb(0, 0, 0);
-        }
-        .referral-applied {
-            color: #28a745;
-            font-size: 12px; /* Reduced from 14px */
-            margin-top: 8px; /* Reduced from 10px */
-        }
-        input.error {
-            border-color: #dc3545;
-        }
-        @media (max-height: 700px) {
-            body {
-                align-items: flex-start;
-                padding-top: 30px;
-                padding-bottom: 30px;
-            }
-        }
-    </style>
+    <title>ELITE WEAR | Create Account</title>
+    <link rel="stylesheet" href="/userStyle/signup.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/images/favicon.png">
 </head>
 <body>
-    <form class="signup-container" id="signupForm" method="post" action="/signup">
-        <h1>Sign up</h1>
-
-        <% if (typeof message !== 'undefined' && message) { %>
-            <div class="alert alert-danger text-center">
-                <%= message %>
-            </div>
-        <% } %>
-
-        <div class="form-group">
-            <label for="fullname">Full Name</label>
-            <div class="input-wrapper">
-                <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" value="<%= typeof formData !== 'undefined' && formData ? formData.fullname : '' %>" >
-                <div id="error1" class="error-message"></div>
+    <div class="signup">
+        <div class="signup__image-panel">
+            <div class="signup__image-overlay"></div>
+            <div class="signup__brand">
+                <div class="signup__logo">
+                    <span class="signup__logo-text">E</span>
+                </div>
+                <h1 class="signup__brand-name">ELITE WEAR</h1>
+                <p class="signup__brand-tagline">Redefining Luxury Fashion</p>
             </div>
         </div>
+        
+        <div class="signup__form-panel">
+            <div class="signup__form-container">
+                <header class="signup__header">
+                    <h2 class="signup__title">Create Account</h2>
+                    <p class="signup__subtitle">Join the world of premium fashion</p>
+                </header>
 
-        <div class="form-group">
-            <label for="email">Email</label>
-            <div class="input-wrapper">
-                <input type="email" id="email" name="email" placeholder="Enter your email" value="<%= typeof formData !== 'undefined' && formData ? formData.email : '' %>" >
-                <div id="error2" class="error-message"></div>
+                <% if (typeof message !== 'undefined' && message) { %>
+                    <div class="signup__alert">
+                        <%= message %>
+                    </div>
+                <% } %>
+
+                <form action="/signup" method="POST" id="signupForm" class="signup__form" novalidate>
+                    <div class="form-field">
+                        <label for="fullname" class="form-field__label">Full Name</label>
+                        <div class="form-field__input-wrapper" data-state="default">
+                            <input 
+                                type="text" 
+                                id="fullname" 
+                                name="fullname" 
+                                class="form-field__input" 
+                                placeholder="Your full name"
+                                value="<%= typeof formData !== 'undefined' && formData ? formData.fullname : '' %>"
+                                autocomplete="name"
+                            >
+                            <div class="form-field__icon form-field__icon--success">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <div class="form-field__icon form-field__icon--error">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="form-field__message" id="error1"></div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="email" class="form-field__label">Email Address</label>
+                        <div class="form-field__input-wrapper" data-state="default">
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                class="form-field__input" 
+                                placeholder="your@email.com"
+                                value="<%= typeof formData !== 'undefined' && formData ? formData.email : '' %>"
+                                autocomplete="email"
+                            >
+                            <div class="form-field__icon form-field__icon--success">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <div class="form-field__icon form-field__icon--error">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="form-field__message" id="error2"></div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="mobile" class="form-field__label">Mobile Number</label>
+                        <div class="form-field__input-wrapper" data-state="default">
+                            <input 
+                                type="tel" 
+                                id="mobile" 
+                                name="mobile" 
+                                class="form-field__input" 
+                                placeholder="Your mobile number"
+                                value="<%= typeof formData !== 'undefined' && formData ? formData.mobile : '' %>"
+                                autocomplete="tel"
+                            >
+                            <div class="form-field__icon form-field__icon--success">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <div class="form-field__icon form-field__icon--error">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="form-field__message" id="error3"></div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="password" class="form-field__label">Password</label>
+                        <div class="form-field__input-wrapper" data-state="default">
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                class="form-field__input" 
+                                placeholder="••••••••"
+                                autocomplete="new-password"
+                            >
+                            <div class="form-field__icon form-field__icon--toggle" id="passwordToggle" data-visible="false">
+                                <svg class="form-field__icon--show" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg class="form-field__icon--hide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="form-field__message" id="error4"></div>
+                    </div>
+
+                    <div class="form-field">
+                        <label for="cpassword" class="form-field__label">Confirm Password</label>
+                        <div class="form-field__input-wrapper" data-state="default">
+                            <input 
+                                type="password" 
+                                id="cpassword" 
+                                name="cpassword" 
+                                class="form-field__input" 
+                                placeholder="••••••••"
+                                autocomplete="new-password"
+                            >
+                            <div class="form-field__icon form-field__icon--toggle" id="cpasswordToggle" data-visible="false">
+                                <svg class="form-field__icon--show" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg class="form-field__icon--hide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="form-field__message" id="error5"></div>
+                    </div>
+
+                    <div class="signup__referral">
+                        <p class="signup__referral-text">Have a referral code? Claim your reward!</p>
+                        <button type="button" class="signup__referral-button" id="referralBtn">
+                            <span>Enter Referral Code</span>
+                        </button>
+                        <input type="hidden" id="referralCode" name="referralCode" value="<%= typeof referralCode !== 'undefined' && referralCode ? referralCode : '' %>">
+                        <% if (typeof referralCode !== 'undefined' && referralCode) { %>
+                            <p class="signup__referral-applied">Referral code <%= referralCode %> applied!</p>
+                        <% } %>
+                    </div>
+
+                    <button type="submit" class="signup__button">
+                        <span class="signup__button-text">Create Account</span>
+                        <span class="signup__button-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </span>
+                    </button>
+                </form>
+
+                <div class="signup__divider">
+                    <span class="signup__divider-text">or</span>
+                </div>
+
+                <div class="signup__social">
+                    <a href="/auth/google" class="signup__social-button signup__social-button--google">
+                        <svg class="signup__social-icon" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                        <span>Continue with Google</span>
+                    </a>
+                </div>
+
+                <footer class="signup__footer">
+                    <p class="signup__login-text">
+                        Already have an account? <a href="/login" class="signup__login-link">Sign in</a>
+                    </p>
+                </footer>
             </div>
         </div>
+    </div>
 
-        <div class="form-group">
-            <label for="mobile">Mobile Number</label>
-            <div class="input-wrapper">
-                <input type="tel" id="mobile" name="mobile" placeholder="Enter your mobile number" value="<%= typeof formData !== 'undefined' && formData ? formData.mobile : '' %>" >
-                <div id="error3" class="error-message"></div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="password">Password</label>
-            <div class="input-wrapper">
-                <input type="password" id="password" name="password" placeholder="Enter your password" >
-                <div id="error4" class="error-message"></div>
-                <svg class="icon toggle-password" data-target="password" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="cpassword">Confirm Password</label>
-            <div class="input-wrapper">
-                <input type="password" id="cpassword" name="cpassword" placeholder="Confirm your password" >
-                <div id="error5" class="error-message"></div>
-                <svg class="icon toggle-password" data-target="cpassword" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>
-            </div>
-        </div>
-
-        <div class="referral-section">
-            <p>Have a referral code? Claim your reward!</p>
-            <button type="button" class="referral-btn" id="referralBtn">Enter Referral Code</button>
-            <input type="hidden" id="referralCode" name="referralCode" value="<%= typeof referralCode !== 'undefined' && referralCode ? referralCode : '' %>">
-            <% if (typeof referralCode !== 'undefined' && referralCode) { %>
-                <p class="referral-applied">Referral code <%= referralCode %> applied!</p>
-            <% } %>
-        </div>
-
-        <p class="login-text">Already have an account? <a href="/login">Log in</a></p>
-
-        <button type="submit" class="signup-button">Sign Up</button>
-
-        <div class="divider">
-            <span>Or Register with</span>
-        </div>
-
-        <a href="/auth/google" class="google-button">
-            <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 186.69 190.5">
-                <g transform="translate(1184.583 765.171)">
-                    <path d="M-1089.333-687.239v36.888h51.262c-2.251 11.863-9.006 21.908-19.137 28.662l30.913 23.986c18.011-16.625 28.402-41.044 28.402-70.052 0-6.754-.606-13.249-1.732-19.483z" fill="#4285f4" />
-                    <path d="M-1142.714-651.791l-6.972 5.337-24.679 19.223h0c15.673 31.086 47.796 52.561 85.03 52.561 25.717 0 47.278-8.486 63.038-23.033l-30.913-23.986c-8.486 5.715-19.31 9.179-32.125 9.179-24.765 0-45.806-16.712-53.34-39.226z" fill="#34a853" />
-                    <path d="M-1174.365-712.61c-6.494 12.815-10.217 27.276-10.217 42.689s3.723 29.874 10.217 42.689c0 .086 31.693-24.592 31.693-24.592-1.905-5.715-3.031-11.776-3.031-18.098s1.126-12.383 3.031-18.098z" fill="#fbbc05" />
-                    <path d="M-1089.333-727.244c14.028 0 26.497 4.849 36.455 14.201l27.276-27.276c-16.539-15.413-38.013-24.852-63.731-24.852-37.234 0-69.359 21.388-85.032 52.561l31.692 24.592c7.533-22.514 28.575-39.226 53.34-39.226z" fill="#ea4335" />
-                </g>
-            </svg>
-            Google
-        </a>
-    </form>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
             const signupForm = document.getElementById('signupForm');
             const fullnameInput = document.getElementById('fullname');
             const emailInput = document.getElementById('email');
             const mobileInput = document.getElementById('mobile');
             const passwordInput = document.getElementById('password');
-            const confirmPasswordInput = document.getElementById("cpassword");
+            const confirmPasswordInput = document.getElementById('cpassword');
             const referralBtn = document.getElementById('referralBtn');
+            const passwordToggle = document.getElementById('passwordToggle');
+            const cpasswordToggle = document.getElementById('cpasswordToggle');
             
             const formInputs = [fullnameInput, emailInput, mobileInput, passwordInput, confirmPasswordInput];
-
+            
             const errorElements = {
                 name: document.getElementById('error1'),
                 email: document.getElementById('error2'),
@@ -291,26 +243,46 @@
                 password: document.getElementById('error4'),
                 confirm: document.getElementById('error5')
             };
-
-            // Toggle password visibility
-            document.querySelectorAll('.toggle-password').forEach(button => {
-                button.addEventListener('click', function () {
-                    const targetId = this.getAttribute('data-target');
-                    const passwordField = document.getElementById(targetId);
-                    passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
-                });
+            
+            // Add animation classes after page load
+            setTimeout(() => {
+                document.querySelector('.signup__image-panel').classList.add('signup__image-panel--animate');
+                document.querySelector('.signup__form-container').classList.add('signup__form-container--animate');
+            }, 100);
+            
+            // Password visibility toggle - improved functionality
+            passwordToggle.addEventListener('click', function() {
+                togglePasswordVisibility(passwordInput, this);
             });
 
+            cpasswordToggle.addEventListener('click', function() {
+                togglePasswordVisibility(confirmPasswordInput, this);
+            });
+
+            // Helper function for password visibility toggling
+            function togglePasswordVisibility(inputElement, toggleElement) {
+                const isPassword = inputElement.type === 'password';
+                inputElement.type = isPassword ? 'text' : 'password';
+                toggleElement.setAttribute('data-visible', isPassword ? 'true' : 'false');
+                
+                // Add focus back to input field for better UX
+                inputElement.focus();
+                
+                // Position cursor at the end of the text
+                const length = inputElement.value.length;
+                inputElement.setSelectionRange(length, length);
+            }
+            
             // Form submission validation
-            signupForm.addEventListener("submit", function (event) {
+            signupForm.addEventListener('submit', function(e) {
                 if (!validateForm()) {
-                    event.preventDefault();
+                    e.preventDefault();
                 } else {
                     // Clear stored form data on successful submission
                     sessionStorage.removeItem('signupFormData');
                 }
             });
-
+            
             // Field validation on blur
             formInputs.forEach(input => {
                 let modified = false;
@@ -325,7 +297,7 @@
                     }
                 });
             });
-
+            
             // Save form data and redirect to referral page
             referralBtn.addEventListener('click', function() {
                 // Save form data to sessionStorage
@@ -343,7 +315,7 @@
                 // Redirect to referral page
                 window.location.href = '/referralSpace';
             });
-
+            
             // Check for stored form data when page loads
             const savedFormData = sessionStorage.getItem('signupFormData');
             if (savedFormData) {
@@ -356,7 +328,7 @@
                 passwordInput.value = formData.password || '';
                 confirmPasswordInput.value = formData.cpassword || '';
             }
-
+            
             // Check for referral code in URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const referralParam = urlParams.get('referral');
@@ -366,15 +338,15 @@
                 document.getElementById('referralCode').value = referralParam;
                 
                 // Show the "referral applied" message if it doesn't already exist
-                const referralSection = document.querySelector('.referral-section');
-                if (!referralSection.querySelector('.referral-applied')) {
+                const referralSection = document.querySelector('.signup__referral');
+                if (!referralSection.querySelector('.signup__referral-applied')) {
                     const appliedMsg = document.createElement('p');
-                    appliedMsg.className = 'referral-applied';
+                    appliedMsg.className = 'signup__referral-applied';
                     appliedMsg.textContent = `Referral code ${referralParam} applied!`;
                     referralSection.appendChild(appliedMsg);
                 }
             }
-
+            
             function validateField(field) {
                 switch(field.id) {
                     case 'fullname':
@@ -394,22 +366,22 @@
                         break;
                 }
             }
-
+            
             function validateForm() {
                 const isNameValid = validateName();
                 const isEmailValid = validateEmail();
                 const isMobileValid = validateMobile();
                 const isPasswordValid = validatePassword();
                 const isPasswordMatchValid = validatePasswordMatch();
-
+                
                 return isNameValid && isEmailValid && isMobileValid &&
                        isPasswordValid && isPasswordMatchValid;
             }
-
+            
             function validateName() {
                 const nameValue = fullnameInput.value.trim();
                 const namePattern = /^[A-Za-z\s]+$/;
-
+                
                 if (nameValue === "") {
                     showError(fullnameInput, errorElements.name, "Please enter your full name");
                     return false;
@@ -417,15 +389,15 @@
                     showError(fullnameInput, errorElements.name, "Name can only contain alphabets and spaces");
                     return false;
                 } else {
-                    hideError(fullnameInput, errorElements.name);
+                    showSuccess(fullnameInput, errorElements.name);
                     return true;
                 }
             }
-
+            
             function validateEmail() {
                 const emailValue = emailInput.value.trim();
                 const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
+                
                 if (emailValue === "") {
                     showError(emailInput, errorElements.email, "Please enter an email address");
                     return false;
@@ -433,15 +405,15 @@
                     showError(emailInput, errorElements.email, "Enter a valid email (example@mail.com)");
                     return false;
                 } else {
-                    hideError(emailInput, errorElements.email);
+                    showSuccess(emailInput, errorElements.email);
                     return true;
                 }
             }
-
+            
             function validateMobile() {
                 const mobileValue = mobileInput.value.trim();
                 const mobilePattern = /^[0-9]{10,12}$/;
-
+                
                 if (mobileValue === "") {
                     showError(mobileInput, errorElements.mobile, "Please enter a mobile number");
                     return false;
@@ -449,14 +421,14 @@
                     showError(mobileInput, errorElements.mobile, "Enter a valid mobile number (10-12 digits)");
                     return false;
                 } else {
-                    hideError(mobileInput, errorElements.mobile);
+                    showSuccess(mobileInput, errorElements.mobile);
                     return true;
                 }
             }
-
+            
             function validatePassword() {
                 const passwordValue = passwordInput.value;
-
+                
                 if (passwordValue === "") {
                     showError(passwordInput, errorElements.password, "Please enter a password");
                     return false;
@@ -464,19 +436,19 @@
                     showError(passwordInput, errorElements.password, "Password must be at least 8 characters");
                     return false;
                 } else {
-                    hideError(passwordInput, errorElements.password);
-                
+                    showSuccess(passwordInput, errorElements.password);
+                    
                     if (confirmPasswordInput.value !== "") {
                         validatePasswordMatch();
                     }
                     return true;
                 }
             }
-
+            
             function validatePasswordMatch() {
                 const passwordValue = passwordInput.value;
                 const confirmValue = confirmPasswordInput.value;
-
+                
                 if (confirmValue === "") {
                     showError(confirmPasswordInput, errorElements.confirm, "Please confirm your password");
                     return false;
@@ -484,21 +456,28 @@
                     showError(confirmPasswordInput, errorElements.confirm, "Passwords do not match");
                     return false;
                 } else {
-                    hideError(confirmPasswordInput, errorElements.confirm);
+                    showSuccess(confirmPasswordInput, errorElements.confirm);
                     return true;
                 }
             }
-
+            
             function showError(inputElement, errorElement, message) {
-                inputElement.classList.add('error');
-                errorElement.style.display = "block";
+                const wrapper = inputElement.closest('.form-field__input-wrapper');
+                wrapper.setAttribute('data-state', 'error');
                 errorElement.textContent = message;
+                errorElement.style.display = 'block';
             }
-
-            function hideError(inputElement, errorElement) {
-                inputElement.classList.remove('error');
-                errorElement.style.display = "none";
-                errorElement.textContent = "";
+            
+            function showSuccess(inputElement, errorElement) {
+                const wrapper = inputElement.closest('.form-field__input-wrapper');
+                wrapper.setAttribute('data-state', 'success');
+                errorElement.style.display = 'none';
+            }
+            
+            function resetValidation(inputElement, errorElement) {
+                const wrapper = inputElement.closest('.form-field__input-wrapper');
+                wrapper.setAttribute('data-state', 'default');
+                errorElement.style.display = 'none';
             }
         });
     </script>

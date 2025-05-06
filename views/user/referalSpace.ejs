@@ -3,54 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enter Referral Code</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <title>Enter Referral Code | ELITE WEAR</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="/userStyle/referalSpace.css">
-    <style>
-        /* Add any missing styles here if needed */
-        .error-message {
-            color: #dc3545;
-            margin-top: 10px;
-            display: none;
-        }
-    </style>
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="/images/favicon.png" type="image/png">
 </head>
 <body>
-    <div class="container">
-        <div class="form-container">
-            <h1>Enter Referral Code</h1>
-            
-            <div class="reward-info">
-                <p><strong>Referral Rewards:</strong></p>
-                <p>New users get <span class="reward-amount">₹100</span> in their wallet when they sign up with a referral code.</p>
-                <p>Referrers get <span class="reward-amount">₹200</span> for each friend who signs up using their code.</p>
-            </div>
-            
-            <p class="description">
-                Enter your friend's referral code to unlock exclusive rewards! When you 
-                sign up using a referral code, both you and your friend will receive a 
-                bonus. Don't miss out on this opportunity to start with extra benefits!
-            </p>
-            
-            <form id="referralForm">
-                <div class="mb-4">
-                    <input type="text" class="form-control" id="referralCode" placeholder="Enter code" value="<%= typeof referralCode !== 'undefined' ? referralCode : '' %>" <%= typeof referralCode !== 'undefined' && referralCode ? 'readonly' : '' %>>
+    <div class="enter-referral-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="referral-entry-card">
+                        <div class="row">
+                            <div class="col-lg-6 referral-info">
+                                <div class="referral-entry-content">
+                                    <div class="brand-logo-container">
+                                        <div class="brand-logo">
+                                            <span class="brand-logo-text">E</span>
+                                        </div>
+                                        <h2 class="brand-name">ELITE WEAR</h2>
+                                    </div>
+                                    <h1 class="entry-title">Exclusive Invitation</h1>
+                                    <p class="entry-description">
+                                        Enter your friend's referral code to unlock exclusive rewards! When you 
+                                        sign up using a referral code, both you and your friend will receive a 
+                                        bonus. Join the world of premium fashion with added benefits.
+                                    </p>
+                                    
+                                    <div class="rewards-highlight">
+                                        <div class="reward-item">
+                                            <div class="reward-icon">
+                                                <i class="fas fa-gift"></i>
+                                            </div>
+                                            <div class="reward-details">
+                                                <h3 class="reward-title">You Get</h3>
+                                                <p class="reward-value">₹100</p>
+                                                <p class="reward-description">Instantly added to your wallet</p>
+                                            </div>
+                                        </div>
+                                        <div class="reward-item">
+                                            <div class="reward-icon">
+                                                <i class="fas fa-user-friends"></i>
+                                            </div>
+                                            <div class="reward-details">
+                                                <h3 class="reward-title">Your Friend Gets</h3>
+                                                <p class="reward-value">₹200</p>
+                                                <p class="reward-description">For referring you</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="referral-entry-form">
+                                    <div class="form-header">
+                                        <h2 class="form-title">Got a Referral Code?</h2>
+                                        <p class="form-subtitle">Enter it below to claim your reward</p>
+                                    </div>
+                                    
+                                    <form id="referralForm" class="mt-4">
+                                        <div class="mb-4">
+                                            <label for="referralCode" class="form-label">Referral Code</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text"><i class="fas fa-ticket-alt"></i></span>
+                                                <input 
+                                                    type="text" 
+                                                    class="form-control" 
+                                                    id="referralCode" 
+                                                    placeholder="Enter code" 
+                                                    value="<%= typeof referralCode !== 'undefined' ? referralCode : '' %>" 
+                                                    <%= typeof referralCode !== 'undefined' && referralCode ? 'readonly' : '' %>
+                                                >
+                                            </div>
+                                            <div id="errorMessage" class="error-message mt-2"></div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            Continue to Sign Up
+                                            <i class="fas fa-arrow-right ms-2"></i>
+                                        </button>
+                                    </form>
+                                    
+                                    <div class="form-footer mt-4">
+                                        <p>Don't have a code? <a href="/signup" class="skip-link">Skip this step</a></p>
+                                        <a href="/signup" class="back-link">
+                                            <i class="fas fa-arrow-left me-2"></i> Back to Sign Up
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                
-                <button type="submit" class="btn btn-submit">Continue to Sign Up</button>
-                <div id="errorMessage" class="error-message"></div>
-            </form>
-            
-            <a href="/signup" class="back-link" id="backToSignup">← Back to Sign Up</a>
+            </div>
         </div>
     </div>
     
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const referralForm = document.getElementById('referralForm');
             const referralCodeInput = document.getElementById('referralCode');
             const errorMessage = document.getElementById('errorMessage');
-            const backToSignupLink = document.getElementById('backToSignup');
             
             // Handle form submission
             referralForm.addEventListener('submit', async function(event) {
@@ -80,12 +146,6 @@
                     console.error('Error validating referral code:', error);
                     showError('An error occurred while validating the referral code');
                 }
-            });
-            
-            // Handle back to signup link - preserve form data
-            backToSignupLink.addEventListener('click', function(event) {
-                // No need to prevent default as we want to navigate back
-                // The stored form data in sessionStorage will be used on the signup page
             });
             
             function showError(message) {

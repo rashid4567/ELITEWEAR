@@ -331,7 +331,7 @@ const loadUserSignup = async (req, res) => {
     res.render("signup", {
       user: null,
       message: errorMessage || null,
-      formData: null,
+      formData: {},
       referralCode,
     });
   } catch (error) {
