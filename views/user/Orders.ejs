@@ -70,6 +70,39 @@
         display: inline-block;
         margin-bottom: 8px;
       }
+      .btn-retry-payment {
+        background-color: #0d6efd;
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+      }
+      .btn-retry-payment:hover {
+        background-color: #0b5ed7;
+        transform: translateY(-2px);
+      }
+      .payment-alert {
+        border-left: 4px solid #dc3545;
+        background-color: #f8d7da;
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+      }
+      .payment-pending-alert {
+        border-left: 4px solid #ffc107;
+        background-color: #fff3cd;
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        border-radius: 4px;
+      }
+      .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+        border-width: 0.2em;
+      }
+      .main-cards12{
+        
+      transform: translate(328px, -647px); 
+      }
     </style>
   </head>
   <body>
@@ -79,7 +112,7 @@
       <div class="row">
         <%- include("../partials/user/profileSidebar") %>
 
-        <div class="col-md-9">
+        <div class="col-md-9 main-cards12">
           <div class="card main-content-card animate__animated animate__fadeInUp">
             <div class="card-body p-4">
               <h4 class="card-title mb-4 fw-bold animate__animated animate__fadeInLeft">
@@ -131,6 +164,19 @@
                         style="animation-delay: <%= (index + itemIndex) * 0.1 %>s"
                       >
                         <div class="card-body p-4">
+                          <!-- Payment Status Alerts - New Addition -->
+                          <% if (order.paymentMethod === 'Online' && order.paymentStatus === 'Failed') { %>
+                            <div class="payment-alert mb-3">
+                              <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                              <strong>Payment Failed:</strong> Your payment for this order was not successful. Please retry payment to complete your order.
+                            </div>
+                          <% } else if (order.paymentMethod === 'Online' && order.paymentStatus === 'Pending') { %>
+                            <div class="payment-pending-alert mb-3">
+                              <i class="bi bi-hourglass-split me-2"></i>
+                              <strong>Payment Pending:</strong> Your payment is being processed. If it doesn't complete soon, please retry payment.
+                            </div>
+                          <% } %>
+                          
                           <div class="row g-4 align-items-center">
                             <div class="col-lg-2 col-md-3 col-sm-3">
                             <img 
@@ -193,11 +239,13 @@
                                   <i class="bi bi-calendar me-1"></i>
                                   <%= new Date(order.orderDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
                                 </p>
+                                <!-- Retry Payment Button - New Addition -->
                                 <button
-                                  class="btn btn-sm btn-outline-dark action-btn mb-2"
-                                  onclick="reOrder('<%= order._id %>')"
+                                  class="btn btn-sm btn-retry-payment mb-2"
+                                  onclick="retryPayment('<%= order._id %>')"
+                                  id="retryBtn-<%= order._id %>"
                                 >
-                                  <i class="bi bi-arrow-repeat me-1"></i>Try Again
+                                  <i class="bi bi-arrow-repeat me-1"></i>Retry Payment
                                 </button>
                               <% } else { %>
                                 <p class="status-<%= order.status ? order.status.toLowerCase().replace(/\s+/g, '-') : 'pending' %> mb-1 fs-6">
@@ -233,12 +281,14 @@
                                   >
                                     <i class="bi bi-arrow-return-left me-1"></i>Return
                                   </button>
-                                  <button
-                                    class="btn btn-sm btn-outline-dark action-btn mb-2"
-                                    onclick="downloadInvoice('<%= order._id %>')"
-                                  >
-                                    <i class="bi bi-file-earmark-text me-1"></i>Invoice
-                                  </button>
+                                  <% if (order.status !== 'Cancelled') { %>
+                                    <button
+                                      class="btn btn-sm btn-outline-dark action-btn mb-2"
+                                      onclick="downloadInvoice('<%= order._id %>')"
+                                    >
+                                      <i class="bi bi-file-earmark-text me-1"></i>Invoice
+                                    </button>
+                                  <% } %>
                                 <% } else if (order.status === 'Pending' || order.status === 'Processing') { %>
                                   <button
                                     class="btn btn-sm btn-outline-dark action-btn mb-2"
@@ -273,19 +323,28 @@
                   <% } else { %>
                     <div class="order-card card mb-4 shine-effect animate__animated animate__fadeInUp">
                       <div class="card-body p-4">
+                        <!-- Payment Status Alerts for orders without items - New Addition -->
+                        <% if (order.paymentMethod === 'Online' && order.paymentStatus === 'Failed') { %>
+                          <div class="payment-alert mb-3">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Payment Failed:</strong> Your payment for this order was not successful. Please retry payment to complete your order.
+                          </div>
+                        <% } else if (order.paymentMethod === 'Online' && order.paymentStatus === 'Pending') { %>
+                          <div class="payment-pending-alert mb-3">
+                            <i class="bi bi-hourglass-split me-2"></i>
+                            <strong>Payment Pending:</strong> Your payment is being processed. If it doesn't complete soon, please retry payment.
+                          </div>
+                        <% } %>
+                        
                         <div class="row g-4 align-items-center">
-<<<<<<< Updated upstream
                           <div class="col-lg-2 col-md-3 col-sm-3">
                           <img 
-                          src="<%= item.productId && item.productId.images && item.productId.images.length > 0 ? item.productId.images[0].url : '/api/placeholder/300/300' %>" 
-                          alt="<%= item.productId && item.productId.name ? item.productId.name : 'Unnamed Product' %>" 
+                          src="/api/placeholder/300/300" 
+                          alt="Order Image" 
                           class="product-img img-fluid rounded"
                       >
                           </div>
                           <div class="col-lg-7 col-md-6 col-sm-9">
-=======
-                          <div class="col-lg-9 col-md-9 col-sm-9">
->>>>>>> Stashed changes
                             <h5 class="card-title fw-bold">
                               Order #<%= order.orderNumber || 'N/A' %>
                             </h5>
@@ -312,11 +371,13 @@
                                 <i class="bi bi-<%= order.paymentStatus === 'Failed' ? 'exclamation-circle-fill' : 'hourglass-split' %> me-1"></i>
                                 <%= order.paymentStatus.toUpperCase() %>
                               </p>
+                              <!-- Retry Payment Button for orders without items - New Addition -->
                               <button
-                                class="btn btn-sm btn-outline-dark action-btn mb-2"
-                                onclick="reOrder('<%= order._id %>')"
+                                class="btn btn-sm btn-retry-payment mb-2"
+                                onclick="retryPayment('<%= order._id %>')"
+                                id="retryBtn-<%= order._id %>"
                               >
-                                <i class="bi bi-arrow-repeat me-1"></i>Try Again
+                                <i class="bi bi-arrow-repeat me-1"></i>Retry Payment
                               </button>
                             <% } %>
                             <button
@@ -334,27 +395,52 @@
               <% } %>
 
          
-              <% if (hasOrders && totalPages > 1) { %>
-                <nav aria-label="Order pagination" class="mt-4 animate__animated animate__fadeInUp">
-                  <ul class="pagination justify-content-center">
-                    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                      <a class="page-link" href="?page=<%= currentPage - 1 %>" aria-label="Previous">
-                        <span aria-hidden="true">«</span>
-                      </a>
-                    </li>
-                    <% for (let i = 1; i <= totalPages; i++) { %>
-                      <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                        <a class="page-link" href="?page=<%= i %>"><%= i %></a>
-                      </li>
+              <% if (hasOrders && totalPages > 1) { 
+                let startPage = Math.max(1, currentPage - 1);
+                let endPage = Math.min(startPage + 3, totalPages);
+            
+                // Adjust startPage if we're near the end
+                if (endPage - startPage < 3) {
+                  startPage = Math.max(1, endPage - 3);
+                }
+            %>
+              <nav aria-label="Order pagination" class="mt-4 animate__animated animate__fadeInUp">
+                <ul class="pagination justify-content-center">
+                  <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                    <a class="page-link" href="?page=<%= currentPage - 1 %>" aria-label="Previous">
+                      <span aria-hidden="true">«</span>
+                    </a>
+                  </li>
+            
+                  <% if (startPage > 1) { %>
+                    <li class="page-item"><a class="page-link" href="?page=1">1</a></li>
+                    <% if (startPage > 2) { %>
+                      <li class="page-item disabled"><span class="page-link">...</span></li>
                     <% } %>
-                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                      <a class="page-link" href="?page=<%= currentPage + 1 %>" aria-label="Next">
-                        <span aria-hidden="true">»</span>
-                      </a>
+                  <% } %>
+            
+                  <% for (let i = startPage; i <= endPage; i++) { %>
+                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                      <a class="page-link" href="?page=<%= i %>"><%= i %></a>
                     </li>
-                  </ul>
-                </nav>
-              <% } %>
+                  <% } %>
+            
+                  <% if (endPage < totalPages) { %>
+                    <% if (endPage < totalPages - 1) { %>
+                      <li class="page-item disabled"><span class="page-link">...</span></li>
+                    <% } %>
+                    <li class="page-item"><a class="page-link" href="?page=<%= totalPages %>"><%= totalPages %></a></li>
+                  <% } %>
+            
+                  <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                    <a class="page-link" href="?page=<%= currentPage + 1 %>" aria-label="Next">
+                      <span aria-hidden="true">»</span>
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+            <% } %>
+            
             </div>
           </div>
         </div>
@@ -425,6 +511,41 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
             <button type="button" class="btn btn-dark" id="confirmReorderBtn">Yes, reorder</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Method Modal - New Addition -->
+    <div class="modal fade" id="paymentMethodModal" tabindex="-1" aria-labelledby="paymentMethodModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="paymentMethodModalLabel">Select Payment Method</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Please select a payment method to complete your order:</p>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="radio" name="paymentMethod" id="walletPayment" value="Wallet" checked>
+              <label class="form-check-label d-flex justify-content-between align-items-center" for="walletPayment">
+                <span><i class="bi bi-wallet2 me-2"></i>Pay with Wallet</span>
+                <span class="badge bg-success">Balance: ₹<%= user.walletBalance ? user.walletBalance.toFixed(2) : '0.00' %></span>
+              </label>
+              <% if (user.walletBalance < 0) { %>
+                <div class="text-danger small mt-1">Insufficient balance. Please add money to your wallet.</div>
+              <% } %>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="paymentMethod" id="razorpayPayment" value="Razorpay">
+              <label class="form-check-label" for="razorpayPayment">
+                <i class="bi bi-credit-card me-2"></i>Pay Online (Credit/Debit Card, UPI, NetBanking)
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-primary" id="confirmPaymentMethod">Proceed to Payment</button>
           </div>
         </div>
       </div>
@@ -503,6 +624,18 @@
               });
           }, 1000);
         });
+        
+        // Payment Method Modal - New Addition
+        const paymentMethodModal = document.getElementById("paymentMethodModal");
+        if (paymentMethodModal) {
+          const confirmPaymentMethodBtn = paymentMethodModal.querySelector("#confirmPaymentMethod");
+          confirmPaymentMethodBtn.addEventListener("click", function() {
+            const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            const orderId = paymentMethodModal.getAttribute("data-order-id");
+            completePayment(orderId, selectedMethod);
+            bootstrap.Modal.getInstance(paymentMethodModal).hide();
+          });
+        }
       });
 
       function showToast(message, isSuccess = true) {
@@ -542,7 +675,7 @@
       }
 
       function cancelOrder(orderId, cancelReason) {
-        fetch(`/orders/cancel/${orderId}`, {
+        fetch(`/cancel-order/${orderId}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cancelReason }),
@@ -567,94 +700,154 @@
           });
       }
 
-      function reOrder(orderId) {
-        console.log("Retrying payment for order:", orderId);
-        fetch(`/retry-payment/${orderId}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        })
-          .then((res) => {
-            if (!res.ok) {
-              throw new Error(`HTTP error! Status: ${res.status}`);
-            }
-            return res.json();
+      // Retry Payment Function - New Addition
+      function retryPayment(orderId) {
+        // Show payment method selection modal
+        const paymentMethodModal = document.getElementById("paymentMethodModal");
+        paymentMethodModal.setAttribute("data-order-id", orderId);
+        const modal = new bootstrap.Modal(paymentMethodModal);
+        modal.show();
+      }
+      
+      // Complete Payment Function - New Addition
+      function completePayment(orderId, paymentMethod) {
+        // Show loading state on button
+        const retryBtn = document.getElementById(`retryBtn-${orderId}`);
+        if (retryBtn) {
+          retryBtn.disabled = true;
+          retryBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
+        }
+        
+        if (paymentMethod === "Wallet") {
+          // Handle wallet payment
+          fetch(`/complete-payment/${orderId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ paymentMethod: "Wallet" }),
           })
-          .then((data) => {
-            if (data.success) {
-              // Initialize Razorpay payment
-              const options = {
-                key: data.key,
-                amount: data.order.amount,
-                currency: "INR",
-                name: "ELITE WEAR",
-                description: "Order Payment",
-                order_id: data.order.id,
-                handler: function (response) {
-                  // Verify payment
-                  fetch("/verify-payment", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      razorpay_order_id: response.razorpay_order_id,
-                      razorpay_payment_id: response.razorpay_payment_id,
-                      razorpay_signature: response.razorpay_signature,
-                    }),
-                  })
-                    .then((res) => res.json())
-                    .then((verifyData) => {
-                      if (verifyData.success) {
-                        showToast("Payment successful");
-                        setTimeout(() => (window.location.href = verifyData.redirect), 1000);
-                      } else {
-                        showToast(verifyData.message || "Payment verification failed", false);
-                      }
-                    })
-                    .catch((err) => {
-                      console.error("Error verifying payment:", err);
-                      showToast("Failed to verify payment", false);
-                    });
-                },
-                prefill: {
-                  name: data.user.name,
-                  email: data.user.email,
-                  contact: data.user.contact,
-                },
-                theme: {
-                  color: "#2c3e50",
-                },
-                modal: {
-                  ondismiss: function() {
-                    console.log("Payment modal dismissed");
-                    // Handle failed payment
-                    fetch("/handle-failed-payment", {
+            .then(response => {
+              if (!response.ok) {
+                throw new Error("Server responded with an error");
+              }
+              return response.json();
+            })
+            .then(data => {
+              if (data.success) {
+                showToast("Payment completed successfully");
+                setTimeout(() => window.location.reload(), 1500);
+              } else {
+                showToast(data.message || "Failed to process payment", false);
+                if (retryBtn) {
+                  retryBtn.disabled = false;
+                  retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
+                }
+              }
+            })
+            .catch(error => {
+              console.error("Error processing payment:", error);
+              showToast("An error occurred while processing payment", false);
+              if (retryBtn) {
+                retryBtn.disabled = false;
+                retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
+              }
+            });
+        } else if (paymentMethod === "Razorpay") {
+          // Handle Razorpay payment
+          fetch(`/create-razorpay-order`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ orderId }),
+          })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error("Server responded with an error");
+              }
+              return response.json();
+            })
+            .then(data => {
+              if (data.success) {
+                // Initialize Razorpay payment
+                const options = {
+                  key: data.key,
+                  amount: data.order.amount,
+                  currency: "INR",
+                  name: "ELITE WEAR",
+                  description: "Order Payment",
+                  order_id: data.order.id,
+                  handler: function (response) {
+                    // Verify payment
+                    fetch("/verify-payment", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
-                        razorpay_order_id: data.order.id
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
                       }),
                     })
                       .then(res => res.json())
                       .then(data => {
                         if (data.success) {
-                          showToast("Payment cancelled", false);
+                          showToast("Payment successful");
+                          setTimeout(() => window.location.href = data.redirect, 1500);
+                        } else {
+                          showToast(data.message || "Payment verification failed", false);
+                          if (retryBtn) {
+                            retryBtn.disabled = false;
+                            retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
+                          }
                         }
                       })
-                      .catch(err => {
-                        console.error("Error handling failed payment:", err);
+                      .catch(error => {
+                        console.error("Error verifying payment:", error);
+                        showToast("Failed to verify payment", false);
+                        if (retryBtn) {
+                          retryBtn.disabled = false;
+                          retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
+                        }
                       });
+                  },
+                  prefill: {
+                    name: data.user.name,
+                    email: data.user.email,
+                    contact: data.user.contact,
+                  },
+                  theme: {
+                    color: "#2c3e50",
+                  },
+                  modal: {
+                    ondismiss: function() {
+                      console.log("Payment modal dismissed");
+                      if (retryBtn) {
+                        retryBtn.disabled = false;
+                        retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
+                      }
+                    }
                   }
+                };
+                const rzp = new Razorpay(options);
+                rzp.open();
+              } else {
+                showToast(data.message || "Failed to initiate payment", false);
+                if (retryBtn) {
+                  retryBtn.disabled = false;
+                  retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
                 }
-              };
-              const rzp = new Razorpay(options);
-              rzp.open();
-            } else {
-              showToast(data.message || "Failed to initiate payment", false);
-            }
-          })
-          .catch((err) => {
-            console.error("Error in reOrder:", err);
-            showToast(`Failed to retry payment: ${err.message}`, false);
-          });
+              }
+            })
+            .catch(error => {
+              console.error("Error initiating payment:", error);
+              showToast("An error occurred while initiating payment", false);
+              if (retryBtn) {
+                retryBtn.disabled = false;
+                retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
+              }
+            });
+        }
       }
 
       function viewDetails(orderId) {

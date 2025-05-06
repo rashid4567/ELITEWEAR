@@ -3,150 +3,430 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELITE WEAR - Available Coupons</title>
-    <link rel="stylesheet" href="/userStyle/coupons.css">
+    <title>Elite Wear | Available Coupons</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-        <link rel="stylesheet" href="/userStyle/header.css">
-            <link rel="stylesheet" href="/userStyle/footer.css">
+    <link rel="stylesheet" href="/userStyle/header.css">
+    <link rel="stylesheet" href="/userStyle/footer.css">
+    <link rel="stylesheet" href="/userStyle/coupons.css">
 </head>
 <body>
- 
-    <div class="announcement-bar">
-        <div class="container">
-            <p>Get 10% off for your first purchase USE CODE NEW1</p>
-        </div>
-    </div>
-
-   
     <%- include("../partials/user/header") %>
-    
 
-    <div class="main-content">
+    <div class="page-wrapper">
         <div class="container">
-            <div class="breadcrumb">
-                <a href="/profile">profile</a> <i class="fas fa-chevron-right"></i>
-                <a href="/coupons">coupons</a> <i class="fas fa-chevron-right"></i>
-            </div>
-
-            <div class="content-container">
-           
-                <%- include("../partials/user/profileSidebar") %>
-
-        
-                <div class="coupons-section">
-                    <h2>Available Coupons</h2>
-
-                    <% if (coupons && coupons.length > 0) { %>
-                        <% coupons.forEach(coupon => { %>
-                            <div class="coupon-card <%= coupon.status %>">
-                                <div class="coupon-details">
-                                    <div class="coupon-title">
-                                        <%= coupon.coupencode %> - <%= coupon.couponpercent %>% OFF
-                                    </div>
-                                    <div class="coupon-description">
-                                        <%= coupon.description || '' %>
-                                        <% if (coupon.minimumPurchase > 0) { %>
-                                            <span class="min-purchase">Min. Purchase: ₹<%= coupon.minimumPurchase %></span>
-                                        <% } %>
-                                    </div>
-                                    <% if (coupon.status !== 'available') { %>
-                                        <div class="coupon-status <%= coupon.status %>">
-                                            <%= coupon.statusText %>
-                                        </div>
-                                    <% } %>
+            <div class="row g-4">
+                <!-- Sidebar Column -->
+                <div class="col-lg-3 col-md-4">
+                    <%- include("../partials/user/profileSidebar") %>
+                </div>
+                
+                <!-- Main Content Column -->
+                <div class="col-lg-9 col-md-8">
+                    <div class="content-container">
+                        <!-- Page Header -->
+                        <div class="page-header">
+                            <div class="header-content">
+                                <div class="breadcrumb-nav">
+                                    <nav aria-label="breadcrumb">
+                                        <ol class="breadcrumb">
+                                            <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+                                            <li class="breadcrumb-item"><a href="/profile">My Account</a></li>
+                                            <li class="breadcrumb-item active" aria-current="page">Coupons</li>
+                                        </ol>
+                                    </nav>
                                 </div>
-                                <div class="coupon-validity">
-                                    <div class="validity-date">
-                                        Valid till <%= new Date(coupon.expiryDate).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) %>
-                                    </div>
-                                    <div class="coupon-code">
-                                        <span id="coupon-<%= coupon._id %>"><%= coupon.coupencode %></span>
-                                        <% if (coupon.status === 'available') { %>
-                                            <button class="copy-btn" onclick="copyCoupon('<%= coupon._id %>', '<%= coupon.coupencode %>')">
-                                                <i class="fas fa-copy"></i>
-                                            </button>
-                                        <% } %>
-                                    </div>
-                                    <% if (coupon.limit > 1) { %>
-                                        <div class="usage-limit">
-                                            Uses: <%= coupon.userUsageCount || 0 %>/<%= coupon.limit %>
-                                        </div>
-                                    <% } %>
+                                <div class="header-title">
+                                    <h1>My Coupons</h1>
+                                    <p>Discover exclusive discounts and offers</p>
                                 </div>
                             </div>
-                        <% }); %>
-                    <% } else { %>
-                        <div class="no-coupons">
-                            <p>No coupons available at the moment.</p>
                         </div>
-                    <% } %>
+                        
+                        <!-- Coupon Filters -->
+                        <div class="coupon-filters">
+                            <div class="filter-tabs">
+                                <button class="filter-tab active" data-filter="all">All Coupons</button>
+                                <button class="filter-tab" data-filter="available">Available</button>
+                                <button class="filter-tab" data-filter="used">Used</button>
+                                <button class="filter-tab" data-filter="expired">Expired</button>
+                                <button class="filter-tab" data-filter="upcoming">Upcoming</button>
+                            </div>
+                            <div class="filter-actions">
+                                <div class="search-box">
+                                    <input type="text" id="couponSearch" placeholder="Search coupons...">
+                                    <button class="search-btn"><i class="fas fa-search"></i></button>
+                                </div>
+                                <div class="sort-dropdown">
+                                    <button class="sort-btn dropdown-toggle">
+                                        <i class="fas fa-sort-amount-down"></i> Sort
+                                    </button>
+                                    <div class="sort-dropdown-menu">
+                                        <a href="#" data-sort="expiry-asc">Expiry Date (Nearest)</a>
+                                        <a href="#" data-sort="expiry-desc">Expiry Date (Furthest)</a>
+                                        <a href="#" data-sort="discount-asc">Discount (Low to High)</a>
+                                        <a href="#" data-sort="discount-desc">Discount (High to Low)</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Coupons Grid -->
+                        <div class="coupons-grid">
+                            <% if (coupons && coupons.length > 0) { %>
+                                <% coupons.forEach(coupon => { %>
+                                    <div class="coupon-card" data-status="<%= coupon.status %>">
+                                        <div class="coupon-header">
+                                            <div class="discount-badge">
+                                                <span class="discount-value"><%= coupon.couponpercent %>%</span>
+                                                <span class="discount-label">OFF</span>
+                                            </div>
+                                            <div class="coupon-status-badge <%= coupon.status %>">
+                                                <%= coupon.status === 'available' ? 'Available' : 
+                                                   coupon.status === 'used' ? 'Used' : 
+                                                   coupon.status === 'expired' ? 'Expired' : 'Upcoming' %>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="coupon-body">
+                                            <div class="coupon-title"><%= coupon.coupencode %></div>
+                                            <div class="coupon-description">
+                                                <%= coupon.description || 'Discount on your purchase' %>
+                                            </div>
+                                            
+                                            <div class="coupon-details">
+                                                <div class="detail-item">
+                                                    <i class="fas fa-tag"></i>
+                                                    <span>Min. Purchase: ₹<%= coupon.minimumPurchase.toFixed(2) %></span>
+                                                </div>
+                                                <div class="detail-item">
+                                                    <i class="far fa-calendar-alt"></i>
+                                                    <span>Valid till <%= new Date(coupon.expiryDate).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) %></span>
+                                                </div>
+                                                <% if (coupon.limit > 1) { %>
+                                                    <div class="detail-item">
+                                                        <i class="fas fa-redo-alt"></i>
+                                                        <span>Uses: <%= coupon.userUsageCount || 0 %>/<%= coupon.limit %></span>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="coupon-divider">
+                                            <div class="divider-circle left"></div>
+                                            <div class="divider-line"></div>
+                                            <div class="divider-circle right"></div>
+                                        </div>
+                                        
+                                        <div class="coupon-footer">
+                                            <div class="coupon-code-container">
+                                                <span class="coupon-code" id="coupon-<%= coupon._id %>"><%= coupon.coupencode %></span>
+                                            </div>
+                                            <% if (coupon.status === 'available') { %>
+                                                <button class="copy-btn" onclick="copyCoupon('<%= coupon._id %>', '<%= coupon.coupencode %>')">
+                                                    <span class="btn-text">Copy Code</span>
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            <% } else if (coupon.status === 'used') { %>
+                                                <button class="used-btn" disabled>
+                                                    <span class="btn-text">Already Used</span>
+                                                    <i class="fas fa-check-circle"></i>
+                                                </button>
+                                            <% } else if (coupon.status === 'expired') { %>
+                                                <button class="expired-btn" disabled>
+                                                    <span class="btn-text">Expired</span>
+                                                    <i class="fas fa-times-circle"></i>
+                                                </button>
+                                            <% } else { %>
+                                                <button class="upcoming-btn" disabled>
+                                                    <span class="btn-text">Coming Soon</span>
+                                                    <i class="fas fa-clock"></i>
+                                                </button>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="empty-state">
+                                    <div class="empty-state-content">
+                                        <div class="empty-state-icon">
+                                            <i class="fas fa-ticket-alt"></i>
+                                        </div>
+                                        <h3>No Coupons Available</h3>
+                                        <p>There are no coupons available at the moment. Check back later for exclusive offers and discounts.</p>
+                                        <a href="/allproduct" class="btn-primary">
+                                            <i class="fas fa-shopping-bag"></i> Continue Shopping
+                                        </a>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        <% if (coupons && coupons.length > 0 && totalPages > 1) { %>
+                            <div class="pagination-wrapper">
+                                <nav aria-label="Coupons pagination">
+                                    <ul class="pagination">
+                                        <!-- Previous Page -->
+                                        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                                            <a class="page-link" href="?page=<%= currentPage - 1 %>" aria-label="Previous" <%= currentPage === 1 ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+                                                <i class="fas fa-chevron-left"></i>
+                                            </a>
+                                        </li>
+                                        
+                                        <!-- First Page -->
+                                        <% if (currentPage > 3) { %>
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page=1">1</a>
+                                            </li>
+                                            <% if (currentPage > 4) { %>
+                                                <li class="page-item disabled">
+                                                    <span class="page-link">...</span>
+                                                </li>
+                                            <% } %>
+                                        <% } %>
+                                        
+                                        <!-- Page Numbers -->
+                                        <% 
+                                            let startPage = Math.max(1, currentPage - 1);
+                                            let endPage = Math.min(totalPages, currentPage + 1);
+                                            
+                                            if (endPage - startPage + 1 < 3) {
+                                                if (currentPage < totalPages) {
+                                                    endPage = Math.min(totalPages, currentPage + 2);
+                                                } else {
+                                                    startPage = Math.max(1, totalPages - 2);
+                                                }
+                                            }
+                                            
+                                            for (let i = startPage; i <= endPage; i++) {
+                                        %>
+                                            <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                                                <a class="page-link" href="?page=<%= i %>"><%= i %></a>
+                                            </li>
+                                        <% } %>
+                                        
+                                        <!-- Last Page -->
+                                        <% if (currentPage < totalPages - 2) { %>
+                                            <% if (currentPage < totalPages - 3) { %>
+                                                <li class="page-item disabled">
+                                                    <span class="page-link">...</span>
+                                                </li>
+                                            <% } %>
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page=<%= totalPages %>"><%= totalPages %></a>
+                                            </li>
+                                        <% } %>
+                                        
+                                        <!-- Next Page -->
+                                        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                                            <a class="page-link" href="?page=<%= currentPage + 1 %>" aria-label="Next" <%= currentPage === totalPages ? 'tabindex="-1" aria-disabled="true"' : '' %>>
+                                                <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                                
+                                <div class="pagination-info">
+                                    Showing page <%= currentPage %> of <%= totalPages %>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Pagination -->
-<div class="pagination">
-    <% if (currentPage > 1) { %>
-        <a href="?page=<%= currentPage - 1 %>" class="page-btn">Prev</a>
-    <% } %>
 
-    <% for (let i = 1; i <= totalPages; i++) { %>
-        <a href="?page=<%= i %>" class="page-btn <%= currentPage === i ? 'active' : '' %>"><%= i %></a>
-    <% } %>
+    <!-- Toast Notification -->
+    <div class="toast-container">
+        <div id="toast" class="toast">
+            <div class="toast-content">
+                <i class="fas fa-check-circle toast-icon"></i>
+                <div class="toast-message"></div>
+            </div>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
 
-    <% if (currentPage < totalPages) { %>
-        <a href="?page=<%= currentPage + 1 %>" class="page-btn">Next</a>
-    <% } %>
-</div>
-
-
-    
     <%- include("../partials/user/footer") %>
 
     <script>
-       
-        document.getElementById('menu-toggle').addEventListener('click', function() {
-            document.querySelector('.nav-links').classList.toggle('show');
-        });
-
-   
-        function copyCoupon(id, code) {
-            navigator.clipboard.writeText(code).then(() => {
-                const btn = document.querySelector(`#coupon-${id}`).nextElementSibling;
-                btn.innerHTML = '<i class="fas fa-check"></i>';
-                btn.classList.add('copied');
-                
-                
-                showToast('Coupon code copied to clipboard!');
-                
-                setTimeout(() => {
-                    btn.innerHTML = '<i class="fas fa-copy"></i>';
-                    btn.classList.remove('copied');
-                }, 2000);
-            });
-        }
-
-      
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = message;
-            document.body.appendChild(toast);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize toast
+            const toast = document.getElementById('toast');
+            const toastMessage = document.querySelector('.toast-message');
+            const toastProgress = document.querySelector('.toast-progress');
             
-            setTimeout(() => {
+            // Show toast notification
+            function showToast(message, type = 'success') {
+                // Set message
+                toastMessage.textContent = message;
+                
+                // Set icon based on type
+                const toastIcon = document.querySelector('.toast-icon');
+                if (type === 'success') {
+                    toastIcon.className = 'fas fa-check-circle toast-icon success';
+                } else if (type === 'error') {
+                    toastIcon.className = 'fas fa-exclamation-circle toast-icon error';
+                } else if (type === 'info') {
+                    toastIcon.className = 'fas fa-info-circle toast-icon info';
+                }
+                
+                // Show toast
                 toast.classList.add('show');
-            }, 100);
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
+                
+                // Start progress bar
+                toastProgress.style.width = '100%';
+                toastProgress.style.transition = 'width 3s linear';
+                toastProgress.style.width = '0%';
+                
+                // Hide toast after animation
                 setTimeout(() => {
-                    document.body.removeChild(toast);
-                }, 300);
-            }, 3000);
-        }
+                    toast.classList.remove('show');
+                    // Reset progress bar
+                    setTimeout(() => {
+                        toastProgress.style.transition = 'none';
+                        toastProgress.style.width = '100%';
+                    }, 300);
+                }, 3000);
+            }
+            
+            // Copy coupon code
+            window.copyCoupon = function(id, code) {
+                navigator.clipboard.writeText(code).then(() => {
+                    const btn = document.querySelector(`button[onclick="copyCoupon('${id}', '${code}')"]`);
+                    const btnText = btn.querySelector('.btn-text');
+                    const btnIcon = btn.querySelector('i');
+                    
+                    // Change button appearance
+                    btn.classList.add('copied');
+                    btnText.textContent = 'Copied!';
+                    btnIcon.className = 'fas fa-check';
+                    
+                    // Show toast notification
+                    showToast('Coupon code copied to clipboard!', 'success');
+                    
+                    // Reset button after delay
+                    setTimeout(() => {
+                        btn.classList.remove('copied');
+                        btnText.textContent = 'Copy Code';
+                        btnIcon.className = 'fas fa-copy';
+                    }, 2000);
+                }).catch(err => {
+                    showToast('Failed to copy code. Please try again.', 'error');
+                });
+            };
+            
+            // Filter tabs functionality
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            const couponCards = document.querySelectorAll('.coupon-card');
+            
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Get filter value
+                    const filter = this.getAttribute('data-filter');
+                    
+                    // Filter coupon cards
+                    couponCards.forEach(card => {
+                        if (filter === 'all' || card.getAttribute('data-status') === filter) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            // Search functionality
+            const searchInput = document.getElementById('couponSearch');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                couponCards.forEach(card => {
+                    const couponCode = card.querySelector('.coupon-title').textContent.toLowerCase();
+                    const couponDesc = card.querySelector('.coupon-description').textContent.toLowerCase();
+                    
+                    if (couponCode.includes(searchTerm) || couponDesc.includes(searchTerm)) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Sort dropdown toggle
+            const sortBtn = document.querySelector('.sort-btn');
+            const sortDropdown = document.querySelector('.sort-dropdown-menu');
+            
+            sortBtn.addEventListener('click', function() {
+                sortDropdown.classList.toggle('show');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.sort-dropdown')) {
+                    sortDropdown.classList.remove('show');
+                }
+            });
+            
+            // Sort functionality
+            const sortOptions = document.querySelectorAll('.sort-dropdown-menu a');
+            
+            sortOptions.forEach(option => {
+                option.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const sortValue = this.getAttribute('data-sort');
+                    const couponCardsArray = Array.from(couponCards);
+                    
+                    // Sort coupon cards
+                    couponCardsArray.sort((a, b) => {
+                        if (sortValue === 'expiry-asc') {
+                            const dateA = new Date(a.querySelector('.detail-item:nth-child(2) span').textContent.replace('Valid till ', ''));
+                            const dateB = new Date(b.querySelector('.detail-item:nth-child(2) span').textContent.replace('Valid till ', ''));
+                            return dateA - dateB;
+                        } else if (sortValue === 'expiry-desc') {
+                            const dateA = new Date(a.querySelector('.detail-item:nth-child(2) span').textContent.replace('Valid till ', ''));
+                            const dateB = new Date(b.querySelector('.detail-item:nth-child(2) span').textContent.replace('Valid till ', ''));
+                            return dateB - dateA;
+                        } else if (sortValue === 'discount-asc') {
+                            const discountA = parseInt(a.querySelector('.discount-value').textContent);
+                            const discountB = parseInt(b.querySelector('.discount-value').textContent);
+                            return discountA - discountB;
+                        } else if (sortValue === 'discount-desc') {
+                            const discountA = parseInt(a.querySelector('.discount-value').textContent);
+                            const discountB = parseInt(b.querySelector('.discount-value').textContent);
+                            return discountB - discountA;
+                        }
+                    });
+                    
+                    // Reorder DOM elements
+                    const couponsGrid = document.querySelector('.coupons-grid');
+                    couponCardsArray.forEach(card => {
+                        couponsGrid.appendChild(card);
+                    });
+                    
+                    // Close dropdown
+                    sortDropdown.classList.remove('show');
+                });
+            });
+            
+            // Add animation classes on page load
+            couponCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.classList.add('fade-in');
+            });
+        });
     </script>
 </body>
 </html>

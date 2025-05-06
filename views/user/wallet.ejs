@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ELITE WEAR - My Wallet</title>
+    <title>Elite Wear | My Wallet</title>
 
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
@@ -13,341 +13,297 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/userStyle/wallet.css" />
-<<<<<<< Updated upstream
-=======
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/userStyle/header.css">
     <link rel="stylesheet" href="/userStyle/footer.css">
-    <style>
-      /* Pagination Styles */
-      .pagination-container {
-        display: flex;
-        justify-content: center;
-        margin: 25px 0;
-      }
-      
-      .pagination {
-        display: flex;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      }
-      
-      .pagination li {
-        margin: 0;
-      }
-      
-      .pagination li a,
-      .pagination li span {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 40px;
-        height: 40px;
-        padding: 0 12px;
-        color: #333;
-        text-decoration: none;
-        background-color: #fff;
-        border: 1px solid #e0e0e0;
-        margin-left: -1px;
-        transition: all 0.2s ease;
-      }
-      
-      .pagination li:first-child a,
-      .pagination li:first-child span {
-        border-top-left-radius: 8px;
-        border-bottom-left-radius: 8px;
-        margin-left: 0;
-      }
-      
-      .pagination li:last-child a,
-      .pagination li:last-child span {
-        border-top-right-radius: 8px;
-        border-bottom-right-radius: 8px;
-      }
-      
-      .pagination li.active a,
-      .pagination li.active span {
-        background-color: #2c3e50;
-        color: #fff;
-        border-color: #2c3e50;
-        font-weight: 600;
-        z-index: 3;
-      }
-      
-      .pagination li a:hover {
-        background-color: #f5f5f5;
-        z-index: 2;
-      }
-      
-      .pagination li.disabled span {
-        color: #aaa;
-        cursor: not-allowed;
-        background-color: #f8f8f8;
-      }
-      
-      .pagination-info {
-        text-align: center;
-        color: #666;
-        font-size: 0.9rem;
-        margin-top: 10px;
-      }
-      
-      /* Responsive pagination */
-      @media (max-width: 576px) {
-        .pagination li.page-number:not(.active) {
-          display: none;
-        }
-        
-        .pagination li.page-number.active {
-          display: block;
-        }
-        
-        .pagination li.page-number.active a,
-        .pagination li.page-number.active span {
-          border-radius: 0;
-        }
-        
-        .pagination-info {
-          display: block;
-        }
-      }
-      
-      /* Empty state styling */
-      .empty-transactions {
-        text-align: center;
-        padding: 30px 20px;
-        background-color: #f9f9f9;
-        border-radius: 8px;
-        margin: 20px 0;
-      }
-      
-      .empty-transactions i {
-        font-size: 48px;
-        color: #ccc;
-        margin-bottom: 15px;
-      }
-      
-      .empty-transactions h4 {
-        color: #555;
-        margin-bottom: 10px;
-      }
-      
-      .empty-transactions p {
-        color: #777;
-        max-width: 400px;
-        margin: 0 auto;
-      }
-    </style>
->>>>>>> Stashed changes
+    <link rel="stylesheet" href="/userStyle/wallet.css" />
   </head>
   <body>
     <%- include("../partials/user/header") %>
     
-    <div class="container-fluid">
-      <div class="row">
-        <!-- Sidebar Column -->
-        <div class="col-lg-3 col-md-4">
-          <%- include("../partials/user/profileSidebar") %>
-        </div>
-<<<<<<< Updated upstream
-
-        <div class="wallet-card">
-          <h3>My Wallet</h3>
-
-          <div class="balance-container">
-            <p>Available wallet balance: ₹<%= wallet.amount.toFixed(2) %></p>
-=======
-        
-        <!-- Main Content Column -->
-        <div class="col-lg-9 col-md-8">
-          <div class="wallet-section">
-            <!-- Breadcrumb -->
-            <div class="breadcrumb-container">
-              <a href="/profile">profile</a> 
-              <i class="fas fa-chevron-right small-icon"></i>
-              <a href="/wallet" class="active">wallet</a>
-            </div>
-            
-            <!-- Wallet Card -->
-            <div class="wallet-card">
-              <h2 class="wallet-title">My Wallet</h2>
+    <div class="page-wrapper">
+      <div class="container">
+        <div class="row g-4">
+          <!-- Sidebar Column -->
+          <div class="col-lg-3 col-md-4">
+            <%- include("../partials/user/profileSidebar") %>
+          </div>
+          
+          <!-- Main Content Column -->
+          <div class="col-lg-9 col-md-8">
+            <div class="content-container">
+              <!-- Page Header -->
+              <div class="page-header">
+                <div class="header-content">
+                  <div class="breadcrumb-nav">
+                    <nav aria-label="breadcrumb">
+                      <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+                        <li class="breadcrumb-item"><a href="/profile">My Account</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Wallet</li>
+                      </ol>
+                    </nav>
+                  </div>
+                  <div class="header-title">
+                    <h1>My Wallet</h1>
+                    <p>Manage your funds and view transaction history</p>
+                  </div>
+                </div>
+              </div>
               
-              <!-- Balance Container -->
-              <div class="balance-container">
-                <p class="balance-text">Available wallet balance : <span class="balance-amount">₹<%= wallet.amount.toFixed(2) %></span></p>
+              <!-- Wallet Dashboard -->
+              <div class="wallet-dashboard">
+                <div class="row g-4">
+                  <!-- Balance Card -->
+                  <div class="col-lg-5">
+                    <div class="balance-card">
+                      <div class="balance-card-inner">
+                        <div class="card-pattern"></div>
+                        <div class="card-content">
+                          <div class="card-label">Available Balance</div>
+                          <div class="card-amount">₹<%= wallet.amount.toFixed(2) %></div>
+                          <div class="card-actions">
+                            <button class="btn-add-money" data-bs-toggle="modal" data-bs-target="#addMoneyModal">
+                              <i class="fas fa-plus"></i> Add Money
+                            </button>
+                          </div>
+                        </div>
+                        <div class="card-brand">
+                          <div class="brand-logo">
+                            <i class="fas fa-wallet"></i> Elite Wallet
+                          </div>
+                          <div class="card-chip">
+                            <i class="fas fa-credit-card"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="stats-container">
+                      <div class="stat-card">
+                        <div class="stat-icon credit">
+                          <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-value">
+                            ₹<%= wallet.totalCredit ? wallet.totalCredit.toFixed(2) : '0.00' %>
+                          </div>
+                          <div class="stat-label">Total Added</div>
+                        </div>
+                      </div>
+                      
+                      <div class="stat-card">
+                        <div class="stat-icon debit">
+                          <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <div class="stat-content">
+                          <div class="stat-value">
+                            ₹<%= wallet.totalDebit ? wallet.totalDebit.toFixed(2) : '0.00' %>
+                          </div>
+                          <div class="stat-label">Total Spent</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Transaction Summary -->
+                  <div class="col-lg-7">
+                    <div class="transaction-summary">
+                      <div class="summary-header">
+                        <h3>Recent Activity</h3>
+                        <div class="summary-filters">
+                          <div class="dropdown">
+                            <button class="btn-filter dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                              <i class="fas fa-filter"></i> Filter
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+                              <li><a class="dropdown-item" href="/wallet?filter=all">All Transactions</a></li>
+                              <li><a class="dropdown-item" href="/wallet?filter=credit">Money Added</a></li>
+                              <li><a class="dropdown-item" href="/wallet?filter=debit">Money Spent</a></li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="summary-body">
+                        <% if (wallet.transactions && wallet.transactions.length > 0) { %>
+                          <div class="transaction-list">
+                            <% wallet.transactions.slice(0, 5).forEach(transaction => { %>
+                              <div class="transaction-item">
+                                <div class="transaction-icon <%= transaction.type === 'credit' ? 'credit' : 'debit' %>">
+                                  <i class="fas <%= transaction.type === 'credit' ? 'fa-arrow-down' : 'fa-arrow-up' %>"></i>
+                                </div>
+                                <div class="transaction-details">
+                                  <div class="transaction-title"><%= transaction.description %></div>
+                                  <div class="transaction-meta">
+                                    <span class="transaction-date"><i class="far fa-calendar-alt"></i> <%= transaction.formattedDate %></span>
+                                    <span class="transaction-id"><i class="fas fa-hashtag"></i> <%= transaction.transactionRef %></span>
+                                  </div>
+                                </div>
+                                <div class="transaction-amount <%= transaction.type === 'credit' ? 'credit' : 'debit' %>">
+                                  <%= transaction.type === 'credit' ? '+' : '-' %>₹<%= transaction.amount.toFixed(2) %>
+                                </div>
+                              </div>
+                            <% }) %>
+                          </div>
+                          
+                          <div class="summary-footer">
+                            <a href="#transaction-history" class="btn-view-all">
+                              View All Transactions <i class="fas fa-chevron-right"></i>
+                            </a>
+                          </div>
+                        <% } else { %>
+                          <div class="empty-summary">
+                            <div class="empty-icon">
+                              <i class="fas fa-receipt"></i>
+                            </div>
+                            <h4>No Recent Activity</h4>
+                            <p>Your recent transactions will appear here</p>
+                          </div>
+                        <% } %>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               
               <!-- Transaction History -->
-              <div class="transaction-history">
+              <div id="transaction-history" class="transaction-history">
+                <div class="section-header">
+                  <h2>Transaction History</h2>
+                  <div class="section-actions">
+                    <div class="dropdown">
+                      <button class="btn-export dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-download"></i> Export
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
+                        <li><a class="dropdown-item" href="/wallet/export?format=pdf"><i class="far fa-file-pdf"></i> Export as PDF</a></li>
+                        <li><a class="dropdown-item" href="/wallet/export?format=csv"><i class="far fa-file-excel"></i> Export as CSV</a></li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
                 <% if (wallet.transactions && wallet.transactions.length > 0) { %>
-                  <table class="table transaction-table">
-                    <thead>
-                      <tr>
-                        <th>Transaction ID</th>
-                        <th>Transaction Date</th>
-                        <th>Amount</th>
-                        <th>Description</th>
-                        <th>Debit / Credit</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <% wallet.transactions.forEach(transaction => { %>
+                  <div class="table-responsive">
+                    <table class="table transaction-table">
+                      <thead>
                         <tr>
-                          <td><%= transaction.transactionRef %></td>
-                          <td><%= transaction.formattedDate %></td>
-                          <td>₹<%= transaction.amount.toFixed(2) %></td>
-                          <td><%= transaction.description %></td>
-                          <td class="<%= transaction.type === 'credit' ? 'amount-credited' : 'amount-debited' %>">
-                            <%= transaction.typeDisplay %>
-                          </td>
+                          <th>Transaction ID</th>
+                          <th>Date & Time</th>
+                          <th>Description</th>
+                          <th>Amount</th>
+                          <th>Type</th>
                         </tr>
-                      <% }) %>
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        <% wallet.transactions.forEach(transaction => { %>
+                          <tr>
+                            <td class="transaction-id-cell">
+                              <span class="transaction-id-text"><%= transaction.transactionRef %></span>
+                            </td>
+                            <td><%= transaction.formattedDate %></td>
+                            <td><%= transaction.description %></td>
+                            <td class="amount-cell">₹<%= transaction.amount.toFixed(2) %></td>
+                            <td>
+                              <span class="transaction-badge <%= transaction.type === 'credit' ? 'credit' : 'debit' %>">
+                                <%= transaction.type === 'credit' ? 'Credit' : 'Debit' %>
+                              </span>
+                            </td>
+                          </tr>
+                        <% }) %>
+                      </tbody>
+                    </table>
+                  </div>
                   
                   <!-- Pagination -->
                   <% if (totalPages > 1) { %>
-                    <div class="pagination-container">
-                      <ul class="pagination">
-                        <!-- Previous Page -->
-                        <li class="<%= currentPage === 1 ? 'disabled' : '' %>">
-                          <% if (currentPage === 1) { %>
-                            <span aria-label="Previous"><i class="fas fa-chevron-left"></i></span>
-                          <% } else { %>
-                            <a href="/wallet?page=<%= currentPage - 1 %>" aria-label="Previous">
+                    <div class="pagination-wrapper">
+                      <nav aria-label="Transaction history pagination">
+                        <ul class="pagination">
+                          <!-- Previous Page -->
+                          <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                            <a class="page-link" href="/wallet?page=<%= currentPage - 1 %>" aria-label="Previous" <%= currentPage === 1 ? 'tabindex="-1" aria-disabled="true"' : '' %>>
                               <i class="fas fa-chevron-left"></i>
                             </a>
-                          <% } %>
-                        </li>
-                        
-                        <!-- First Page -->
-                        <% if (currentPage > 3) { %>
-                          <li class="page-number">
-                            <a href="/wallet?page=1">1</a>
                           </li>
-                          <% if (currentPage > 4) { %>
-                            <li class="disabled">
-                              <span>...</span>
+                          
+                          <!-- First Page -->
+                          <% if (currentPage > 3) { %>
+                            <li class="page-item">
+                              <a class="page-link" href="/wallet?page=1">1</a>
                             </li>
-                          <% } %>
-                        <% } %>
-                        
-                        <!-- Page Numbers -->
-                        <% 
-                          let startPage = Math.max(1, currentPage - 1);
-                          let endPage = Math.min(totalPages, currentPage + 1);
-                          
-                          // Ensure we always show at least 3 pages if available
-                          if (endPage - startPage + 1 < 3) {
-                            if (currentPage < totalPages) {
-                              endPage = Math.min(totalPages, currentPage + 2);
-                            } else {
-                              startPage = Math.max(1, totalPages - 2);
-                            }
-                          }
-                          
-                          for (let i = startPage; i <= endPage; i++) {
-                        %>
-                          <li class="page-number <%= i === currentPage ? 'active' : '' %>">
-                            <% if (i === currentPage) { %>
-                              <span><%= i %></span>
-                            <% } else { %>
-                              <a href="/wallet?page=<%= i %>"><%= i %></a>
+                            <% if (currentPage > 4) { %>
+                              <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                              </li>
                             <% } %>
-                          </li>
-                        <% } %>
-                        
-                        <!-- Last Page -->
-                        <% if (currentPage < totalPages - 2) { %>
-                          <% if (currentPage < totalPages - 3) { %>
-                            <li class="disabled">
-                              <span>...</span>
+                          <% } %>
+                          
+                          <!-- Page Numbers -->
+                          <% 
+                            let startPage = Math.max(1, currentPage - 1);
+                            let endPage = Math.min(totalPages, currentPage + 1);
+                            
+                            if (endPage - startPage + 1 < 3) {
+                              if (currentPage < totalPages) {
+                                endPage = Math.min(totalPages, currentPage + 2);
+                              } else {
+                                startPage = Math.max(1, totalPages - 2);
+                              }
+                            }
+                            
+                            for (let i = startPage; i <= endPage; i++) {
+                          %>
+                            <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+                              <a class="page-link" href="/wallet?page=<%= i %>"><%= i %></a>
                             </li>
                           <% } %>
-                          <li class="page-number">
-                            <a href="/wallet?page=<%= totalPages %>"><%= totalPages %></a>
-                          </li>
-                        <% } %>
-                        
-                        <!-- Next Page -->
-                        <li class="<%= currentPage === totalPages ? 'disabled' : '' %>">
-                          <% if (currentPage === totalPages) { %>
-                            <span aria-label="Next"><i class="fas fa-chevron-right"></i></span>
-                          <% } else { %>
-                            <a href="/wallet?page=<%= currentPage + 1 %>" aria-label="Next">
+                          
+                          <!-- Last Page -->
+                          <% if (currentPage < totalPages - 2) { %>
+                            <% if (currentPage < totalPages - 3) { %>
+                              <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                              </li>
+                            <% } %>
+                            <li class="page-item">
+                              <a class="page-link" href="/wallet?page=<%= totalPages %>"><%= totalPages %></a>
+                            </li>
+                          <% } %>
+                          
+                          <!-- Next Page -->
+                          <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                            <a class="page-link" href="/wallet?page=<%= currentPage + 1 %>" aria-label="Next" <%= currentPage === totalPages ? 'tabindex="-1" aria-disabled="true"' : '' %>>
                               <i class="fas fa-chevron-right"></i>
                             </a>
-                          <% } %>
-                        </li>
-                      </ul>
-                    </div>
-                    
-                    <div class="pagination-info">
-                      Showing page <%= currentPage %> of <%= totalPages %>
+                          </li>
+                        </ul>
+                      </nav>
+                      
+                      <div class="pagination-info">
+                        Showing page <%= currentPage %> of <%= totalPages %>
+                      </div>
                     </div>
                   <% } %>
                 <% } else { %>
-                  <div class="empty-transactions">
-                    <i class="fas fa-wallet"></i>
-                    <h4>No Transactions Yet</h4>
-                    <p>Your transaction history will appear here once you start using your wallet.</p>
+                  <div class="empty-state">
+                    <div class="empty-state-content">
+                      <div class="empty-state-icon">
+                        <i class="fas fa-receipt"></i>
+                      </div>
+                      <h3>No Transactions Yet</h3>
+                      <p>Your transaction history will appear here once you start using your wallet.</p>
+                      <button class="btn-primary mt-4" data-bs-toggle="modal" data-bs-target="#addMoneyModal">
+                        <i class="fas fa-plus"></i> Add Your First Funds
+                      </button>
+                    </div>
                   </div>
                 <% } %>
               </div>
-              
-              <!-- Add Money Button -->
-              <div class="text-center mt-4">
-                <button class="btn add-money-btn" data-bs-toggle="modal" data-bs-target="#addMoneyModal">
-                  ADD Money
-                </button>
-              </div>
             </div>
->>>>>>> Stashed changes
           </div>
-
-          <table class="transaction-table table table-striped">
-            <thead>
-              <tr>
-                <th>Transaction ID</th>
-                <th>Transaction Date</th>
-                <th>Amount</th>
-                <th>Description</th>
-                <th>Debit / Credit</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% if (wallet.transactions.length > 0) { %> <%
-              wallet.transactions.forEach(transaction => { %>
-              <tr>
-                <td><%= transaction.transactionRef %></td>
-                <td><%= transaction.formattedDate %></td>
-                <td>₹<%= transaction.amount.toFixed(2) %></td>
-                <td><%= transaction.description %></td>
-                <td
-                  class="<%= transaction.type === 'credit' ? 'amount-credited' : 'amount-debited' %>"
-                >
-                  <%= transaction.typeDisplay %>
-                </td>
-              </tr>
-              <% }) %> <% } else { %>
-              <tr>
-                <td colspan="5" class="text-center">No transactions found</td>
-              </tr>
-              <% } %>
-            </tbody>
-          </table>
-
-          <button
-            class="add-money-btn btn btn-primary"
-            data-bs-toggle="modal"
-            data-bs-target="#addMoneyModal"
-          >
-            Add Money
-          </button>
         </div>
       </div>
     </div>
@@ -357,23 +313,31 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="addMoneyModalLabel">Add Money to Wallet</h5>
+            <h5 class="modal-title" id="addMoneyModalLabel">
+              <i class="fas fa-wallet me-2"></i> Add Money to Wallet
+            </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <form id="addMoneyForm">
-              <div class="mb-3">
+              <div class="form-group mb-4">
                 <label for="amount" class="form-label">Amount (₹)</label>
-                <input
-                  type="number"
-                  class="form-control"
-                  id="amount"
-                  name="amount"
-                  min="1"
-                  required
-                />
+                <div class="input-group">
+                  <span class="input-group-text">₹</span>
+                  <input
+                    type="number"
+                    class="form-control form-control-lg"
+                    id="amount"
+                    name="amount"
+                    min="1"
+                    placeholder="Enter amount"
+                    required
+                  />
+                </div>
+                <div class="form-text">Minimum amount: ₹1</div>
               </div>
-              <div class="mb-3">
+              
+              <div class="form-group mb-4">
                 <label for="description" class="form-label">Description</label>
                 <input
                   type="text"
@@ -381,13 +345,72 @@
                   id="description"
                   name="description"
                   value="Added money to wallet"
+                  placeholder="Enter a description for this transaction"
                   required
                 />
               </div>
-              <button type="submit" class="btn btn-primary w-100">Add Money</button>
+              
+              <div class="quick-amounts mb-4">
+                <label class="form-label">Quick Select</label>
+                <div class="amount-options">
+                  <button type="button" class="amount-option" data-amount="100">₹100</button>
+                  <button type="button" class="amount-option" data-amount="500">₹500</button>
+                  <button type="button" class="amount-option" data-amount="1000">₹1000</button>
+                  <button type="button" class="amount-option" data-amount="2000">₹2000</button>
+                </div>
+              </div>
+              
+              <div class="payment-methods mb-4">
+                <label class="form-label">Payment Method</label>
+                <div class="payment-options">
+                  <div class="form-check payment-option">
+                    <input class="form-check-input" type="radio" name="paymentMethod" id="methodCard" value="card" checked>
+                    <label class="form-check-label" for="methodCard">
+                      <i class="fas fa-credit-card"></i> Credit/Debit Card
+                    </label>
+                  </div>
+                  <div class="form-check payment-option">
+                    <input class="form-check-input" type="radio" name="paymentMethod" id="methodUPI" value="upi">
+                    <label class="form-check-label" for="methodUPI">
+                      <i class="fas fa-mobile-alt"></i> UPI
+                    </label>
+                  </div>
+                  <div class="form-check payment-option">
+                    <input class="form-check-input" type="radio" name="paymentMethod" id="methodNetBanking" value="netbanking">
+                    <label class="form-check-label" for="methodNetBanking">
+                      <i class="fas fa-university"></i> Net Banking
+                    </label>
+                  </div>
+                </div>
+              </div>
+              
+              <button type="submit" class="btn-submit" id="addMoneyBtn">
+                <span class="btn-text">Add Money</span>
+                <span class="btn-icon"><i class="fas fa-arrow-right"></i></span>
+              </button>
             </form>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="spinner-container">
+        <div class="spinner"></div>
+        <p>Processing your request...</p>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+      <div id="walletToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+          <i id="toastIcon" class="fas me-2"></i>
+          <strong class="me-auto" id="toastTitle"></strong>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage"></div>
       </div>
     </div>
 
@@ -395,30 +418,167 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-      document
-        .getElementById("addMoneyForm")
-        .addEventListener("submit", async (e) => {
+      document.addEventListener('DOMContentLoaded', function() {
+        // Initialize toast
+        const toastEl = document.getElementById('walletToast');
+        const walletToast = new bootstrap.Toast(toastEl, {
+          delay: 5000
+        });
+        
+        // Show notification toast
+        function showNotification(title, message, type = 'success') {
+          const toastTitle = document.getElementById('toastTitle');
+          const toastMessage = document.getElementById('toastMessage');
+          const toastIcon = document.getElementById('toastIcon');
+          
+          toastEl.classList.remove('bg-success', 'bg-danger', 'text-white');
+          
+          if (type === 'success') {
+            toastEl.classList.add('bg-success', 'text-white');
+            toastIcon.className = 'fas fa-check-circle me-2';
+          } else {
+            toastEl.classList.add('bg-danger', 'text-white');
+            toastIcon.className = 'fas fa-exclamation-circle me-2';
+          }
+          
+          toastTitle.textContent = title;
+          toastMessage.textContent = message;
+          
+          walletToast.show();
+        }
+        
+        // Loading overlay
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        
+        function showLoading() {
+          loadingOverlay.classList.add('active');
+        }
+        
+        function hideLoading() {
+          loadingOverlay.classList.remove('active');
+        }
+        
+        // Quick amount selection
+        const amountOptions = document.querySelectorAll('.amount-option');
+        const amountInput = document.getElementById('amount');
+        
+        amountOptions.forEach(option => {
+          option.addEventListener('click', function() {
+            const amount = this.getAttribute('data-amount');
+            amountInput.value = amount;
+            
+            // Remove active class from all options
+            amountOptions.forEach(opt => opt.classList.remove('active'));
+            
+            // Add active class to selected option
+            this.classList.add('active');
+          });
+        });
+        
+        // Add money form submission
+        const addMoneyForm = document.getElementById('addMoneyForm');
+        const addMoneyBtn = document.getElementById('addMoneyBtn');
+        const addMoneyModal = new bootstrap.Modal(document.getElementById('addMoneyModal'));
+        
+        addMoneyForm.addEventListener('submit', async function(e) {
           e.preventDefault();
-          const amount = document.getElementById("amount").value;
-          const description = document.getElementById("description").value;
-
+          
+          const amount = document.getElementById('amount').value;
+          const description = document.getElementById('description').value;
+          const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+          
+          // Validate amount
+          if (amount <= 0) {
+            showNotification('Error', 'Please enter a valid amount', 'error');
+            return;
+          }
+          
+          // Show loading state
+          addMoneyBtn.disabled = true;
+          addMoneyBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+          
           try {
-            const response = await fetch("/wallet/credit", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ amount, description }),
+            showLoading();
+            
+            const response = await fetch('/wallet/credit', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                amount, 
+                description,
+                paymentMethod
+              })
             });
+            
             const result = await response.json();
+            
+            hideLoading();
+            addMoneyModal.hide();
+            
             if (result.success) {
-              alert("Money added successfully!");
-              window.location.reload();
+              showNotification('Success', 'Money added to your wallet successfully!');
+              
+              // Reload the page after a short delay
+              setTimeout(() => {
+                window.location.reload();
+              }, 1500);
             } else {
-              alert("Error: " + result.message);
+              showNotification('Error', result.message || 'Failed to add money', 'error');
+              
+              // Reset button state
+              addMoneyBtn.disabled = false;
+              addMoneyBtn.innerHTML = '<span class="btn-text">Add Money</span><span class="btn-icon"><i class="fas fa-arrow-right"></i></span>';
             }
           } catch (error) {
-            alert("Server error. Please try again later.");
+            console.error('Error adding money:', error);
+            
+            hideLoading();
+            addMoneyModal.hide();
+            
+            showNotification('Error', 'An unexpected error occurred. Please try again.', 'error');
+            
+            // Reset button state
+            addMoneyBtn.disabled = false;
+            addMoneyBtn.innerHTML = '<span class="btn-text">Add Money</span><span class="btn-icon"><i class="fas fa-arrow-right"></i></span>';
           }
         });
+        
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+          anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+              window.scrollTo({
+                top: targetElement.offsetTop - 100,
+                behavior: 'smooth'
+              });
+            }
+          });
+        });
+        
+        // Add animation classes on page load
+        const balanceCard = document.querySelector('.balance-card');
+        const statCards = document.querySelectorAll('.stat-card');
+        const transactionItems = document.querySelectorAll('.transaction-item');
+        
+        if (balanceCard) {
+          balanceCard.classList.add('fade-in');
+        }
+        
+        statCards.forEach((card, index) => {
+          card.style.animationDelay = `${0.2 + (index * 0.1)}s`;
+          card.classList.add('fade-in');
+        });
+        
+        transactionItems.forEach((item, index) => {
+          item.style.animationDelay = `${0.4 + (index * 0.1)}s`;
+          item.classList.add('fade-in');
+        });
+      });
     </script>
   </body>
 </html>

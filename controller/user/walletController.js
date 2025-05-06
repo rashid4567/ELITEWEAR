@@ -6,71 +6,82 @@ const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 const logger = require("../../utils/logger");
 
-const getwallet = async (req, res) => {
-  try {
-    const userId = req.session.user || req.user._id;
+  const getwallet = async (req, res) => {
+    try {
+      const userId = req.session.user || req.user._id;
+      const page = parseInt(req.query.page) || 1;
+      const limit = 8;
+      const skip = (page - 1) * limit;
 
-    const user = await User.findById(userId).select("+walletBalance").lean();
-    if (!user) {
-      return res.status(404).render("error", { message: "User not found" });
-    }
+      const user = await User.findById(userId).select("+walletBalance").lean();
+      if (!user) {
+        return res.status(404).render("error", { message: "User not found" });
+      }
 
-    const walletBalance = user.walletBalance || 0;
+      const walletBalance = user.walletBalance || 0;
 
-    let wallet = await Wallet.findOne({ userId }).lean();
-    if (!wallet) {
-      const newWallet = new Wallet({
-        userId,
-        amount: walletBalance,
-        transactions: [],
+      let wallet = await Wallet.findOne({ userId }).lean();
+      if (!wallet) {
+        const newWallet = new Wallet({
+          userId,
+          amount: walletBalance,
+          transactions: [],
+        });
+        wallet = await newWallet.save();
+        wallet = wallet.toObject();
+      }
+
+
+      wallet.transactions = wallet.transactions.map((transaction) => ({
+        ...transaction,
+        formattedDate: transaction.date
+          ? new Date(transaction.date).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : "N/A",
+        typeDisplay:
+          transaction.type === "credit" ? "Amount Credited" : "Amount Debited",
+        isRefund:
+          transaction.refundType !== null ||
+          (transaction.transactionRef &&
+            transaction.transactionRef.startsWith("REF-")),
+        refundTypeDisplay: getRefundTypeDisplay(transaction.refundType),
+      }));
+
+
+      wallet.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      const totalTransactions = wallet.transactions.length;
+      const totalPages = Math.ceil(totalTransactions / limit);
+
+
+      wallet.transactions = wallet.transactions.slice(skip, skip + limit);
+
+      const refundStats = {
+        totalRefunds: wallet.transactions.filter((t) => t.isRefund).length,
+        totalRefundAmount: wallet.transactions
+          .filter((t) => t.isRefund && t.type === "credit")
+          .reduce((sum, t) => sum + t.amount, 0),
+      };
+
+      res.render("wallet", {
+        wallet,
+        user,
+        walletBalance,
+        refundStats,
+        currentPage: page,
+        totalPages,
+        page: "wallet",
       });
-      wallet = await newWallet.save();
-      wallet = wallet.toObject();
+    } catch (error) {
+      logger.error("Error in getwallet:", error);
+      res.status(500).render("error", { message: "Server issue" });
     }
-
-    wallet.transactions = wallet.transactions.map((transaction) => ({
-      ...transaction,
-      formattedDate: transaction.date
-        ? new Date(transaction.date).toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "N/A",
-      typeDisplay:
-        transaction.type === "credit" ? "Amount Credited" : "Amount Debited",
-      isRefund:
-        transaction.refundType !== null ||
-        (transaction.transactionRef &&
-          transaction.transactionRef.startsWith("REF-")),
-      refundTypeDisplay: getRefundTypeDisplay(transaction.refundType),
-    }));
-
-    wallet.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    wallet.transactions = wallet.transactions.slice(0, 8);
-
-    const refundStats = {
-      totalRefunds: wallet.transactions.filter((t) => t.isRefund).length,
-      totalRefundAmount: wallet.transactions
-        .filter((t) => t.isRefund && t.type === "credit")
-        .reduce((sum, t) => sum + t.amount, 0),
-    };
-
-    res.render("wallet", {
-      wallet,
-      user,
-      walletBalance: walletBalance,
-      refundStats,
-      page: "wallet",
-    });
-  } catch (error) {
-    logger.error("Error in getwallet:", error);
-    res.status(500).render("error", { message: "Server issue" });
-  }
-};
+  };
 
 const getRefundTypeDisplay = (refundType) => {
   if (!refundType) return null;
@@ -92,66 +103,64 @@ const creditWallet = async (req, res) => {
 
     const parsedAmount = Number(amount);
     if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid amount" });
+      return res.status(400).json({ success: false, message: "Invalid amount" });
     }
 
-    if (
-      !description ||
-      typeof description !== "string" ||
-      description.trim() === ""
-    ) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Description is required" });
+    if (!description || typeof description !== "string" || description.trim() === "") {
+      return res.status(400).json({ success: false, message: "Description is required" });
     }
 
     const user = await User.findById(userId);
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    if (user.walletBalance === undefined) {
-      user.walletBalance = 0;
+
+    const wallet = await Wallet.findOne({ userId });
+
+    if (!wallet) {
+     
+      const newWallet = new Wallet({
+        userId,
+        amount: parsedAmount,
+        transactions: [{
+          type: "credit",
+          amount: parsedAmount,
+          transactionRef: `TXN-${uuidv4()}`,
+          description: description.trim(),
+          date: new Date(),
+        }],
+      });
+      await newWallet.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Wallet credited successfully",
+        newBalance: newWallet.amount,
+      });
     }
 
-    const previousBalance = user.walletBalance;
-    user.walletBalance += parsedAmount;
+  
+    wallet.amount += parsedAmount;
 
-    await User.findByIdAndUpdate(userId, { walletBalance: user.walletBalance });
-
-    const wallet = await Wallet.findOneAndUpdate(
-      { userId },
-      {
-        $set: { amount: user.walletBalance },
-        $push: {
-          transactions: {
-            type: "credit",
-            amount: parsedAmount,
-            transactionRef: `TXN-${uuidv4()}`,
-            description: description.trim(),
-            date: new Date(),
-          },
-        },
-      },
-      { new: true, upsert: true }
-    );
-
-    logger.info(`Wallet credited for user ${userId}`, {
+    wallet.transactions.push({
+      type: "credit",
       amount: parsedAmount,
-      newBalance: user.walletBalance,
+      transactionRef: `TXN-${uuidv4()}`,
+      description: description.trim(),
+      date: new Date(),
     });
+
+  
+    await wallet.save();
 
     return res.status(200).json({
       success: true,
       message: "Wallet credited successfully",
-      newBalance: user.walletBalance,
+      newBalance: wallet.amount,
     });
   } catch (error) {
-    logger.error("Error in creditWallet:", error);
+    console.error("Error in creditWallet:", error);
     return res.status(500).json({ success: false, message: "Server issue" });
   }
 };
@@ -345,7 +354,8 @@ const processItemRefundToWallet = async (
         transactions: [],
       });
     } else {
-      wallet.amount = user.walletBalance;
+      wallet.amount += refundAmount;
+
     }
 
     const transactionRef = `REF-ITEM-${uuidv4()}`;
@@ -374,7 +384,7 @@ const processItemRefundToWallet = async (
     await wallet.save({ session });
     logger.info(`Item refund transaction added to wallet: ${transactionRef}`);
 
-    // Update order item
+
     orderItem.refunded = true;
     orderItem.refundAmount = refundAmount;
     orderItem.refundDate = new Date();
@@ -478,7 +488,7 @@ const processRefundToWallet = async (userId, amount, orderNumber, reason) => {
         transactions: [],
       });
     } else {
-      wallet.amount = user.walletBalance;
+      wallet.amount += user.walletBalance;
     }
 
     const transactionRef = `REF-${uuidv4()}`;
@@ -609,7 +619,7 @@ const processCancellationRefund = async (userId, orderItemId, reason) => {
         transactions: [],
       });
     } else {
-      wallet.amount = user.walletBalance;
+      wallet.amount += user.walletBalance;
     }
 
     const transactionRef = `REF-CANCEL-${uuidv4()}`;

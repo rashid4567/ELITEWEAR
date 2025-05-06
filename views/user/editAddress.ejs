@@ -3,335 +3,560 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Address</title>
+    <title>Edit Address | Elite Wear</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/userStyle/editProfile.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/userStyle/header.css">
+    <link rel="stylesheet" href="/userStyle/editaddress.css">
+    <link rel="stylesheet" href="/userStyle/footer.css">
 </head>
 <body>
     <%- include("../partials/user/header") %>
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-                <nav aria-label="breadcrumb" class="breadcrumb-container">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/profile">Profile</a></li>
-                        <li class="breadcrumb-item"><a href="/address">Delivery Address</a></li>
-                        <li class="breadcrumb-item active">Edit Address</li>
-                    </ol>
-                </nav>
+    
+    <div class="page-wrapper">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <nav aria-label="breadcrumb" class="breadcrumb-container">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+                            <li class="breadcrumb-item"><a href="/profile">My Account</a></li>
+                            <li class="breadcrumb-item"><a href="/address">Addresses</a></li>
+                            <li class="breadcrumb-item active">Edit Address</li>
+                        </ol>
+                    </nav>
+                </div>
             </div>
-        </div>
-        
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="form-container">
-                    <div class="row mb-4">
-                        <div class="col">
-                            <h4 class="section-title">Edit Address</h4>
+            
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="form-container">
+                        <div class="form-header">
+                            <div class="header-content">
+                                <h2 class="form-title">Edit Your Address</h2>
+                                <p class="form-subtitle">Update your delivery information</p>
+                            </div>
+                            <div class="header-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
                         </div>
-                        <div class="col-auto">
-                            <h5 class="information-header text-end">Personal Information</h5>
-                        </div>
+                        
+                        <div id="formErrorContainer" class="alert-container"></div>
+                        
+                        <form id="editAddressForm" class="needs-validation" novalidate>
+                            <input type="hidden" id="addressId" name="addressId" value="<%= address._id %>">
+                            
+                            <div class="form-section">
+                                <h3 class="section-title">Personal Information</h3>
+                                
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="fullName" name="fullname" 
+                                                placeholder="Full Name" value="<%= address.fullname %>" 
+                                                maxlength="50" required>
+                                            <label for="fullName">Full Name</label>
+                                            <div class="invalid-feedback" id="fullNameError">
+                                                Please enter your full name (2-50 characters).
+                                            </div>
+                                            <div class="form-icon">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="tel" class="form-control" id="mobile" name="mobile" 
+                                                placeholder="10-digit mobile number" value="<%= address.mobile %>" 
+                                                required pattern="[0-9]{10}">
+                                            <label for="mobile">Mobile Number</label>
+                                            <div class="invalid-feedback" id="mobileError">
+                                                Please enter a valid 10-digit mobile number.
+                                            </div>
+                                            <div class="form-icon">
+                                                <i class="fas fa-phone-alt"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <h3 class="section-title">Address Details</h3>
+                                
+                                <div class="mb-4">
+                                    <div class="form-floating">
+                                        <textarea class="form-control" id="address" name="address" 
+                                            placeholder="House Name, House Number, Locality" 
+                                            style="height: 100px" required><%= address.address %></textarea>
+                                        <label for="address">Address</label>
+                                        <div class="invalid-feedback" id="addressError">
+                                            Please enter your complete address.
+                                        </div>
+                                        <div class="form-icon">
+                                            <i class="fas fa-home"></i>
+                                        </div>
+                                    </div>
+                                    <div class="form-text">Include house/apartment number, building name, street name</div>
+                                </div>
+                                
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="district" name="district" 
+                                                placeholder="eg : Ernakulam" value="<%= address.district %>" required>
+                                            <label for="district">District</label>
+                                            <div class="invalid-feedback" id="districtError">
+                                                Please enter your district.
+                                            </div>
+                                            <div class="form-icon">
+                                                <i class="fas fa-map"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="city" name="city" 
+                                                placeholder="eg : Kochi" value="<%= address.city %>" required>
+                                            <label for="city">City</label>
+                                            <div class="invalid-feedback" id="cityError">
+                                                Please enter your city.
+                                            </div>
+                                            <div class="form-icon">
+                                                <i class="fas fa-city"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="state" name="state" 
+                                                placeholder="eg : Kerala" value="<%= address.state %>" required>
+                                            <label for="state">State</label>
+                                            <div class="invalid-feedback" id="stateError">
+                                                Please enter your state.
+                                            </div>
+                                            <div class="form-icon">
+                                                <i class="fas fa-map-marked-alt"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="pinCode" name="pincode" 
+                                                placeholder="eg : 682304" value="<%= address.pincode %>" 
+                                                required pattern="[0-9]{6}">
+                                            <label for="pinCode">Pin Code</label>
+                                            <div class="invalid-feedback" id="pinCodeError">
+                                                Please enter a valid 6-digit pin code.
+                                            </div>
+                                            <div class="form-icon">
+                                                <i class="fas fa-map-pin"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-12">
+                                        <div class="form-floating">
+                                            <input type="text" class="form-control" id="landmark" name="landmark" 
+                                                placeholder="eg : Near Hospital" value="<%= address.landmark || '' %>">
+                                            <label for="landmark">Landmark (optional)</label>
+                                            <div class="form-icon">
+                                                <i class="fas fa-landmark"></i>
+                                            </div>
+                                        </div>
+                                        <div class="form-text">Helps delivery partner locate your address easily</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-section">
+                                <h3 class="section-title">Address Type</h3>
+                                
+                                <div class="address-type-container">
+                                    <div class="address-type-option">
+                                        <input type="radio" id="typeHome" name="type" value="home" class="address-type-radio" 
+                                            <%= address.type === 'home' ? 'checked' : '' %> required>
+                                        <label for="typeHome" class="address-type-label">
+                                            <span class="type-icon"><i class="fas fa-home"></i></span>
+                                            <span class="type-text">Home</span>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="address-type-option">
+                                        <input type="radio" id="typeWork" name="type" value="work" class="address-type-radio" 
+                                            <%= address.type === 'work' ? 'checked' : '' %>>
+                                        <label for="typeWork" class="address-type-label">
+                                            <span class="type-icon"><i class="fas fa-briefcase"></i></span>
+                                            <span class="type-text">Office</span>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="address-type-option">
+                                        <input type="radio" id="typeOther" name="type" value="other" class="address-type-radio" 
+                                            <%= address.type === 'other' ? 'checked' : '' %>>
+                                        <label for="typeOther" class="address-type-label">
+                                            <span class="type-icon"><i class="fas fa-map-marker-alt"></i></span>
+                                            <span class="type-text">Other</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback address-type-error">Please select an address type.</div>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <a href="/address" class="btn btn-cancel">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                                <button type="submit" class="btn btn-update">
+                                    <i class="fas fa-check"></i> Update Address
+                                    <span class="btn-loader"><i class="fas fa-spinner fa-spin"></i></span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    
-                    <div id="formErrorContainer"></div>
-                    
-                    <form id="editAddressForm" novalidate>
-                        <input type="hidden" id="addressId" name="addressId" value="<%= address._id %>">
-                        
-                        <div class="row mb-4">
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <label for="fullName" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="fullName" name="fullname" placeholder="Full Name" value="<%= address.fullname %>" maxlength="50">
-                                <div id="fullNameError" class="error-message">Full name must be at least 2 characters long.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="mobile" class="form-label">Mobile Number</label>
-                                <input type="tel" class="form-control" id="mobile" name="mobile" placeholder="10-digit mobile number" value="<%= address.mobile %>">
-                                <div id="mobileError" class="error-message">Please enter a valid 10-digit mobile number.</div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="address" class="form-label">Address</label>
-                            <textarea class="form-control" id="address" name="address" placeholder="House Name, House Number, Locality"><%= address.address %></textarea>
-                            <div id="addressError" class="error-message">Address cannot be empty.</div>
-                        </div>
-                        
-                        <div class="row mb-4">
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <label for="district" class="form-label">District</label>
-                                <input type="text" class="form-control" id="district" name="district" placeholder="eg : Ernakulam" value="<%= address.district %>">
-                                <div id="districtError" class="error-message">District cannot be empty.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="state" class="form-label">State</label>
-                                <input type="text" class="form-control" id="state" name="state" placeholder="eg : Kerala" value="<%= address.state %>">
-                                <div id="stateError" class="error-message">State cannot be empty.</div>
-                            </div>
-                        </div>
-                        
-                        <div class="row mb-4">
-                            <div class="col-md-6 mb-3 mb-md-0">
-                                <label for="city" class="form-label">City</label>
-                                <input type="text" class="form-control" id="city" name="city" placeholder="eg : Kochi" value="<%= address.city %>">
-                                <div id="cityError" class="error-message">City cannot be empty.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="pinCode" class="form-label">Pin Code</label>
-                                <input type="text" class="form-control" id="pinCode" name="pincode" placeholder="eg : 682304" value="<%= address.pincode %>">
-                                <div id="pinCodeError" class="error-message">Please enter a valid 6-digit pin code.</div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="landmark" class="form-label">Landmark (optional)</label>
-                            <input type="text" class="form-control" id="landmark" name="landmark" placeholder="eg : Near Hospital" value="<%= address.landmark || '' %>">
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label class="form-label">Address Type</label>
-                            <div class="address-type-container">
-                                <div class="address-type-option">
-                                    <input type="radio" id="typeHome" name="type" value="home" class="address-type-radio" <%= address.type === 'Home' ? 'checked' : '' %>>
-                                    <label for="typeHome" class="address-type-label">Home</label>
-                                </div>
-                                
-                                <div class="address-type-option">
-                                    <input type="radio" id="typeWork" name="type" value="work" class="address-type-radio" <%= address.type === 'Office' ? 'checked' : '' %>>
-                                    <label for="typeWork" class="address-type-label">Office</label>
-                                </div>
-                                
-                                <div class="address-type-option">
-                                    <input type="radio" id="typeOther" name="type" value="other" class="address-type-radio" <%= address.type === 'Other' ? 'checked' : '' %>>
-                                    <label for="typeOther" class="address-type-label">Other</label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex justify-content-end gap-3 mt-5">
-                            <a href="/address" class="btn btn-cancel">Cancel</a>
-                            <button type="submit" class="btn btn-update">Update Address</button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Address Updated</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="success-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <p class="success-message">Your address has been updated successfully!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="successModalBtn">Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <%- include("../partials/user/footer") %>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-        function showSuccessAlert(message, onButtonClick) {
-            const alertOverlay = document.createElement('div');
-            alertOverlay.className = 'custom-alert-overlay';
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Bootstrap components
+            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
             
-            alertOverlay.innerHTML = `
-                <div class="custom-alert">
-                    <div class="custom-alert-header">
-                        <div class="custom-alert-title">SUCCESS!!</div>
-                        <div class="custom-alert-close">✕</div>
-                    </div>
-                    <div class="custom-alert-message">${message}</div>
-                    <button class="custom-alert-button">OK</button>
-                </div>
-            `;
+            // Form elements
+            const form = document.getElementById('editAddressForm');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const formErrorContainer = document.getElementById('formErrorContainer');
+            const addressTypeRadios = document.querySelectorAll('input[name="type"]');
+            const addressTypeError = document.querySelector('.address-type-error');
             
-            document.body.appendChild(alertOverlay);
-            
-            const closeButton = alertOverlay.querySelector('.custom-alert-close');
-            const actionButton = alertOverlay.querySelector('.custom-alert-button');
-            
-            closeButton.addEventListener('click', () => {
-                document.body.removeChild(alertOverlay);
-            });
-            
-            actionButton.addEventListener('click', () => {
-                document.body.removeChild(alertOverlay);
-                if (typeof onButtonClick === 'function') {
-                    onButtonClick();
+            // Input validation patterns
+            const validationPatterns = {
+                fullName: {
+                    pattern: /^[A-Za-z\s]{2,50}$/,
+                    message: 'Full name must be 2-50 characters and contain only letters and spaces.'
+                },
+                mobile: {
+                    pattern: /^[6-9]\d{9}$/,
+                    message: 'Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9.'
+                },
+                address: {
+                    pattern: /.{10,200}/,
+                    message: 'Address must be between 10-200 characters.'
+                },
+                district: {
+                    pattern: /^[A-Za-z\s]{2,30}$/,
+                    message: 'District must contain only letters and be 2-30 characters.'
+                },
+                city: {
+                    pattern: /^[A-Za-z\s]{2,30}$/,
+                    message: 'City must contain only letters and be 2-30 characters.'
+                },
+                state: {
+                    pattern: /^[A-Za-z\s]{2,30}$/,
+                    message: 'State must contain only letters and be 2-30 characters.'
+                },
+                pinCode: {
+                    pattern: /^[1-9][0-9]{5}$/,
+                    message: 'Please enter a valid 6-digit pin code starting with a non-zero digit.'
+                },
+                landmark: {
+                    pattern: /^.{0,100}$/,
+                    message: 'Landmark must be less than 100 characters.'
                 }
-            });
-        }
-
-        function showFormError(message) {
-            const errorContainer = document.getElementById('formErrorContainer');
-            errorContainer.innerHTML = `
-                <div class="alert-error">
-                    <i class="fas fa-exclamation-circle me-2"></i>${message}
-                </div>
-            `;
-        }
-
-        function clearFormError() {
-            const errorContainer = document.getElementById('formErrorContainer');
-            errorContainer.innerHTML = '';
-        }
-
-        function showValidationError(fieldId, show = true, customMessage = null) {
-            const field = document.getElementById(fieldId);
-            const errorElement = document.getElementById(`${fieldId}Error`);
-            
-            if (show) {
-                field.classList.add('is-invalid');
-                if (errorElement) {
-                    if (customMessage) {
-                        errorElement.textContent = customMessage;
-                    }
-                    errorElement.style.display = 'block';
-                }
-            } else {
-                field.classList.remove('is-invalid');
-                if (errorElement) {
-                    errorElement.style.display = 'none';
-                }
-            }
-        }
-        
-        function clearValidationErrors() {
-            clearFormError();
-            const errorElements = document.querySelectorAll('.error-message');
-            const inputElements = document.querySelectorAll('.form-control');
-            
-            errorElements.forEach(element => {
-                element.style.display = 'none';
-            });
-            
-            inputElements.forEach(element => {
-                element.classList.remove('is-invalid');
-            });
-        }
-        
-        document.querySelectorAll('.form-control').forEach(input => {
-            input.addEventListener('input', function() {
-                const fieldId = this.id;
-                showValidationError(fieldId, false);
-            });
-        });
-
-        document.getElementById('editAddressForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            clearValidationErrors();
-            
-            let isValid = true;
-            const addressId = document.getElementById('addressId').value;
-            const fullName = document.getElementById('fullName').value.trim();
-            const mobile = document.getElementById('mobile').value.trim();
-            const address = document.getElementById('address').value.trim();
-            const district = document.getElementById('district').value.trim();
-            const city = document.getElementById('city').value.trim();
-            const state = document.getElementById('state').value.trim();
-            const pinCode = document.getElementById('pinCode').value.trim();
-            
-            if (!fullName || fullName.length < 2) {
-                showValidationError('fullName');
-                isValid = false;
-            } else if (fullName.length > 50) {
-                showValidationError('fullName', true, 'Full name must be at most 50 characters long.');
-                isValid = false;
-            }
-            
-            if (!mobile || !/^\d{10}$/.test(mobile)) {
-                showValidationError('mobile');
-                isValid = false;
-            }
-            
-            if (!address) {
-                showValidationError('address');
-                isValid = false;
-            }
-            
-            if (!district) {
-                showValidationError('district');
-                isValid = false;
-            }
-            
-            if (!city) {
-                showValidationError('city');
-                isValid = false;
-            }
-            
-            if (!state) {
-                showValidationError('state');
-                isValid = false;
-            }
-            
-            if (!pinCode || !/^\d{6}$/.test(pinCode)) {
-                showValidationError('pinCode');
-                isValid = false;
-            }
-            
-            if (!isValid) {
-                const firstErrorField = document.querySelector('.form-control.is-invalid');
-                if (firstErrorField) {
-                    firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    firstErrorField.focus();
-                }
-                return;
-            }
-            
-            const formData = new FormData(e.target);
-            const addressData = {
-                fullname: formData.get('fullname'),
-                mobile: formData.get('mobile'),
-                address: formData.get('address'),
-                district: formData.get('district'),
-                city: formData.get('city'),
-                state: formData.get('state'),
-                pincode: formData.get('pincode'),
-                landmark: formData.get('landmark'),
-                type: formData.get('type')
             };
             
-            try {
-                const response = await fetch(`/update-address/${addressId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(addressData)
+            // Real-time validation for each input
+            document.querySelectorAll('.form-control').forEach(input => {
+                input.addEventListener('input', function() {
+                    validateField(this);
                 });
                 
-                if (response.status === 401) {
-                    window.location.href = '/login';
+                input.addEventListener('blur', function() {
+                    validateField(this, true);
+                });
+            });
+            
+            // Validate address type selection
+            addressTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    validateAddressType();
+                });
+            });
+            
+            // Field validation function
+            function validateField(field, showError = false) {
+                const fieldId = field.id;
+                const value = field.value.trim();
+                const validationPattern = validationPatterns[fieldId];
+                
+                // Skip validation for optional fields if empty
+                if (fieldId === 'landmark' && value === '') {
+                    field.classList.remove('is-invalid');
+                    return true;
+                }
+                
+                // Required field validation
+                if (field.hasAttribute('required') && value === '') {
+                    if (showError) {
+                        field.classList.add('is-invalid');
+                    }
+                    return false;
+                }
+                
+                // Pattern validation if applicable
+                if (validationPattern && !validationPattern.pattern.test(value)) {
+                    if (showError) {
+                        const errorElement = document.getElementById(`${fieldId}Error`);
+                        if (errorElement) {
+                            errorElement.textContent = validationPattern.message;
+                        }
+                        field.classList.add('is-invalid');
+                    }
+                    return false;
+                }
+                
+                // Field is valid
+                field.classList.remove('is-invalid');
+                field.classList.add('is-valid');
+                return true;
+            }
+            
+            // Validate address type
+            function validateAddressType() {
+                const isSelected = Array.from(addressTypeRadios).some(radio => radio.checked);
+                
+                if (!isSelected) {
+                    addressTypeError.style.display = 'block';
+                    return false;
+                } else {
+                    addressTypeError.style.display = 'none';
+                    return true;
+                }
+            }
+            
+            // Show form error message
+            function showFormError(message, isWarning = false) {
+                formErrorContainer.innerHTML = `
+                    <div class="alert ${isWarning ? 'alert-warning' : 'alert-danger'} alert-dismissible fade show" role="alert">
+                        <div class="alert-icon">
+                            <i class="fas ${isWarning ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'}"></i>
+                        </div>
+                        <div class="alert-content">
+                            <strong>${isWarning ? 'Warning' : 'Error'}</strong>
+                            <p>${message}</p>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                `;
+                
+                // Scroll to error message
+                formErrorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            // Clear form errors
+            function clearFormErrors() {
+                formErrorContainer.innerHTML = '';
+                document.querySelectorAll('.is-invalid').forEach(el => {
+                    el.classList.remove('is-invalid');
+                });
+                document.querySelectorAll('.is-valid').forEach(el => {
+                    el.classList.remove('is-valid');
+                });
+                addressTypeError.style.display = 'none';
+            }
+            
+            // Form submission handler
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                clearFormErrors();
+                
+                // Show loading state
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+                
+                // Validate all fields
+                let isValid = true;
+                const formFields = form.querySelectorAll('.form-control');
+                
+                formFields.forEach(field => {
+                    if (!validateField(field, true) && isValid) {
+                        isValid = false;
+                        // Focus the first invalid field
+                        setTimeout(() => {
+                            field.focus();
+                            field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 100);
+                    }
+                });
+                
+                // Validate address type
+                if (!validateAddressType()) {
+                    isValid = false;
+                    // Scroll to address type section if it's the only error
+                    if (document.querySelectorAll('.is-invalid').length === 0) {
+                        document.querySelector('.address-type-container').scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }
+                }
+                
+                if (!isValid) {
+                    submitBtn.classList.remove('loading');
+                    submitBtn.disabled = false;
                     return;
                 }
                 
-                const result = await response.json();
+                // Prepare form data
+                const formData = new FormData(form);
+                const addressId = document.getElementById('addressId').value;
+                const addressData = {
+                    fullname: formData.get('fullname'),
+                    mobile: formData.get('mobile'),
+                    address: formData.get('address'),
+                    district: formData.get('district'),
+                    city: formData.get('city'),
+                    state: formData.get('state'),
+                    pincode: formData.get('pincode'),
+                    landmark: formData.get('landmark'),
+                    type: formData.get('type')
+                };
                 
-                if (result.success) {
-                    showSuccessAlert('Your address has been updated successfully!', () => {
-                        window.location.href = '/address';
+                try {
+                    // Send update request
+                    const response = await fetch(`/update-address/${addressId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(addressData)
                     });
-                } else {
-                    if (result.message === 'No changes made') {
-                        const errorContainer = document.getElementById('formErrorContainer');
-                        errorContainer.innerHTML = `
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-2"></i>${result.message}
-                            </div>
-                        `;
-                        document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    } else if (result.errors && typeof result.errors === 'object') {
-                        for (const [field, message] of Object.entries(result.errors)) {
-                            showValidationError(field, true, message);
-                        }
-                        const firstErrorField = document.querySelector('.form-control.is-invalid');
-                        if (firstErrorField) {
-                            firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            firstErrorField.focus();
-                        }
-                    } else {
-                        showFormError(result.message || 'Failed to update address. Please try again.');
-                        document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    // Handle authentication issues
+                    if (response.status === 401) {
+                        window.location.href = '/login';
+                        return;
                     }
+                    
+                    const result = await response.json();
+                    
+                    // Reset loading state
+                    submitBtn.classList.remove('loading');
+                    submitBtn.disabled = false;
+                    
+                    if (result.success) {
+                        // Show success modal
+                        successModal.show();
+                        document.getElementById('successModalBtn').addEventListener('click', function() {
+                            window.location.href = '/address';
+                        });
+                    } else {
+                        // Handle different error scenarios
+                        if (result.message === 'No changes made') {
+                            showFormError('No changes were made to the address.', true);
+                        } else if (result.errors && typeof result.errors === 'object') {
+                            // Handle field-specific errors
+                            for (const [field, message] of Object.entries(result.errors)) {
+                                const fieldElement = document.getElementById(field);
+                                if (fieldElement) {
+                                    fieldElement.classList.add('is-invalid');
+                                    const errorElement = document.getElementById(`${field}Error`);
+                                    if (errorElement) {
+                                        errorElement.textContent = message;
+                                    }
+                                }
+                            }
+                            
+                            // Focus the first invalid field
+                            const firstInvalidField = document.querySelector('.is-invalid');
+                            if (firstInvalidField) {
+                                firstInvalidField.focus();
+                                firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        } else {
+                            // General error message
+                            showFormError(result.message || 'Failed to update address. Please try again.');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error updating address:', error);
+                    submitBtn.classList.remove('loading');
+                    submitBtn.disabled = false;
+                    showFormError('An error occurred while updating the address. Please try again.');
                 }
-            } catch (error) {
-                console.error('Error updating address:', error);
-                showFormError('An error occurred while updating the address. Please try again.');
-                document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+            });
+            
+            // Add animation classes on page load
+            document.querySelectorAll('.form-section').forEach((section, index) => {
+                section.style.animationDelay = `${index * 0.1}s`;
+                section.classList.add('fade-in');
+            });
+            
+            // Enhance form field interactions
+            document.querySelectorAll('.form-floating').forEach(field => {
+                const input = field.querySelector('input, textarea');
+                
+                if (input) {
+                    // Add active class if field has value
+                    if (input.value.trim() !== '') {
+                        field.classList.add('active');
+                    }
+                    
+                    // Add focus effects
+                    input.addEventListener('focus', () => {
+                        field.classList.add('focused');
+                    });
+                    
+                    input.addEventListener('blur', () => {
+                        field.classList.remove('focused');
+                        if (input.value.trim() !== '') {
+                            field.classList.add('active');
+                        } else {
+                            field.classList.remove('active');
+                        }
+                    });
+                    
+                    // Add input effects
+                    input.addEventListener('input', () => {
+                        if (input.value.trim() !== '') {
+                            field.classList.add('active');
+                        } else {
+                            field.classList.remove('active');
+                        }
+                    });
+                }
+            });
         });
     </script>
 </body>

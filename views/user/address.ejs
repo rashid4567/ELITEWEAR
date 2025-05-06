@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Delivery Address</title>
+    <title>My Addresses | Elite Wear</title>
 
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
@@ -13,6 +13,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
       rel="stylesheet"
     />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/userStyle/header.css">
     <link rel="stylesheet" href="/userStyle/address.css" />
     <link rel="stylesheet" href="/userStyle/footer.css">
@@ -20,71 +21,173 @@
   <body>
     <%- include("../partials/user/header") %>
 
-    <div class="container-wrapper">
-      <%- include("../partials/user/profileSidebar") %>
-
-      <div class="main-content">
-        <nav aria-label="breadcrumb" class="breadcrumb-container">
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="/profile">Profile</a></li>
-            <li class="breadcrumb-item active">Delivery Address</li>
-          </ol>
-        </nav>
-
-        <div class="address-container">
-          <h4 class="section-title">Delivery Address</h4>
-
-          <div class="address-cards">
-            <% if (addresses && addresses.length > 0) { %> <%
-            addresses.forEach(address => { %>
-            <div class="address-card">
-              <a href="/getaddress-edit/<%= address._id %>" class="edit-icon"
-                ><i class="fas fa-edit"></i
-              ></a>
-              <div class="address-name"><%= address.fullname %></div>
-              <div class="address-type">
-                <%= address.type.charAt(0).toUpperCase() + address.type.slice(1)
-                %>
-              </div>
-              <div class="address-details">
-                <%= address.address %>,<br />
-                <%= address.district %>, <%= address.city %>,<br />
-                <%= address.state %><br />
-                <%= address.pincode %><br />
-                <% if (address.landmark) { %> Landmark: <%= address.landmark
-                %><br />
-                <% } %> Mobile: <%= address.mobile %>
-              </div>
-              <div class="address-actions">
-                <% if (address.isDefault) { %>
-                <button class="btn btn-default" disabled>Default</button>
-                <% } else { %>
-                <button
-                  class="btn btn-default set-default-btn"
-                  data-address-id="<%= address._id %>"
-                >
-                  Set as Default
-                </button>
-                <% } %>
-                <button
-                  class="btn btn-delete delete-address-btn"
-                  data-address-id="<%= address._id %>"
-                >
-                  DELETE
-                </button>
-              </div>
-            </div>
-            <% }); %> <% } else { %>
-            <div class="col-12 text-center">
-              <p>No addresses found. Please add a new address.</p>
-            </div>
-            <% } %>
+    <div class="page-wrapper">
+      <div class="container">
+        <div class="row g-4">
+          <!-- Sidebar Column -->
+          <div class="col-lg-3 col-md-4">
+            <%- include("../partials/user/profileSidebar") %>
           </div>
 
-          <div class="add-address-container">
-            <a href="/getaddAddress" class="btn-add-address">Add New Address</a>
+          <!-- Main Content Column -->
+          <div class="col-lg-9 col-md-8">
+            <div class="content-container">
+              <!-- Page Header -->
+              <div class="page-header">
+                <div class="header-content">
+                  <div class="breadcrumb-nav">
+                    <nav aria-label="breadcrumb">
+                      <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+                        <li class="breadcrumb-item"><a href="/profile">My Account</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Addresses</li>
+                      </ol>
+                    </nav>
+                  </div>
+                  <div class="header-title">
+                    <h1>My Addresses</h1>
+                    <p>Manage your delivery locations</p>
+                  </div>
+                </div>
+                <div class="header-actions">
+                  <a href="/getaddAddress" class="btn-add-address">
+                    <span class="btn-icon"><i class="fas fa-plus"></i></span>
+                    <span class="btn-text">Add New Address</span>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Address List -->
+              <div class="address-list-container">
+                <% if (addresses && addresses.length > 0) { %>
+                  <div class="address-list">
+                    <% addresses.forEach(address => { %>
+                      <div class="address-item <%= address.isDefault ? 'is-default' : '' %>">
+                        <div class="address-card">
+                          <% if (address.isDefault) { %>
+                            <div class="default-badge">
+                              <span class="badge-icon"><i class="fas fa-check"></i></span>
+                              <span class="badge-text">Default</span>
+                            </div>
+                          <% } %>
+                          
+                          <div class="address-header">
+                            <div class="address-type-badge type-<%= address.type.toLowerCase() %>">
+                              <i class="fas fa-<%= address.type === 'home' ? 'home' : (address.type === 'work' ? 'briefcase' : 'map-marker-alt') %>"></i>
+                              <%= address.type.charAt(0).toUpperCase() + address.type.slice(1) %>
+                            </div>
+                            <h3 class="address-name"><%= address.fullname %></h3>
+                          </div>
+                          
+                          <div class="address-body">
+                            <div class="address-text">
+                              <p><%= address.address %></p>
+                              <p><%= address.district %>, <%= address.city %></p>
+                              <p><%= address.state %> - <%= address.pincode %></p>
+                              <% if (address.landmark) { %>
+                                <p class="address-landmark">
+                                  <i class="fas fa-landmark"></i> <%= address.landmark %>
+                                </p>
+                              <% } %>
+                              <p class="address-phone">
+                                <i class="fas fa-phone-alt"></i> <%= address.mobile %>
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <div class="address-actions">
+                            <a href="/getaddress-edit/<%= address._id %>" class="action-btn edit-btn" data-bs-toggle="tooltip" title="Edit Address">
+                              <i class="fas fa-edit"></i>
+                            </a>
+                            
+                            <% if (!address.isDefault) { %>
+                              <button type="button" class="action-btn default-btn set-default-btn" data-address-id="<%= address._id %>" data-bs-toggle="tooltip" title="Set as Default">
+                                <i class="fas fa-check-circle"></i>
+                              </button>
+                            <% } %>
+                            
+                            <button type="button" class="action-btn delete-btn delete-address-btn" data-address-id="<%= address._id %>" data-bs-toggle="tooltip" title="Delete Address">
+                              <i class="fas fa-trash-alt"></i>
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div class="address-footer">
+                          <div class="footer-actions">
+                            <a href="/getaddress-edit/<%= address._id %>" class="btn btn-outline-primary">
+                              <i class="fas fa-edit"></i> Edit
+                            </a>
+                            
+                            <% if (!address.isDefault) { %>
+                              <button type="button" class="btn btn-outline-secondary set-default-btn" data-address-id="<%= address._id %>">
+                                <i class="fas fa-check-circle"></i> Set as Default
+                              </button>
+                            <% } else { %>
+                              <button type="button" class="btn btn-outline-success" disabled>
+                                <i class="fas fa-check"></i> Default Address
+                              </button>
+                            <% } %>
+                            
+                            <button type="button" class="btn btn-outline-danger delete-address-btn" data-address-id="<%= address._id %>">
+                              <i class="fas fa-trash-alt"></i> Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    <% }); %>
+                  </div>
+                <% } else { %>
+                  <div class="empty-state">
+                    <div class="empty-state-content">
+                      <div class="empty-state-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                      </div>
+                      <h2>No addresses found</h2>
+                      <p>You haven't added any delivery addresses to your account yet.</p>
+                      <a href="/getaddAddress" class="btn-primary">
+                        <i class="fas fa-plus"></i> Add Your First Address
+                      </a>
+                    </div>
+                  </div>
+                <% } %>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="modal-icon" id="modalIcon">
+              <i class="fas"></i>
+            </div>
+            <p class="modal-message" id="modalMessage"></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelBtn">Cancel</button>
+            <button type="button" class="btn" id="confirmBtn"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+      <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+          <i class="fas fa-bell me-2"></i>
+          <strong class="me-auto" id="toastTitle"></strong>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastMessage"></div>
       </div>
     </div>
 
@@ -92,184 +195,260 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script>
-      function showCustomAlert(options) {
-        const {
-          title,
-          message,
-          buttonText,
-          isSuccess,
-          onButtonClick,
-          showCancelButton,
-        } = options;
-
-        const alertOverlay = document.createElement("div");
-        alertOverlay.className = "custom-alert-overlay";
-
-        let buttonsHtml = `<button class="custom-alert-button ${
-          !isSuccess
-            ? buttonText.toLowerCase().includes("delete")
-              ? "delete"
-              : "retry"
-            : ""
-        }">${buttonText}</button>`;
-
-        if (showCancelButton) {
-          buttonsHtml = `
-                    <div style="display: flex; justify-content: space-between; gap: 10px;">
-                        <button class="custom-alert-button cancel-btn" style="background-color: #6c757d;">Cancel</button>
-                        ${buttonsHtml}
-                    </div>
-                `;
-        }
-
-        alertOverlay.innerHTML = `
-                <div class="custom-alert">
-                    <div class="custom-alert-header">
-                        <div class="custom-alert-title">${
-                          title || (isSuccess ? "SUCCESS!!" : "SORRY!!")
-                        }</div>
-                        <div class="custom-alert-close">✕</div>
-                    </div>
-                    <div class="custom-alert-message">${message}</div>
-                    ${buttonsHtml}
-                </div>
-            `;
-
-        document.body.appendChild(alertOverlay);
-
-        const closeButton = alertOverlay.querySelector(".custom-alert-close");
-        const actionButton = alertOverlay.querySelector(
-          ".custom-alert-button:not(.cancel-btn)"
-        );
-        const cancelButton = alertOverlay.querySelector(".cancel-btn");
-
-        closeButton.addEventListener("click", () => {
-          document.body.removeChild(alertOverlay);
-        });
-
-        actionButton.addEventListener("click", () => {
-          document.body.removeChild(alertOverlay);
-          if (typeof onButtonClick === "function") {
-            onButtonClick();
-          }
-        });
-
-        if (cancelButton) {
-          cancelButton.addEventListener("click", () => {
-            document.body.removeChild(alertOverlay);
+      document.addEventListener("DOMContentLoaded", function() {
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl, {
+            boundary: document.body
           });
-        }
-      }
-
-      function showDeleteConfirmation(addressId) {
-        showCustomAlert({
-          title: "ARE YOU SURE!!",
-          message: "Do you want to delete the address?",
-          buttonText: "Yes, delete",
-          isSuccess: false,
-          showCancelButton: true,
-          onButtonClick: () => {
-            deleteAddress(addressId);
-          },
         });
-      }
-
-      async function deleteAddress(addressId) {
-        try {
-          const response = await fetch(`/remove-address/${addressId}`, {
-            method: "DELETE",
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to delete address");
-          }
-
-          const result = await response.json();
-
-          if (result.success) {
-            showCustomAlert({
-              title: "SUCCESS!!",
-              message: "Your address has been deleted successfully!",
-              buttonText: "OK",
-              isSuccess: true,
-              onButtonClick: () => {
-                window.location.reload();
-              },
-            });
+        
+        // Initialize modal
+        const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        
+        // Initialize toast
+        const notificationToast = new bootstrap.Toast(document.getElementById('notificationToast'), {
+          delay: 5000
+        });
+        
+        // Show notification toast
+        function showNotification(title, message, isSuccess = true) {
+          const toastEl = document.getElementById('notificationToast');
+          const toastTitle = document.getElementById('toastTitle');
+          const toastMessage = document.getElementById('toastMessage');
+          
+          toastEl.classList.remove('bg-success', 'bg-danger', 'text-white');
+          if (isSuccess) {
+            toastEl.classList.add('bg-success', 'text-white');
           } else {
-            showCustomAlert({
-              title: "SORRY!!",
-              message: `Failed to delete address: ${result.message}`,
-              buttonText: "RETRY",
-              isSuccess: false,
+            toastEl.classList.add('bg-danger', 'text-white');
+          }
+          
+          toastTitle.textContent = title;
+          toastMessage.textContent = message;
+          
+          notificationToast.show();
+        }
+        
+        // Show confirmation modal
+        function showConfirmation(options) {
+          const { title, message, confirmText, confirmClass, iconClass, onConfirm } = options;
+          
+          document.getElementById('modalTitle').textContent = title;
+          document.getElementById('modalMessage').textContent = message;
+          
+          const confirmBtn = document.getElementById('confirmBtn');
+          confirmBtn.textContent = confirmText;
+          confirmBtn.className = `btn ${confirmClass}`;
+          
+          const modalIcon = document.getElementById('modalIcon');
+          modalIcon.className = `modal-icon ${iconClass}`;
+          modalIcon.querySelector('i').className = `fas ${iconClass === 'danger' ? 'fa-trash-alt' : 'fa-check-circle'}`;
+          
+          // Remove previous event listener
+          const newConfirmBtn = confirmBtn.cloneNode(true);
+          confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+          
+          // Add new event listener
+          newConfirmBtn.addEventListener('click', function() {
+            confirmationModal.hide();
+            if (typeof onConfirm === 'function') {
+              onConfirm();
+            }
+          });
+          
+          confirmationModal.show();
+        }
+        
+        // Delete address
+        async function deleteAddress(addressId) {
+          try {
+            // Show loading state on buttons
+            const deleteButtons = document.querySelectorAll(`.delete-address-btn[data-address-id="${addressId}"]`);
+            deleteButtons.forEach(btn => {
+              const originalContent = btn.innerHTML;
+              btn.setAttribute('data-original-content', originalContent);
+              btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+              btn.disabled = true;
+            });
+            
+            // Call the delete API
+            const response = await fetch(`/remove-address/${addressId}`, {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+              // Show success notification
+              showNotification('Success', 'Address deleted successfully', true);
+              
+              // Remove the address item with animation
+              const addressItems = document.querySelectorAll(`.address-item`);
+              addressItems.forEach(item => {
+                const deleteBtn = item.querySelector(`.delete-address-btn[data-address-id="${addressId}"]`);
+                if (deleteBtn) {
+                  item.classList.add('fade-out');
+                  setTimeout(() => {
+                    item.remove();
+                    
+                    // Check if there are no addresses left
+                    const remainingAddresses = document.querySelectorAll('.address-item');
+                    if (remainingAddresses.length === 0) {
+                      // Show empty state
+                      const addressList = document.querySelector('.address-list');
+                      if (addressList) {
+                        addressList.innerHTML = `
+                          <div class="empty-state">
+                            <div class="empty-state-content">
+                              <div class="empty-state-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                              </div>
+                              <h2>No addresses found</h2>
+                              <p>You haven't added any delivery addresses to your account yet.</p>
+                              <a href="/getaddAddress" class="btn-primary">
+                                <i class="fas fa-plus"></i> Add Your First Address
+                              </a>
+                            </div>
+                          </div>
+                        `;
+                      }
+                    }
+                  }, 500);
+                }
+              });
+            } else {
+              // Show error notification
+              showNotification('Error', result.message || 'Failed to delete address', false);
+              
+              // Reset buttons
+              deleteButtons.forEach(btn => {
+                btn.innerHTML = btn.getAttribute('data-original-content');
+                btn.disabled = false;
+              });
+            }
+          } catch (error) {
+            console.error('Error deleting address:', error);
+            
+            // Show error notification
+            showNotification('Error', 'An unexpected error occurred', false);
+            
+            // Reset buttons
+            const deleteButtons = document.querySelectorAll(`.delete-address-btn[data-address-id="${addressId}"]`);
+            deleteButtons.forEach(btn => {
+              btn.innerHTML = btn.getAttribute('data-original-content');
+              btn.disabled = false;
             });
           }
-        } catch (error) {
-          showCustomAlert({
-            title: "SORRY!!",
-            message: `Failed to delete address`,
-            buttonText: "RETRY",
-            isSuccess: false,
-          });
         }
-      }
-
-      async function setDefaultAddress(addressId) {
-        try {
-          const response = await fetch(`/set-default-address/${addressId}`, {
-            method: "PUT",
-          });
-
-          if (!response.ok) {
-            throw new Error("Failed to set address as default");
-          }
-
-          const result = await response.json();
-
-          if (result.success) {
-            showCustomAlert({
-              title: "SUCCESS!!",
-              message: "Default address has been updated!",
-              buttonText: "OK",
-              isSuccess: true,
-              onButtonClick: () => {
+        
+        // Set default address
+        async function setDefaultAddress(addressId) {
+          try {
+            // Show loading state on buttons
+            const defaultButtons = document.querySelectorAll(`.set-default-btn[data-address-id="${addressId}"]`);
+            defaultButtons.forEach(btn => {
+              const originalContent = btn.innerHTML;
+              btn.setAttribute('data-original-content', originalContent);
+              btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Setting...';
+              btn.disabled = true;
+            });
+            
+            // Call the set default API
+            const response = await fetch(`/set-default-address/${addressId}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+              // Show success notification
+              showNotification('Success', 'Default address updated successfully', true);
+              
+              // Reload the page with a smooth transition
+              document.body.classList.add('page-transition');
+              setTimeout(() => {
                 window.location.reload();
-              },
-            });
-          } else {
-            showCustomAlert({
-              title: "SORRY!!",
-              message: `Failed to update default address: ${result.message}`,
-              buttonText: "RETRY",
-              isSuccess: false,
+              }, 300);
+            } else {
+              // Show error notification
+              showNotification('Error', result.message || 'Failed to update default address', false);
+              
+              // Reset buttons
+              defaultButtons.forEach(btn => {
+                btn.innerHTML = btn.getAttribute('data-original-content');
+                btn.disabled = false;
+              });
+            }
+          } catch (error) {
+            console.error('Error setting default address:', error);
+            
+            // Show error notification
+            showNotification('Error', 'An unexpected error occurred', false);
+            
+            // Reset buttons
+            const defaultButtons = document.querySelectorAll(`.set-default-btn[data-address-id="${addressId}"]`);
+            defaultButtons.forEach(btn => {
+              btn.innerHTML = btn.getAttribute('data-original-content');
+              btn.disabled = false;
             });
           }
-        } catch (error) {
-          console.error("Error setting default address:", error);
-          showCustomAlert({
-            title: "SORRY!!",
-            message: `Failed to update default address: ${error.message}`,
-            buttonText: "RETRY",
-            isSuccess: false,
-          });
         }
-      }
-
-      document.addEventListener("DOMContentLoaded", function () {
-        const deleteButtons = document.querySelectorAll(".delete-address-btn");
-        deleteButtons.forEach((button) => {
-          button.addEventListener("click", function () {
-            const addressId = this.getAttribute("data-address-id");
-            showDeleteConfirmation(addressId);
+        
+        // Add event listeners to delete buttons
+        document.querySelectorAll('.delete-address-btn').forEach(button => {
+          button.addEventListener('click', function() {
+            const addressId = this.getAttribute('data-address-id');
+            
+            showConfirmation({
+              title: 'Delete Address',
+              message: 'Are you sure you want to delete this address? This action cannot be undone.',
+              confirmText: 'Delete',
+              confirmClass: 'btn-danger',
+              iconClass: 'danger',
+              onConfirm: () => deleteAddress(addressId)
+            });
           });
         });
-
-        const defaultButtons = document.querySelectorAll(".set-default-btn");
-        defaultButtons.forEach((button) => {
-          button.addEventListener("click", function () {
-            const addressId = this.getAttribute("data-address-id");
-            setDefaultAddress(addressId);
+        
+        // Add event listeners to set default buttons
+        document.querySelectorAll('.set-default-btn').forEach(button => {
+          button.addEventListener('click', function() {
+            const addressId = this.getAttribute('data-address-id');
+            
+            showConfirmation({
+              title: 'Set Default Address',
+              message: 'Are you sure you want to set this as your default address?',
+              confirmText: 'Set as Default',
+              confirmClass: 'btn-primary',
+              iconClass: 'success',
+              onConfirm: () => setDefaultAddress(addressId)
+            });
           });
+        });
+        
+        // Add hover effects
+        document.querySelectorAll('.address-item').forEach(item => {
+          item.addEventListener('mouseenter', function() {
+            this.classList.add('hover');
+          });
+          
+          item.addEventListener('mouseleave', function() {
+            this.classList.remove('hover');
+          });
+        });
+        
+        // Add animation classes on page load
+        document.querySelectorAll('.address-item').forEach((item, index) => {
+          item.style.animationDelay = `${index * 0.1}s`;
+          item.classList.add('fade-in');
         });
       });
     </script>

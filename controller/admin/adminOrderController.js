@@ -1476,233 +1476,491 @@ const admindownloadInvoice = async (req, res) => {
   try {
     const orderId = req.params.id;
 
-  
     if (!mongoose.Types.ObjectId.isValid(orderId)) {
-      logger.error("downloadInvoice: Invalid order ID:", orderId);
+      logger.error("admindownloadInvoice: Invalid order ID:", orderId);
       return res.status(400).json({ error: "Invalid order ID" });
     }
-
 
     const order = await Order.findById(orderId)
       .populate({
         path: "order_items",
         populate: { path: "productId", model: "Product" },
       })
-      .populate("address");
+      .populate("address")
+      .populate("userId");
 
     if (!order) {
-      logger.error(`downloadInvoice: Order not found for ID: ${orderId}`);
+      logger.error(`admindownloadInvoice: Order not found for ID: ${orderId}`);
       return res.status(404).json({ error: "Order not found" });
     }
 
+ 
+    const formatDate = (date) => {
+      if (!date) return "N/A";
+      return new Date(date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+      });
+    };
 
-    const doc = new PDFDocument({
-      margin: 50,
-      size: "A4",
-      info: {
-        Title: `Invoice ORD${order.orderNumber || order._id}`,
-        Author: "Elite Wear",
-        Subject: "Customer Invoice",
-        Creator: "Elite Wear Billing System",
-      },
+
+    let subtotal = 0;
+    order.order_items.forEach(item => {
+      subtotal += (item.price || 0) * (item.quantity || 1);
     });
-
-  
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=invoice-ORD${order.orderNumber || order._id}.pdf`
-    );
-    doc.pipe(res);
-
     
-    doc.registerFont("Helvetica-Bold", "Helvetica-Bold");
-    doc.registerFont("Helvetica", "Helvetica");
-
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(24)
-      .fillColor("#2c3e50")
-      .text("ELITE WEAR", 50, 50);
-
-    doc.font("Helvetica").fontSize(10).fillColor("#34495e");
-
-    const companyInfo = [
-      "123 Fashion Avenue",
-      "New York, NY 10001",
-      "Phone: (111) 123-1234",
-      "Email: billing@elitewear.com",
-      "Website: www.elitewear.com",
-    ];
-
-    let yPos = 80;
-    companyInfo.forEach((line) => {
-      doc.text(line, 50, yPos);
-      yPos += 15;
-    });
-
-
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(14)
-      .fillColor("#2c3e50")
-      .text("INVOICE", 400, 50);
-
-    const invoiceDetails = [
-      { label: "Invoice #", value: `ORD${order.orderNumber || order._id}` },
-      {
-        label: "Date",
-        value: new Date().toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        }),
-      },
-      {
-        label: "Due Date",
-        value: new Date(
-          Date.now() + 30 * 24 * 60 * 60 * 1000
-        ).toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        }),
-      },
-    ];
-
-    yPos = 80;
-    invoiceDetails.forEach((detail) => {
-      doc.font("Helvetica-Bold").fontSize(10).text(detail.label, 400, yPos);
-      doc.font("Helvetica").text(detail.value, 450, yPos);
-      yPos += 15;
-    });
-
+    const grandTotal = subtotal;
+    const invoiceNumber = `ORD${order.orderNumber || order._id}`;
+    const currentDate = formatDate(new Date());
+    const dueDate = formatDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
+    
+    
     const customerAddress = order.address || {};
     const addressLines = [
-      customerAddress.name || "Customer Name",
-      customerAddress.street || "Street Address",
-      `${customerAddress.city || "City"}, ${customerAddress.state || "State"} ${
-        customerAddress.zip || "ZIP"
-      }`,
-      customerAddress.country || "Country",
-      customerAddress.phone || "",
-    ].filter((line) => line);
+      customerAddress.fullname || "Customer Name",
+      customerAddress.address || "Street Address",
+      `${customerAddress.city || "City"}, ${customerAddress.district || "District"}`,
+      `${customerAddress.state || "State"} - ${customerAddress.pincode || "Pincode"}`,
+      customerAddress.mobile || ""
+    ].filter(line => line);
 
-    doc
-      .font("Helvetica-Bold")
-      .fontSize(12)
-      .fillColor("#2c3e50")
-      .text("Bill To:", 50, 160);
 
-    yPos = 180;
-    doc.font("Helvetica").fontSize(10);
-    addressLines.forEach((line) => {
-      doc.text(line, 50, yPos);
-      yPos += 15;
-    });
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Admin Invoice - ${invoiceNumber}</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600;700&display=swap');
+          
+          :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #e74c3c;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #6c757d;
+            --border-color: #dee2e6;
+          }
+          
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--secondary-color);
+            background-color: #fff;
+            padding: 0;
+            margin: 0;
+          }
+          
+          .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            position: relative;
+          }
+          
+          .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 80px;
+            color: rgba(231, 76, 60, 0.05);
+            font-weight: bold;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 0;
+          }
+          
+          .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+          }
+          
+          .company-info {
+            flex: 1;
+          }
+          
+          .company-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+          }
+          
+          .company-details {
+            font-size: 12px;
+            color: var(--secondary-color);
+          }
+          
+          .company-details p {
+            margin: 3px 0;
+          }
+          
+          .invoice-info {
+            text-align: right;
+          }
+          
+          .invoice-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+          }
+          
+          .invoice-details {
+            font-size: 14px;
+          }
+          
+          .invoice-details .row {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 5px;
+          }
+          
+          .invoice-details .label {
+            font-weight: 600;
+            margin-right: 15px;
+            color: var(--primary-color);
+          }
+          
+          .invoice-details .value {
+            min-width: 150px;
+          }
+          
+          .customer-section {
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+          }
+          
+          .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+          }
+          
+          .customer-details {
+            font-size: 14px;
+          }
+          
+          .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+          }
+          
+          .items-table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 15px;
+            font-size: 14px;
+          }
+          
+          .items-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+          }
+          
+          .items-table tr:nth-child(even) {
+            background-color: var(--light-gray);
+          }
+          
+          .items-table .text-right {
+            text-align: right;
+          }
+          
+          .items-table .text-center {
+            text-align: center;
+          }
+          
+          .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+          }
+          
+          .totals-table {
+            width: 350px;
+            border-collapse: collapse;
+          }
+          
+          .totals-table td {
+            padding: 8px 15px;
+            font-size: 14px;
+          }
+          
+          .totals-table .label {
+            font-weight: 600;
+            color: var(--primary-color);
+          }
+          
+          .totals-table .value {
+            text-align: right;
+          }
+          
+          .totals-table .grand-total {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--primary-color);
+            border-top: 2px solid var(--primary-color);
+            padding-top: 10px;
+          }
+          
+          .invoice-footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin-top: 30px;
+            position: relative;
+            z-index: 1;
+          }
+          
+          .thank-you {
+            font-size: 16px;
+            margin-bottom: 10px;
+          }
+          
+          .footer-text {
+            font-size: 12px;
+            opacity: 0.8;
+          }
+          
+          .admin-note {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: rgba(231, 76, 60, 0.1);
+            border-left: 4px solid var(--accent-color);
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+          }
+          
+          .admin-note-title {
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 5px;
+          }
+          
+          .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 100;
+            transition: background-color 0.3s;
+          }
+          
+          .print-button:hover {
+            background-color: var(--secondary-color);
+          }
+          
+          @media print {
+            .print-button {
+              display: none;
+            }
+            
+            body {
+              print-color-adjust: exact;
+              -webkit-print-color-adjust: exact;
+            }
+            
+            .invoice-container {
+              padding: 0;
+              max-width: 100%;
+            }
+            
+            @page {
+              margin: 0.5cm;
+              size: A4;
+            }
+          }
+          
+          @media (max-width: 768px) {
+            .invoice-container {
+              padding: 20px;
+            }
+            
+            .invoice-header {
+              flex-direction: column;
+            }
+            
+            .invoice-info {
+              text-align: left;
+              margin-top: 20px;
+            }
+            
+            .invoice-details .row {
+              justify-content: flex-start;
+            }
+            
+            .totals-section {
+              justify-content: center;
+            }
+            
+            .totals-table {
+              width: 100%;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <button class="print-button" onclick="window.print()">Print Invoice</button>
+        
+        <div class="invoice-container">
+          <div class="watermark">ADMIN COPY</div>
+          
+          <div class="invoice-header">
+            <div class="company-info">
+              <div class="company-name">ELITE WEAR</div>
+              <div class="company-details">
+                <p>123 Fashion Avenue</p>
+                <p>New York, NY 10001</p>
+                <p>Phone: (111) 123-1234</p>
+                <p>Email: billing@elitewear.com</p>
+                <p>Website: www.elitewear.com</p>
+              </div>
+            </div>
+            
+            <div class="invoice-info">
+              <div class="invoice-title">INVOICE</div>
+              <div class="invoice-details">
+                <div class="row">
+                  <div class="label">Invoice #:</div>
+                  <div class="value">${invoiceNumber}</div>
+                </div>
+                <div class="row">
+                  <div class="label">Date:</div>
+                  <div class="value">${currentDate}</div>
+                </div>
+                <div class="row">
+                  <div class="label">Due Date:</div>
+                  <div class="value">${dueDate}</div>
+                </div>
+                <div class="row">
+                  <div class="label">Status:</div>
+                  <div class="value">${order.status || 'Processing'}</div>
+                </div>
+                <div class="row">
+                  <div class="label">Payment:</div>
+                  <div class="value">${order.paymentStatus || 'Pending'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="customer-section">
+            <div class="section-title">Bill To</div>
+            <div class="customer-details">
+              ${addressLines.map(line => `<p>${line}</p>`).join('')}
+            </div>
+          </div>
+          
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Item Description</th>
+                <th class="text-center">Quantity</th>
+                <th class="text-right">Unit Price</th>
+                <th class="text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${order.order_items.map(item => {
+                const itemTotal = (item.price || 0) * (item.quantity || 1);
+                return `
+                  <tr>
+                    <td>${item.productId?.name || 'Unknown Product'} (Size: ${item.size || 'N/A'})</td>
+                    <td class="text-center">${item.quantity || 1}</td>
+                    <td class="text-right">₹${(item.price || 0).toFixed(2)}</td>
+                    <td class="text-right">₹${itemTotal.toFixed(2)}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+          
+          <div class="totals-section">
+            <table class="totals-table">
+              <tr>
+                <td class="label">Subtotal:</td>
+                <td class="value">₹${subtotal.toFixed(2)}</td>
+              </tr>
+              <tr>
+                <td class="label grand-total">Grand Total:</td>
+                <td class="value grand-total">₹${grandTotal.toFixed(2)}</td>
+              </tr>
+            </table>
+          </div>
+          
+          <div class="admin-note">
+            <div class="admin-note-title">Admin Notes</div>
+            <p>Order placed on ${formatDate(order.orderDate)} via ${order.paymentMethod || 'Unknown method'}.</p>
+            <p>Customer ID: ${order.userId?._id || 'Unknown'}</p>
+            <p>Customer Email: ${order.userId?.email || 'Unknown'}</p>
+          </div>
+          
+          <div class="invoice-footer">
+            <div class="thank-you">Thank you for shopping with Elite Wear!</div>
+            <div class="footer-text">For any questions regarding your order, please contact our customer service at billing@elitewear.com</div>
+            <div class="footer-text">Terms: Payment due within 30 days. Make checks payable to Elite Wear.</div>
+          </div>
+        </div>
+        
+        <script>
+          // Auto-print when loaded (optional)
+          // window.onload = function() {
+          //   window.print();
+          // };
+        </script>
+      </body>
+      </html>
+    `;
 
-    const tableTop = 260;
-    doc.rect(50, tableTop, 500, 25).fill("#f1f3f5");
-
-    doc.font("Helvetica-Bold").fontSize(10).fillColor("#2c3e50");
-
-    const headers = [
-      { text: "Item Description", x: 55, width: 280 },
-      { text: "Quantity", x: 335, width: 60 },
-      { text: "Unit Price", x: 395, width: 60 },
-      { text: "Total", x: 455, width: 90 },
-    ];
-
-    headers.forEach((header) => {
-      doc.text(header.text, header.x, tableTop + 8, {
-        width: header.width,
-        align: header.text === "Total" ? "right" : "left",
-      });
-    });
-
-    yPos = tableTop + 35;
-    let subtotal = 0;
-
-    doc.font("Helvetica").fillColor("#34495e");
-
-    const items = order.order_items.map((item) => ({
-      description: `${item.productId?.name || "Unknown Product"} (Size: ${
-        item.size || "N/A"
-      })`,
-      quantity: item.quantity || 1,
-      price: item.price || 0,
-    }));
-
-    items.forEach((item) => {
-      const itemTotal = item.price * item.quantity;
-      subtotal += itemTotal;
-
-      const row = [
-        { text: item.description, x: 55, width: 280 },
-        { text: item.quantity.toString(), x: 335, width: 60 },
-        { text: `₹${item.price.toFixed(2)}`, x: 395, width: 60 },
-        { text: `₹${itemTotal.toFixed(2)}`, x: 455, width: 90 },
-      ];
-
-      row.forEach((cell) => {
-        doc.text(cell.text, cell.x, yPos, {
-          width: cell.width,
-          align: cell.x === 455 ? "right" : "left",
-        });
-      });
-
-      yPos += 20;
-      doc
-        .moveTo(50, yPos - 5)
-        .lineTo(550, yPos - 5)
-        .strokeColor("#ececec")
-        .stroke();
-    });
-
-    const grandTotal = subtotal;
-
-    const totals = [
-      { label: "Subtotal", value: subtotal.toFixed(2), bold: true },
-      { label: "Grand Total", value: grandTotal.toFixed(2), bold: true },
-    ];
-
-    yPos += 20;
-    totals.forEach((total) => {
-      doc
-        .font(total.bold ? "Helvetica-Bold" : "Helvetica")
-        .text(total.label, 400, yPos);
-      doc.text(`₹${total.value}`, 455, yPos, { width: 90, align: "right" });
-      yPos += 15;
-    });
-
-    doc.rect(0, doc.page.height - 80, doc.page.width, 80).fill("#2c3e50");
-
-    doc
-      .font("Helvetica")
-      .fontSize(9)
-      .fillColor("#ffffff")
-      .text(
-        "Thank you for shopping with Elite Wear! For any questions regarding your order, please contact our customer service at billing@elitewear.com",
-        50,
-        doc.page.height - 65,
-        { width: 500, align: "center" }
-      );
-
-    doc
-      .fontSize(8)
-      .text(
-        "Terms: Payment due within 30 days. Make checks payable to Elite Wear.",
-        50,
-        doc.page.height - 40,
-        {
-          width: 500,
-          align: "center",
-        }
-      );
-
-    doc.end();
+    // Set response headers for download
+    const filename = `admin-invoice-${invoiceNumber}.html`;
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    
+    // Send the HTML content
+    res.send(htmlContent);
+    
   } catch (error) {
-    logger.error("downloadInvoice Error:", error);
+    logger.error("admindownloadInvoice Error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

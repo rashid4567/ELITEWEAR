@@ -3,246 +3,544 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Referral Code</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <title>Elite Wear | Referral Program</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/userStyle/header.css">
     <link rel="stylesheet" href="/userStyle/footer.css">
-    <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .container {
-            max-width: 800px;
-            margin: 50px auto;
-        }
-        .referral-container {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            transform: translate(113px, -552px);
-        }
-        .referral-code {
-            background-color: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 5px;
-            padding: 15px;
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            margin: 20px 0;
-        }
-        .stats-container {
-            display: flex;
-            justify-content: space-around;
-            margin: 30px 0;
-        }
-        .stat-box {
-            text-align: center;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            width: 45%;
-        }
-        .stat-number {
-            font-size: 36px;
-            font-weight: bold;
-            color:rgb(0, 0, 0);
-        }
-        .stat-label {
-            font-size: 16px;
-            color: #6c757d;
-        }
-        .share-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        .share-button {
-            padding: 10px 20px;
-            border-radius: 5px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-        }
-        .how-it-works {
-            margin-top: 40px;
-        }
-        .step {
-            display: flex;
-            margin-bottom: 20px;
-        }
-        .step-number {
-            background-color:rgb(1, 7, 14);
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            margin-right: 15px;
-        }
-        .step-content {
-            flex: 1;
-        }
-        .copy-tooltip {
-            position: relative;
-            display: inline-block;
-        }
-        .tooltip-text {
-            visibility: hidden;
-            width: 140px;
-            background-color: #555;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 150%;
-            left: 50%;
-            margin-left: -70px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .tooltip-text::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: #555 transparent transparent transparent;
-        }
-    </style>
+    <link rel="stylesheet" href="/userStyle/referalCode.css">
 </head>
 <body>
     <%- include("../partials/user/header") %>
-    <%- include("../partials/user/profileSidebar") %>
 
-    <div class="container">
-        <div class="referral-container">
-            <h2 class="text-center mb-4">Your Referral Program</h2>
-            
-            <p class="text-center">Share your unique referral code with friends and earn rewards when they sign up!</p>
-            
-            <div class="referral-code">
-                <%= user.referralCode %>
-                <button class="btn btn-sm btn-outline-secondary ms-2 copy-tooltip" onclick="copyReferralCode()">
-                    <i class="fas fa-copy"></i>
-                    <span class="tooltip-text" id="copyTooltip">Copy to clipboard</span>
-                </button>
-            </div>
-            
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" id="referralLink" value="<%= referralUrl %>" readonly>
-                <button class="btn btn-outline-secondary" type="button" onclick="copyReferralLink()">
-                    <i class="fas fa-copy"></i> Copy Link
-                </button>
-            </div>
-            
-            <div class="stats-container">
-                <div class="stat-box">
-                    <div class="stat-number"><%= referralStats.totalReferrals %></div>
-                    <div class="stat-label">Total Referrals</div>
+    <div class="page-wrapper">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Sidebar Column -->
+                <div class="col-lg-3 col-md-4">
+                    <%- include("../partials/user/profileSidebar") %>
                 </div>
-                <div class="stat-box">
-                    <div class="stat-number">₹<%= referralStats.totalEarned %></div>
-                    <div class="stat-label">Total Earned</div>
-                </div>
-            </div>
-            
-            <div class="share-buttons">
-                <button class="share-button btn btn-primary" onclick="shareOnWhatsApp()">
-                    <i class="fab fa-whatsapp"></i> WhatsApp
-                </button>
-                <button class="share-button btn btn-info" onclick="shareOnFacebook()">
-                    <i class="fab fa-facebook-f"></i> Facebook
-                </button>
-                <button class="share-button btn btn-danger" onclick="shareOnEmail()">
-                    <i class="fas fa-envelope"></i> Email
-                </button>
-            </div>
-            
-            <div class="how-it-works">
-                <h4>How It Works</h4>
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h5>Share Your Code</h5>
-                        <p>Share your unique referral code with friends and family.</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h5>Friend Signs Up</h5>
-                        <p>When your friend creates an account using your referral code, they get ₹100 in their wallet.</p>
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h5>You Get Rewarded</h5>
-                        <p>You'll receive ₹200 in your wallet for each successful referral!</p>
+                
+                <!-- Main Content Column -->
+                <div class="col-lg-9 col-md-8">
+                    <div class="content-container">
+                        <!-- Page Header -->
+                        <div class="page-header">
+                            <div class="header-content">
+                                <div class="breadcrumb-nav">
+                                    <nav aria-label="breadcrumb">
+                                        <ol class="breadcrumb">
+                                            <li class="breadcrumb-item"><a href="/"><i class="fas fa-home"></i></a></li>
+                                            <li class="breadcrumb-item"><a href="/profile">My Account</a></li>
+                                            <li class="breadcrumb-item active" aria-current="page">Referral Program</li>
+                                        </ol>
+                                    </nav>
+                                </div>
+                                <div class="header-title">
+                                    <h1>Referral Program</h1>
+                                    <p>Share and earn rewards with friends</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Referral Content -->
+                        <div class="referral-content">
+                            <div class="row g-4">
+                                <!-- Referral Card -->
+                                <div class="col-lg-7">
+                                    <div class="referral-card">
+                                        <div class="card-pattern"></div>
+                                        <div class="card-content">
+                                            <div class="referral-header">
+                                                <div class="referral-title">Your Referral Code</div>
+                                                <div class="referral-badge">
+                                                    <i class="fas fa-gift"></i> Earn ₹200 per referral
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="referral-code-container">
+                                                <div class="referral-code" id="referralCode">
+                                                    <span class="code-text"><%= user.referralCode %></span>
+                                                    <button class="copy-btn" onclick="copyReferralCode()" aria-label="Copy referral code">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="referral-link-container">
+                                                <div class="input-group">
+                                                    <input type="text" id="referralLink" value="<%= referralUrl %>" readonly>
+                                                    <button class="copy-link-btn" onclick="copyReferralLink()">
+                                                        <span>Copy Link</span>
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="share-section">
+                                                <div class="share-title">Share via</div>
+                                                <div class="share-buttons">
+                                                    <button class="share-btn whatsapp" onclick="shareOnWhatsApp()" aria-label="Share on WhatsApp">
+                                                        <i class="fab fa-whatsapp"></i>
+                                                    </button>
+                                                    <button class="share-btn facebook" onclick="shareOnFacebook()" aria-label="Share on Facebook">
+                                                        <i class="fab fa-facebook-f"></i>
+                                                    </button>
+                                                    <button class="share-btn twitter" onclick="shareOnTwitter()" aria-label="Share on Twitter">
+                                                        <i class="fab fa-twitter"></i>
+                                                    </button>
+                                                    <button class="share-btn email" onclick="shareOnEmail()" aria-label="Share via Email">
+                                                        <i class="fas fa-envelope"></i>
+                                                    </button>
+                                                    <button class="share-btn more" id="moreShareOptions" aria-label="More share options">
+                                                        <i class="fas fa-ellipsis-h"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Stats Card -->
+                                <div class="col-lg-5">
+                                    <div class="stats-card">
+                                        <div class="stats-header">
+                                            <h3>Your Referral Stats</h3>
+                                        </div>
+                                        
+                                        <div class="stats-body">
+                                            <div class="stat-item">
+                                                <div class="stat-icon">
+                                                    <i class="fas fa-users"></i>
+                                                </div>
+                                                <div class="stat-content">
+                                                    <div class="stat-value"><%= referralStats.totalReferrals %></div>
+                                                    <div class="stat-label">Total Referrals</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="stat-item">
+                                                <div class="stat-icon">
+                                                    <i class="fas fa-wallet"></i>
+                                                </div>
+                                                <div class="stat-content">
+                                                    <div class="stat-value">₹<%= referralStats.totalEarned %></div>
+                                                    <div class="stat-label">Total Earned</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="stat-item">
+                                                <div class="stat-icon">
+                                                    <i class="fas fa-clock"></i>
+                                                </div>
+                                                <div class="stat-content">
+                                                    <div class="stat-value"><%= referralStats.pendingReferrals || 0 %></div>
+                                                    <div class="stat-label">Pending Referrals</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="stats-footer">
+                                            <a href="/referrals/history" class="view-history-btn">
+                                                <span>View Referral History</span>
+                                                <i class="fas fa-arrow-right"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- How It Works -->
+                                <div class="col-12">
+                                    <div class="how-it-works-card">
+                                        <div class="card-header">
+                                            <h3>How It Works</h3>
+                                        </div>
+                                        
+                                        <div class="steps-container">
+                                            <div class="step">
+                                                <div class="step-icon">
+                                                    <i class="fas fa-share-alt"></i>
+                                                </div>
+                                                <div class="step-content">
+                                                    <h4>Share Your Code</h4>
+                                                    <p>Share your unique referral code with friends and family through social media, email, or messaging apps.</p>
+                                                </div>
+                                                <div class="step-number">1</div>
+                                            </div>
+                                            
+                                            <div class="step">
+                                                <div class="step-icon">
+                                                    <i class="fas fa-user-plus"></i>
+                                                </div>
+                                                <div class="step-content">
+                                                    <h4>Friend Signs Up</h4>
+                                                    <p>When your friend creates an account using your referral code, they get ₹100 in their wallet immediately.</p>
+                                                </div>
+                                                <div class="step-number">2</div>
+                                            </div>
+                                            
+                                            <div class="step">
+                                                <div class="step-icon">
+                                                    <i class="fas fa-gift"></i>
+                                                </div>
+                                                <div class="step-content">
+                                                    <h4>You Get Rewarded</h4>
+                                                    <p>You'll receive ₹200 in your wallet for each successful referral once they complete their first purchase.</p>
+                                                </div>
+                                                <div class="step-number">3</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Recent Referrals -->
+                                <div class="col-12">
+                                    <div class="recent-referrals-card">
+                                        <div class="card-header">
+                                            <h3>Recent Referrals</h3>
+                                        </div>
+                                        
+                                        <% if (referralStats.recentReferrals && referralStats.recentReferrals.length > 0) { %>
+                                            <div class="referrals-list">
+                                                <% referralStats.recentReferrals.forEach(referral => { %>
+                                                    <div class="referral-item">
+                                                        <div class="referral-user">
+                                                            <div class="user-avatar">
+                                                                <% if (referral.avatar) { %>
+                                                                    <img src="<%= referral.avatar %>" alt="<%= referral.name %>">
+                                                                <% } else { %>
+                                                                    <div class="avatar-placeholder">
+                                                                        <%= referral.name.charAt(0).toUpperCase() %>
+                                                                    </div>
+                                                                <% } %>
+                                                            </div>
+                                                            <div class="user-info">
+                                                                <div class="user-name"><%= referral.name %></div>
+                                                                <div class="referral-date">
+                                                                    <i class="far fa-calendar-alt"></i>
+                                                                    <%= new Date(referral.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="referral-status <%= referral.status.toLowerCase() %>">
+                                                            <%= referral.status %>
+                                                        </div>
+                                                        <div class="referral-reward">
+                                                            <% if (referral.status === 'Completed') { %>
+                                                                <span class="reward-amount">+₹200</span>
+                                                            <% } else { %>
+                                                                <span class="reward-pending">Pending</span>
+                                                            <% } %>
+                                                        </div>
+                                                    </div>
+                                                <% }); %>
+                                            </div>
+                                        <% } else { %>
+                                            <div class="empty-referrals">
+                                                <div class="empty-icon">
+                                                    <i class="fas fa-users"></i>
+                                                </div>
+                                                <h4>No Referrals Yet</h4>
+                                                <p>Share your referral code to start earning rewards!</p>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Share Modal -->
+    <div class="share-modal" id="shareModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4>Share Your Referral Code</h4>
+                <button class="close-btn" id="closeShareModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="share-options">
+                    <button class="share-option" onclick="shareOnWhatsApp()">
+                        <div class="option-icon whatsapp">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <div class="option-name">WhatsApp</div>
+                    </button>
+                    <button class="share-option" onclick="shareOnFacebook()">
+                        <div class="option-icon facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </div>
+                        <div class="option-name">Facebook</div>
+                    </button>
+                    <button class="share-option" onclick="shareOnTwitter()">
+                        <div class="option-icon twitter">
+                            <i class="fab fa-twitter"></i>
+                        </div>
+                        <div class="option-name">Twitter</div>
+                    </button>
+                    <button class="share-option" onclick="shareOnEmail()">
+                        <div class="option-icon email">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="option-name">Email</div>
+                    </button>
+                    <button class="share-option" onclick="shareOnTelegram()">
+                        <div class="option-icon telegram">
+                            <i class="fab fa-telegram-plane"></i>
+                        </div>
+                        <div class="option-name">Telegram</div>
+                    </button>
+                    <button class="share-option" onclick="shareOnLinkedIn()">
+                        <div class="option-icon linkedin">
+                            <i class="fab fa-linkedin-in"></i>
+                        </div>
+                        <div class="option-name">LinkedIn</div>
+                    </button>
+                </div>
+                
+                <div class="custom-message">
+                    <h5>Customize Your Message</h5>
+                    <textarea id="customMessage">Join Elite Wear using my referral code and get ₹100 in your wallet! <%= user.referralCode %></textarea>
+                    <button class="copy-message-btn" onclick="copyCustomMessage()">
+                        <i class="fas fa-copy"></i> Copy Message
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container">
+        <div id="toast" class="toast">
+            <div class="toast-content">
+                <i class="fas fa-check-circle toast-icon"></i>
+                <div class="toast-message"></div>
+            </div>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+
     <%- include("../partials/user/footer") %>
 
     <script>
-        function copyReferralCode() {
-            const referralCode = "<%= user.referralCode %>";
-            navigator.clipboard.writeText(referralCode).then(() => {
-                const tooltip = document.getElementById("copyTooltip");
-                tooltip.innerHTML = "Copied!";
-                tooltip.style.visibility = "visible";
-                tooltip.style.opacity = "1";
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize toast
+            const toast = document.getElementById('toast');
+            const toastMessage = document.querySelector('.toast-message');
+            const toastProgress = document.querySelector('.toast-progress');
+            
+            // Show toast notification
+            window.showToast = function(message, type = 'success') {
+                // Set message
+                toastMessage.textContent = message;
                 
+                // Set icon based on type
+                const toastIcon = document.querySelector('.toast-icon');
+                if (type === 'success') {
+                    toastIcon.className = 'fas fa-check-circle toast-icon success';
+                } else if (type === 'error') {
+                    toastIcon.className = 'fas fa-exclamation-circle toast-icon error';
+                } else if (type === 'info') {
+                    toastIcon.className = 'fas fa-info-circle toast-icon info';
+                }
+                
+                // Show toast
+                toast.classList.add('show');
+                
+                // Start progress bar
+                toastProgress.style.width = '100%';
+                toastProgress.style.transition = 'width 3s linear';
+                toastProgress.style.width = '0%';
+                
+                // Hide toast after animation
                 setTimeout(() => {
-                    tooltip.style.visibility = "hidden";
-                    tooltip.style.opacity = "0";
-                    tooltip.innerHTML = "Copy to clipboard";
-                }, 2000);
+                    toast.classList.remove('show');
+                    // Reset progress bar
+                    setTimeout(() => {
+                        toastProgress.style.transition = 'none';
+                        toastProgress.style.width = '100%';
+                    }, 300);
+                }, 3000);
+            };
+            
+            // Copy referral code
+            window.copyReferralCode = function() {
+                const referralCode = "<%= user.referralCode %>";
+                navigator.clipboard.writeText(referralCode).then(() => {
+                    // Add animation to the referral code
+                    const codeElement = document.getElementById('referralCode');
+                    codeElement.classList.add('copied');
+                    
+                    // Show toast notification
+                    showToast('Referral code copied to clipboard!', 'success');
+                    
+                    // Reset animation after delay
+                    setTimeout(() => {
+                        codeElement.classList.remove('copied');
+                    }, 1500);
+                }).catch(err => {
+                    showToast('Failed to copy code. Please try again.', 'error');
+                });
+            };
+            
+            // Copy referral link
+            window.copyReferralLink = function() {
+                const referralLink = document.getElementById('referralLink').value;
+                navigator.clipboard.writeText(referralLink).then(() => {
+                    // Change button appearance
+                    const button = document.querySelector('.copy-link-btn');
+                    const buttonText = button.querySelector('span');
+                    const buttonIcon = button.querySelector('i');
+                    
+                    button.classList.add('copied');
+                    buttonText.textContent = 'Copied!';
+                    buttonIcon.className = 'fas fa-check';
+                    
+                    // Show toast notification
+                    showToast('Referral link copied to clipboard!', 'success');
+                    
+                    // Reset button after delay
+                    setTimeout(() => {
+                        button.classList.remove('copied');
+                        buttonText.textContent = 'Copy Link';
+                        buttonIcon.className = 'fas fa-copy';
+                    }, 2000);
+                }).catch(err => {
+                    showToast('Failed to copy link. Please try again.', 'error');
+                });
+            };
+            
+            // Share on WhatsApp
+            window.shareOnWhatsApp = function() {
+                const referralLink = document.getElementById('referralLink').value;
+                const message = encodeURIComponent(`Join Elite Wear using my referral code and get ₹100 in your wallet! ${referralLink}`);
+                window.open(`https://wa.me/?text=${message}`, '_blank');
+                showToast('Opening WhatsApp...', 'info');
+            };
+            
+            // Share on Facebook
+            window.shareOnFacebook = function() {
+                const referralLink = document.getElementById('referralLink').value;
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`, '_blank');
+                showToast('Opening Facebook...', 'info');
+            };
+            
+            // Share on Twitter
+            window.shareOnTwitter = function() {
+                const referralLink = document.getElementById('referralLink').value;
+                const message = encodeURIComponent(`Join Elite Wear using my referral code and get ₹100 in your wallet! ${referralLink}`);
+                window.open(`https://twitter.com/intent/tweet?text=${message}`, '_blank');
+                showToast('Opening Twitter...', 'info');
+            };
+            
+            // Share on Email
+            window.shareOnEmail = function() {
+                const referralLink = document.getElementById('referralLink').value;
+                const subject = encodeURIComponent("Join Elite Wear with my referral code");
+                const body = encodeURIComponent(`Hey there!\n\nI thought you might like Elite Wear. Sign up using my referral code and get ₹100 in your wallet!\n\n${referralLink}\n\nEnjoy shopping!`);
+                window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                showToast('Opening email client...', 'info');
+            };
+            
+            // Share on Telegram
+            window.shareOnTelegram = function() {
+                const referralLink = document.getElementById('referralLink').value;
+                const message = encodeURIComponent(`Join Elite Wear using my referral code and get ₹100 in your wallet! ${referralLink}`);
+                window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=${message}`, '_blank');
+                showToast('Opening Telegram...', 'info');
+            };
+            
+            // Share on LinkedIn
+            window.shareOnLinkedIn = function() {
+                const referralLink = document.getElementById('referralLink').value;
+                window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(referralLink)}`, '_blank');
+                showToast('Opening LinkedIn...', 'info');
+            };
+            
+            // Copy custom message
+            window.copyCustomMessage = function() {
+                const customMessage = document.getElementById('customMessage').value;
+                navigator.clipboard.writeText(customMessage).then(() => {
+                    // Change button appearance
+                    const button = document.querySelector('.copy-message-btn');
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    button.classList.add('copied');
+                    
+                    // Show toast notification
+                    showToast('Custom message copied to clipboard!', 'success');
+                    
+                    // Reset button after delay
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.classList.remove('copied');
+                    }, 2000);
+                }).catch(err => {
+                    showToast('Failed to copy message. Please try again.', 'error');
+                });
+            };
+            
+            // Share modal functionality
+            const shareModal = document.getElementById('shareModal');
+            const moreShareOptions = document.getElementById('moreShareOptions');
+            const closeShareModal = document.getElementById('closeShareModal');
+            
+            moreShareOptions.addEventListener('click', function() {
+                shareModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
             });
-        }
-        
-        function copyReferralLink() {
-            const referralLink = document.getElementById("referralLink").value;
-            navigator.clipboard.writeText(referralLink).then(() => {
-                alert("Referral link copied to clipboard!");
+            
+            closeShareModal.addEventListener('click', function() {
+                shareModal.classList.remove('show');
+                document.body.style.overflow = 'auto';
             });
-        }
-        
-        function shareOnWhatsApp() {
-            const referralLink = document.getElementById("referralLink").value;
-            const message = encodeURIComponent(`Join Elite Wear using my referral code and get ₹100 in your wallet! ${referralLink}`);
-            window.open(`https://wa.me/?text=${message}`, '_blank');
-        }
-        
-        function shareOnFacebook() {
-            const referralLink = document.getElementById("referralLink").value;
-            window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`, '_blank');
-        }
-        
-        function shareOnEmail() {
-            const referralLink = document.getElementById("referralLink").value;
-            const subject = encodeURIComponent("Join Elite Wear with my referral code");
-            const body = encodeURIComponent(`Hey there!\n\nI thought you might like Elite Wear. Sign up using my referral code and get ₹100 in your wallet!\n\n${referralLink}\n\nEnjoy shopping!`);
-            window.location.href = `mailto:?subject=${subject}&body=${body}`;
-        }
+            
+            // Close modal when clicking outside
+            shareModal.addEventListener('click', function(event) {
+                if (event.target === shareModal) {
+                    shareModal.classList.remove('show');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+            
+            // Add animation classes on page load
+            const referralCard = document.querySelector('.referral-card');
+            const statsCard = document.querySelector('.stats-card');
+            const howItWorksCard = document.querySelector('.how-it-works-card');
+            const recentReferralsCard = document.querySelector('.recent-referrals-card');
+            const steps = document.querySelectorAll('.step');
+            
+            if (referralCard) {
+                referralCard.classList.add('fade-in');
+            }
+            
+            if (statsCard) {
+                statsCard.style.animationDelay = '0.2s';
+                statsCard.classList.add('fade-in');
+            }
+            
+            if (howItWorksCard) {
+                howItWorksCard.style.animationDelay = '0.3s';
+                howItWorksCard.classList.add('fade-in');
+            }
+            
+            if (recentReferralsCard) {
+                recentReferralsCard.style.animationDelay = '0.4s';
+                recentReferralsCard.classList.add('fade-in');
+            }
+            
+            steps.forEach((step, index) => {
+                step.style.animationDelay = `${0.5 + (index * 0.1)}s`;
+                step.classList.add('slide-in');
+            });
+        });
     </script>
 </body>
 </html>

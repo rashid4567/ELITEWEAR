@@ -38,10 +38,17 @@ router.get("/logout", checkBlockedStatus, userControllers.logout);
 router.get("/referral", UserAuth, referralController.loadReferralPage);
 router.get("/referralSpace", referralController.loadReferralSpace);
 router.post("/validate-referral-code", referralController.validateReferralCode);
-router.post("/process-signup-referral", referralController.processSignupReferral);
+router.post(
+  "/process-signup-referral",
+  referralController.processSignupReferral
+);
 router.post("/apply-referral", UserAuth, referralController.applyReferralCode);
 router.get("/referral-stats", UserAuth, referralController.getReferralStats);
-router.get("/referral-history", UserAuth, referralController.getReferralHistory);
+router.get(
+  "/referral-history",
+  UserAuth,
+  referralController.getReferralHistory
+);
 // Password reset routes
 router.get("/forgot-password", profileController.forgotPassword);
 router.post("/forgot-email-id", profileController.forgotemailValidations);
@@ -176,7 +183,6 @@ router.get("/order-details/:id", UserAuth, orderController.getOrderDetails);
 router.get("/invoice/:id", UserAuth, orderController.downloadInvoice);
 router.get("/orders/track/:id", UserAuth, orderController.trackOrder);
 router.post("/cancel-order/:id", UserAuth, orderController.cancelOrder);
-router.post("/complete-payment/:id", UserAuth, orderController.completePayment)
 router.post(
   "/cancel-order-item/:itemId",
   UserAuth,
@@ -189,7 +195,7 @@ router.post(
   orderController.returnOrderItem
 );
 
-// Keep the original routes for backward compatibility
+
 router.post(
   "/orders/item/:orderItemId/cancel",
   UserAuth,
@@ -208,13 +214,40 @@ router.post(
   razorpayController.createRazorpayOrder
 );
 router.post("/verify-payment", UserAuth, razorpayController.verifyPayment);
+router.post(
+  "/retry-payment/:orderId",
+  UserAuth,
+  razorpayController.retryRazorpayPayment
+);
+
+
+router.post(
+  "/handle-payment-failure/:id",
+  UserAuth,
+  orderController.handlePaymentFailure
+);
+router.get(
+  "/payment-retry-options/:id",
+  UserAuth,
+  orderController.getPaymentRetryOptions
+);
+router.post(
+  "/payment-retry-init/:id",
+  UserAuth,
+  orderController.initPaymentRetry
+);
+router.post(
+  "/payment-status-update/:id",
+  UserAuth,
+  orderController.updatePaymentStatus
+);
 
 // Wallet routes
 router.get("/wallet", UserAuth, walletController.getwallet);
 router.post("/wallet/credit", UserAuth, walletController.creditWallet);
 router.post("/wallet/debit", UserAuth, walletController.debitWallet);
 
-//coupon Route
+// Enhanced Coupon Routes
 router.get("/allcoupons", UserAuth, CouponController.allCoupons);
 router.get("/coupons", UserAuth, CouponController.getAvailableCoupons);
 router.post("/apply-coupon", UserAuth, CouponController.applyCoupon);

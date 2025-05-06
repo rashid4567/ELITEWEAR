@@ -5,19 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Elite Wear - My Wishlist</title>
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
     <link
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/userStyle/wishlist.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/userStyle/whislist.css" />
     <link rel="stylesheet" href="/userStyle/header.css">
     <link rel="stylesheet" href="/userStyle/footer.css">
     <link rel="stylesheet" href="/userStyle/sidebarpartials.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
   <body>
     <script>
@@ -39,7 +38,10 @@
           <div class="wishlist-container">
             <div class="wishlist-header-wrapper">
               <div class="wishlist-header">
-                <h2 class="fw-semibold">My Wishlist <span class="wishlist-count">(<%= products.length %>)</span></h2>
+                <div class="wishlist-title">
+                  <h2 class="fw-semibold">My Wishlist</h2>
+                  <div class="wishlist-count-badge"><%= products.length %> items</div>
+                </div>
                 <div class="wishlist-actions">
                   <% if(products.length > 0) { %>
                     <button class="btn empty-wishlist-btn" id="empty-wishlist-btn">
@@ -51,13 +53,16 @@
             </div>
 
             <% if(products.length > 0) { %>
-              <div class="row g-4 wishlist-grid" id="wishlist-items">
+              <div class="row g-3 wishlist-grid" id="wishlist-items">
                 <% for(let product of products) { %>
-                  <div class="col-lg-6 col-md-12 wishlist-item" data-product-id="<%= product._id %>">
+                  <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 wishlist-item" data-product-id="<%= product._id %>">
                     <div class="product-card">
-                      <div class="product-discount-tag">
+                      <div class="product-badges">
                         <% if (product.offer) { %>
-                          <span><%= product.offer %>% OFF</span>
+                          <span class="badge-discount"><%= product.offer %>% OFF</span>
+                        <% } %>
+                        <% if (product.isNew) { %>
+                          <span class="badge-new">NEW</span>
                         <% } %>
                       </div>
                       <div class="product-image">
@@ -66,17 +71,19 @@
                           alt="<%= product.name || 'Product Image' %>"
                           class="img-fluid"
                         />
+                        <button class="btn-remove-wishlist" data-product-id="<%= product._id %>">
+                          <i class="fas fa-times"></i>
+                        </button>
                       </div>
                       <div class="product-info">
-                        <h3 class="product-title">
+                        <div class="product-brand"><%= product.brand || 'Elite Wear' %></div>
+                        <h3 class="product-title" title="<%= product.name || 'Unnamed Product' %>">
                           <%= product.name || 'Unnamed Product' %>
                         </h3>
                         <div class="product-price">
                           <span class="current-price">₹<%= product.variants[0].salePrice?.toFixed(0) || 'N/A' %></span>
-                          <% if (product.variants && product.variants.length > 0 && product.variants[0].size) { %>
-                            <span class="product-size">₹<%= product.variants[0].size || 'N/A' %></span>
-                          <% } else { %>
-                            <span class="product-size">N/A</span>
+                          <% if (product.variants[0].originalPrice && product.variants[0].originalPrice > product.variants[0].salePrice) { %>
+                            <span class="original-price">₹<%= product.variants[0].originalPrice.toFixed(0) %></span>
                           <% } %>
                         </div>
                         
@@ -92,17 +99,12 @@
                         <% } %>
                         
                         <div class="product-actions">
-                          <a href="/productdetails/<%= product._id %>" class="btn view-product-btn">
-                            View Product
+                          <button class="btn add-to-cart-btn" data-product-id="<%= product._id %>">
+                            Add To Cart
+                          </button>
+                          <a href="/productdetails/<%= product._id %>" class="btn view-details-btn">
+                            <i class="fas fa-eye"></i>
                           </a>
-                          <div class="action-buttons">
-                            <button class="btn add-to-cart-btn" data-product-id="<%= product._id %>">
-                              Add To Cart
-                            </button>
-                            <button class="btn remove-btn" data-product-id="<%= product._id %>">
-                              Remove
-                            </button>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -111,15 +113,17 @@
               </div>
             <% } else { %>
               <div id="empty-wishlist-message" class="empty-wishlist-container">
-                <div class="empty-wishlist-icon">
-                  <i class="far fa-heart"></i>
-                </div>
-                <h3>Your wishlist is empty</h3>
-                <p>Items added to your wishlist will be saved here</p>
-                <div class="mt-4">
-                  <a href="/allproduct" class="btn continue-shopping-btn">
-                    <i class="fas fa-arrow-left me-2"></i>Continue Shopping
-                  </a>
+                <div class="empty-wishlist-content">
+                  <div class="empty-wishlist-icon">
+                    <i class="far fa-heart"></i>
+                  </div>
+                  <h3>Your wishlist is empty</h3>
+                  <p>Save items you love and find them all in one place</p>
+                  <div class="mt-4">
+                    <a href="/allproduct" class="btn continue-shopping-btn">
+                      <i class="fas fa-arrow-left me-2"></i>Explore Products
+                    </a>
+                  </div>
                 </div>
               </div>
             <% } %>
@@ -172,7 +176,9 @@
           </div>
           <div class="modal-body">
             <div class="text-center mb-3">
-              <i class="fas fa-exclamation-triangle text-warning modal-icon"></i>
+              <div class="modal-icon-wrapper">
+                <i class="fas fa-trash-alt"></i>
+              </div>
             </div>
             <p class="text-center">Are you sure you want to remove all items from your wishlist?</p>
             <p class="text-center text-muted small">This action cannot be undone</p>
@@ -195,7 +201,7 @@
 
     <%- include("../partials/user/footer") %>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const wishlistToast = new bootstrap.Toast(
@@ -217,8 +223,8 @@
         }
 
         function updateWishlistUI(wishlistCount, productId = null) {
-          const wishlistHeader = document.querySelector(".wishlist-count");
-          wishlistHeader.textContent = `(${wishlistCount})`;
+          const wishlistHeader = document.querySelector(".wishlist-count-badge");
+          wishlistHeader.textContent = `${wishlistCount} items`;
 
           if (productId) {
             const productCard = document.querySelector(
@@ -250,15 +256,17 @@
             if (wishlistContainer) {
               wishlistContainer.outerHTML = `
                 <div id="empty-wishlist-message" class="empty-wishlist-container">
-                  <div class="empty-wishlist-icon">
-                    <i class="far fa-heart"></i>
-                  </div>
-                  <h3>Your wishlist is empty</h3>
-                  <p>Items added to your wishlist will be saved here</p>
-                  <div class="mt-4">
-                    <a href="/allproduct" class="btn continue-shopping-btn">
-                      <i class="fas fa-arrow-left me-2"></i>Continue Shopping
-                    </a>
+                  <div class="empty-wishlist-content">
+                    <div class="empty-wishlist-icon">
+                      <i class="far fa-heart"></i>
+                    </div>
+                    <h3>Your wishlist is empty</h3>
+                    <p>Save items you love and find them all in one place</p>
+                    <div class="mt-4">
+                      <a href="/allproduct" class="btn continue-shopping-btn">
+                        <i class="fas fa-arrow-left me-2"></i>Explore Products
+                      </a>
+                    </div>
                   </div>
                 </div>
               `;
@@ -285,7 +293,7 @@
 
             // Add loading state
             const originalText = this.innerHTML;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+            this.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div>';
             this.disabled = true;
 
             try {
@@ -315,7 +323,7 @@
         });
 
         // Remove from wishlist functionality
-        document.querySelectorAll(".remove-btn").forEach((button) => {
+        document.querySelectorAll(".btn-remove-wishlist").forEach((button) => {
           button.addEventListener("click", async function () {
             const productId = this.getAttribute("data-product-id");
             if (!productId) {
@@ -325,7 +333,7 @@
 
             // Add loading state
             const originalText = this.innerHTML;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Removing...';
+            this.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div>';
             this.disabled = true;
 
             try {
@@ -368,7 +376,7 @@
             // Add loading state
             const button = this;
             const originalText = button.innerHTML;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Clearing...';
+            button.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div> Clearing...';
             button.disabled = true;
 
             try {

@@ -1,402 +1,608 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Profile Dashboard</title>
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="/userStyle/profile.css">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile Dashboard</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    /* Global Styles */
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+    }
 
-</head>
-<body>
-=======
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="/userStyle/profile.css" />
-    <link rel="stylesheet" href="/userStyle/footer.css">
-    <link rel="stylesheet" href="/userStyle/header.css">
-  </head>
-  <body>
->>>>>>> rezzarpay
-    <%- include("../partials/user/header") %>
-    <div class="container-fluid p-0">
-      <div class="row g-0">
-        <button class="sidebar-toggle d-md-none" id="sidebarToggle">
-          <i class="fas fa-bars"></i>
-        </button>
+    .container-fluid {
+      padding-left: 0;
+      padding-right: 0;
+    }
 
-<<<<<<< HEAD
-            <%- include("../partials/user/profileSidebar") %>
-    
-            <div class="col-md-9 col-lg-10 main-content">
-                <h5 class="welcome-text">Welcome <%= fullname || 'Unknown User' %>!</h5>
-                
-         
-                <div class="profile-card">
-                    <form>
-                        <div class="mb-3">
-                            <label for="fullName" class="form-label">Full name</label>
-                            <input type="text" class="form-control" id="fullName" value="<%= fullname %>" disabled>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" value="<%= email %>" disabled>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="phone" class="form-label">Phone</label>
-                            <input type="tel" class="form-control" id="phone" value="<%= mobile || 'User doest have a mobile number' %>" disabled>
-                        </div>
-                      
-                        <div class="text-end">
-                            <a type="button" href="/getprofileEdit" class="edit-btn" id="editBtn">EDIT</a>
-                        </div>
-                    </form>
-                </div>
-                <div class="message-btn-container">
-                    <button class="message-btn">Your Message</button>
-                </div>
-            </div>
-=======
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="/userStyle/header.css">
-    <link rel="stylesheet" href="/userStyle/footer.css">
-    <style>
-      body {
-        font-family: 'Inter', 'Segoe UI', sans-serif;
-        background-color: #f8f9fa;
+    /* Sidebar Styles */
+    .sidebar {
+      width: 280px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+      height: 100%;
+      transition: all 0.3s;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+    }
+
+    .brand-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #000;
+    }
+
+    .brand-name .accent {
+      color: #000;
+      font-weight: 800;
+    }
+
+    .profile-info {
+      text-align: center;
+      padding: 25px 20px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      position: relative;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.02), transparent);
+    }
+
+    .profile-info::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 30%;
+      right: 30%;
+      height: 2px;
+      background-color: #000;
+      border-radius: 1px;
+    }
+
+    .profile-avatar {
+      margin-bottom: 15px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .avatar-circle {
+      width: 80px;
+      height: 80px;
+      background-color: #000;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .avatar-circle::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 40%;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), transparent);
+      border-radius: inherit;
+    }
+
+    .avatar-circle:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .initials {
+      color: white;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .profile-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #222;
+      letter-spacing: 0.3px;
+      margin-top: 5px;
+    }
+
+    .sidebar-menu {
+      padding: 15px;
+      overflow-y: auto;
+      max-height: calc(100vh - 220px);
+    }
+
+    .menu-section {
+      margin-bottom: 15px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .menu-section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: #777;
+      margin-bottom: 10px;
+      padding-left: 10px;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 5px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .menu-item:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+      transform: translateX(3px);
+    }
+
+    .menu-item.active {
+      background-color: #000;
+      color: white;
+      font-weight: 500;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .menu-item::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 3px;
+      background-color: #000;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .menu-item:hover::before {
+      opacity: 0.5;
+    }
+
+    .menu-item.active::before {
+      opacity: 1;
+    }
+
+    .icon {
+      margin-right: 12px;
+      width: 22px;
+      text-align: center;
+      font-size: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.2s ease;
+    }
+
+    .menu-item:hover .icon {
+      transform: translateX(2px);
+    }
+
+    .item-text {
+      letter-spacing: 0.2px;
+      font-size: 0.95rem;
+      transition: transform 0.2s ease;
+      color: inherit;
+      display: block;
+      width: 100%;
+    }
+
+    .menu-item:hover .item-text {
+      transform: translateX(2px);
+    }
+
+    .item-link {
+      text-decoration: none;
+      color: #000;
+      display: block;
+    }
+
+    .menu-item.active .item-text {
+      color: white;
+    }
+
+    .menu-divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.1), transparent);
+      margin: 15px 0;
+    }
+
+    .logout-item {
+      margin-top: 10px;
+      background-color: rgba(0, 0, 0, 0.03);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .logout-item:hover {
+      background-color: rgba(0, 0, 0, 0.06);
+    }
+
+    .logout-item .icon {
+      color: #d32f2f;
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      background-color: rgba(255, 255, 255, 0.4);
+      pointer-events: none;
+      animation: rippleEffect 0.6s linear;
+      z-index: 1;
+    }
+
+    @keyframes rippleEffect {
+      to {
+        transform: scale(2);
+        opacity: 0;
       }
+    }
 
-      .container-fluid {
-        padding-left: 0;
-        padding-right: 0;
-      }
+    /* Main Content Styles */
+    .main-content {
+      padding: 40px;
+      transition: all 0.3s;
+    }
 
-      .row {
-        margin-left: 0;
-        margin-right: 0;
-      }
+    .welcome-text {
+      margin-bottom: 30px;
+      font-weight: 400;
+      color: #212529;
+      font-size: 1.25rem;
+    }
 
+    .profile-card {
+      background-color: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+      margin-bottom: 40px;
+    }
+
+    .form-label {
+      font-size: 14px;
+      color: #6c757d;
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+    }
+
+    .form-control:focus {
+      border-color: #ced4da;
+      box-shadow: none;
+    }
+
+    .edit-btn {
+      background-color: #000;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 30px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .edit-btn:hover {
+      background-color: #212529;
+      color: white;
+      text-decoration: none;
+    }
+
+    .message-btn-container {
+      display: flex;
+      justify-content: center;
+    }
+
+    .message-btn {
+      background-color: #000;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 0;
+      width: 100%;
+      max-width: 300px;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .message-btn:hover {
+      background-color: #212529;
+    }
+
+    /* Sidebar Toggle Button */
+    .sidebar-toggle {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1001;
+      background-color: #000;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: none;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 992px) {
       .sidebar {
-        background-color: white;
-        min-height: 100vh;
-        border-radius: 0 20px 20px 0;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
-        padding: 30px 10px;
-        transition: all 0.3s;
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto;
       }
+    }
 
-      .profile-avatar {
-        width: 60px;
-        height: 60px;
-        background-color: #000;
-        border-radius: 50%;
-        margin: 15px auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: bold;
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        z-index: 1000;
+        border-radius: 0;
+        height: 100%;
+        overflow-y: auto;
+        margin: 0;
+      }
+      
+      .sidebar.show {
+        left: 0;
+      }
+      
+      .sidebar-toggle {
+        display: block;
+      }
+      
+      .main-content {
+        padding: 20px;
+        margin-top: 60px;
+        width: 100%;
+      }
+      
+      .sidebar-menu {
+        max-height: none;
+        overflow-y: visible;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .sidebar-header {
+        padding: 15px;
+      }
+      
+      .profile-info {
+        padding: 20px 15px;
+      }
+      
+      .avatar-circle {
+        width: 70px;
+        height: 70px;
+      }
+      
+      .initials {
         font-size: 24px;
       }
-
-      .user-name {
-        text-align: center;
-        margin-bottom: 30px;
-        font-weight: 500;
+      
+      .menu-item {
+        padding: 10px 12px;
       }
-
-      .nav-link {
-        color: #212529;
-        padding: 12px 20px;
-        margin: 4px 0;
-        border-radius: 8px;
-        transition: background-color 0.2s;
-      }
-
-      .nav-link:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-      }
-
-      .nav-link.active {
-        background-color: rgba(0, 0, 0, 0.05);
-        font-weight: 500;
-      }
-
-      .nav-link i {
-        width: 20px;
-        margin-right: 12px;
-      }
-
+      
       .main-content {
-        padding: 40px;
+        padding: 15px;
       }
-
-      .welcome-text {
-        margin-bottom: 30px;
-        font-weight: 400;
-        color: #212529;
-      }
-
+      
       .profile-card {
-        background-color: white;
-        border-radius: 20px;
-        padding: 30px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
-        margin-bottom: 40px;
+        padding: 15px;
       }
-
-      .form-label {
-        font-size: 14px;
-        color: #6c757d;
-        margin-bottom: 8px;
-      }
-
-      .form-control {
-        background-color: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 12px 15px;
-        margin-bottom: 20px;
-      }
-
-      .form-control:focus {
-        border-color: #ced4da;
-        box-shadow: none;
-      }
-
+      
       .edit-btn {
-        background-color: #000;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 10px 30px;
-        font-size: 14px;
-        font-weight: 500;
-        transition: all 0.2s;
-        text-decoration: none;
-        display: inline-block;
+        padding: 8px 20px;
+        font-size: 13px;
       }
-
-      .edit-btn:hover {
-        background-color: #212529;
-        color: white;
-        text-decoration: none;
-      }
-
-      .message-btn-container {
-        display: flex;
-        justify-content: center;
-      }
-
+      
       .message-btn {
-        background-color: #000;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 12px 0;
-        width: 100%;
-        max-width: 300px;
-        font-size: 16px;
-        font-weight: 500;
-        transition: all 0.2s;
+        padding: 10px 0;
+        font-size: 14px;
       }
-
-      .message-btn:hover {
-        background-color: #212529;
-      }
-
-      .sidebar-toggle {
-        position: fixed;
-        top: 15px;
-        left: 15px;
-        z-index: 1001;
-        background-color: #000;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 8px 12px;
-        display: none;
-      }
-
-      /* Responsive styles */
-      @media (max-width: 767.98px) {
-        .sidebar {
-          position: fixed;
-          top: 0;
-          left: -280px;
-          width: 280px;
-          z-index: 1000;
-          border-radius: 0;
-          height: 100%;
-          overflow-y: auto;
-        }
-        
-        .sidebar.show {
-          left: 0;
-        }
-        
-        .sidebar-toggle {
-          display: block;
-        }
-        
-        .main-content {
-          padding: 20px;
-          margin-top: 60px;
-          width: 100%;
-        }
-        
-        .profile-card {
-          padding: 20px;
-        }
-        
-        .welcome-text {
-          margin-top: 20px;
-          text-align: center;
-        }
-      }
-
-      @media (max-width: 575.98px) {
-        .main-content {
-          padding: 15px;
-        }
-        
-        .profile-card {
-          padding: 15px;
-        }
-        
-        .edit-btn {
-          padding: 8px 20px;
-          font-size: 13px;
-        }
-        
-        .message-btn {
-          padding: 10px 0;
-          font-size: 14px;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <%- include("../partials/user/header") %>
-    
-    <div class="container-fluid">
-      <div class="row">
-        <!-- Sidebar Toggle Button -->
-        <button class="sidebar-toggle d-md-none" id="sidebarToggle">
-          <i class="fas fa-bars"></i>
-        </button>
-
-        <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 p-0">
-          <%- include("../partials/user/profileSidebar") %>
-        </div>
-
-        <!-- Main Content -->
-=======
-        <%- include("../partials/user/profileSidebar") %>
-
->>>>>>> rezzarpay
-        <div class="col-md-9 col-lg-10 main-content">
-          <h5 class="welcome-text">
-            Welcome <%= fullname || 'Unknown User' %>!
-          </h5>
-
-          <div class="profile-card">
-            <form>
-              <div class="mb-3">
-                <label for="fullName" class="form-label">Full name</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="fullName"
-                  value="<%= fullname %>"
-                  disabled
-                />
-              </div>
-
-              <div class="mb-3">
-                <label for="email" class="form-label">Email</label>
-                <input
-                  type="email"
-                  class="form-control"
-                  id="email"
-                  value="<%= email %>"
-                  disabled
-                />
-              </div>
-
-              <div class="mb-3">
-                <label for="phone" class="form-label">Phone</label>
-                <input
-                  type="tel"
-                  class="form-control"
-                  id="phone"
-<<<<<<< HEAD
-                  value="<%= mobile || 'User does not have a mobile number' %>"
-=======
-                  value="<%= mobile || 'User doest have a mobile number' %>"
->>>>>>> rezzarpay
-                  disabled
-                />
-              </div>
-
-              <div class="text-end">
-<<<<<<< HEAD
-                <a href="/getprofileEdit" class="edit-btn" id="editBtn">EDIT</a>
-              </div>
-            </form>
+    }
+  </style>
+</head>
+<body>
+  <!-- Header would be included here -->
+  <!-- <%- include("../partials/user/header") %> -->
+  
+  <div class="container-fluid">
+    <div class="row g-0">
+      <!-- Sidebar Toggle Button -->
+      <button class="sidebar-toggle d-md-none" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      
+      <!-- Sidebar Column -->
+      <div class="col-md-3 col-lg-2 p-0">
+        <div class="sidebar">
+          <div class="sidebar-header">
+            <div class="brand">
+              <span class="brand-name">ELITE<span class="accent">WEAR</span></span>
+            </div>
           </div>
           
-          <div class="message-btn-container">
-            <button class="message-btn">Your Message</button>
-          </div>
->>>>>>> Stashed changes
-=======
-                <a
-                  type="button"
-                  href="/getprofileEdit"
-                  class="edit-btn"
-                  id="editBtn"
-                  >EDIT</a
-                >
+          <div class="profile-info">
+            <div class="profile-avatar">
+              <div class="avatar-circle">
+                <span class="initials" id="userInitial"><%= user && user.fullname ? user.fullname.charAt(0).toUpperCase() : 'U' %></span>
               </div>
-            </form>
+            </div>
+            <div class="profile-name" id="userName">
+              <%= user && user.fullname ? user.fullname : 'Unknown User' %>
+            </div>
           </div>
-          <div class="message-btn-container">
-            <button class="message-btn">Your Message</button>
+
+          <div class="sidebar-menu">
+            <div class="menu-section">
+              <h4 class="menu-section-title">Account</h4>
+              <a href="/LoadProfile" class="item-link">
+                <div class="menu-item active" data-path="/LoadProfile">
+                  <span class="icon"><i class="fas fa-user"></i></span>
+                  <span class="item-text">My Profile</span>
+                </div>
+              </a>
+
+              <a href="/address" class="item-link">
+                <div class="menu-item" data-path="/address">
+                  <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
+                  <span class="item-text">My Address</span>
+                </div>
+              </a>
+
+              <a href="/orders" class="item-link">
+                <div class="menu-item" data-path="/orders">
+                  <span class="icon"><i class="fas fa-shopping-bag"></i></span>
+                  <span class="item-text">My Orders</span>
+                </div>
+              </a>
+
+              <a href="/wishlist" class="item-link">
+                <div class="menu-item" data-path="/wishlist">
+                  <span class="icon"><i class="fas fa-heart"></i></span>
+                  <span class="item-text">My Wishlist</span>
+                </div>
+              </a>
+            </div>
+
+            <div class="menu-divider"></div>
+            
+            <div class="menu-section">
+              <h4 class="menu-section-title">Payments</h4>
+              <a href="/wallet" class="item-link">
+                <div class="menu-item" data-path="/wallet">
+                  <span class="icon"><i class="fas fa-wallet"></i></span>
+                  <span class="item-text">My Wallet</span>
+                </div>
+              </a>
+
+              <a href="/allcoupons" class="item-link">
+                <div class="menu-item" data-path="/allcoupons">
+                  <span class="icon"><i class="fas fa-tag"></i></span>
+                  <span class="item-text">My Coupons</span>
+                </div>
+              </a>
+            </div>
+
+            <div class="menu-divider"></div>
+            
+            <div class="menu-section">
+              <h4 class="menu-section-title">Settings</h4>
+              <a href="/getupdatePassword" class="item-link">
+                <div class="menu-item" data-path="/getupdatePassword">
+                  <span class="icon"><i class="fas fa-lock"></i></span>
+                  <span class="item-text">Change Password</span>
+                </div>
+              </a>
+
+              <a href="/referral" class="item-link">
+                <div class="menu-item" data-path="/referral">
+                  <span class="icon"><i class="fas fa-gift"></i></span>
+                  <span class="item-text">Referral Code</span>
+                </div>
+              </a>
+              
+              <a href="/logoutpage" class="item-link">
+                <div class="menu-item logout-item" data-path="/logoutpage">
+                  <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+                  <span class="item-text">Log out</span>
+                </div>
+              </a>
+            </div>
           </div>
->>>>>>> rezzarpay
+        </div>
+      </div>
+      
+      <!-- Main Content Column -->
+      <div class="col-md-9 col-lg-10 main-content">
+        <h5 class="welcome-text">Welcome <%= fullname || 'Unknown User' %>!</h5>
+        
+        <div class="profile-card">
+          <form>
+            <div class="mb-3">
+              <label for="fullName" class="form-label">Full name</label>
+              <input type="text" class="form-control" id="fullName" value="<%= fullname %>" disabled>
+            </div>
+            
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" value="<%= email %>" disabled>
+            </div>
+            
+            <div class="mb-3">
+              <label for="phone" class="form-label">Phone</label>
+              <input type="tel" class="form-control" id="phone" value="<%= mobile || 'User does not have a mobile number' %>" disabled>
+            </div>
+          
+            <div class="text-end">
+              <a href="/getprofileEdit" class="edit-btn" id="editBtn">EDIT</a>
+            </div>
+          </form>
+        </div>
+        
+        <div class="message-btn-container">
+          <button class="message-btn">Your Message</button>
         </div>
       </div>
     </div>
-    
-    <%- include("../partials/user/footer") %>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-</body>
-=======
-    <script>
+  </div>
+  
+  <!-- Footer would be included here -->
+  <!-- <%- include("../partials/user/footer") %> -->
+
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
       // Toggle sidebar on mobile
       document.getElementById('sidebarToggle').addEventListener('click', function() {
         document.querySelector('.sidebar').classList.toggle('show');
@@ -414,11 +620,76 @@
           sidebar.classList.remove('show');
         }
       });
-    </script>
-  </body>
->>>>>>> Stashed changes
+      
+      // Add ripple effect to menu items
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('mousedown', createRippleEffect);
+        
+        // Add click handler for active state
+        item.addEventListener('click', function() {
+          if (!this.classList.contains('active')) {
+            document.querySelectorAll('.menu-item').forEach(i => {
+              i.classList.remove('active');
+            });
+            this.classList.add('active');
+          }
+          
+          // Scale effect on click
+          this.style.transform = 'scale(0.98)';
+          setTimeout(() => {
+            this.style.transform = '';
+          }, 150);
+        });
+      });
+      
+      // Set active menu item based on current URL
+      const currentPath = window.location.pathname;
+      let activeItemFound = false;
+      
+      document.querySelectorAll('.menu-item').forEach(item => {
+        const itemPath = item.getAttribute('data-path');
+        
+        if (itemPath && (currentPath === itemPath || currentPath.includes(itemPath))) {
+          item.classList.add('active');
+          activeItemFound = true;
+        }
+      });
+      
+      // If no match found, default to profile for the dashboard
+      if (!activeItemFound && (currentPath === '/' || currentPath === '/profile')) {
+        const profileItem = document.querySelector('[data-path="/LoadProfile"]');
+        if (profileItem) {
+          profileItem.classList.add('active');
+        }
+      }
+    });
+    
+    // Ripple effect function
+    function createRippleEffect(event) {
+      // Remove any existing ripples
+      const ripples = document.querySelectorAll('.ripple');
+      ripples.forEach(ripple => ripple.remove());
+      
+      const item = event.currentTarget;
+      const rect = item.getBoundingClientRect();
+      
+      const size = Math.max(rect.width, rect.height) * 2;
+      const x = event.clientX - rect.left - (size / 2);
+      const y = event.clientY - rect.top - (size / 2);
+      
+      const ripple = document.createElement('span');
+      ripple.classList.add('ripple');
+      ripple.style.width = ripple.style.height = `${size}px`;
+      ripple.style.left = `${x}px`;
+      ripple.style.top = `${y}px`;
+      
+      item.appendChild(ripple);
+      
+      // Remove ripple after animation completes
+      setTimeout(() => {
+        ripple.remove();
+      }, 600);
+    }
+  </script>
+</body>
 </html>
-=======
-  </body>
-</html>
->>>>>>> rezzarpay

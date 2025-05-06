@@ -2,7 +2,7 @@ const User = require("../../model/userSchema");
 const Order = require("../../model/orderSchema");
 const Product = require("../../model/productScheema");
 const OrderItem = require("../../model/orderItemSchema");
-const { generatePDF, generateExcel } = require("../../utils/reportGenerator");
+const { generateSalesReport, generateExcel } = require("../../utils/reportGenerator");
 
 const loadsales = async (req, res) => {
   try {
@@ -46,6 +46,11 @@ const loadsales = async (req, res) => {
       for (const item of order.order_items) {
         if (!item.productId) continue;
 
+        // Calculate discount amount and percentage if available
+        const discount = item.discount || 0;
+        const discountPercentage = item.discount_percentage || 
+          (discount > 0 && item.price > 0 ? Math.round((discount / item.price) * 100) : 0);
+
         const saleEntry = {
           buyer: order.userId ? order.userId.fullname : "Unknown",
           productName: item.product_name,
@@ -53,7 +58,8 @@ const loadsales = async (req, res) => {
           sku: `#${item.productId._id.toString().slice(-5)}`,
           quantity: item.quantity,
           price: item.price,
-
+          discount: discount,
+          discountPercentage: discountPercentage,
           category: item.productId.categoryId
             ? item.productId.categoryId.name
             : "Uncategorized",
@@ -87,6 +93,10 @@ const loadsales = async (req, res) => {
     );
     const totalItems = salesData.reduce((sum, item) => sum + item.quantity, 0);
     const uniqueCustomers = new Set(salesData.map((item) => item.buyer)).size;
+    const totalDiscounts = salesData.reduce(
+      (sum, item) => sum + (item.discount || 0) * item.quantity,
+      0
+    );
 
     const paginatedSalesData = salesData.slice(skip, skip + limit);
 
@@ -94,6 +104,7 @@ const loadsales = async (req, res) => {
       salesData: paginatedSalesData,
       totalSales,
       totalItems,
+      totalDiscounts,
       uniqueCustomers,
       fromDate: from || startDate.toISOString().split("T")[0],
       toDate: to || endDate.toISOString().split("T")[0],
@@ -107,7 +118,6 @@ const loadsales = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 const downloadSalesPDF = async (req, res) => {
   try {
     const { from, to, search } = req.query;
@@ -181,7 +191,7 @@ const downloadSalesPDF = async (req, res) => {
     }
 
     
-    await generatePDF(salesData, res, {
+    await generateSalesReport(salesData, res, {
       fromDate: from || startDate.toISOString().split("T")[0],
       toDate: to || endDate.toISOString().split("T")[0],
       title: "Delivered Orders Sales Report",

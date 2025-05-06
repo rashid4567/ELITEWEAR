@@ -1,321 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Profile Sidebar</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-    />
-    <style>
-      body {
-        font-family: "Arial", sans-serif;
-        background-color: #f8f9fa;
-        margin: 0;
-        padding: 20px;
-        color: #333;
-      }
-
-      /* Enhanced Sidebar Styles */
-      .sidebar {
-        width: 240px;
-        background-color: white;
-        border-radius: 8px;
-        padding: 20px 15px;
-        /* Removed black border */
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        position: relative;
-        overflow: hidden;
-      }
-
-      /* Profile Section Styles */
-      .profile-info {
-        text-align: center;
-        padding-bottom: 18px;
-        border-bottom: 1px solid #e0e0e0;
-        margin-bottom: 18px;
-        position: relative;
-      }
-
-      .profile-info::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 30%;
-        right: 30%;
-        height: 2px;
-        background-color: #000;
-        border-radius: 1px;
-      }
-
-      .profile-avatar {
-        margin-bottom: 14px;
-        position: relative;
-        display: inline-block;
-      }
-
-      .avatar-circle {
-        width: 70px;
-        height: 70px;
-        background-color: #000;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 0 auto;
-        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-      }
-
-      .avatar-circle:hover {
-        transform: scale(1.05);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      }
-
-      .initials {
-        color: white;
-        font-size: 24px;
-        font-weight: bold;
-        letter-spacing: 1px;
-      }
-
-      .profile-name {
-        font-weight: 600;
-        font-size: 1.1rem;
-        margin-top: 8px;
-        color: #222;
-        letter-spacing: 0.3px;
-      }
-
-      /* Menu Styles */
-      .sidebar-menu {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-      }
-
-      .menu-item {
-        display: flex;
-        align-items: center;
-        padding: 10px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .menu-item:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-      }
-
-      .menu-item.active {
-        background-color: #000;
-        color: white;
-        font-weight: 500;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      }
-
-      .menu-item::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100%;
-        width: 3px;
-        background-color: #000;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-      }
-
-      .menu-item:hover::before {
-        opacity: 0.5;
-      }
-
-      .menu-item.active::before {
-        opacity: 1;
-      }
-
-      .icon {
-        margin-right: 12px;
-        width: 22px;
-        text-align: center;
-        font-size: 15px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: relative;
-        transition: transform 0.2s ease;
-      }
-
-      .menu-item:hover .icon {
-        transform: translateX(2px);
-      }
-
-      .item-text {
-        letter-spacing: 0.2px;
-        font-size: 14px;
-        transition: transform 0.2s ease;
-      }
-
-      .menu-item:hover .item-text {
-        transform: translateX(2px);
-      }
-
-      .count {
-        margin-left: 6px;
-        font-size: 0.8rem;
-        opacity: 0.9;
-        background-color: rgba(0, 0, 0, 0.1);
-        padding: 1px 6px;
-        border-radius: 10px;
-        transition: background-color 0.2s ease;
-      }
-
-      .menu-item.active .count {
-        background-color: rgba(255, 255, 255, 0.2);
-      }
-
-      /* Divider styles */
-      .menu-divider {
-        height: 1px;
-        background-color: #e0e0e0;
-        margin: 8px 0;
-        opacity: 0.6;
-      }
-
-      /* Responsive styles */
-      @media (max-width: 768px) {
-        .sidebar {
-          width: 100%;
-          max-width: 260px;
-          margin: 0 auto;
-        }
-      }
-      .menu-item .item-text {
-        text-decoration: none;
-        color: inherit;
-        display: inline-block;
-        width: 100%;
-      }
-    </style>
-  </head>
-  <body>
-
-    <div class="sidebar">
-      <div class="profile-info">
-        <div class="profile-avatar">
-          <div class="avatar-circle">
-            <span class="initials"
-              ><%= user && user.name && user.name.trim() !== '' ?
-              user.name.trim().charAt(0).toUpperCase() : 'U' %></span
-            >
-          </div>
-        </div>
-        <%= user && user.name && user.name.trim() !== '' ? user.name : 'Unknown User' %>!
-=======
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>User Profile Sidebar</title>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-  />
-  <link rel="stylesheet" href="/userStyle/sidebarpartials.css">
-</head>
-<body>
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <div class="brand">
-        <span class="brand-name">ELITE<span class="accent">WEAR</span></span>
->>>>>>> rezzarpay
-      </div>
-    </div>
-    
-    <div class="profile-info">
-      <div class="profile-avatar">
-        <div class="avatar-circle">
-          <span class="initials"><%= user && user.fullname && user.fullname.trim() !== '' ?
-            user.fullname.trim().charAt(0).toUpperCase() : 'U' %></span>
-        </div>
-      </div>
-      <div class="profile-name">
-        <%= user && user.fullname && user.fullname.trim() !== '' ? user.fullname : 'Unknown User' %>
-      </div>
-    </div>
-
-    <div class="sidebar-menu">
-      <div class="menu-section">
-        <h4 class="menu-section-title">Account</h4>
-        <div class="menu-item active" data-path="/LoadProfile">
-          <span class="icon"><i class="fas fa-user"></i></span>
-          <a href="/LoadProfile" class="item-text">My Profile</a>
-        </div>
-
-        <div class="menu-item" data-path="/address">
-          <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
-          <a href="/address" class="item-text">My Address</a>
-        </div>
-
-        <div class="menu-item" data-path="/orders">
-          <span class="icon"><i class="fas fa-shopping-bag"></i></span>
-          <a href="/orders" class="item-text">My Orders</a>
-        </div>
-
-        <div class="menu-item" data-path="/wishlist">
-          <span class="icon"><i class="fas fa-heart"></i></span>
-          <a href="/wishlist" class="item-text">My Wishlist</a>
-        </div>
-      </div>
-
-      <div class="menu-divider"></div>
-      
-      <div class="menu-section">
-        <h4 class="menu-section-title">Payments</h4>
-        <div class="menu-item" data-path="/wallet">
-          <span class="icon"><i class="fas fa-wallet"></i></span>
-          <a href="/wallet" class="item-text">My Wallet</a>
-        </div>
-
-        <div class="menu-item" data-path="/allcoupons">
-          <span class="icon"><i class="fas fa-tag"></i></span>
-          <a href="/allcoupons" class="item-text">My Coupons</a>
-        </div>
-      </div>
-
-      <div class="menu-divider"></div>
-      
-      <div class="menu-section">
-        <h4 class="menu-section-title">Settings</h4>
-        <div class="menu-item" data-path="/getupdatePassword">
-          <span class="icon"><i class="fas fa-lock"></i></span>
-          <a href="/getupdatePassword" class="item-text">Change Password</a>
-        </div>
-
-        <div class="menu-item" data-path="/referral">
-          <span class="icon"><i class="fas fa-gift"></i></span>
-          <a href="/referral" class="item-text">Referral Code</a>
-        </div>
-<<<<<<< HEAD
-=======
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>User Profile Sidebar</title>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-  />
+  <title>Elite Wear Sidebar</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   <style>
     /* Elite Wear - Premium Sidebar Styles */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background-color: #f8f9fa;
     }
 
     /* Sidebar Container */
@@ -328,6 +31,7 @@
       overflow: hidden;
       position: relative;
       height: 100%;
+      transition: all 0.3s ease;
     }
 
     /* Sidebar Header */
@@ -583,6 +287,20 @@
       }
     }
 
+    /* Sidebar Toggle Button */
+    .sidebar-toggle {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1001;
+      background-color: #000;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: none;
+    }
+
     /* Responsive Styles */
     @media (max-width: 992px) {
       .sidebar {
@@ -594,9 +312,23 @@
 
     @media (max-width: 768px) {
       .sidebar {
-        width: 100%;
-        max-width: 100%;
-        border-radius: 8px;
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        z-index: 1000;
+        border-radius: 0;
+        height: 100%;
+        overflow-y: auto;
+        margin: 0;
+      }
+      
+      .sidebar.show {
+        left: 0;
+      }
+      
+      .sidebar-toggle {
+        display: block;
       }
       
       .sidebar-menu {
@@ -642,199 +374,179 @@
     .menu-item.active:hover {
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
+
+    /* Demo container */
+    .demo-container {
+      padding: 20px;
+      height: 100vh;
+      display: flex;
+    }
   </style>
 </head>
 <body>
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <div class="brand">
-        <span class="brand-name">ELITE<span class="accent">WEAR</span></span>
-      </div>
-    </div>
+  <div class="demo-container">
+    <!-- Sidebar Toggle Button (Mobile) -->
+    <button class="sidebar-toggle d-md-none" id="sidebarToggle">
+      <i class="fas fa-bars"></i>
+    </button>
     
-    <div class="profile-info">
-      <div class="profile-avatar">
-        <div class="avatar-circle">
-          <span class="initials"><%= user && user.fullname && user.fullname.trim() !== '' ?
-            user.fullname.trim().charAt(0).toUpperCase() : 'U' %></span>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Sidebar Header with Brand -->
+      <div class="sidebar-header">
+        <div class="brand">
+          <span class="brand-name">ELITE<span class="accent">WEAR</span></span>
         </div>
       </div>
-      <div class="profile-name">
-        <%= user && user.fullname && user.fullname.trim() !== '' ? user.fullname : 'Unknown User' %>
-=======
-        
-        <div class="menu-item logout-item" data-path="/logoutpage">
-          <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
-          <a href="/logoutpage" class="item-text">Log out</a>
+      
+      <!-- User Profile Information -->
+      <div class="profile-info">
+        <div class="profile-avatar">
+          <div class="avatar-circle">
+            <span class="initials" id="userInitial"><%= user && user.fullname ? user.fullname.charAt(0).toUpperCase() : 'U' %></span>
+          </div>
         </div>
->>>>>>> rezzarpay
+        <div class="profile-name" id="userName">
+          <%= user && user.fullname ? user.fullname : 'Unknown User' %>
+        </div>
+      </div>
+
+      <!-- Sidebar Menu -->
+      <div class="sidebar-menu">
+        <!-- Account Section -->
+        <div class="menu-section">
+          <h4 class="menu-section-title">Account</h4>
+          <a href="/LoadProfile" class="item-link">
+            <div class="menu-item" data-path="/LoadProfile">
+              <span class="icon"><i class="fas fa-user"></i></span>
+              <span class="item-text">My Profile</span>
+            </div>
+          </a>
+
+          <a href="/address" class="item-link">
+            <div class="menu-item" data-path="/address">
+              <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
+              <span class="item-text">My Address</span>
+            </div>
+          </a>
+
+          <a href="/orders" class="item-link">
+            <div class="menu-item" data-path="/orders">
+              <span class="icon"><i class="fas fa-shopping-bag"></i></span>
+              <span class="item-text">My Orders</span>
+            </div>
+          </a>
+
+          <a href="/wishlist" class="item-link">
+            <div class="menu-item" data-path="/wishlist">
+              <span class="icon"><i class="fas fa-heart"></i></span>
+              <span class="item-text">My Wishlist</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="menu-divider"></div>
+        
+        <!-- Payments Section -->
+        <div class="menu-section">
+          <h4 class="menu-section-title">Payments</h4>
+          <a href="/wallet" class="item-link">
+            <div class="menu-item" data-path="/wallet">
+              <span class="icon"><i class="fas fa-wallet"></i></span>
+              <span class="item-text">My Wallet</span>
+            </div>
+          </a>
+
+          <a href="/allcoupons" class="item-link">
+            <div class="menu-item" data-path="/allcoupons">
+              <span class="icon"><i class="fas fa-tag"></i></span>
+              <span class="item-text">My Coupons</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="menu-divider"></div>
+        
+        <!-- Settings Section -->
+        <div class="menu-section">
+          <h4 class="menu-section-title">Settings</h4>
+          <a href="/getupdatePassword" class="item-link">
+            <div class="menu-item" data-path="/getupdatePassword">
+              <span class="icon"><i class="fas fa-lock"></i></span>
+              <span class="item-text">Change Password</span>
+            </div>
+          </a>
+
+          <a href="/referral" class="item-link">
+            <div class="menu-item" data-path="/referral">
+              <span class="icon"><i class="fas fa-gift"></i></span>
+              <span class="item-text">Referral Code</span>
+            </div>
+          </a>
+          
+          <a href="/logoutpage" class="item-link">
+            <div class="menu-item logout-item" data-path="/logoutpage">
+              <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
+              <span class="item-text">Log out</span>
+            </div>
+          </a>
+        </div>
       </div>
     </div>
   </div>
 
-<<<<<<< HEAD
-    <div class="sidebar-menu">
-      <div class="menu-section">
-        <h4 class="menu-section-title">Account</h4>
-        <a href="/LoadProfile" class="item-link">
-          <div class="menu-item" data-path="/LoadProfile">
-            <span class="icon"><i class="fas fa-user"></i></span>
-            <span class="item-text">My Profile</span>
-          </div>
-        </a>
-
-        <a href="/address" class="item-link">
-          <div class="menu-item" data-path="/address">
-            <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
-            <span class="item-text">My Address</span>
-          </div>
-        </a>
-
-        <a href="/orders" class="item-link">
-          <div class="menu-item" data-path="/orders">
-            <span class="icon"><i class="fas fa-shopping-bag"></i></span>
-            <span class="item-text">My Orders</span>
-          </div>
-        </a>
-
-        <a href="/wishlist" class="item-link">
-          <div class="menu-item" data-path="/wishlist">
-            <span class="icon"><i class="fas fa-heart"></i></span>
-            <span class="item-text">My Wishlist</span>
-          </div>
-        </a>
-      </div>
-
-      <div class="menu-divider"></div>
-      
-      <div class="menu-section">
-        <h4 class="menu-section-title">Payments</h4>
-        <a href="/wallet" class="item-link">
-          <div class="menu-item" data-path="/wallet">
-            <span class="icon"><i class="fas fa-wallet"></i></span>
-            <span class="item-text">My Wallet</span>
-          </div>
-        </a>
-
-        <a href="/allcoupons" class="item-link">
-          <div class="menu-item" data-path="/allcoupons">
-            <span class="icon"><i class="fas fa-tag"></i></span>
-            <span class="item-text">My Coupons</span>
-          </div>
-        </a>
-      </div>
-
-      <div class="menu-divider"></div>
-      
-      <div class="menu-section">
-        <h4 class="menu-section-title">Settings</h4>
-        <a href="/getupdatePassword" class="item-link">
-          <div class="menu-item" data-path="/getupdatePassword">
-            <span class="icon"><i class="fas fa-lock"></i></span>
-            <span class="item-text">Change Password</span>
-          </div>
-        </a>
-
-        <a href="/referral" class="item-link">
-          <div class="menu-item" data-path="/referral">
-            <span class="icon"><i class="fas fa-gift"></i></span>
-            <span class="item-text">Referral Code</span>
-          </div>
-        </a>
-        
-        <a href="/logoutpage" class="item-link">
-          <div class="menu-item logout-item" data-path="/logoutpage">
-            <span class="icon"><i class="fas fa-sign-out-alt"></i></span>
-            <span class="item-text">Log out</span>
-          </div>
-        </a>
->>>>>>> Stashed changes
-      </div>
-    </div>
-
-<<<<<<< Updated upstream
-    <script>
-
-      document.querySelectorAll(".menu-item").forEach((item) => {
-        item.addEventListener("click", function () {
-=======
-  <script>
-    // Set active menu item based on current URL
-    document.addEventListener('DOMContentLoaded', function() {
-      const currentPath = window.location.pathname;
-      
-      // Find the menu item that matches the current path
-      document.querySelectorAll('.menu-item').forEach(item => {
-        const itemPath = item.getAttribute('data-path');
-        if (itemPath && currentPath.includes(itemPath)) {
-          item.classList.add('active');
-        }
-        
-        // Also check the link href
-        const link = item.querySelector('a');
-        if (link && link.getAttribute('href') === currentPath) {
-          item.classList.add('active');
-        }
-      });
-    });
->>>>>>> rezzarpay
-
-    // Menu item click effect
-    document.querySelectorAll(".menu-item").forEach((item) => {
-      item.addEventListener("click", function() {
-        if (!this.classList.contains('active')) {
-          document.querySelectorAll(".menu-item").forEach((i) => {
-            i.classList.remove("active");
-          });
-          this.classList.add("active");
-        }
-        
-        // Scale effect on click
-        this.style.transform = "scale(0.98)";
-        setTimeout(() => {
-          this.style.transform = "scale(1)";
-        }, 150);
-      });
-    });
-
-    // Ripple effect
-    document.querySelectorAll(".menu-item").forEach((item) => {
-      item.addEventListener("mousedown", function(e) {
-        const ripple = document.createElement("span");
-        const rect = this.getBoundingClientRect();
-
-        const size = Math.max(rect.width, rect.height);
-        const x = e.clientX - rect.left - size / 2;
-        const y = e.clientY - rect.top - size / 2;
-
-        ripple.style.width = ripple.style.height = `${size}px`;
-        ripple.style.left = `${x}px`;
-        ripple.style.top = `${y}px`;
-        ripple.classList.add("ripple");
-
-        this.appendChild(ripple);
-
-        setTimeout(() => {
-          ripple.remove();
-        }, 600);
-      });
-    });
-  </script>
-</body>
-</html>
-=======
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Clear any existing active classes first
-      document.querySelectorAll('.menu-item').forEach(item => {
-        item.classList.remove('active');
+      // Toggle sidebar on mobile
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+          document.querySelector('.sidebar').classList.toggle('show');
+        });
+      }
+      
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', function(event) {
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        
+        if (sidebar && sidebarToggle && 
+            window.innerWidth < 768 && 
+            sidebar.classList.contains('show') && 
+            !sidebar.contains(event.target) && 
+            event.target !== sidebarToggle) {
+          sidebar.classList.remove('show');
+        }
       });
       
-      // Get current path and set active class
+      // Add ripple effect to menu items
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('mousedown', createRippleEffect);
+        
+        // Add click handler for active state
+        item.addEventListener('click', function() {
+          if (!this.classList.contains('active')) {
+            document.querySelectorAll('.menu-item').forEach(i => {
+              i.classList.remove('active');
+            });
+            this.classList.add('active');
+          }
+          
+          // Scale effect on click
+          this.style.transform = 'scale(0.98)';
+          setTimeout(() => {
+            this.style.transform = '';
+          }, 150);
+        });
+      });
+      
+      // Set active menu item based on current URL
       const currentPath = window.location.pathname;
       let activeItemFound = false;
       
-      // Find the menu item that matches the current path
       document.querySelectorAll('.menu-item').forEach(item => {
         const itemPath = item.getAttribute('data-path');
         
@@ -851,11 +563,6 @@
           profileItem.classList.add('active');
         }
       }
-      
-      // Add click handler for ripple effect
-      document.querySelectorAll('.menu-item').forEach(item => {
-        item.addEventListener('mousedown', createRippleEffect);
-      });
     });
     
     // Ripple effect function
@@ -887,4 +594,3 @@
   </script>
 </body>
 </html>
->>>>>>> Stashed changes

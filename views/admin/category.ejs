@@ -18,11 +18,19 @@
         :root {
             --primary: #4f46e5;
             --primary-hover: #4338ca;
+            --primary-light: rgba(79, 70, 229, 0.1);
+            --primary-focus: rgba(79, 70, 229, 0.25);
             --secondary: #64748b;
             --success: #10b981;
+            --success-light: rgba(16, 185, 129, 0.1);
+            --success-focus: rgba(16, 185, 129, 0.25);
             --danger: #ef4444;
+            --danger-light: rgba(239, 68, 68, 0.1);
+            --danger-focus: rgba(239, 68, 68, 0.25);
             --warning: #f59e0b;
+            --warning-light: rgba(245, 158, 11, 0.1);
             --info: #3b82f6;
+            --info-light: rgba(59, 130, 246, 0.1);
             --light: #f8fafc;
             --dark: #1e293b;
             --gray-50: #f9fafb;
@@ -40,6 +48,7 @@
             --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --transition: all 0.2s ease-in-out;
         }
         
         * {
@@ -260,7 +269,7 @@
         
         .search-bar input:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+            box-shadow: 0 0 0 3px var(--primary-focus);
             outline: none;
         }
         
@@ -320,22 +329,22 @@
         }
         
         .badge-success {
-            background-color: rgba(16, 185, 129, 0.1);
+            background-color: var(--success-light);
             color: var(--success);
         }
         
         .badge-danger {
-            background-color: rgba(239, 68, 68, 0.1);
+            background-color: var(--danger-light);
             color: var(--danger);
         }
         
         .badge-warning {
-            background-color: rgba(245, 158, 11, 0.1);
+            background-color: var(--warning-light);
             color: var(--warning);
         }
         
         .badge-info {
-            background-color: rgba(59, 130, 246, 0.1);
+            background-color: var(--info-light);
             color: var(--info);
         }
         
@@ -424,19 +433,19 @@
         }
         
         .action-btn.view:hover {
-            background-color: rgba(59, 130, 246, 0.1);
+            background-color: var(--info-light);
             color: var(--info);
             border-color: rgba(59, 130, 246, 0.2);
         }
         
         .action-btn.edit:hover {
-            background-color: rgba(16, 185, 129, 0.1);
+            background-color: var(--success-light);
             color: var(--success);
             border-color: rgba(16, 185, 129, 0.2);
         }
         
         .action-btn.delete:hover {
-            background-color: rgba(239, 68, 68, 0.1);
+            background-color: var(--danger-light);
             color: var(--danger);
             border-color: rgba(239, 68, 68, 0.2);
         }
@@ -505,12 +514,12 @@
         }
         
         .status-badge.active {
-            background-color: rgba(16, 185, 129, 0.1);
+            background-color: var(--success-light);
             color: var(--success);
         }
         
         .status-badge.inactive {
-            background-color: rgba(239, 68, 68, 0.1);
+            background-color: var(--danger-light);
             color: var(--danger);
         }
         
@@ -562,6 +571,20 @@
             color: var(--gray-700);
             margin-bottom: 0.5rem;
             font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .form-label .required {
+            color: var(--danger);
+            margin-left: 0.25rem;
+        }
+        
+        .form-label .char-count {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            font-weight: normal;
         }
         
         .form-control {
@@ -574,7 +597,7 @@
         
         .form-control:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+            box-shadow: 0 0 0 3px var(--primary-focus);
         }
         
         .form-control.is-invalid {
@@ -584,11 +607,26 @@
         }
         
         .form-control.is-invalid:focus {
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+            box-shadow: 0 0 0 3px var(--danger-focus);
+        }
+        
+        .form-control.is-valid {
+            border-color: var(--success);
+            background-image: none;
+        }
+        
+        .form-control.is-valid:focus {
+            box-shadow: 0 0 0 3px var(--success-focus);
         }
         
         .invalid-feedback {
             color: var(--danger);
+            font-size: 0.75rem;
+            margin-top: 0.375rem;
+        }
+        
+        .valid-feedback {
+            color: var(--success);
             font-size: 0.75rem;
             margin-top: 0.375rem;
         }
@@ -607,25 +645,25 @@
         }
         
         .alert-success {
-            background-color: rgba(16, 185, 129, 0.1);
+            background-color: var(--success-light);
             border-color: rgba(16, 185, 129, 0.2);
             color: var(--success);
         }
         
         .alert-danger {
-            background-color: rgba(239, 68, 68, 0.1);
+            background-color: var(--danger-light);
             border-color: rgba(239, 68, 68, 0.2);
             color: var(--danger);
         }
         
         .alert-warning {
-            background-color: rgba(245, 158, 11, 0.1);
+            background-color: var(--warning-light);
             border-color: rgba(245, 158, 11, 0.2);
             color: var(--warning);
         }
         
         .alert-info {
-            background-color: rgba(59, 130, 246, 0.1);
+            background-color: var(--info-light);
             border-color: rgba(59, 130, 246, 0.2);
             color: var(--info);
         }
@@ -826,6 +864,133 @@
         
         .content-fade.loading {
             opacity: 0.6;
+        }
+        
+        /* Enhanced Form Validation Styles */
+        .input-wrapper {
+            position: relative;
+        }
+        
+        .validation-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .validation-icon i {
+            display: none;
+        }
+        
+        .validation-icon .valid-icon {
+            color: var(--success);
+        }
+        
+        .validation-icon .invalid-icon {
+            color: var(--danger);
+        }
+        
+        .validation-icon .loading-icon {
+            color: var(--primary);
+        }
+        
+        .form-control.is-valid + .validation-icon .valid-icon {
+            display: block;
+        }
+        
+        .form-control.is-invalid + .validation-icon .invalid-icon {
+            display: block;
+        }
+        
+        .form-control.is-loading + .validation-icon .loading-icon {
+            display: block;
+        }
+        
+        /* Character Counter */
+        .character-counter {
+            display: flex;
+            align-items: center;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+        
+        .counter-bar {
+            width: 100%;
+            height: 4px;
+            background-color: var(--gray-200);
+            border-radius: 2px;
+            margin-bottom: 0.25rem;
+            overflow: hidden;
+        }
+        
+        .counter-progress {
+            height: 100%;
+            width: 0%;
+            background-color: var(--gray-400);
+            transition: width 0.3s, background-color 0.3s;
+        }
+        
+        .counter-progress.warning {
+            background-color: var(--warning);
+        }
+        
+        .counter-progress.danger {
+            background-color: var(--danger);
+        }
+        
+        .counter-progress.success {
+            background-color: var(--success);
+        }
+        
+        /* Tooltip Styles */
+        .tooltip-trigger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: var(--gray-200);
+            color: var(--gray-600);
+            font-size: 10px;
+            margin-left: 0.5rem;
+            cursor: help;
+            position: relative;
+        }
+        
+        .tooltip-trigger:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--gray-800);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 10;
+            margin-bottom: 0.5rem;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .tooltip-trigger:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent var(--gray-800) transparent;
+            margin-bottom: -5px;
         }
         
         /* Responsive adjustments */
@@ -1253,12 +1418,15 @@
         </div>
     </div>
 
-    <!-- Add Category Modal -->
+    <!-- Enhanced Add Category Modal -->
     <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addCategoryModalLabel">Add New Category</h5>
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title" id="addCategoryModalLabel">
+                        <i class="fas fa-tag me-2 text-primary"></i>
+                        Add New Category
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -1266,30 +1434,120 @@
                     
                     <form id="addCategoryForm">
                         <div class="mb-3">
-                            <label for="categoryName" class="form-label">Category Name</label>
-                            <input type="text" class="form-control" id="categoryName" placeholder="Enter category name">
-                            <div class="invalid-feedback">Please enter a valid category name.</div>
+                            <label for="categoryName" class="form-label">
+                                Category Name <span class="required">*</span>
+                                <span class="tooltip-trigger" data-tooltip="No spaces or numbers allowed. Must be unique.">
+                                    <i class="fas fa-info"></i>
+                                </span>
+                                <span class="char-count">
+                                    <span id="name-char-count">0</span>/20
+                                </span>
+                            </label>
+                            <div class="input-wrapper">
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="categoryName" 
+                                placeholder="Enter category name" 
+                                minlength="4" 
+                                maxlength="20" 
+                                oninput="validateCategoryName()" 
+                            />
+                            <div class="validation-icon">
+                                <i class="fas fa-check-circle valid-icon" style="display: none; color: green;"></i>
+                                <i class="fas fa-times-circle invalid-icon" style="display: none; color: red;"></i>
+                                <i class="fas fa-spinner fa-spin loading-icon" style="display: none;"></i>
+                            </div>
                         </div>
+                        <div id="nameError" class="error-message" style="color: red; display: none;"></div>
+                        
+                            <div id="name-validation" class="validation-message"></div>
+                            <div class="character-counter">
+                                <div class="counter-bar">
+                                    <div class="counter-progress" id="name-progress"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="mb-3">
-                            <label for="categoryDescription" class="form-label">Description</label>
+                            <label for="categoryDescription" class="form-label">
+                                Description <span class="required">*</span>
+                                <span class="tooltip-trigger" data-tooltip="Minimum 20 characters required">
+                                    <i class="fas fa-info"></i>
+                                </span>
+                                <span class="char-count">
+                                    <span id="desc-char-count">0</span>/20 min
+                                </span>
+                            </label>
                             <textarea class="form-control" id="categoryDescription" rows="3" placeholder="Enter category description"></textarea>
-                            <div class="invalid-feedback">Please enter a description.</div>
+                            <div id="description-validation" class="validation-message"></div>
+                            <div class="character-counter">
+                                <div class="counter-bar">
+                                    <div class="counter-progress" id="description-progress"></div>
+                                </div>
+                            </div>
                         </div>
+                        
+                        <div class="row">
+                        <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="categoryStock" class="form-label">Initial Stock</label>
-                            <input type="number" class="form-control" id="categoryStock" value="0" min="0">
-                            <div class="form-text">Set the initial stock quantity for this category.</div>
+                          <label for="categoryStock" class="form-label">
+                            Initial Stock
+                            <span class="tooltip-trigger" data-tooltip="Set the initial stock quantity between 0 and 1000">
+                              <i class="fas fa-info-circle"></i>
+                            </span>
+                          </label>
+                          <input 
+                            type="number" 
+                            class="form-control" 
+                            id="categoryStock" 
+                            name="categoryStock"
+                            value="0" 
+                            min="0" 
+                            max="1000"
+                            oninput="validateStock()"
+                          />
+                          <div class="form-text">Set the initial stock quantity for this category.</div>
+                          <div id="stockError" class="text-danger mt-1" style="display: none;"></div>
                         </div>
+                      </div>
+                      
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="categoryOffer" class="form-label">
+                                        Initial Offer (%)
+                                        <span class="tooltip-trigger" data-tooltip="Set an initial discount percentage (0-100%)">
+                                            <i class="fas fa-info"></i>
+                                        </span>
+                                    </label>
+                                    <input type="number" class="form-control" id="categoryOffer" value="0" min="0" max="100">
+                                    <div id="offer-validation" class="validation-message"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <div class="mb-3">
-                            <label for="categoryOffer" class="form-label">Initial Offer (%)</label>
-                            <input type="number" class="form-control" id="categoryOffer" value="0" min="0" max="100">
-                            <div class="form-text">Set an initial discount percentage for this category.</div>
+                            <label for="categoryMaxRedeemable" class="form-label">
+                                Max Redeemable Amount
+                                <span class="tooltip-trigger" data-tooltip="Maximum amount that can be redeemed with this category's offer">
+                                    <i class="fas fa-info"></i>
+                                </span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" class="form-control" id="categoryMaxRedeemable" value="0" min="0">
+                            </div>
+                            <div id="maxRedeemable-validation" class="validation-message"></div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="submitCategory">Add Category</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="submitCategory">
+                        <i class="fas fa-save me-1"></i> Add Category
+                    </button>
                 </div>
             </div>
         </div>
@@ -1319,6 +1577,31 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Form elements
+            const categoryName = document.getElementById('categoryName');
+            const categoryDescription = document.getElementById('categoryDescription');
+            const categoryStock = document.getElementById('categoryStock');
+            const categoryOffer = document.getElementById('categoryOffer');
+            const categoryMaxRedeemable = document.getElementById('categoryMaxRedeemable');
+            
+            // Validation elements
+            const nameValidation = document.getElementById('name-validation');
+            const descriptionValidation = document.getElementById('description-validation');
+            const offerValidation = document.getElementById('offer-validation');
+            const maxRedeemableValidation = document.getElementById('maxRedeemable-validation');
+            
+            // Character counters
+            const nameCharCount = document.getElementById('name-char-count');
+            const descCharCount = document.getElementById('desc-char-count');
+            const nameProgress = document.getElementById('name-progress');
+            const descriptionProgress = document.getElementById('description-progress');
+            
+            // Constants
+            const MIN_DESCRIPTION_CHARS = 20;
+            const MAX_NAME_CHARS = 20;
+            
+            let nameTimeout;
+            
             // Show alert function
             function showAlert(message, type) {
                 const alertContainer = document.getElementById('alertContainer');
@@ -1333,31 +1616,221 @@
                 }, 5000);
             }
             
+            // Name validation and character counter
+            categoryName.addEventListener('input', function() {
+                clearTimeout(nameTimeout);
+                
+                const value = this.value.trim();
+                const length = value.length;
+                nameCharCount.textContent = length;
+                
+                // Update progress bar
+                const percentage = Math.min(100, (length / MAX_NAME_CHARS) * 100);
+                nameProgress.style.width = `${percentage}%`;
+                
+                if (length > 0.8 * MAX_NAME_CHARS) {
+                    nameProgress.className = 'counter-progress warning';
+                } else if (length > 0) {
+                    nameProgress.className = 'counter-progress success';
+                } else {
+                    nameProgress.className = 'counter-progress';
+                }
+                
+                // Basic validation
+                if (!value) {
+                    nameValidation.textContent = "Category name is required";
+                    nameValidation.className = "validation-message invalid-feedback";
+                    categoryName.classList.add('is-invalid');
+                    categoryName.classList.remove('is-valid', 'is-loading');
+                    return;
+                }
+                
+                if (value.includes(" ")) {
+                    nameValidation.textContent = "Category name cannot contain spaces";
+                    nameValidation.className = "validation-message invalid-feedback";
+                    categoryName.classList.add('is-invalid');
+                    categoryName.classList.remove('is-valid', 'is-loading');
+                    return;
+                }
+                
+                if (/\d/.test(value)) {
+                    nameValidation.textContent = "Category name cannot contain numbers";
+                    nameValidation.className = "validation-message invalid-feedback";
+                    categoryName.classList.add('is-invalid');
+                    categoryName.classList.remove('is-valid', 'is-loading');
+                    return;
+                }
+                
+                // Show loading state
+                categoryName.classList.add('is-loading');
+                categoryName.classList.remove('is-valid', 'is-invalid');
+                
+                // Check uniqueness after a delay
+                nameTimeout = setTimeout(() => {
+                    fetch(`/admin/check-category-name?name=${encodeURIComponent(value)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            categoryName.classList.remove('is-loading');
+                            
+                            if (data.exists) {
+                                nameValidation.textContent = "Category name already exists";
+                                nameValidation.className = "validation-message invalid-feedback";
+                                categoryName.classList.add('is-invalid');
+                                categoryName.classList.remove('is-valid');
+                            } else {
+                                nameValidation.textContent = "Category name is available";
+                                nameValidation.className = "validation-message valid-feedback";
+                                categoryName.classList.add('is-valid');
+                                categoryName.classList.remove('is-invalid');
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error checking category name:", error);
+                            categoryName.classList.remove('is-loading');
+                            nameValidation.textContent = "Error checking category name";
+                            nameValidation.className = "validation-message invalid-feedback";
+                        });
+                }, 500);
+            });
+            
+            // Description validation and character counter
+            categoryDescription.addEventListener('input', function() {
+                const value = this.value.trim();
+                const length = value.length;
+                descCharCount.textContent = length;
+                
+                // Update progress bar
+                const percentage = Math.min(100, (length / MIN_DESCRIPTION_CHARS) * 100);
+                descriptionProgress.style.width = `${percentage}%`;
+                
+                if (length < MIN_DESCRIPTION_CHARS) {
+                    descriptionProgress.className = 'counter-progress danger';
+                    descriptionValidation.textContent = `Description must be at least ${MIN_DESCRIPTION_CHARS} characters (currently ${length})`;
+                    descriptionValidation.className = "validation-message invalid-feedback";
+                    categoryDescription.classList.add('is-invalid');
+                    categoryDescription.classList.remove('is-valid');
+                } else {
+                    descriptionProgress.className = 'counter-progress success';
+                    descriptionValidation.textContent = "Description length is good!";
+                    descriptionValidation.className = "validation-message valid-feedback";
+                    categoryDescription.classList.add('is-valid');
+                    categoryDescription.classList.remove('is-invalid');
+                }
+            });
+            
+            // Offer validation
+            categoryOffer.addEventListener('input', function() {
+                const value = Number(this.value);
+                
+                if (isNaN(value) || value < 0 || value > 100) {
+                    offerValidation.textContent = "Offer must be between 0 and 100%";
+                    offerValidation.className = "validation-message invalid-feedback";
+                    categoryOffer.classList.add('is-invalid');
+                    categoryOffer.classList.remove('is-valid');
+                } else {
+                    offerValidation.textContent = "";
+                    categoryOffer.classList.remove('is-invalid');
+                    if (value > 0) {
+                        categoryOffer.classList.add('is-valid');
+                    }
+                }
+            });
+            
+            // Max Redeemable validation
+            categoryMaxRedeemable.addEventListener('input', function() {
+                const value = Number(this.value);
+                
+                if (isNaN(value) || value < 0) {
+                    maxRedeemableValidation.textContent = "Max redeemable amount cannot be negative";
+                    maxRedeemableValidation.className = "validation-message invalid-feedback";
+                    categoryMaxRedeemable.classList.add('is-invalid');
+                    categoryMaxRedeemable.classList.remove('is-valid');
+                } else if (value > 500000) {
+                    maxRedeemableValidation.textContent = "Max redeemable amount cannot exceed ₹500,000";
+                    maxRedeemableValidation.className = "validation-message invalid-feedback";
+                    categoryMaxRedeemable.classList.add('is-invalid');
+                    categoryMaxRedeemable.classList.remove('is-valid');
+                } else {
+                    maxRedeemableValidation.textContent = "";
+                    categoryMaxRedeemable.classList.remove('is-invalid');
+                    if (value > 0) {
+                        categoryMaxRedeemable.classList.add('is-valid');
+                    }
+                }
+            });
+            
             // Add Category Form Submission
             document.getElementById('submitCategory').addEventListener('click', function() {
-                const categoryName = document.getElementById('categoryName');
-                const categoryDescription = document.getElementById('categoryDescription');
-                const categoryStock = document.getElementById('categoryStock').value || 0;
-                const categoryOffer = document.getElementById('categoryOffer').value || 0;
+                // Reset validation
                 const formFeedback = document.getElementById('formFeedback');
-                
                 formFeedback.style.display = 'none';
-                categoryName.classList.remove('is-invalid');
-                categoryDescription.classList.remove('is-invalid');
                 
+                // Validate all fields
                 let isValid = true;
                 let errorMessage = '';
                 
-                if (!categoryName.value.trim()) {
+                // Name validation
+                const nameValue = categoryName.value.trim();
+                if (!nameValue) {
+                    nameValidation.textContent = "Category name is required";
+                    nameValidation.className = "validation-message invalid-feedback";
                     categoryName.classList.add('is-invalid');
                     isValid = false;
-                    errorMessage = 'Please enter a category name.';
+                    errorMessage = 'Category name is required';
+                } else if (nameValue.includes(" ")) {
+                    nameValidation.textContent = "Category name cannot contain spaces";
+                    nameValidation.className = "validation-message invalid-feedback";
+                    categoryName.classList.add('is-invalid');
+                    isValid = false;
+                    errorMessage = 'Category name cannot contain spaces';
+                } else if (/\d/.test(nameValue)) {
+                    nameValidation.textContent = "Category name cannot contain numbers";
+                    nameValidation.className = "validation-message invalid-feedback";
+                    categoryName.classList.add('is-invalid');
+                    isValid = false;
+                    errorMessage = 'Category name cannot contain numbers';
                 }
                 
-                if (!categoryDescription.value.trim()) {
+                // Description validation
+                const descValue = categoryDescription.value.trim();
+                if (!descValue) {
+                    descriptionValidation.textContent = "Description is required";
+                    descriptionValidation.className = "validation-message invalid-feedback";
                     categoryDescription.classList.add('is-invalid');
                     isValid = false;
-                    errorMessage = errorMessage ? 'Please fill in all required fields.' : 'Please enter a description.';
+                    errorMessage = errorMessage ? 'Please fix all validation errors' : 'Description is required';
+                } else if (descValue.length < MIN_DESCRIPTION_CHARS) {
+                    descriptionValidation.textContent = `Description must be at least ${MIN_DESCRIPTION_CHARS} characters (currently ${descValue.length})`;
+                    descriptionValidation.className = "validation-message invalid-feedback";
+                    categoryDescription.classList.add('is-invalid');
+                    isValid = false;
+                    errorMessage = errorMessage ? 'Please fix all validation errors' : `Description must be at least ${MIN_DESCRIPTION_CHARS} characters`;
+                }
+                
+                // Offer validation
+                const offerValue = Number(categoryOffer.value);
+                if (isNaN(offerValue) || offerValue < 0 || offerValue > 100) {
+                    offerValidation.textContent = "Offer must be between 0 and 100%";
+                    offerValidation.className = "validation-message invalid-feedback";
+                    categoryOffer.classList.add('is-invalid');
+                    isValid = false;
+                    errorMessage = errorMessage ? 'Please fix all validation errors' : 'Offer must be between 0 and 100%';
+                }
+                
+                // Max Redeemable validation
+                const maxRedeemableValue = Number(categoryMaxRedeemable.value);
+                if (isNaN(maxRedeemableValue) || maxRedeemableValue < 0) {
+                    maxRedeemableValidation.textContent = "Max redeemable amount cannot be negative";
+                    maxRedeemableValidation.className = "validation-message invalid-feedback";
+                    categoryMaxRedeemable.classList.add('is-invalid');
+                    isValid = false;
+                    errorMessage = errorMessage ? 'Please fix all validation errors' : 'Max redeemable amount cannot be negative';
+                } else if (maxRedeemableValue > 500000) {
+                    maxRedeemableValidation.textContent = "Max redeemable amount cannot exceed ₹500,000";
+                    maxRedeemableValidation.className = "validation-message invalid-feedback";
+                    categoryMaxRedeemable.classList.add('is-invalid');
+                    isValid = false;
+                    errorMessage = errorMessage ? 'Please fix all validation errors' : 'Max redeemable amount cannot exceed ₹500,000';
                 }
                 
                 if (!isValid) {
@@ -1371,16 +1844,18 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Adding...';
                 
+                // Submit the form
                 fetch('/admin/addcategory', {
                     method: "POST",
                     headers: { 
                         "Content-Type": "application/json" 
                     },
                     body: JSON.stringify({
-                        name: categoryName.value.trim(),
-                        description: categoryDescription.value.trim(),
-                        stock: parseInt(categoryStock),
-                        offer: parseInt(categoryOffer)
+                        name: nameValue,
+                        description: descValue,
+                        stock: parseInt(categoryStock.value) || 0,
+                        offer: parseInt(offerValue) || 0,
+                        maxRedeemable: parseInt(maxRedeemableValue) || 0
                     })
                 })
                 .then(response => {
@@ -1412,7 +1887,7 @@
                         
                         // Reset button state
                         submitBtn.disabled = false;
-                        submitBtn.innerHTML = 'Add Category';
+                        submitBtn.innerHTML = '<i class="fas fa-save me-1"></i> Add Category';
                     }
                 })
                 .catch(error => {
@@ -1422,7 +1897,7 @@
                     
                     // Reset button state
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = 'Add Category';
+                    submitBtn.innerHTML = '<i class="fas fa-save me-1"></i> Add Category';
                 });
             });
             
@@ -1660,15 +2135,52 @@
                 // Re-append rows in the new order
                 rows.forEach(row => tbody.appendChild(row));
             }
+                function validateStock() {
+  const stockInput = document.getElementById('categoryStock');
+  const stockError = document.getElementById('stockError');
+  const stockValue = parseInt(stockInput.value, 10);
+
+  if (isNaN(stockValue) || stockValue < 0 || stockValue > 1000) {
+    stockError.style.display = 'block';
+    stockError.innerHTML = `<i class="fas fa-exclamation-circle"></i> Stock must be between 0 and 1000`;
+    stockInput.classList.add('input-invalid');
+    return false;
+  } else {
+    stockError.style.display = 'none';
+    stockInput.classList.remove('input-invalid');
+    return true;
+  }
+}
+
             
             // Reset form when modal is closed
             document.getElementById('addCategoryModal').addEventListener('hidden.bs.modal', function () {
                 document.getElementById('addCategoryForm').reset();
                 document.getElementById('formFeedback').style.display = 'none';
-                document.getElementById('categoryName').classList.remove('is-invalid');
-                document.getElementById('categoryDescription').classList.remove('is-invalid');
+                
+                // Reset validation states
+                categoryName.classList.remove('is-invalid', 'is-valid', 'is-loading');
+                categoryDescription.classList.remove('is-invalid', 'is-valid');
+                categoryOffer.classList.remove('is-invalid', 'is-valid');
+                categoryMaxRedeemable.classList.remove('is-invalid', 'is-valid');
+                
+                // Reset validation messages
+                nameValidation.textContent = '';
+                descriptionValidation.textContent = '';
+                offerValidation.textContent = '';
+                maxRedeemableValidation.textContent = '';
+                
+                // Reset character counters
+                nameCharCount.textContent = '0';
+                descCharCount.textContent = '0';
+                nameProgress.style.width = '0%';
+                descriptionProgress.style.width = '0%';
+                nameProgress.className = 'counter-progress';
+                descriptionProgress.className = 'counter-progress';
+                
+                // Reset button
                 document.getElementById('submitCategory').disabled = false;
-                document.getElementById('submitCategory').innerHTML = 'Add Category';
+                document.getElementById('submitCategory').innerHTML = '<i class="fas fa-save me-1"></i> Add Category';
             });
             
             // Pagination loading animation
@@ -1725,43 +2237,55 @@
                     }
                 }
             });
-            
-            // Error handling for pagination
-            try {
-                // Check if pagination elements exist
-                const paginationContainer = document.querySelector('.custom-pagination-container');
-                if (paginationContainer) {
-                    console.log('Pagination initialized successfully');
-                }
-            } catch (error) {
-                console.error('Error initializing pagination:', error);
-                // Fallback to simple pagination if there's an error
-                const fallbackPagination = `
-                    <div class="d-flex justify-content-center mt-4">
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination">
-                                <li class="page-item ${currentPage <= 1 ? 'disabled' : ''}">
-                                    <a class="page-link" href="/admin/categories?page=${currentPage - 1}" aria-label="Previous">
-                                        <span aria-hidden="true">&laquo;</span>
-                                    </a>
-                                </li>
-                                <li class="page-item active"><a class="page-link" href="#">${currentPage}</a></li>
-                                <li class="page-item ${currentPage >= totalPages ? 'disabled' : ''}">
-                                    <a class="page-link" href="/admin/categories?page=${currentPage + 1}" aria-label="Next">
-                                        <span aria-hidden="true">&raquo;</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </nav>
-                    </div>
-                `;
-                
-                // Only append fallback if custom pagination failed
-                if (!document.querySelector('.custom-pagination')) {
-                    document.querySelector('.main-content').insertAdjacentHTML('beforeend', fallbackPagination);
-                }
-            }
         });
+        function validateCategoryName() {
+    const input = document.getElementById('categoryName');
+    const value = input.value.trim();
+    const error = document.getElementById('nameError');
+    const validIcon = document.querySelector('.valid-icon');
+    const invalidIcon = document.querySelector('.invalid-icon');
+    const loadingIcon = document.querySelector('.loading-icon');
+
+    // Start spinner while typing
+    loadingIcon.style.display = 'inline-block';
+    validIcon.style.display = 'none';
+    invalidIcon.style.display = 'none';
+    error.style.display = 'none';
+
+    setTimeout(() => {
+        loadingIcon.style.display = 'none';
+
+        if (value.length < 4 || value.length > 20) {
+            input.classList.add('input-invalid');
+            validIcon.style.display = 'none';
+            invalidIcon.style.display = 'inline-block';
+            error.style.display = 'block';
+            error.innerHTML = `<i class="fas fa-exclamation-circle"></i> Name must be between 4 and 20 characters`;
+        } else {
+            input.classList.remove('input-invalid');
+            validIcon.style.display = 'inline-block';
+            invalidIcon.style.display = 'none';
+            error.style.display = 'none';
+        }
+    }, 500); // Simulated delay for real-time feel
+}
+function validateStock() {
+  const stockInput = document.getElementById('categoryStock');
+  const stockError = document.getElementById('stockError');
+  const stockValue = parseInt(stockInput.value.trim(), 10);
+
+  if (isNaN(stockValue) || stockValue < 0 || stockValue > 1000) {
+    stockInput.classList.add('is-invalid');
+    stockError.style.display = 'block';
+    stockError.innerHTML = `<i class="fas fa-exclamation-circle"></i> Stock must be between 0 and 1000.`;
+    return false;
+  } else {
+    stockInput.classList.remove('is-invalid');
+    stockError.style.display = 'none';
+    return true;
+  }
+}
+
     </script>
 </body>
 </html>

@@ -12,21 +12,361 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
     <style>
-<<<<<<< Updated upstream
-        .order-content { padding: 50px 0; min-height: 80vh; }
-        .success-card { border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; background: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
-        .success-icon { font-size: 2rem; color: #28a745; background: #e8f5e9; border-radius: 50%; padding: 10px; }
-        .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #f1f1f1; transition: all 0.3s; }
-        .detail-row:hover { background: #f8f9fa; }
-        .btn-view, .btn-continue { transition: all 0.3s; }
-        .btn-view:hover, .btn-continue:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); }
-        .order-illustration img { max-width: 300px; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .success-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 15px;
+        }
+        
+        .success-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .success-title {
+            font-weight: 700;
+            margin-top: 20px;
+            color: #212529;
+        }
+        
+        .success-subtitle {
+            color: #6c757d;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .order-card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .order-card-header {
+            padding: 20px;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .order-card-header h3 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .order-card-body {
+            padding: 20px;
+        }
+        
+        .order-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f1f1;
+            transition: all 0.3s ease;
+        }
+        
+        .order-detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .order-detail-row:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .order-detail-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .order-detail-value {
+            font-weight: 500;
+            text-align: right;
+        }
+        
+        .total-row {
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-top: 2px solid #f1f1f1;
+            margin-top: 10px;
+            padding-top: 15px;
+        }
+        
+        .tracking-progress {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .tracking-steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .tracking-steps:before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+        
+        .tracking-step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            width: 25%;
+        }
+        
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            color: #adb5bd;
+            transition: all 0.3s ease;
+        }
+        
+        .step-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .step-active .step-icon {
+            background-color: #28a745;
+            color: #fff;
+        }
+        
+        .step-active .step-label {
+            color: #212529;
+            font-weight: 600;
+        }
+        
+        .estimated-delivery {
+            text-align: center;
+            color: #6c757d;
+            margin-top: 20px;
+        }
+        
+        .delivery-date {
+            font-weight: 600;
+            color: #212529;
+        }
+        
+        .order-illustration {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .order-illustration img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        
+        .btn-action {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary-action {
+            background-color: #212529;
+            border-color: #212529;
+            color: #fff;
+        }
+        
+        .btn-primary-action:hover {
+            background-color: #000;
+            border-color: #000;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary-action {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            color: #212529;
+        }
+        
+        .btn-secondary-action:hover {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+            color: #212529;
+            transform: translateY(-2px);
+        }
+        
+        .checkmark-circle {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            display: inline-block;
+            vertical-align: top;
+            margin-bottom: 20px;
+        }
+        
+        .checkmark-circle .background {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #28a745;
+            position: absolute;
+        }
+        
+        .checkmark-circle .checkmark {
+            border-radius: 5px;
+        }
+        
+        .checkmark-circle .checkmark.draw:after {
+            animation-delay: 100ms;
+            animation-duration: 1s;
+            animation-timing-function: ease;
+            animation-name: checkmark;
+            transform: scaleX(-1) rotate(135deg);
+            animation-fill-mode: forwards;
+        }
+        
+        .checkmark-circle .checkmark:after {
+            opacity: 0;
+            height: 40px;
+            width: 20px;
+            transform-origin: left top;
+            border-right: 5px solid #fff;
+            border-top: 5px solid #fff;
+            content: '';
+            left: 28px;
+            top: 45px;
+            position: absolute;
+        }
+        
+        @keyframes checkmark {
+            0% {
+                height: 0;
+                width: 0;
+                opacity: 1;
+            }
+            20% {
+                height: 0;
+                width: 20px;
+                opacity: 1;
+            }
+            40% {
+                height: 40px;
+                width: 20px;
+                opacity: 1;
+            }
+            100% {
+                height: 40px;
+                width: 20px;
+                opacity: 1;
+            }
+        }
+        
+        .shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .shimmer::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(30deg);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) rotate(30deg);
+            }
+            100% {
+                transform: translateX(100%) rotate(30deg);
+            }
+        }
+        
+        .success-badge {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #28a745;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+            }
+        }
+        
+        .sound-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .sound-control:hover {
+            transform: scale(1.1);
+        }
+        
         .confetti {
             position: fixed;
             top: -10px;
             animation: fall linear forwards;
             z-index: 1000;
-            top: -10px;
             animation: fall 3s linear forwards;
         }
         
@@ -36,15 +376,61 @@
                 opacity: 0;
             }
         }
-        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1050; }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        
+        .custom-toast {
+            background-color: #fff;
+            border-left: 4px solid #28a745;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 767px) {
+            .tracking-steps {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .tracking-steps:before {
+                top: 0;
+                bottom: 0;
+                left: 15px;
+                right: auto;
+                height: 100%;
+                width: 2px;
+            }
+            
+            .tracking-step {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                margin-bottom: 20px;
+                padding-left: 40px;
+                text-align: left;
+            }
+            
+            .step-icon {
+                margin: 0 15px 0 0;
+            }
+            
+            .order-actions {
+                flex-direction: column;
+            }
+            
+            .btn-action {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
     </style>
 </head>
 <body>
     <%- include("../partials/user/header") %>
-
-    <!-- Floating elements for visual interest -->
-    <div class="floating-element circle top-left"></div>
-    <div class="floating-element square bottom-right"></div>
 
     <!-- Toast notification -->
     <div class="toast-container">
@@ -113,22 +499,20 @@
                         </div>
                         
                         <div class="order-detail-row">
-                        <div class="order-detail-label">
-                          <i class="fas fa-map-marker-alt me-2"></i> Shipping Address
+                            <div class="order-detail-label">
+                                <i class="fas fa-map-marker-alt me-2"></i> Shipping Address
+                            </div>
+                            <div class="order-detail-value">
+                                <% if (order.address) { %>
+                                    <%= order.address.fullname %><br>
+                                    <%= order.address.address %><br>
+                                    <%= order.address.city %>, <%= order.address.district %><br>
+                                    <%= order.address.state %> - <%= order.address.pincode %>
+                                <% } else { %>
+                                    Address information not available
+                                <% } %>
+                            </div>
                         </div>
-                        <div class="order-detail-value">
-                          <% if (order.address) { %>
-                            <%= order.address.fullname %><br>
-                            <%= order.address.address %><br>
-                            <%= order.address.city %>, <%= order.address.district %><br>
-                            <%= order.address.state %> - <%= order.address.pincode %>
-                          <% } else { %>
-                            Address information not available
-                          <% } %>
-                        </div>
-                      </div>
-                      
-                    
                         
                         <div class="order-detail-row">
                             <div class="order-detail-label">
@@ -145,16 +529,15 @@
                         </div>
                         
                         <% if ((order.paymentMethod === 'Online' || order.paymentMethod === 'Razorpay') && order.transactionId) { %>
-                        <div class="order-detail-row">
-                          <div class="order-detail-label">
-                            <i class="fas fa-receipt me-2"></i> Transaction ID
-                          </div>
-                          <div class="order-detail-value text-monospace">
-                            <%= order.transactionId %>
-                          </div>
-                        </div>
-                      <% } %>
-                      
+                            <div class="order-detail-row">
+                                <div class="order-detail-label">
+                                    <i class="fas fa-receipt me-2"></i> Transaction ID
+                                </div>
+                                <div class="order-detail-value text-monospace">
+                                    <%= order.transactionId %>
+                                </div>
+                            </div>
+                        <% } %>
                         
                         <div class="order-detail-row">
                             <div class="order-detail-label">
@@ -281,14 +664,13 @@
                                         <% } %>
                                     </div>
                                     <div class="flex-grow-1">
-  <h6 class="mb-0 fw-bold">
-    <%= item.product_name || 'Unnamed Product' %>
-  </h6>
-  <p class="mb-0 small text-muted">
-    Size: <%= item.size || 'N/A' %> | Qty: <%= item.quantity || 1 %>
-  </p>
-</div>
-
+                                        <h6 class="mb-0 fw-bold">
+                                            <%= item.product_name || 'Unnamed Product' %>
+                                        </h6>
+                                        <p class="mb-0 small text-muted">
+                                            Size: <%= item.size || 'N/A' %> | Qty: <%= item.quantity || 1 %>
+                                        </p>
+                                    </div>
                                     <div class="flex-shrink-0 ms-3 text-end">
                                         <span class="fw-bold">₹<%= (item.price !== undefined ? item.price.toFixed(2) : '0.00') %></span>
                                     </div>
@@ -300,17 +682,20 @@
 
                 <!-- Action buttons -->
                 <div class="action-buttons">
-                    <a href="/orders" class="btn btn-primary-action btn-action w-100" data-aos="fade-up" data-aos-delay="500">
+                    <a href="/orders" class="btn btn-primary-action btn-action w-100 mb-3" data-aos="fade-up" data-aos-delay="500">
                         <i class="fas fa-history me-2"></i>View All Orders
                     </a>
-                    <a href="/" class="btn btn-secondary-action btn-action w-100" data-aos="fade-up" data-aos-delay="600">
+                    <a href="/" class="btn btn-secondary-action btn-action w-100 mb-3" data-aos="fade-up" data-aos-delay="600">
                         <i class="fas fa-shopping-bag me-2"></i>Continue Shopping
                     </a>
+                    <button class="btn btn-danger btn-action w-100 btn-cancel-order" data-order-id="<%= order._id || order.orderNumber %>" data-aos="fade-up" data-aos-delay="700">
+                        <i class="fas fa-times-circle me-2"></i>Cancel Order
+                    </button>
                 </div>
 
                 <!-- Customer support -->
                 <div class="mt-4 p-3 bg-white rounded-3 shadow-sm" data-aos="fade-up" data-aos-delay="700">
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center mb-3">
                         <div class="flex-shrink-0 me-3">
                             <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
                                 <i class="fas fa-headset text-white"></i>
@@ -322,57 +707,6 @@
                                 Contact our customer support at <a href="mailto:support@elitewear.com">support@elitewear.com</a> or call us at <strong>+91 1234567890</strong>
                             </p>
                         </div>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Order Time</span>
-                        <span><%= order.orderDate.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Payment Method</span>
-                        <span><%= order.paymentMethod %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Sender Name</span>
-                        <span><%= user.name || 'N/A' %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Shipping Address</span>
-                        <span>
-                            <%= order.address?.fullname || 'N/A' %>, 
-                            <%= order.address?.address || '' %>, 
-                            <%= order.address?.city || '' %>, 
-                            <%= order.address?.district || '' %>, 
-                            <%= order.address?.state || '' %> - <%= order.address?.pincode || '' %>
-                        </span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Order Items</span>
-                        <span>
-                            <% order.order_items.forEach((item, index) => { %>
-                                <%= item.product_name %> (Size: <%= item.size %>) x <%= item.quantity %>
-                                <%= index < order.order_items.length - 1 ? ', ' : '' %>
-                            <% }) %>
-                        </span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Subtotal</span>
-                        <span>₹<%= (order.total - (order.total > 8000 ? 0 : 200)).toFixed(2) %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Delivery Charge</span>
-                        <span>₹<%= order.total > 8000 ? 0 : 200 %></span>
-                    </div>
-
-                    <div class="detail-row">
-                        <span>Grand Total</span>
-                        <span class="fw-bold">₹<%= order.total.toFixed(2) %></span>
                     </div>
                 </div>
             </div>
@@ -392,6 +726,7 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         // Initialize AOS animation library
         document.addEventListener('DOMContentLoaded', function() {
@@ -479,73 +814,6 @@
                 }
             }
         }
-<<<<<<< Updated upstream
-
-        document.addEventListener('DOMContentLoaded', function() {
-            createConfetti();
-            showToast("Order placed successfully!");
-
-            const detailRows = document.querySelectorAll('.detail-row');
-            detailRows.forEach(row => {
-                row.addEventListener('mouseenter', function() {
-                    detailRows.forEach(r => r.style.opacity = '0.6');
-                    this.style.opacity = '1';
-                });
-                row.addEventListener('mouseleave', function() {
-                    detailRows.forEach(r => r.style.opacity = '1');
-                });
-            });
-
-            const successIcon = document.querySelector('.success-icon');
-            if (successIcon) {
-                successIcon.addEventListener('click', function() {
-                    const audio = new Audio('/Uploads/success-sound.mp3');
-                    audio.play().catch(err => console.log('Audio playback failed:', err));
-
-=======
-        
-        // Setup event listeners
-        function setupEventListeners() {
-            // Success badge click
-            const successBadge = document.getElementById('successBadge');
-            if (successBadge) {
-                successBadge.addEventListener('click', function() {
-                    playSuccessSound();
-                    
-                    // Add animation
->>>>>>> Stashed changes
-                    this.classList.add('animate__animated', 'animate__rubberBand');
-                    setTimeout(() => {
-                        this.classList.remove('animate__animated', 'animate__rubberBand');
-                    }, 1000);
-                    
-                    // Create mini confetti burst
-                    createMiniConfetti(this);
-                });
-            }
-            
-            // Sound control button
-            const soundControl = document.getElementById('soundControl');
-            if (soundControl) {
-                soundControl.addEventListener('click', function() {
-                    playSuccessSound();
-                    
-                    // Add animation
-                    this.classList.add('animate__animated', 'animate__heartBeat');
-                    setTimeout(() => {
-                        this.classList.remove('animate__animated', 'animate__heartBeat');
-                    }, 1000);
-                });
-            }
-            
-            // Make sure all images are loaded properly
-            const images = document.querySelectorAll('img');
-            images.forEach(img => {
-                img.addEventListener('error', function() {
-                    this.src = '/Uploads/placeholder.jpg';
-                });
-            });
-        }
         
         // Create mini confetti burst around an element
         function createMiniConfetti(element) {
@@ -592,6 +860,118 @@
                     particle.remove();
                 }, duration * 1000);
             }
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Sound control button
+            const soundControl = document.getElementById('soundControl');
+            if (soundControl) {
+                soundControl.addEventListener('click', function() {
+                    playSuccessSound();
+                    
+                    // Add animation
+                    this.classList.add('animate__animated', 'animate__heartBeat');
+                    setTimeout(() => {
+                        this.classList.remove('animate__animated', 'animate__heartBeat');
+                    }, 1000);
+                });
+            }
+            
+            // Success badge click effect
+            const successBadge = document.getElementById('successBadge');
+            if (successBadge) {
+                successBadge.addEventListener('click', function() {
+                    createMiniConfetti(this);
+                });
+            }
+            
+            // Cancel order button
+            const cancelOrderBtn = document.querySelector('.btn-cancel-order');
+            if (cancelOrderBtn) {
+                cancelOrderBtn.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    
+                    Swal.fire({
+                        title: 'Cancel Order',
+                        text: 'Are you sure you want to cancel this order?',
+                        icon: 'warning',
+                        input: 'textarea',
+                        inputLabel: 'Reason for cancellation (optional)',
+                        inputPlaceholder: 'Please provide a reason for cancellation',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, cancel it!',
+                        cancelButtonText: 'No, keep my order'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const reason = result.value || '';
+                            
+                            // Show loading state
+                            Swal.fire({
+                                title: 'Processing...',
+                                text: 'Cancelling your order',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            // Send cancellation request
+                            fetch(`/orders/cancel/${orderId}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ reason }),
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Server responded with an error');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        title: 'Cancelled!',
+                                        text: 'Your order has been cancelled successfully.',
+                                        icon: 'success',
+                                        confirmButtonColor: '#3085d6'
+                                    }).then(() => {
+                                        window.location.href = '/orders';
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: data.message || 'Failed to cancel order',
+                                        icon: 'error',
+                                        confirmButtonColor: '#3085d6'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'An error occurred while cancelling the order. Please try again.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#3085d6'
+                                });
+                            });
+                        }
+                    });
+                });
+            }
+            
+            // Make sure all images are loaded properly
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                img.addEventListener('error', function() {
+                    this.src = '/Uploads/placeholder.jpg';
+                });
+            });
         }
     </script>
 </body>

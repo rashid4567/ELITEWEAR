@@ -1,128 +1,363 @@
+/* Base Styles */
 body {
-    font-family: Arial, sans-serif;
-}
-.top-bar {
-    background-color: #000;
-    color: white;
-    padding: 10px 0;
-}
-.logo {
-    font-weight: bold;
-    letter-spacing: 1px;
-}
-.search-box {
-    border-radius: 20px;
-    font-size: 14px;
-}
-.account-section {
-    padding: 30px 0;
-}
-.account-menu {
-    background-color: #fff;
-    border-radius: 15px;
-    padding: 15px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
-}
-.user-info {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
-}
-.user-circle {
-    width: 45px;
-    height: 45px;
-    background-color: #000;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    margin-right: 15px;
-}
-.menu-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 0;
-    color: #333;
-    text-decoration: none;
-}
-.menu-item i {
-    width: 25px;
-    margin-right: 10px;
-}
-.content-box {
-    background-color: #fff;
-    border-radius: 15px;
-    padding: 30px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    text-align: center;
-    height: 100%;
-}
-.logout-btn {
-    background-color: #000;
-    color: white;
-    border-radius: 20px;
-    padding: 8px 25px;
-    margin-top: 20px;
-}
-footer {
-    background-color: #000;
-    color: white;
-    padding: 30px 0 15px;
-}
-.footer-heading {
-    font-weight: bold;
-    margin-bottom: 15px;
-    font-size: 14px;
-}
-.footer-list {
-    list-style: none;
-    padding-left: 0;
-    font-size: 13px;
-}
-.footer-list li {
-    margin-bottom: 8px;
-}
-.footer-icons {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-}
-.footer-icon {
-    width: 30px;
-    height: 30px;
-    background-color: #333;
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.email-signup {
-    width: 100%;
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-.feature-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-}
-.feature-icon {
-    margin-right: 15px;
-}
-.breadcrumb {
-    margin-bottom: 20px;
-    font-size: 14px;
-}
-.badge-number {
+    font-family: "Poppins", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f8f9fa;
-    color: #000;
+    color: #212529;
+    line-height: 1.6;
+  }
+  
+  .main-container {
+    min-height: calc(100vh - 200px);
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Logout Container */
+  .logout-container {
+    padding: 20px;
+    width: 100%;
+    transform: translate(20vw, -96vh);
+  }
+  
+  .logout-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    position: relative;
+    transform: translateY(30px);
+    opacity: 0;
+    transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  
+  .logout-card.visible {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  
+  .logout-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, #000000, #333333);
+  }
+  
+  /* Card Header */
+  .card-header {
+    padding: 30px 40px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+  }
+  
+  .card-header h2 {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+  }
+  
+  .card-header .subtitle {
+    font-size: 16px;
+    color: #6c757d;
+    margin-bottom: 0;
+  }
+  
+  /* Card Body */
+  .card-body {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  /* Illustration */
+  .illustration-container {
+    margin-bottom: 30px;
+    position: relative;
+  }
+  
+  .illustration-wrapper {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .logout-illustration {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    position: relative;
+    z-index: 2;
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .illustration-shadow {
+    position: absolute;
+    bottom: -10px;
+    width: 70%;
+    height: 20px;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
     border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 12px;
-    margin-left: 5px;
-}
+    z-index: 1;
+    animation: shadow 6s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
+  
+  @keyframes shadow {
+    0% {
+      transform: scale(1);
+      opacity: 0.4;
+    }
+    50% {
+      transform: scale(0.9);
+      opacity: 0.2;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.4;
+    }
+  }
+  
+  /* Message */
+  .message-container {
+    text-align: center;
+    margin-bottom: 30px;
+    max-width: 600px;
+  }
+  
+  .farewell-message {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+  
+  .return-message {
+    font-size: 15px;
+    color: #6c757d;
+    line-height: 1.6;
+  }
+  
+  /* Action Buttons */
+  .action-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .btn-logout,
+  .btn-return {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-logout {
+    background: #000;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+  
+  .btn-return {
+    background: transparent;
+    color: #000;
+    border: 1px solid #000;
+  }
+  
+  .btn-logout i,
+  .btn-return i {
+    transition: transform 0.3s ease;
+  }
+  
+  .btn-logout:hover i,
+  .btn-return:hover i {
+    transform: translateX(3px);
+  }
+  
+  .btn-hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .btn-clicked {
+    animation: pulse 0.6s;
+  }
+  
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(0.95);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  /* Before You Go Section */
+  .before-you-go {
+    background: #f8f9fa;
+    padding: 30px 40px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .before-you-go h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .suggestions-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  
+  .suggestion-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.4s ease;
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  
+  .suggestion-item.visible {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  
+  .suggestion-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .suggestion-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #000;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .suggestion-content h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+  
+  .suggestion-content p {
+    font-size: 13px;
+    color: #6c757d;
+    margin-bottom: 0;
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 992px) {
+    .card-header {
+      padding: 25px 30px;
+    }
+  
+    .card-body {
+      padding: 30px;
+    }
+  
+    .before-you-go {
+      padding: 25px 30px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .main-container {
+      min-height: auto;
+      padding: 20px 0;
+    }
+  
+    .logout-card {
+      margin-top: 20px;
+    }
+  
+    .card-header h2 {
+      font-size: 24px;
+    }
+  
+    .illustration-wrapper {
+      width: 150px;
+      height: 150px;
+    }
+  
+    .action-container {
+      flex-direction: column;
+      width: 100%;
+    }
+  
+    .btn-logout,
+    .btn-return {
+      width: 100%;
+    }
+  
+    .suggestions-container {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .card-header {
+      padding: 20px;
+    }
+  
+    .card-body {
+      padding: 20px;
+    }
+  
+    .before-you-go {
+      padding: 20px;
+    }
+  
+    .farewell-message {
+      font-size: 16px;
+    }
+  
+    .return-message {
+      font-size: 14px;
+    }
+  }
+  

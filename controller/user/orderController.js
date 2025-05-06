@@ -339,7 +339,17 @@ const loadOrderSuccess = async (req, res) => {
       return res.redirect("/orders");
     }
 
-    const order = await Order.findById(orderId).populate("userId");
+    const order = await Order.findById(orderId)
+      .populate("userId")
+      .populate("address")
+      .populate({
+        path: "order_items",
+        populate: {
+          path: "productId",
+          select: "name",
+        },
+      });
+
     if (!order) {
       return res.redirect("/orders");
     }
@@ -362,18 +372,18 @@ const loadOrderSuccess = async (req, res) => {
 
 const getUserOrders = async (req, res) => {
   try {
-    const userId = req.session.user || req.user._id
-    const page = Number.parseInt(req.query.page) || 1
-    const limit = 3
-    const skip = (page - 1) * limit
+    const userId = req.session.user || req.user._id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = 3;
+    const skip = (page - 1) * limit;
 
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
     if (!user) {
-      return res.redirect("/login")
+      return res.redirect("/login");
     }
 
-    const totalOrders = await Order.countDocuments({ userId })
-    const totalPages = Math.ceil(totalOrders / limit)
+    const totalOrders = await Order.countDocuments({ userId });
+    const totalPages = Math.ceil(totalOrders / limit);
 
     const orders = await Order.find({ userId })
       .populate({
@@ -385,61 +395,64 @@ const getUserOrders = async (req, res) => {
       .populate("address")
       .sort({ orderDate: -1 })
       .skip(skip)
-      .limit(limit)
+      .limit(limit);
+
+    console.log(`Found ${orders.length} orders for user ${userId}`);
+
+    orders.forEach((order) => {
+      console.log(
+        `Order ${order._id}: Payment Method: ${order.paymentMethod}, Payment Status: ${order.paymentStatus}, Status: ${order.status}`
+      );
+    });
 
     const ordersWithProgress = orders.map((order) => {
-      let progressWidth = 0
-      let displayStatus = order.status
-
-      // Handle payment failure case
-      if (order.paymentStatus === "Failed") {
-        displayStatus = "Payment Failed"
-        progressWidth = 20
-      } else {
-        switch (order.status) {
-          case "Pending":
-            progressWidth = 20
-            break
-          case "Processing":
-            progressWidth = 40
-            break
-          case "Shipped":
-            progressWidth = 60
-            break
-          case "Out for Delivery":
-            progressWidth = 80
-            break
-          case "Delivered":
-          case "Returned":
-            progressWidth = 100
-            break
-          case "Cancelled":
-          case "Return Rejected":
-            progressWidth = 100
-            break
-          case "Return Requested":
-            progressWidth = 70
-            break
-          case "Return Approved":
-            progressWidth = 85
-            break
-          case "Partially Cancelled":
-          case "Partially Returned":
-          case "Partially Delivered":
-          case "Partially Shipped":
-            progressWidth = 75
-            break
-          default:
-            progressWidth = 0
-        }
+      if (
+        order.paymentMethod === "Online" &&
+        (order.paymentStatus === "Failed" || order.paymentStatus === "Pending")
+      ) {
+        console.log(`Order ${order._id} has failed/pending payment status`);
+        return { ...order.toObject(), progressWidth: 0 };
       }
 
-      return {
-        ...order.toObject(),
-        progressWidth,
-        displayStatus: displayStatus,
+      let progressWidth = 0;
+      switch (order.status) {
+        case "Pending":
+          progressWidth = 20;
+          break;
+        case "Processing":
+          progressWidth = 40;
+          break;
+        case "Shipped":
+          progressWidth = 60;
+          break;
+        case "Out for Delivery":
+          progressWidth = 80;
+          break;
+        case "Delivered":
+        case "Returned":
+          progressWidth = 100;
+          break;
+        case "Cancelled":
+        case "Return Rejected":
+          progressWidth = 100;
+          break;
+        case "Return Requested":
+          progressWidth = 70;
+          break;
+        case "Return Approved":
+          progressWidth = 85;
+          break;
+        case "Partially Cancelled":
+        case "Partially Returned":
+        case "Partially Delivered":
+        case "Partially Shipped":
+          progressWidth = 75;
+          break;
+        default:
+          progressWidth = 0;
       }
-    })
+      return { ...order.toObject(), progressWidth };
+    });
 
     res.render("orders", {
       title: "My Orders",
@@ -449,20 +462,20 @@ const getUserOrders = async (req, res) => {
       currentPage: page,
       totalPages,
       page: "orders",
-    })
+    });
   } catch (error) {
-    console.error("Error getting user orders:", error)
-    res.redirect("/")
+    console.error("Error getting user orders:", error);
+    res.redirect("/");
   }
-}
+};
 const getOrderDetails = async (req, res) => {
   try {
-    const userId = req.session.user || req.user._id
-    const orderId = req.params.id
+    const userId = req.session.user || req.user._id;
+    const orderId = req.params.id;
 
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
     if (!user) {
-      return res.redirect("/login")
+      return res.redirect("/login");
     }
 
     const order = await Order.findOne({
@@ -475,13 +488,15 @@ const getOrderDetails = async (req, res) => {
           path: "productId",
         },
       })
-      .populate("address")
+      .populate("address");
 
     if (!order) {
-      return res.redirect("/orders")
+      return res.redirect("/orders");
     }
 
-    const orderItems = await OrderItem.find({ orderId: order._id }).populate("productId")
+    const orderItems = await OrderItem.find({ orderId: order._id }).populate(
+      "productId"
+    );
 
     res.render("orderDetails", {
       title: "Order Details",
@@ -489,132 +504,12 @@ const getOrderDetails = async (req, res) => {
       order,
       orderItems,
       page: "order-details",
-      showPaymentButton: order.paymentStatus === "Failed",
-    })
+    });
   } catch (error) {
-    console.error("Error getting order details:", error)
-    res.redirect("/orders")
+    console.error("Error getting order details:", error);
+    res.redirect("/orders");
   }
-}
-
-
-const completePayment = async (req, res) => {
-  try {
-    const userId = req.session.user || req.user._id
-    const orderId = req.params.id
-    const { paymentMethod } = req.body
-
-    const user = await User.findById(userId)
-    if (!user) {
-      return res.status(401).json({ success: false, message: "User not found" })
-    }
-
-    const order = await Order.findOne({
-      _id: orderId,
-      userId,
-    })
-
-    if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found" })
-    }
-
-    if (order.paymentStatus !== "Failed") {
-      return res.status(400).json({
-        success: false,
-        message: "This order doesn't require payment completion",
-      })
-    }
-
-    if (paymentMethod === "Wallet") {
-      // Check wallet balance
-      if (user.walletBalance < order.total) {
-        return res.status(400).json({
-          success: false,
-          message: "Insufficient wallet balance",
-        })
-      }
-
-      // Deduct from wallet
-      user.walletBalance -= order.total
-      await user.save()
-
-      // Add transaction to wallet
-      let wallet = await Wallet.findOne({ userId })
-      if (!wallet) {
-        wallet = new Wallet({
-          userId,
-          amount: 0,
-          transactions: [],
-        })
-      }
-
-      wallet.transactions.push({
-        amount: order.total,
-        type: "debit",
-        description: `Payment for order #${order.orderNumber}`,
-        transactionRef: generateTransactionId(),
-        date: new Date(),
-      })
-      await wallet.save()
-
-      // Update order
-      order.paymentStatus = "Completed"
-      order.status = "Processing"
-      order.statusHistory.push({
-        status: "Processing",
-        date: new Date(),
-        note: "Payment completed using wallet",
-      })
-      await order.save()
-
-      return res.status(200).json({
-        success: true,
-        message: "Payment completed successfully",
-        redirect: `/order-details/${orderId}`,
-      })
-    } else if (paymentMethod === "Razorpay") {
-      // Create Razorpay order for the pending payment
-      const response = await fetch("/create-razorpay-order", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          orderId: order._id,
-          isPaymentCompletion: true,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!data.success) {
-        return res.status(400).json({
-          success: false,
-          message: data.message || "Failed to create payment",
-        })
-      }
-
-      return res.status(200).json({
-        success: true,
-        message: "Razorpay order created",
-        key: data.key,
-        order: data.order,
-        user: data.user,
-      })
-    } else {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid payment method",
-      })
-    }
-  } catch (error) {
-    console.error("Error completing payment:", error)
-    return res.status(500).json({
-      success: false,
-      message: "Failed to complete payment. Please try again.",
-    })
-  }
-}
+};
 
 const trackOrder = async (req, res) => {
   try {
@@ -890,46 +785,73 @@ const trackOrder = async (req, res) => {
 const cancelOrderItem = async (req, res) => {
   try {
     const itemId = req.params.itemId || req.params.orderItemId;
-
-    if (!itemId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Item ID is required" });
-    }
-
     const userId = req.session.user || req.user._id;
     const { cancelReason } = req.body;
 
+    console.log(
+      `[INFO] Processing cancellation for item ${itemId} by user ${userId}`
+    );
+
     if (!cancelReason) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Cancellation reason is required" });
+      return res.status(400).json({
+        success: false,
+        message: "Cancellation reason is required",
+      });
     }
 
     const orderItem = await OrderItem.findById(itemId);
     if (!orderItem) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Order item not found" });
+      console.log(`[ERROR] Order item not found: ${itemId}`);
+      return res.status(404).json({
+        success: false,
+        message: "Order item not found",
+      });
     }
 
     const order = await Order.findById(orderItem.orderId);
     if (!order) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Parent order not found" });
+      console.log(`[ERROR] Parent order not found for item: ${itemId}`);
+      return res.status(404).json({
+        success: false,
+        message: "Parent order not found",
+      });
     }
 
     if (order.userId.toString() !== userId.toString()) {
-      return res
-        .status(403)
-        .json({ success: false, message: "Unauthorized access to this order" });
+      console.log(
+        `[ERROR] Unauthorized cancellation attempt for item ${itemId} by user ${userId}`
+      );
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to cancel this item",
+      });
     }
 
-    if (!["Processing", "Pending"].includes(orderItem.status)) {
+    const cancellableStates = ["Processing", "Pending"];
+    if (!cancellableStates.includes(orderItem.status)) {
+      console.log(
+        `[ERROR] Item ${itemId} cannot be cancelled in state: ${orderItem.status}`
+      );
       return res.status(400).json({
         success: false,
-        message: "This item cannot be cancelled in its current status",
+        message: `This item cannot be cancelled in its current status (${orderItem.status})`,
+      });
+    }
+
+    if (
+      ![
+        "Processing",
+        "Pending",
+        "Partially Shipped",
+        "Partially Delivered",
+      ].includes(order.status)
+    ) {
+      console.log(
+        `[ERROR] Order ${order._id} cannot have items cancelled in state: ${order.status}`
+      );
+      return res.status(400).json({
+        success: false,
+        message: `Cannot cancel items from an order in ${order.status} status`,
       });
     }
 
@@ -948,114 +870,182 @@ const cancelOrderItem = async (req, res) => {
     });
 
     await orderItem.save();
+    console.log(`[INFO] Item ${itemId} status updated to Cancelled`);
 
-    const product = await Product.findById(orderItem.productId);
-    if (product) {
-      const variantIndex = product.variants.findIndex(
-        (v) => v.size === orderItem.size
-      );
-      if (variantIndex !== -1) {
-        product.variants[variantIndex].varientquatity += orderItem.quantity;
-        await product.save();
-      } else {
-        console.log(
-          `[DEBUG] Product variant not found for size: ${orderItem.size}`
+    try {
+      const product = await Product.findById(orderItem.productId);
+      if (product) {
+        const variantIndex = product.variants.findIndex(
+          (v) => v.size === orderItem.size
         );
+        if (variantIndex !== -1) {
+          product.variants[variantIndex].varientquatity += orderItem.quantity;
+          await product.save();
+          console.log(
+            `[INFO] Restored ${orderItem.quantity} units to inventory for product ${orderItem.productId}`
+          );
+        } else {
+          console.log(
+            `[WARN] Product variant not found for size: ${orderItem.size}`
+          );
+        }
+      } else {
+        console.log(`[WARN] Product not found: ${orderItem.productId}`);
       }
-    } else {
-      console.log(`[DEBUG] Product not found: ${orderItem.productId}`);
+    } catch (inventoryError) {
+      console.error(
+        `[ERROR] Failed to restore inventory: ${inventoryError.message}`
+      );
     }
 
-    const refundAmount = orderItem.total_amount;
+    let refundAmount = 0;
+    let refundProcessed = false;
 
     if (
       order.paymentStatus === "Paid" ||
       order.paymentMethod === "Wallet" ||
-      order.paymentMethod === "Online"
+      (order.paymentMethod === "Online" && order.paymentStatus === "Completed")
     ) {
-      await processRefundToWallet(
-        userId,
-        refundAmount,
-        order.orderNumber,
-        `Refund for cancelled item: ${orderItem.product_name}`
-      );
-      orderItem.refunded = true;
-      orderItem.refundAmount = refundAmount;
-      orderItem.refundDate = new Date();
-      await orderItem.save();
+      refundAmount = orderItem.total_amount;
+
+      try {
+        await processRefundToWallet(
+          userId,
+          refundAmount,
+          order.orderNumber,
+          `Refund for cancelled item: ${orderItem.product_name}`
+        );
+
+        orderItem.refunded = true;
+        orderItem.refundAmount = refundAmount;
+        orderItem.refundDate = new Date();
+        await orderItem.save();
+
+        refundProcessed = true;
+        console.log(
+          `[INFO] Refund of ₹${refundAmount} processed for item ${itemId}`
+        );
+      } catch (refundError) {
+        console.error(
+          `[ERROR] Failed to process refund: ${refundError.message}`
+        );
+      }
     }
 
     const newOrderStatus = await updateOrderStatusHelper(order._id);
+    console.log(
+      `[INFO] Order ${order._id} status updated to ${newOrderStatus}`
+    );
 
     return res.status(200).json({
       success: true,
       message: "Item cancelled successfully",
-      refundAmount: refundAmount,
+      item: {
+        id: orderItem._id,
+        name: orderItem.product_name,
+        status: orderItem.status,
+        cancelReason: orderItem.cancelReason,
+        cancelledAt: orderItem.cancelledAt,
+      },
+      order: {
+        id: order._id,
+        orderNumber: order.orderNumber,
+        status: newOrderStatus,
+      },
+      refund: refundProcessed
+        ? {
+            amount: refundAmount,
+            method: "Wallet",
+            processed: true,
+          }
+        : null,
     });
   } catch (error) {
-    console.error("[ERROR] Error cancelling order item:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to cancel item" });
+    console.error(
+      `[ERROR] Error cancelling order item: ${error.message}`,
+      error
+    );
+    return res.status(500).json({
+      success: false,
+      message: "Failed to cancel item. Please try again.",
+      error: error.message,
+    });
   }
 };
 
 const returnOrderItem = async (req, res) => {
   try {
     const itemId = req.params.itemId || req.params.orderItemId;
-
-    if (!itemId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Item ID is required" });
-    }
-
     const userId = req.session.user || req.user._id;
     const { returnReason } = req.body;
 
+    console.log(
+      `[INFO] Processing return request for item ${itemId} by user ${userId}`
+    );
+
     if (!returnReason) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Return reason is required" });
+      return res.status(400).json({
+        success: false,
+        message: "Return reason is required",
+      });
     }
 
     const orderItem = await OrderItem.findById(itemId);
     if (!orderItem) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Order item not found" });
+      console.log(`[ERROR] Order item not found: ${itemId}`);
+      return res.status(404).json({
+        success: false,
+        message: "Order item not found",
+      });
     }
 
     const order = await Order.findById(orderItem.orderId);
     if (!order) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Parent order not found" });
+      console.log(`[ERROR] Parent order not found for item: ${itemId}`);
+      return res.status(404).json({
+        success: false,
+        message: "Parent order not found",
+      });
     }
 
     if (order.userId.toString() !== userId.toString()) {
-      return res
-        .status(403)
-        .json({ success: false, message: "Unauthorized access to this order" });
+      console.log(
+        `[ERROR] Unauthorized return attempt for item ${itemId} by user ${userId}`
+      );
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to return this item",
+      });
     }
 
     if (orderItem.status !== "Delivered") {
+      console.log(
+        `[ERROR] Item ${itemId} cannot be returned in state: ${orderItem.status}`
+      );
       return res.status(400).json({
         success: false,
-        message: "Only delivered items can be returned",
+        message: `Only delivered items can be returned. Current status: ${orderItem.status}`,
       });
     }
 
     const deliveryDate =
-      order.deliveryDate || order.updatedAt || order.orderDate;
-    const returnPeriod = 7 * 24 * 60 * 60 * 1000;
-    if (Date.now() - deliveryDate.getTime() > returnPeriod) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Return period has expired (14 days)",
-        });
+      order.deliveryDate ||
+      order.statusHistory?.find((h) => h.status === "Delivered")?.date ||
+      order.updatedAt ||
+      order.orderDate;
+
+    const returnPeriodDays = 7;
+    const returnDeadline = new Date(deliveryDate);
+    returnDeadline.setDate(returnDeadline.getDate() + returnPeriodDays);
+
+    if (new Date() > returnDeadline) {
+      console.log(
+        `[ERROR] Return period expired for item ${itemId}. Delivery date: ${deliveryDate}, Deadline: ${returnDeadline}`
+      );
+      return res.status(400).json({
+        success: false,
+        message: `Return period of ${returnPeriodDays} days has expired. Last date for return was ${returnDeadline.toLocaleDateString()}`,
+      });
     }
 
     orderItem.status = "Return Requested";
@@ -1073,18 +1063,41 @@ const returnOrderItem = async (req, res) => {
     });
 
     await orderItem.save();
+    console.log(`[INFO] Item ${itemId} status updated to Return Requested`);
 
     const newOrderStatus = await updateOrderStatusHelper(order._id);
+    console.log(
+      `[INFO] Order ${order._id} status updated to ${newOrderStatus}`
+    );
 
     return res.status(200).json({
       success: true,
       message: "Return request submitted successfully",
+      item: {
+        id: orderItem._id,
+        name: orderItem.product_name,
+        status: orderItem.status,
+        returnReason: orderItem.returnReason,
+        returnRequestedDate: orderItem.returnRequestedDate,
+      },
+      order: {
+        id: order._id,
+        orderNumber: order.orderNumber,
+        status: newOrderStatus,
+      },
+      nextSteps:
+        "Your return request has been submitted and is pending approval. You will be notified once it's approved.",
     });
   } catch (error) {
-    console.error("[ERROR] Error requesting return for order item:", error);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to submit return request" });
+    console.error(
+      `[ERROR] Error processing return request: ${error.message}`,
+      error
+    );
+    return res.status(500).json({
+      success: false,
+      message: "Failed to submit return request. Please try again.",
+      error: error.message,
+    });
   }
 };
 
@@ -1376,290 +1389,468 @@ const downloadInvoice = async (req, res) => {
       return res.redirect("/orders");
     }
 
-    const orderItems = await OrderItem.find({ orderId: order._id });
-
-    // Get address
+    const orderItems = await OrderItem.find({ orderId: order._id }).populate(
+      "productId"
+    );
     const address = await Address.findById(order.address);
+
     if (!address) {
       return res.redirect("/orders");
     }
 
-    const doc = new PDFDocument({
-      margin: 50,
-      size: "A4",
-      info: {
-        Title: `Invoice - ${order.orderNumber}`,
-        Author: "ELITE WEAR",
-        Subject: "Order Invoice",
-      },
+    let subtotal = 0;
+    orderItems.forEach((item) => {
+      subtotal += item.price * item.quantity;
     });
 
-    const invoiceFilename = `invoice-${order.orderNumber}.pdf`;
-
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${invoiceFilename}"`
-    );
-
-    doc.pipe(res);
-
-    const primaryColor = "#2c3e50";
-    const secondaryColor = "#3498db";
-    const accentColor = "#e74c3c";
-    const lightGray = "#ecf0f1";
-    const mediumGray = "#bdc3c7";
-    const darkGray = "#7f8c8d";
-
-    doc
-      .rect(20, 20, doc.page.width - 40, doc.page.height - 40)
-      .lineWidth(1)
-      .stroke(primaryColor);
-
-    doc.rect(50, 50, doc.page.width - 100, 80).fill(primaryColor);
-
-    doc
-      .fontSize(28)
-      .fillColor("white")
-      .font("Helvetica-Bold")
-      .text("ELITE WEAR", 0, 75, { align: "center" });
-
-    doc
-      .fontSize(14)
-      .fillColor("white")
-      .font("Helvetica")
-      .text("INVOICE", 0, 110, { align: "center" });
-
-    doc
-      .rect(350, 150, 200, 100)
-      .lineWidth(1)
-      .fillColor(lightGray)
-      .fill()
-      .stroke(primaryColor);
-
-    doc
-      .fillColor(primaryColor)
-      .fontSize(14)
-      .font("Helvetica-Bold")
-      .text("INVOICE DETAILS", 360, 160);
-
-    doc
-      .fontSize(10)
-      .font("Helvetica")
-      .text(`Invoice Number: ${order.orderNumber}`, 360, 180)
-      .text(
-        `Date: ${new Date(order.orderDate).toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}`,
-        360,
-        195
-      )
-      .text(`Payment Method: ${order.paymentMethod}`, 360, 210)
-      .text(`Payment Status: ${order.paymentStatus}`, 360, 225);
-
-    doc
-      .rect(50, 150, 280, 100)
-      .lineWidth(1)
-      .fillColor(lightGray)
-      .fill()
-      .stroke(primaryColor);
-
-    doc
-      .fillColor(primaryColor)
-      .fontSize(14)
-      .font("Helvetica-Bold")
-      .text("CUSTOMER DETAILS", 60, 160);
-
-    doc
-      .fontSize(10)
-      .font("Helvetica")
-      .text(`Name: ${order.userId.fullname}`, 60, 180)
-      .text(`Email: ${order.userId.email}`, 60, 195);
-
-    doc
-      .rect(50, 270, 500, 100)
-      .lineWidth(1)
-      .fillColor(lightGray)
-      .fill()
-      .stroke(primaryColor);
-
-    doc
-      .fillColor(primaryColor)
-      .fontSize(14)
-      .font("Helvetica-Bold")
-      .text("SHIPPING ADDRESS", 60, 280);
-
-    doc
-      .fontSize(10)
-      .font("Helvetica")
-      .text(`${address.fullname}`, 60, 300)
-      .text(`${address.address}`, 60, 315)
-      .text(`${address.city}, ${address.district}`, 60, 330)
-      .text(`${address.state} - ${address.pincode}`, 60, 345)
-      .text(`Phone: ${address.mobile}`, 60, 360);
-
-    const tableTop = 390;
-    const tableBottom = 650;
-    const tableWidth = 500;
-
-    doc.rect(50, tableTop, tableWidth, 25).fillColor(secondaryColor).fill();
-
-    doc
-      .fillColor("white")
-      .fontSize(10)
-      .font("Helvetica-Bold")
-      .text("ITEM", 60, tableTop + 8)
-      .text("DESCRIPTION", 180, tableTop + 8)
-      .text("QTY", 320, tableTop + 8)
-      .text("PRICE", 380, tableTop + 8)
-      .text("AMOUNT", 450, tableTop + 8);
-
-    let y = tableTop + 25;
-    let totalAmount = 0;
-    let alternateRow = false;
-
-    for (const item of orderItems) {
-      const itemTotal = item.price * item.quantity;
-      totalAmount += itemTotal;
-
-      if (alternateRow) {
-        doc.rect(50, y, tableWidth, 20).fillColor(lightGray).fill();
-      }
-      alternateRow = !alternateRow;
-
-      doc
-        .fillColor(primaryColor)
-        .fontSize(9)
-        .font("Helvetica")
-        .text(item.product_name.substring(0, 20), 60, y + 5, { width: 110 })
-        .text(`Size: ${item.size}`, 180, y + 5)
-        .text(item.quantity.toString(), 320, y + 5)
-        .text(`₹${item.price.toFixed(2)}`, 380, y + 5)
-        .text(`₹${itemTotal.toFixed(2)}`, 450, y + 5);
-
-      y += 20;
-
-      if (y > tableBottom - 20) {
-        doc.addPage();
-        y = 50;
-
-        doc.rect(50, y, tableWidth, 25).fillColor(secondaryColor).fill();
-
-        doc
-          .fillColor("white")
-          .fontSize(10)
-          .font("Helvetica-Bold")
-          .text("ITEM", 60, y + 8)
-          .text("DESCRIPTION", 180, y + 8)
-          .text("QTY", 320, y + 8)
-          .text("PRICE", 380, y + 8)
-          .text("AMOUNT", 450, y + 8);
-
-        y += 25;
-      }
-    }
-
-    doc
-      .rect(50, tableTop, tableWidth, y - tableTop)
-      .lineWidth(1)
-      .stroke(primaryColor);
-
-    doc
-      .moveTo(170, tableTop)
-      .lineTo(170, y)
-      .moveTo(310, tableTop)
-      .lineTo(310, y)
-      .moveTo(370, tableTop)
-      .lineTo(370, y)
-      .moveTo(440, tableTop)
-      .lineTo(440, y)
-      .stroke(mediumGray);
-
-    const summaryX = 300;
-    const summaryWidth = 250;
-    const summaryY = y + 20;
-
-    doc
-      .rect(summaryX, summaryY, summaryWidth, 100)
-      .lineWidth(1)
-      .fillColor(lightGray)
-      .fill()
-      .stroke(primaryColor);
-
-    doc
-      .fillColor(primaryColor)
-      .fontSize(10)
-      .font("Helvetica")
-      .text("Subtotal:", summaryX + 20, summaryY + 15)
-      .text("Delivery Charge:", summaryX + 20, summaryY + 35)
-      .fontSize(12)
-      .font("Helvetica-Bold")
-      .text("TOTAL:", summaryX + 20, summaryY + 65);
+    const formatDate = (date) => {
+      return new Date(date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    };
 
     const deliveryCharge = order.total > 8000 ? 0 : 200;
 
-    doc
-      .fontSize(10)
-      .font("Helvetica")
-      .text(`₹${totalAmount.toFixed(2)}`, summaryX + 150, summaryY + 15, {
-        align: "right",
-      })
-      .text(`₹${deliveryCharge.toFixed(2)}`, summaryX + 150, summaryY + 35, {
-        align: "right",
-      });
+    const discount = order.discount || 0;
 
-    if (order.discount > 0) {
-      doc
-        .fillColor(accentColor)
-        .text("Discount:", summaryX + 20, summaryY + 55)
-        .text(`-₹${order.discount.toFixed(2)}`, summaryX + 150, summaryY + 55, {
-          align: "right",
-        });
-    }
+    const invoiceHtml = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Invoice #${order.orderNumber} - Elite Wear</title>
+      <style>
+        /* Reset & Base Styles */
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        
+        body {
+          font-family: 'Helvetica Neue', Arial, sans-serif;
+          font-size: 14px;
+          line-height: 1.6;
+          color: #333;
+          background-color: #fff;
+          padding: 0;
+          margin: 0;
+        }
+        
+        /* Container */
+        .invoice-container {
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 40px;
+          position: relative;
+          background-color: #fff;
+        }
+        
+        /* Header */
+        .invoice-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 50px;
+          border-bottom: 1px solid #eaeaea;
+          padding-bottom: 30px;
+        }
+        
+        .brand {
+          font-size: 32px;
+          font-weight: 700;
+          color: #000;
+          letter-spacing: 1px;
+          margin-bottom: 5px;
+        }
+        
+        .invoice-title {
+          font-size: 28px;
+          font-weight: 300;
+          color: #000;
+          text-align: right;
+          margin-bottom: 15px;
+        }
+        
+        .invoice-details {
+          text-align: right;
+        }
+        
+        .invoice-details div {
+          margin-bottom: 5px;
+        }
+        
+        .invoice-details .label {
+          font-weight: 600;
+          color: #666;
+          margin-right: 10px;
+        }
+        
+        .invoice-details .value {
+          font-weight: 400;
+        }
+        
+        /* Sections */
+        .invoice-section {
+          margin-bottom: 30px;
+        }
+        
+        .section-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: #000;
+          margin-bottom: 15px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        
+        .address-container {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 40px;
+        }
+        
+        .address-box {
+          width: 48%;
+        }
+        
+        .address-content {
+          padding: 15px;
+          border: 1px solid #eaeaea;
+          border-radius: 4px;
+          background-color: #fafafa;
+          min-height: 120px;
+        }
+        
+        /* Table */
+        .invoice-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 30px;
+        }
+        
+        .invoice-table th {
+          background-color: #000;
+          color: #fff;
+          font-weight: 600;
+          text-align: left;
+          padding: 12px 15px;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        
+        .invoice-table td {
+          padding: 12px 15px;
+          border-bottom: 1px solid #eaeaea;
+          vertical-align: top;
+        }
+        
+        .invoice-table .item-image {
+          width: 60px;
+          height: 60px;
+          object-fit: cover;
+          border-radius: 4px;
+          margin-right: 10px;
+          border: 1px solid #eaeaea;
+        }
+        
+        .invoice-table .item-details {
+          display: flex;
+          align-items: center;
+        }
+        
+        .invoice-table .item-name {
+          font-weight: 600;
+        }
+        
+        .invoice-table .item-size {
+          color: #666;
+          font-size: 12px;
+          margin-top: 3px;
+        }
+        
+        .invoice-table .text-right {
+          text-align: right;
+        }
+        
+        .invoice-table .text-center {
+          text-align: center;
+        }
+        
+        /* Summary */
+        .invoice-summary {
+          width: 350px;
+          margin-left: auto;
+          margin-bottom: 40px;
+        }
+        
+        .summary-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 10px 0;
+          border-bottom: 1px solid #eaeaea;
+        }
+        
+        .summary-row.total {
+          border-top: 2px solid #000;
+          border-bottom: 2px solid #000;
+          font-weight: 700;
+          font-size: 16px;
+          margin-top: 10px;
+          padding: 15px 0;
+        }
+        
+        .summary-row .discount {
+          color: #e74c3c;
+        }
+        
+        /* Footer */
+        .invoice-footer {
+          margin-top: 50px;
+          text-align: center;
+          color: #666;
+          font-size: 12px;
+          border-top: 1px solid #eaeaea;
+          padding-top: 20px;
+        }
+        
+        .invoice-footer p {
+          margin-bottom: 5px;
+        }
+        
+        .thank-you {
+          font-size: 18px;
+          font-weight: 600;
+          color: #000;
+          margin-bottom: 10px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        
+        /* Print Styles */
+        @media print {
+          body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          
+          .invoice-container {
+            padding: 20px;
+            max-width: 100%;
+          }
+          
+          .no-print {
+            display: none !important;
+          }
+          
+          .page-break {
+            page-break-before: always;
+          }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+          .invoice-container {
+            padding: 20px;
+          }
+          
+          .invoice-header {
+            flex-direction: column;
+          }
+          
+          .invoice-title, .invoice-details {
+            text-align: left;
+            margin-top: 20px;
+          }
+          
+          .address-container {
+            flex-direction: column;
+          }
+          
+          .address-box {
+            width: 100%;
+            margin-bottom: 20px;
+          }
+          
+          .invoice-summary {
+            width: 100%;
+          }
+        }
+        
+        /* Print Button */
+        .print-button {
+          position: absolute;
+          top: 40px;
+          right: 40px;
+          padding: 10px 20px;
+          background-color: #000;
+          color: #fff;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: 600;
+          text-transform: uppercase;
+          font-size: 12px;
+          letter-spacing: 1px;
+          transition: all 0.3s ease;
+        }
+        
+        .print-button:hover {
+          background-color: #333;
+        }
+        
+        @media print {
+          .print-button {
+            display: none;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="invoice-container">
+        <button class="print-button no-print" onclick="window.print()">Print Invoice</button>
+        
+        <div class="invoice-header">
+          <div>
+            <div class="brand">ELITE WEAR</div>
+            <div>Luxury Fashion & Accessories</div>
+          </div>
+          
+          <div>
+            <div class="invoice-title">INVOICE</div>
+            <div class="invoice-details">
+              <div><span class="label">Invoice #:</span> <span class="value">${
+                order.orderNumber
+              }</span></div>
+              <div><span class="label">Date:</span> <span class="value">${formatDate(
+                order.orderDate
+              )}</span></div>
+              <div><span class="label">Due Date:</span> <span class="value">${formatDate(
+                new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000)
+              )}</span></div>
+              <div><span class="label">Payment Status:</span> <span class="value">${
+                order.paymentStatus
+              }</span></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="address-container">
+          <div class="address-box">
+            <div class="section-title">Bill To</div>
+            <div class="address-content">
+              <div><strong>${order.userId.fullname}</strong></div>
+              <div>${order.userId.email}</div>
+              <div>${order.userId.mobile || ""}</div>
+            </div>
+          </div>
+          
+          <div class="address-box">
+            <div class="section-title">Ship To</div>
+            <div class="address-content">
+              <div><strong>${address.fullname}</strong></div>
+              <div>${address.address}</div>
+              <div>${address.city}, ${address.district}</div>
+              <div>${address.state} - ${address.pincode}</div>
+              <div>Phone: ${address.mobile}</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="invoice-section">
+          <div class="section-title">Order Items</div>
+          <table class="invoice-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th class="text-center">Quantity</th>
+                <th class="text-right">Price</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${orderItems
+                .map(
+                  (item) => `
+                <tr>
+                  <td>
+                    <div class="item-details">
+                      ${
+                        item.itemImage
+                          ? `<img src="${item.itemImage}" class="item-image" alt="${item.product_name}">`
+                          : ""
+                      }
+                      <div>
+                        <div class="item-name">${item.product_name}</div>
+                        <div class="item-size">Size: ${item.size}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-center">${item.quantity}</td>
+                  <td class="text-right">₹${item.price.toFixed(2)}</td>
+                  <td class="text-right">₹${(
+                    item.price * item.quantity
+                  ).toFixed(2)}</td>
+                </tr>
+              `
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="invoice-summary">
+          <div class="summary-row">
+            <div>Subtotal</div>
+            <div>₹${subtotal.toFixed(2)}</div>
+          </div>
+          <div class="summary-row">
+            <div>Delivery Charge</div>
+            <div>₹${deliveryCharge.toFixed(2)}</div>
+          </div>
+          ${
+            discount > 0
+              ? `
+          <div class="summary-row">
+            <div>Discount</div>
+            <div class="discount">-₹${discount.toFixed(2)}</div>
+          </div>
+          `
+              : ""
+          }
+          <div class="summary-row total">
+            <div>Total</div>
+            <div>₹${order.total.toFixed(2)}</div>
+          </div>
+        </div>
+        
+        <div class="invoice-footer">
+          <div class="thank-you">Thank You For Your Business</div>
+          <p>If you have any questions about this invoice, please contact</p>
+          <p>Email: info@elitewear.com | Phone: +91 123 456 7890</p>
+          <p>123 Fashion Avenue, New York, NY 10001</p>
+        </div>
+      </div>
+      
+      <script>
+        // Auto-print when page loads (optional)
+        // window.onload = function() {
+        //   window.print();
+        // }
+      </script>
+    </body>
+    </html>
+    `;
 
-    doc
-      .fillColor(primaryColor)
-      .fontSize(12)
-      .font("Helvetica-Bold")
-      .text(`₹${order.total.toFixed(2)}`, summaryX + 150, summaryY + 65, {
-        align: "right",
-      });
+    const filename = `elite-wear-invoice-${order.orderNumber}.html`;
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
-    const footerY = doc.page.height - 100;
-
-    doc.rect(50, footerY, 500, 50).lineWidth(1).fillColor(primaryColor).fill();
-
-    doc
-      .fillColor("white")
-      .fontSize(10)
-      .font("Helvetica")
-      .text("Thank you for shopping with ELITE WEAR!", 0, footerY + 15, {
-        align: "center",
-      })
-      .fontSize(8)
-      .text(
-        "For any questions regarding your order, please contact our customer service.",
-        0,
-        footerY + 30,
-        { align: "center" }
-      );
-
-    doc
-      .rect(50, y + 20, 200, 100)
-      .lineWidth(1)
-      .stroke(mediumGray);
-
-    doc
-      .fontSize(10)
-      .fillColor(darkGray)
-      .text("Scan to verify purchase", 75, y + 60, {
-        align: "center",
-        width: 150,
-      });
-
-    doc.end();
+    res.send(invoiceHtml);
   } catch (error) {
     console.error("Error generating invoice:", error);
     res.redirect("/orders");
@@ -1750,6 +1941,328 @@ const checkOrderUpdateability = async (req, res) => {
     });
   }
 };
+const handlePaymentFailure = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const userId = req.session.user || req.user._id;
+    const { failureReason, paymentId } = req.body;
+
+    console.log(`[INFO] Handling payment failure for order ${orderId}`);
+
+    const order = await Order.findOne({ _id: orderId, userId });
+
+    if (!order) {
+      console.log(`[ERROR] Order not found: ${orderId} for user ${userId}`);
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    order.paymentStatus = "Failed";
+    order.paymentFailureReason = failureReason || "Payment processing failed";
+    order.failedPaymentId = paymentId;
+    order.paymentFailedAt = new Date();
+
+    if (!order.statusHistory) {
+      order.statusHistory = [];
+    }
+
+    order.statusHistory.push({
+      status: "Payment Failed",
+      date: new Date(),
+      note: `Payment attempt failed: ${failureReason || "Unknown reason"}`,
+    });
+
+    await order.save();
+
+    console.log(`[INFO] Order ${orderId} payment status updated to Failed`);
+
+    return res.json({
+      success: true,
+      message: "Payment status updated to failed",
+      order: {
+        id: order._id,
+        orderNumber: order.orderNumber,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+      },
+    });
+  } catch (error) {
+    console.error("[ERROR] Error handling payment failure:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update payment status",
+      error: error.message,
+    });
+  }
+};
+
+const getPaymentRetryOptions = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const userId = req.session.user || req.user._id;
+
+    console.log(`[INFO] Getting payment retry options for order ${orderId}`);
+
+    const order = await Order.findOne({ _id: orderId, userId });
+
+    if (!order) {
+      console.log(`[ERROR] Order not found: ${orderId} for user ${userId}`);
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    if (!["Failed", "Pending"].includes(order.paymentStatus)) {
+      console.log(
+        `[ERROR] Payment cannot be retried for order ${orderId} with status ${order.paymentStatus}`
+      );
+      return res.status(400).json({
+        success: false,
+        message: "Payment cannot be retried for this order",
+      });
+    }
+
+    const maxRetryAttempts = 3;
+    if ((order.paymentRetryCount || 0) >= maxRetryAttempts) {
+      console.log(
+        `[ERROR] Maximum retry attempts reached for order ${orderId}`
+      );
+      return res.status(400).json({
+        success: false,
+        message: `Maximum payment retry attempts (${maxRetryAttempts}) reached. Please contact customer support.`,
+      });
+    }
+
+    const paymentMethods = [
+      {
+        id: "razorpay",
+        name: "Credit/Debit Card",
+        icon: "credit-card",
+        description: "Pay securely with your credit or debit card",
+      },
+      {
+        id: "razorpay_upi",
+        name: "UPI",
+        icon: "mobile",
+        description: "Pay using UPI apps like Google Pay, PhonePe, etc.",
+      },
+      {
+        id: "razorpay_netbanking",
+        name: "Net Banking",
+        icon: "bank",
+        description: "Pay using your bank account",
+      },
+    ];
+
+    console.log(`[INFO] Returning payment retry options for order ${orderId}`);
+
+    return res.json({
+      success: true,
+      order: {
+        id: order._id,
+        orderNumber: order.orderNumber,
+        total: order.total,
+        paymentStatus: order.paymentStatus,
+        retryCount: order.paymentRetryCount || 0,
+      },
+      paymentMethods,
+      maxRetryAttempts,
+    });
+  } catch (error) {
+    console.error("[ERROR] Error getting payment retry options:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get payment retry options",
+      error: error.message,
+    });
+  }
+};
+
+const initPaymentRetry = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const userId = req.session.user || req.user._id;
+    const { paymentMethod } = req.body;
+
+    console.log(
+      `[INFO] Initializing payment retry for order ${orderId} with method ${paymentMethod}`
+    );
+
+    if (!paymentMethod) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Payment method is required" });
+    }
+
+    const order = await Order.findOne({ _id: orderId, userId });
+
+    if (!order) {
+      console.log(`[ERROR] Order not found: ${orderId} for user ${userId}`);
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    if (!["Failed", "Pending"].includes(order.paymentStatus)) {
+      console.log(
+        `[ERROR] Payment cannot be retried for order ${orderId} with status ${order.paymentStatus}`
+      );
+      return res.status(400).json({
+        success: false,
+        message: "Payment cannot be retried for this order",
+      });
+    }
+
+    order.paymentRetryCount = (order.paymentRetryCount || 0) + 1;
+    order.lastPaymentRetryDate = new Date();
+    order.paymentStatus = "Pending";
+
+    if (!order.statusHistory) {
+      order.statusHistory = [];
+    }
+
+    order.statusHistory.push({
+      status: "Payment Retry",
+      date: new Date(),
+      note: `Payment retry attempt #${order.paymentRetryCount} initiated with ${paymentMethod}`,
+    });
+
+    await order.save();
+
+    console.log(
+      `[INFO] Payment retry initialized for order ${orderId}, attempt #${order.paymentRetryCount}`
+    );
+
+    req.session.paymentRetry = {
+      orderId: order._id,
+      orderNumber: order.orderNumber,
+      amount: order.total,
+      paymentMethod,
+      timestamp: new Date().getTime(),
+    };
+
+    return res.json({
+      success: true,
+      message: "Payment retry initialized",
+      order: {
+        id: order._id,
+        orderNumber: order.orderNumber,
+        total: order.total,
+        retryCount: order.paymentRetryCount,
+      },
+      nextStep: "redirect_to_payment",
+      redirectUrl: `/checkout-payment?retry=true&orderId=${order._id}`,
+    });
+  } catch (error) {
+    console.error("[ERROR] Error initializing payment retry:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to initialize payment retry",
+      error: error.message,
+    });
+  }
+};
+
+const updatePaymentStatus = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const userId = req.session.user || req.user._id;
+    const { status, paymentId, transactionDetails } = req.body;
+
+    console.log(
+      `[INFO] Updating payment status for order ${orderId} to ${status}`
+    );
+
+    if (!status) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Payment status is required" });
+    }
+
+    const order = await Order.findOne({ _id: orderId, userId });
+
+    if (!order) {
+      console.log(`[ERROR] Order not found: ${orderId} for user ${userId}`);
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
+    }
+
+    order.paymentStatus = status;
+
+    if (status === "Completed") {
+      order.paymentId = paymentId;
+      order.paymentCompletedAt = new Date();
+
+      if (order.status === "Pending") {
+        order.status = "Processing";
+      }
+
+      if (transactionDetails) {
+        order.transactionDetails = transactionDetails;
+      }
+    } else if (status === "Failed") {
+      order.failedPaymentId = paymentId;
+      order.paymentFailedAt = new Date();
+      order.paymentFailureReason =
+        req.body.failureReason || "Payment processing failed";
+    }
+
+    if (!order.statusHistory) {
+      order.statusHistory = [];
+    }
+
+    order.statusHistory.push({
+      status: status === "Completed" ? "Payment Completed" : "Payment Failed",
+      date: new Date(),
+      note:
+        status === "Completed"
+          ? `Payment completed successfully with ID: ${paymentId}`
+          : `Payment failed: ${req.body.failureReason || "Unknown reason"}`,
+    });
+
+    await order.save();
+
+    if (status === "Completed") {
+      const orderItems = await OrderItem.find({ orderId: order._id });
+      for (const item of orderItems) {
+        if (item.status === "Pending") {
+          item.status = "Processing";
+          await item.save();
+        }
+      }
+    }
+
+    console.log(`[INFO] Order ${orderId} payment status updated to ${status}`);
+
+    if (req.session.paymentRetry) {
+      delete req.session.paymentRetry;
+    }
+
+    return res.json({
+      success: true,
+      message: `Payment status updated to ${status}`,
+      order: {
+        id: order._id,
+        orderNumber: order.orderNumber,
+        status: order.status,
+        paymentStatus: order.paymentStatus,
+      },
+      redirectUrl:
+        status === "Completed"
+          ? "/order-success"
+          : `/order-details/${order._id}`,
+    });
+  } catch (error) {
+    console.error("[ERROR] Error updating payment status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update payment status",
+      error: error.message,
+    });
+  }
+};
 
 module.exports = {
   placeOrder,
@@ -1759,7 +2272,6 @@ module.exports = {
   trackOrder,
   cancelOrder,
   initiateReturn,
-  completePayment,
   reOrder,
   checkItemUpdateability,
   checkOrderUpdateability,
@@ -1767,6 +2279,8 @@ module.exports = {
   cancelOrderItem,
   returnOrderItem,
   updateOrderStatus: updateOrderStatusHelper,
+  handlePaymentFailure,
+  getPaymentRetryOptions,
+  initPaymentRetry,
+  updatePaymentStatus,
 };
-
-

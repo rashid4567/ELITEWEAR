@@ -29,7 +29,10 @@
     opacity: 0;
     animation: fadeInUp 0.8s ease-out forwards;
   }
-  
+  .main-container12{
+    
+    transform: translate(311px, -730px);
+  }
   .track-order-header {
     border-bottom: 1px solid #eee;
     padding-bottom: 1rem;

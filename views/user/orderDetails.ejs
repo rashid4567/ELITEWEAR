@@ -11,6 +11,214 @@
     <link rel="stylesheet" href="/userStyle/header.css">
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css">
+    <style>
+        .order-card {
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            background-color: #212529;
+            color: white;
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        
+        .sidebar-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            display: block;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-link:hover, .sidebar-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-link i {
+            margin-right: 10px;
+        }
+        
+        .breadcrumb-container {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .item-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .grand-total {
+            font-weight: bold;
+            font-size: 1.1rem;
+            border-top: 1px solid #dee2e6;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        
+        .shipping-info p {
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn-action {
+            margin-bottom: 10px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .payment-failed-badge {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        
+        .payment-pending-badge {
+            background-color: #ffc107;
+            color: #212529;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        
+        .btn-retry-payment {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-retry-payment:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.2);
+        }
+        
+        /* New styles for improved item actions */
+        .item-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .item-actions .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+        }
+        
+        .item-row {
+            transition: background-color 0.3s ease;
+        }
+        
+        .item-row:hover {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .action-icon {
+            margin-right: 5px;
+        }
+        
+        .tooltip-inner {
+            max-width: 200px;
+            padding: 0.5rem;
+            color: #fff;
+            text-align: center;
+            background-color: #000;
+            border-radius: 0.25rem;
+        }
+        
+        .refund-info {
+            font-size: 0.8rem;
+            color: #0d6efd;
+            margin-top: 5px;
+        }
+        
+        .item-details-container {
+            position: relative;
+        }
+        
+        .item-status-timeline {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #dee2e6;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #0d6efd;
+        }
+        
+        .timeline-item:not(:last-child):after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 15px;
+            width: 1px;
+            height: calc(100% - 5px);
+            background-color: #dee2e6;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                min-height: auto;
+                margin-bottom: 20px;
+            }
+            
+            .item-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .item-actions .btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
 </head>
 <body>
     <%- include("../partials/user/header") %>
@@ -25,7 +233,7 @@
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 p-0">
                 <!-- Breadcrumb -->
-                <div class="breadcrumb-container bg-light py-2 px-4">
+                <div class="breadcrumb-container py-2 px-4 mb-4">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0">
                             <li class="breadcrumb-item"><a href="/profile">Profile</a></li>
@@ -41,16 +249,24 @@
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <h2 class="card-title fw-bold m-0">Order #<%= order.orderNumber %></h2>
-                                <span class="badge bg-<%= 
-                                    order.status === 'Processing' ? 'success' : 
-                                    order.status === 'Pending' ? 'warning' : 
-                                    order.status === 'Shipped' ? 'info' : 
-                                    order.status === 'Delivered' ? 'success' : 
-                                    order.status === 'Cancelled' ? 'danger' : 
-                                    order.status.includes('Return') ? 'primary' : 'secondary' 
-                                %> fs-6 text-uppercase">
-                                    <%= order.status %>
-                                </span>
+                                <div class="d-flex align-items-center">
+                                    <% if (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending') { %>
+                                        <span class="payment-<%= order.paymentStatus.toLowerCase() %>-badge me-2">
+                                            <i class="bi bi-<%= order.paymentStatus === 'Failed' ? 'exclamation-triangle-fill' : 'hourglass-split' %> me-1"></i> 
+                                            Payment <%= order.paymentStatus %>
+                                        </span>
+                                    <% } %>
+                                    <span class="badge bg-<%= 
+                                        order.status === 'Processing' ? 'success' : 
+                                        order.status === 'Pending' ? 'warning' : 
+                                        order.status === 'Shipped' ? 'info' : 
+                                        order.status === 'Delivered' ? 'success' : 
+                                        order.status === 'Cancelled' ? 'danger' : 
+                                        order.status.includes('Return') ? 'primary' : 'secondary' 
+                                    %> fs-6 text-uppercase">
+                                        <%= order.status %>
+                                    </span>
+                                </div>
                             </div>
                             
                             <div class="row">
@@ -67,7 +283,9 @@
                                         </div>
                                         <div>
                                             <span class="text-muted">Payment Status:</span>
-                                            <strong><%= order.paymentStatus %></strong>
+                                            <strong class="<%= order.paymentStatus === 'Pending' || order.paymentStatus === 'Failed' ? 'text-danger' : '' %>">
+                                                <%= order.paymentStatus %>
+                                            </strong>
                                         </div>
                                     </div>
                                 </div>
@@ -117,27 +335,48 @@
                                 <!-- Action Buttons -->
                                 <div class="col-md-4 mb-4">
                                     <div class="d-flex flex-column gap-2">
-                                        <% if (['Pending', 'Processing'].includes(order.status)) { %>
-                                            <button type="button" class="btn btn-danger btn-action" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
-                                                <i class="bi bi-x-circle me-2"></i> Cancel Order
+                                        <% if (order.paymentMethod === 'Online' && (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending')) { %>
+                                            <!-- Show only retry button for pending/failed payments -->
+                                            <button type="button" class="btn btn-primary btn-action" onclick="retryPayment('<%= order._id %>')">
+                                                <i class="bi bi-arrow-repeat me-2"></i> Retry Payment
+                                            </button>
+                                        <% } else { %>
+                                            <!-- Conditional display of actions based on order status -->
+                                            <% if (['Pending', 'Processing'].includes(order.status)) { %>
+                                                <button type="button" class="btn btn-danger btn-action" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                                                    <i class="bi bi-x-circle me-2"></i> Cancel Order
+                                                </button>
+                                            <% } %>
+                                            
+                                            <% if (order.status === 'Delivered') { %>
+                                                <button type="button" class="btn btn-primary btn-action btn-return" data-bs-toggle="modal" data-bs-target="#returnOrderModal">
+                                                    <i class="bi bi-arrow-return-left me-2"></i> Return Order
+                                                </button>
+                                            <% } %>
+                                            
+                                            <!-- Track order button for all statuses except Cancelled and Returned -->
+                                            <% if (!['Cancelled', 'Returned'].includes(order.status)) { %>
+                                                <a href="/orders/track/<%= order._id %>" class="btn btn-dark btn-action btn-track">
+                                                    <i class="bi bi-truck me-2"></i> Track Order
+                                                </a>
+                                            <% } %>
+                                            
+                                            <!-- Download invoice only for delivered orders -->
+                                            <% if (order.status === 'Delivered') { %>
+                                                <a href="/invoice/<%= order._id %>" id="downloadInvoice" class="btn btn-secondary btn-action btn-invoice" data-order-id="<%= order._id %>">
+                                                    <i class="bi bi-file-earmark-text me-2"></i> <span>Download Invoice</span>
+                                                </a>
+                                            <% } %>
+                                            
+                                            <!-- Reorder button for all statuses -->
+                                            <button type="button" class="btn btn-outline-primary btn-action" onclick="reOrder('<%= order._id %>')">
+                                                <i class="bi bi-cart-plus me-2"></i> Reorder
                                             </button>
                                         <% } %>
-                                        <% if (order.status === 'Delivered') { %>
-                                            <button type="button" class="btn btn-primary btn-action btn-return" data-bs-toggle="modal" data-bs-target="#returnOrderModal">
-                                                <i class="bi bi-arrow-return-left me-2"></i> Return Order
-                                            </button>
-                                        <% } %>
-                                        <a href="/orders/track/<%= order._id %>" class="btn btn-dark btn-action btn-track">
-                                            <i class="bi bi-truck me-2"></i> Track Order
-                                          </a>
-                                          
-                                          <a href="/invoice/<%= order._id %>" id="downloadInvoice" class="btn btn-secondary btn-action btn-invoice">
-                                            <i class="bi bi-file-earmark-text me-2"></i> <span>Download Invoice</span>
-                                        </a>
                                     </div>
                                 </div>
                             </div>
-    
+
                             <!-- Order Items -->
                             <div class="order-items-table mt-4">
                                 <h4 class="fw-bold mb-3">Order Items</h4>
@@ -157,10 +396,10 @@
                                         <tbody>
                                             <% if (orderItems && orderItems.length > 0) { %>
                                                 <% orderItems.forEach(item => { %>
-                                                    <tr>
+                                                    <tr class="item-row">
                                                         <td>
                                                             <div class="d-flex align-items-center">
-                                                                <div class="item-image-container me-3">
+                                                                <div class="me-3">
                                                                     <% if (item.itemImage || (item.productId && item.productId.images && item.productId.images.length > 0)) { %>
                                                                         <img src="<%= item.itemImage || (item.productId.images[0].url) %>" alt="<%= item.product_name %>" class="item-image">
                                                                     <% } else { %>
@@ -177,7 +416,8 @@
                                                         <td><%= item.quantity %></td>
                                                         <td>₹<%= item.total_amount.toFixed(2) %></td>
                                                         <td>
-                                                            <span class="badge bg-<%= 
+                                                            <!-- Status badge with appropriate color -->
+                                                            <span class="badge status-badge bg-<%= 
                                                                 item.status === 'Processing' ? 'success' : 
                                                                 item.status === 'Pending' ? 'warning' : 
                                                                 item.status === 'Shipped' ? 'info' : 
@@ -187,28 +427,50 @@
                                                             %>">
                                                                 <%= item.status %>
                                                             </span>
+                                                            
+                                                            <!-- Refund badge if applicable -->
+                                                            <% if (item.refunded) { %>
+                                                                <span class="badge bg-info mt-1 d-block">Refunded</span>
+                                                            <% } %>
                                                         </td>
                                                         <td>
-                                                            <div class="dropdown">
-                                                                <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" id="dropdownMenuButton<%= item._id %>" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                    Actions
-                                                                </button>
-                                                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton<%= item._id %>">
+                                                            <!-- Conditional display of item actions -->
+                                                            <% if (order.paymentMethod === 'Online' && (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending')) { %>
+                                                                <!-- No actions for pending/failed payment items -->
+                                                                <span class="text-muted">Awaiting payment</span>
+                                                            <% } else { %>
+                                                                <div class="item-actions">
+                                                                    <!-- Individual item actions based on status -->
                                                                     <% if (item.status === 'Delivered') { %>
-                                                                        <li>
-                                                                            <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#returnItemModal<%= item._id %>">
-                                                                                <i class="bi bi-arrow-return-left me-2"></i> Return Item
-                                                                            </button>
-                                                                        </li>
+                                                                        <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#returnItemModal<%= item._id %>">
+                                                                            <i class="bi bi-arrow-return-left action-icon"></i> Return
+                                                                        </button>
                                                                     <% } else if (['Processing', 'Pending'].includes(item.status)) { %>
-                                                                        <li>
-                                                                            <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#cancelItemModal<%= item._id %>">
-                                                                                <i class="bi bi-x-circle me-2"></i> Cancel Item
-                                                                            </button>
-                                                                        </li>
+                                                                        <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#cancelItemModal<%= item._id %>">
+                                                                            <i class="bi bi-x-circle action-icon"></i> Cancel
+                                                                        </button>
                                                                     <% } %>
-                                                                </ul>
-                                                            </div>
+                                                                    
+                                                                    <!-- View details button for all items -->
+                                                                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="viewItemDetails('<%= item._id %>')">
+                                                                        <i class="bi bi-eye action-icon"></i> Details
+                                                                    </button>
+                                                                    
+                                                                    <!-- Buy again button for completed items -->
+                                                                    <% if (item.status === 'Delivered' || item.status === 'Cancelled' || item.status === 'Returned') { %>
+                                                                        <button class="btn btn-sm btn-outline-success" type="button" onclick="reorderItem('<%= item._id %>')">
+                                                                            <i class="bi bi-cart-plus action-icon"></i> Buy Again
+                                                                        </button>
+                                                                    <% } %>
+                                                                </div>
+                                                                
+                                                                <!-- Refund information if applicable -->
+                                                                <% if (item.refunded) { %>
+                                                                    <div class="refund-info">
+                                                                        <i class="bi bi-info-circle"></i> Refunded: ₹<%= item.refundAmount.toFixed(2) %>
+                                                                    </div>
+                                                                <% } %>
+                                                            <% } %>
                                                         </td>
                                                     </tr>
                                                 <% }); %>
@@ -221,6 +483,55 @@
                                     </table>
                                 </div>
                             </div>
+                            
+                            <!-- Order Status History -->
+                            <% if (order.statusHistory && order.statusHistory.length > 0) { %>
+                                <div class="order-status-history mt-4">
+                                    <h4 class="fw-bold mb-3">Order Status History</h4>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Status</th>
+                                                    <th>Date</th>
+                                                    <th>Notes</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% order.statusHistory.slice().reverse().forEach(status => { %>
+                                                    <tr>
+                                                        <td>
+                                                            <span class="badge bg-<%= 
+                                                                status.status === 'Processing' ? 'success' : 
+                                                                status.status === 'Pending' ? 'warning' : 
+                                                                status.status === 'Shipped' ? 'info' : 
+                                                                status.status === 'Delivered' ? 'success' : 
+                                                                status.status === 'Cancelled' ? 'danger' : 
+                                                                status.status.includes('Return') ? 'primary' : 'secondary' 
+                                                            %>">
+                                                                <%= status.status %>
+                                                            </span>
+                                                        </td>
+                                                        <td><%= new Date(status.date).toLocaleString() %></td>
+                                                        <td><%= status.note || '-' %></td>
+                                                    </tr>
+                                                <% }); %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            <% } %>
+                            
+                            <!-- Payment Failure Alert -->
+                            <% if (order.paymentMethod === 'Online' && (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending')) { %>
+                                <div class="alert alert-<%= order.paymentStatus === 'Failed' ? 'danger' : 'warning' %> mt-4">
+                                    <i class="bi bi-<%= order.paymentStatus === 'Failed' ? 'exclamation-triangle-fill' : 'hourglass-split' %> me-2"></i>
+                                    <strong><%= order.paymentStatus === 'Failed' ? 'Payment Failed:' : 'Payment Pending:' %></strong> 
+                                    <%= order.paymentStatus === 'Failed' ? 
+                                        'Your payment was not successful. Please use the "Retry Payment" button to complete your order.' : 
+                                        'Your payment is still being processed. You can wait or use the "Retry Payment" button to attempt payment again.' %>
+                                </div>
+                            <% } %>
                         </div>
                     </div>
                 </div>
@@ -237,6 +548,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <p>Are you sure you want to cancel this entire order?</p>
+                    <p class="text-muted small">This will cancel all items that are eligible for cancellation.</p>
+                    
                     <form id="cancelOrderForm">
                         <div class="mb-3">
                             <label for="cancelReason" class="form-label">Reason for Cancellation</label>
@@ -248,6 +562,10 @@
                                 <option value="Shipping time is too long">Shipping time is too long</option>
                                 <option value="Other">Other</option>
                             </select>
+                        </div>
+                        <div class="mb-3" id="otherReasonDiv" style="display: none;">
+                            <label for="otherReason" class="form-label">Please specify:</label>
+                            <textarea class="form-control" id="otherReason" name="otherReason" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
@@ -268,6 +586,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <p>Are you sure you want to return this entire order?</p>
+                    <p class="text-muted small">This will initiate return requests for all delivered items in this order.</p>
+                    
                     <form id="returnOrderForm">
                         <div class="mb-3">
                             <label for="returnOrderReason" class="form-label">Reason for Return</label>
@@ -280,6 +601,10 @@
                                 <option value="Quality issue">Quality issue</option>
                                 <option value="Other">Other</option>
                             </select>
+                        </div>
+                        <div class="mb-3" id="otherReturnReasonDiv" style="display: none;">
+                            <label for="otherReturnReason" class="form-label">Please specify:</label>
+                            <textarea class="form-control" id="otherReturnReason" name="otherReturnReason" rows="2"></textarea>
                         </div>
                     </form>
                 </div>
@@ -303,6 +628,16 @@
                         </div>
                         <div class="modal-body">
                             <p>Are you sure you want to cancel <strong><%= item.product_name %></strong>?</p>
+                            <% if (item.refundAmount) { %>
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i> You will receive a refund of ₹<%= item.refundAmount.toFixed(2) %> to your wallet.
+                                </div>
+                            <% } else if (order.paymentMethod !== 'COD' || order.paymentStatus === 'Paid') { %>
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i> You will receive a refund of ₹<%= item.total_amount.toFixed(2) %> to your wallet.
+                                </div>
+                            <% } %>
+                            
                             <form id="cancelItemForm<%= item._id %>">
                                 <div class="mb-3">
                                     <label for="cancelReason<%= item._id %>" class="form-label">Reason for Cancellation</label>
@@ -314,6 +649,10 @@
                                         <option value="Shipping time is too long">Shipping time is too long</option>
                                         <option value="Other">Other</option>
                                     </select>
+                                </div>
+                                <div class="mb-3 otherReasonItemDiv" id="otherReasonDiv<%= item._id %>" style="display: none;">
+                                    <label for="otherReason<%= item._id %>" class="form-label">Please specify:</label>
+                                    <textarea class="form-control" id="otherReason<%= item._id %>" name="otherReason" rows="2"></textarea>
                                 </div>
                             </form>
                         </div>
@@ -339,6 +678,10 @@
                         </div>
                         <div class="modal-body">
                             <p>Are you sure you want to return <strong><%= item.product_name %></strong>?</p>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i> Return requests are subject to approval. Once approved, you will receive instructions for returning the item.
+                            </div>
+                            
                             <form id="returnItemForm<%= item._id %>">
                                 <div class="mb-3">
                                     <label for="returnReason<%= item._id %>" class="form-label">Reason for Return</label>
@@ -352,6 +695,10 @@
                                         <option value="Other">Other</option>
                                     </select>
                                 </div>
+                                <div class="mb-3 otherReturnReasonItemDiv" id="otherReturnReasonDiv<%= item._id %>" style="display: none;">
+                                    <label for="otherReturnReason<%= item._id %>" class="form-label">Please specify:</label>
+                                    <textarea class="form-control" id="otherReturnReason<%= item._id %>" name="otherReturnReason" rows="2"></textarea>
+                                </div>
                             </form>
                         </div>
                         <div class="modal-footer">
@@ -364,106 +711,311 @@
         <% }); %>
     <% } %>
     
+    <!-- Item Details Modal -->
+    <div class="modal fade" id="itemDetailsModal" tabindex="-1" aria-labelledby="itemDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="itemDetailsModalLabel">Item Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="itemDetailsContent">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading item details...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <%- include("../partials/user/footer") %>
     
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
     <!-- Razorpay JS -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     
     <!-- JavaScript for handling actions -->
->>>>>>> Stashed changes
-=======
-    <!-- SweetAlert2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
-    
-    <!-- JavaScript for handling actions -->
->>>>>>> rezzarpay
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             console.log('[DEBUG] DOM loaded, setting up event handlers');
             
-        
+            // Initialize Bootstrap components
             if (typeof bootstrap !== 'undefined') {
                 const modals = document.querySelectorAll('.modal');
                 modals.forEach(modalEl => {
                     new bootstrap.Modal(modalEl);
                 });
                 console.log('[DEBUG] Bootstrap modals initialized');
+                
+                // Initialize tooltips
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+                console.log('[DEBUG] Bootstrap tooltips initialized');
             } else {
                 console.error('[ERROR] Bootstrap is not loaded');
             }
             
-      
-            const downloadInvoiceBtn = document.getElementById('downloadInvoice');
-
-if (downloadInvoiceBtn) {
-    downloadInvoiceBtn.addEventListener('click', function() {
-        const orderId = this.getAttribute('data-order-id');
-        console.log(`[DEBUG] Download invoice clicked for order: ${orderId}`);
-
-        Swal.fire({
-            title: 'Generating Invoice',
-            text: 'Please wait while we generate your invoice...',
-            allowOutsideClick: false,
-            didOpen: async () => {
-                Swal.showLoading();
-
-                try {
-           
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = `/invoice/<%= order._id %>/${orderId}`;
-
-                    document.body.appendChild(iframe);
-
-             
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-
-               
-                    document.body.removeChild(iframe);
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Invoice Downloaded!',
-                        text: 'Your invoice has been downloaded successfully.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                } catch (error) {
-                    console.error('Invoice download failed:', error);
-
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Download Failed',
-                        text: 'Something went wrong while downloading your invoice. Please try again later!',
-                        confirmButtonColor: '#d33',
+            // Setup "Other" reason toggle for all reason selects
+            const setupOtherReasonToggle = (selectId, otherDivId) => {
+                const select = document.getElementById(selectId);
+                const otherDiv = document.getElementById(otherDivId);
+                
+                if (select && otherDiv) {
+                    select.addEventListener('change', function() {
+                        otherDiv.style.display = this.value === 'Other' ? 'block' : 'none';
                     });
                 }
-            }
-        });
-    });
-}
+            };
+            
+            // Setup for main cancel/return forms
+            setupOtherReasonToggle('cancelReason', 'otherReasonDiv');
+            setupOtherReasonToggle('returnOrderReason', 'otherReturnReasonDiv');
+            
+            // Setup for item-specific forms
+            <% if (orderItems && orderItems.length > 0) { %>
+                <% orderItems.forEach(item => { %>
+                    setupOtherReasonToggle('cancelReason<%= item._id %>', 'otherReasonDiv<%= item._id %>');
+                    setupOtherReasonToggle('returnReason<%= item._id %>', 'otherReturnReasonDiv<%= item._id %>');
+                <% }); %>
+            <% } %>
+            
+            // Download Invoice
+            const downloadInvoiceBtn = document.getElementById('downloadInvoice');
+            if (downloadInvoiceBtn) {
+                downloadInvoiceBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const orderId = this.getAttribute('data-order-id');
+                    console.log(`[DEBUG] Download invoice clicked for order: ${orderId}`);
 
+                    Swal.fire({
+                        title: 'Generating Invoice',
+                        text: 'Please wait while we generate your invoice...',
+                        allowOutsideClick: false,
+                        didOpen: async () => {
+                            Swal.showLoading();
+
+                            try {
+                                // Create hidden iframe to trigger download
+                                const iframe = document.createElement('iframe');
+                                iframe.style.display = 'none';
+                                iframe.src = `/invoice/${orderId}`;
+                                document.body.appendChild(iframe);
+
+                                // Wait for download to start
+                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                document.body.removeChild(iframe);
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Invoice Downloaded!',
+                                    text: 'Your invoice has been downloaded successfully.',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            } catch (error) {
+                                console.error('[ERROR] Invoice download failed:', error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Download Failed',
+                                    text: 'Something went wrong while downloading your invoice. Please try again later!',
+                                    confirmButtonColor: '#d33',
+                                });
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Function to retry payment
+            window.retryPayment = function(orderId) {
+                console.log(`[DEBUG] Retry payment clicked for order: ${orderId}`);
+                
+                Swal.fire({
+                    title: 'Retry Payment',
+                    text: 'You will be redirected to the payment gateway to complete your payment.',
+                    icon: 'info',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Proceed to Payment'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Show loading
+                        Swal.fire({
+                            title: 'Processing',
+                            text: 'Preparing payment gateway...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+
+                        // Call the retry payment endpoint
+                        fetch(`/retry-payment/${orderId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            console.log(`[DEBUG] Retry payment response status: ${response.status}`);
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log(`[DEBUG] Retry payment response data:`, data);
+                            if (data.success) {
+                                // Initialize Razorpay payment
+                                const options = {
+                                    key: data.key,
+                                    amount: data.order.amount,
+                                    currency: "INR",
+                                    name: "ELITE WEAR",
+                                    description: "Order Payment",
+                                    order_id: data.order.id,
+                                    handler: function (response) {
+                                        // Verify payment
+                                        fetch("/verify-payment", {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({
+                                                razorpay_order_id: response.razorpay_order_id,
+                                                razorpay_payment_id: response.razorpay_payment_id,
+                                                razorpay_signature: response.razorpay_signature,
+                                            }),
+                                        })
+                                        .then((res) => res.json())
+                                        .then((verifyData) => {
+                                            if (verifyData.success) {
+                                                Swal.fire({
+                                                    icon: 'success',
+                                                    title: 'Payment Successful',
+                                                    text: 'Your payment has been processed successfully!',
+                                                    timer: 2000,
+                                                    showConfirmButton: false
+                                                }).then(() => {
+                                                    window.location.href = verifyData.redirect || `/order-details/${orderId}`;
+                                                });
+                                            } else {
+                                                Swal.fire({
+                                                    icon: 'error',
+                                                    title: 'Payment Verification Failed',
+                                                    text: verifyData.message || 'Failed to verify payment',
+                                                });
+                                            }
+                                        })
+                                        .catch((err) => {
+                                            console.error('[ERROR] Error verifying payment:', err);
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Error',
+                                                text: 'Failed to verify payment. Please contact support.',
+                                            });
+                                        });
+                                    },
+                                    prefill: {
+                                        name: data.user.name,
+                                        email: data.user.email,
+                                        contact: data.user.contact,
+                                    },
+                                    theme: {
+                                        color: "#2c3e50",
+                                    },
+                                    modal: {
+                                        ondismiss: function() {
+                                            console.log("Payment modal dismissed");
+                                            // Handle failed payment
+                                            fetch("/handle-failed-payment", {
+                                                method: "POST",
+                                                headers: { "Content-Type": "application/json" },
+                                                body: JSON.stringify({
+                                                    razorpay_order_id: data.order.id
+                                                }),
+                                            })
+                                            .then(res => res.json())
+                                            .then(data => {
+                                                if (data.success) {
+                                                    Swal.fire({
+                                                        icon: 'warning',
+                                                        title: 'Payment Cancelled',
+                                                        text: 'You can retry the payment later from your orders page.',
+                                                    });
+                                                }
+                                            })
+                                            .catch(err => {
+                                                console.error("[ERROR] Error handling failed payment:", err);
+                                            });
+                                        }
+                                    }
+                                };
+                                const rzp = new Razorpay(options);
+                                rzp.open();
+                                
+                                // Close the loading dialog
+                                Swal.close();
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: data.message || 'Failed to initiate payment',
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('[ERROR] Error retrying payment:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred. Please try again.',
+                            });
+                        });
+                    }
+                });
+            };
     
+            // Cancel Order
             const confirmCancelOrderBtn = document.getElementById('confirmCancelOrder');
             if (confirmCancelOrderBtn) {
                 console.log('[DEBUG] Cancel order button found');
                 confirmCancelOrderBtn.addEventListener('click', function() {
                     const orderId = this.getAttribute('data-order-id');
                     const cancelReason = document.getElementById('cancelReason').value;
-                    console.log(`[DEBUG] Cancel order clicked for order: ${orderId}, reason: ${cancelReason}`);
+                    const otherReasonEl = document.getElementById('otherReason');
+                    let finalReason = cancelReason;
+                    
+                    if (cancelReason === 'Other' && otherReasonEl && otherReasonEl.value) {
+                        finalReason = `Other: ${otherReasonEl.value}`;
+                    }
+                    
+                    console.log(`[DEBUG] Cancel order clicked for order: ${orderId}, reason: ${finalReason}`);
                     
                     if (!cancelReason) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
                             text: 'Please select a reason for cancellation'
+                        });
+                        return;
+                    }
+                    
+                    if (cancelReason === 'Other' && otherReasonEl && !otherReasonEl.value.trim()) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Please specify your cancellation reason'
                         });
                         return;
                     }
@@ -478,7 +1030,7 @@ if (downloadInvoiceBtn) {
                         confirmButtonText: 'Yes, cancel it!'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                    
+                            // Show loading
                             Swal.fire({
                                 title: 'Processing',
                                 text: 'Cancelling your order...',
@@ -494,7 +1046,7 @@ if (downloadInvoiceBtn) {
                                 headers: {
                                     'Content-Type': 'application/json'
                                 },
-                                body: JSON.stringify({ cancelReason })
+                                body: JSON.stringify({ cancelReason: finalReason })
                             })
                             .then(response => {
                                 console.log(`[DEBUG] Cancel order response status: ${response.status}`);
@@ -545,13 +1097,29 @@ if (downloadInvoiceBtn) {
                 confirmReturnOrderBtn.addEventListener('click', function() {
                     const orderId = this.getAttribute('data-order-id');
                     const returnReason = document.getElementById('returnOrderReason').value;
-                    console.log(`[DEBUG] Return order clicked for order: ${orderId}, reason: ${returnReason}`);
+                    const otherReturnReasonEl = document.getElementById('otherReturnReason');
+                    let finalReason = returnReason;
+                    
+                    if (returnReason === 'Other' && otherReturnReasonEl && otherReturnReasonEl.value) {
+                        finalReason = `Other: ${otherReturnReasonEl.value}`;
+                    }
+                    
+                    console.log(`[DEBUG] Return order clicked for order: ${orderId}, reason: ${finalReason}`);
                     
                     if (!returnReason) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
                             text: 'Please select a reason for return'
+                        });
+                        return;
+                    }
+                    
+                    if (returnReason === 'Other' && otherReturnReasonEl && !otherReturnReasonEl.value.trim()) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Please specify your return reason'
                         });
                         return;
                     }
@@ -582,7 +1150,7 @@ if (downloadInvoiceBtn) {
                                 headers: {
                                     'Content-Type': 'application/json'
                                 },
-                                body: JSON.stringify({ returnReason })
+                                body: JSON.stringify({ returnReason: finalReason })
                             })
                             .then(response => {
                                 console.log(`[DEBUG] Return order response status: ${response.status}`);
@@ -634,6 +1202,7 @@ if (downloadInvoiceBtn) {
                     const itemId = this.getAttribute('data-item-id');
                     const cancelReasonId = `cancelReason${itemId}`;
                     const cancelReasonElement = document.getElementById(cancelReasonId);
+                    const otherReasonElement = document.getElementById(`otherReason${itemId}`);
                     
                     if (!cancelReasonElement) {
                         console.error(`[ERROR] Cancel reason element not found with ID: ${cancelReasonId}`);
@@ -646,13 +1215,28 @@ if (downloadInvoiceBtn) {
                     }
                     
                     const cancelReason = cancelReasonElement.value;
-                    console.log(`[DEBUG] Cancel item clicked for item: ${itemId}, reason: ${cancelReason}`);
+                    let finalReason = cancelReason;
+                    
+                    if (cancelReason === 'Other' && otherReasonElement && otherReasonElement.value) {
+                        finalReason = `Other: ${otherReasonElement.value}`;
+                    }
+                    
+                    console.log(`[DEBUG] Cancel item clicked for item: ${itemId}, reason: ${finalReason}`);
                     
                     if (!cancelReason) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
                             text: 'Please select a reason for cancellation'
+                        });
+                        return;
+                    }
+                    
+                    if (cancelReason === 'Other' && otherReasonElement && !otherReasonElement.value.trim()) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Please specify your cancellation reason'
                         });
                         return;
                     }
@@ -683,7 +1267,7 @@ if (downloadInvoiceBtn) {
                                 headers: {
                                     'Content-Type': 'application/json'
                                 },
-                                body: JSON.stringify({ cancelReason })
+                                body: JSON.stringify({ cancelReason: finalReason })
                             })
                             .then(response => {
                                 console.log(`[DEBUG] Cancel item response status: ${response.status}`);
@@ -695,11 +1279,16 @@ if (downloadInvoiceBtn) {
                             .then(data => {
                                 console.log(`[DEBUG] Cancel item response data:`, data);
                                 if (data.success) {
+                                    let message = 'Item cancelled successfully';
+                                    if (data.refund && data.refund.processed) {
+                                        message += `. A refund of ₹${data.refund.amount.toFixed(2)} has been processed to your wallet.`;
+                                    }
+                                    
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'Item Cancelled',
-                                        text: data.message,
-                                        timer: 2000,
+                                        text: message,
+                                        timer: 3000,
                                         showConfirmButton: false
                                     }).then(() => {
                                         window.location.reload();
@@ -733,6 +1322,7 @@ if (downloadInvoiceBtn) {
                     const itemId = this.getAttribute('data-item-id');
                     const returnReasonId = `returnReason${itemId}`;
                     const returnReasonElement = document.getElementById(returnReasonId);
+                    const otherReturnReasonElement = document.getElementById(`otherReturnReason${itemId}`);
                     
                     if (!returnReasonElement) {
                         console.error(`[ERROR] Return reason element not found with ID: ${returnReasonId}`);
@@ -745,13 +1335,28 @@ if (downloadInvoiceBtn) {
                     }
                     
                     const returnReason = returnReasonElement.value;
-                    console.log(`[DEBUG] Return item clicked for item: ${itemId}, reason: ${returnReason}`);
+                    let finalReason = returnReason;
+                    
+                    if (returnReason === 'Other' && otherReturnReasonElement && otherReturnReasonElement.value) {
+                        finalReason = `Other: ${otherReturnReasonElement.value}`;
+                    }
+                    
+                    console.log(`[DEBUG] Return item clicked for item: ${itemId}, reason: ${finalReason}`);
                     
                     if (!returnReason) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Error',
                             text: 'Please select a reason for return'
+                        });
+                        return;
+                    }
+                    
+                    if (returnReason === 'Other' && otherReturnReasonElement && !otherReturnReasonElement.value.trim()) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Please specify your return reason'
                         });
                         return;
                     }
@@ -782,7 +1387,7 @@ if (downloadInvoiceBtn) {
                                 headers: {
                                     'Content-Type': 'application/json'
                                 },
-                                body: JSON.stringify({ returnReason })
+                                body: JSON.stringify({ returnReason: finalReason })
                             })
                             .then(response => {
                                 console.log(`[DEBUG] Return item response status: ${response.status}`);
@@ -797,8 +1402,8 @@ if (downloadInvoiceBtn) {
                                     Swal.fire({
                                         icon: 'success',
                                         title: 'Return Requested',
-                                        text: data.message,
-                                        timer: 2000,
+                                        text: data.message || 'Return request submitted successfully. You will be notified once it is approved.',
+                                        timer: 3000,
                                         showConfirmButton: false
                                     }).then(() => {
                                         window.location.reload();
@@ -823,6 +1428,275 @@ if (downloadInvoiceBtn) {
                     });
                 });
             });
+
+            // View Item Details
+            window.viewItemDetails = function(itemId) {
+                console.log(`[DEBUG] View item details clicked for item: ${itemId}`);
+                
+                const modal = new bootstrap.Modal(document.getElementById('itemDetailsModal'));
+                modal.show();
+                
+                const contentDiv = document.getElementById('itemDetailsContent');
+                contentDiv.innerHTML = `
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading item details...</p>
+                    </div>
+                `;
+                
+                // Fetch item details
+                fetch(`/order-item/${itemId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            const item = data.item;
+                            let statusClass = 
+                                item.status === 'Processing' ? 'success' : 
+                                item.status === 'Pending' ? 'warning' : 
+                                item.status === 'Shipped' ? 'info' : 
+                                item.status === 'Delivered' ? 'success' : 
+                                item.status === 'Cancelled' ? 'danger' : 
+                                item.status.includes('Return') ? 'primary' : 'secondary';
+                            
+                            let statusHistory = '';
+                            if (item.statusHistory && item.statusHistory.length > 0) {
+                                statusHistory = `
+                                    <div class="item-status-timeline mt-4">
+                                        <h6 class="fw-bold">Status History</h6>
+                                        <div class="timeline">
+                                            ${item.statusHistory.map((status, index) => `
+                                                <div class="timeline-item">
+                                                    <div class="d-flex justify-content-between">
+                                                        <span class="badge bg-${
+                                                            status.status === 'Processing' ? 'success' : 
+                                                            status.status === 'Pending' ? 'warning' : 
+                                                            status.status === 'Shipped' ? 'info' : 
+                                                            status.status === 'Delivered' ? 'success' : 
+                                                            status.status === 'Cancelled' ? 'danger' : 
+                                                            status.status.includes('Return') ? 'primary' : 'secondary'
+                                                        }">${status.status}</span>
+                                                        <small class="text-muted">${new Date(status.date).toLocaleString()}</small>
+                                                    </div>
+                                                    ${status.note ? `<small class="text-muted">${status.note}</small>` : ''}
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                            
+                            let refundInfo = '';
+                            if (item.refunded) {
+                                refundInfo = `
+                                    <div class="alert alert-info mt-3">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <strong>Refund Information:</strong>
+                                        <p class="mb-0">Amount: ₹${item.refundAmount.toFixed(2)}</p>
+                                        <p class="mb-0">Date: ${new Date(item.refundDate).toLocaleString()}</p>
+                                        <p class="mb-0">Method: Wallet</p>
+                                    </div>
+                                `;
+                            }
+                            
+                            contentDiv.innerHTML = `
+                                <div class="item-details-container">
+                                    <div class="text-center mb-4">
+                                        <img src="${item.itemImage || '/placeholder.svg?height=100&width=100&query=product'}" 
+                                             alt="${item.product_name}" 
+                                             class="img-fluid rounded" 
+                                             style="max-height: 150px;">
+                                    </div>
+                                    <h5 class="fw-bold">${item.product_name}</h5>
+                                    <div class="row mt-3">
+                                        <div class="col-6">
+                                            <p><strong>Size:</strong> ${item.size}</p>
+                                            <p><strong>Quantity:</strong> ${item.quantity}</p>
+                                            <p><strong>Price:</strong> ₹${item.price.toFixed(2)}</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p><strong>Total:</strong> ₹${item.total_amount.toFixed(2)}</p>
+                                            <p>
+                                                <strong>Status:</strong> 
+                                                <span class="badge bg-${statusClass}">${item.status}</span>
+                                            </p>
+                                            ${item.cancelReason ? `<p><strong>Cancel Reason:</strong> ${item.cancelReason}</p>` : ''}
+                                            ${item.returnReason ? `<p><strong>Return Reason:</strong> ${item.returnReason}</p>` : ''}
+                                        </div>
+                                    </div>
+                                    ${refundInfo}
+                                    ${statusHistory}
+                                </div>
+                            `;
+                        } else {
+                            contentDiv.innerHTML = `
+                                <div class="alert alert-danger">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    Failed to load item details: ${data.message || 'Unknown error'}
+                                </div>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('[ERROR] Error fetching item details:', error);
+                        contentDiv.innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                Error loading item details. Please try again.
+                            </div>
+                        `;
+                    });
+            };
+            
+            // Reorder Item
+            window.reorderItem = function(itemId) {
+                console.log(`[DEBUG] Reorder item clicked for item: ${itemId}`);
+                
+                Swal.fire({
+                    title: 'Add to Cart',
+                    text: 'Would you like to add this item to your cart?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, add to cart'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Show loading
+                        Swal.fire({
+                            title: 'Processing',
+                            text: 'Adding item to cart...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        
+                        fetch(`/reorder-item/${itemId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Added to Cart',
+                                    text: data.message || 'Item added to cart successfully',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#3085d6',
+                                    cancelButtonColor: '#6c757d',
+                                    confirmButtonText: 'Go to Cart',
+                                    cancelButtonText: 'Continue Shopping'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        window.location.href = '/cart';
+                                    }
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: data.message || 'Failed to add item to cart'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('[ERROR] Error reordering item:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred. Please try again.'
+                            });
+                        });
+                    }
+                });
+            };
+            
+            // Reorder entire order
+            window.reOrder = function(orderId) {
+                console.log(`[DEBUG] Reorder clicked for order: ${orderId}`);
+                
+                Swal.fire({
+                    title: 'Reorder',
+                    text: 'Would you like to add all items from this order to your cart?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, reorder'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Show loading
+                        Swal.fire({
+                            title: 'Processing',
+                            text: 'Adding items to cart...',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
+                        
+                        fetch(`/reorder/${orderId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Added to Cart',
+                                    text: data.message || 'Items added to cart successfully',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#3085d6',
+                                    cancelButtonColor: '#6c757d',
+                                    confirmButtonText: 'Go to Cart',
+                                    cancelButtonText: 'Continue Shopping'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        window.location.href = data.redirect || '/cart';
+                                    }
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: data.message || 'Failed to add items to cart'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('[ERROR] Error reordering:', error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'An error occurred. Please try again.'
+                            });
+                        });
+                    }
+                });
+            };
         });
     </script>
 </body>

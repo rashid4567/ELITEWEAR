@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elite Wear - Sales Report</title>
     <!-- Bootstrap CSS -->
-<<<<<<< HEAD
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -196,6 +195,10 @@
         
         .stat-icon.orders {
             background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
+        
+        .stat-icon.discounts {
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
         }
         
         .stat-info h3 {
@@ -415,6 +418,16 @@
             color: var(--gray-700);
         }
         
+        .discount-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
         .pagination {
             margin-top: 1.5rem;
             margin-bottom: 0;
@@ -592,6 +605,10 @@
             background-color: var(--info);
         }
         
+        .legend-color.discounts {
+            background-color: var(--danger);
+        }
+        
         .flatpickr-input {
             background-color: white !important;
         }
@@ -718,6 +735,10 @@
             .table tbody td {
                 padding: 0.75rem;
             }
+            
+            .table-responsive {
+                overflow-x: auto;
+            }
         }
     </style>
 </head>
@@ -803,6 +824,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-icon discounts">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>₹<%= (totalDiscounts || 0).toLocaleString() %></h3>
+                        <p>Total Discounts</p>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up trend-icon"></i>
+                            <span>3.7% vs last period</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Sales Chart -->
@@ -817,6 +851,10 @@
                         <div class="legend-item">
                             <div class="legend-color orders"></div>
                             <span>Orders</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color discounts"></div>
+                            <span>Discounts</span>
                         </div>
                     </div>
                 </div>
@@ -873,6 +911,8 @@
                                 <th data-sort="quantity">Qty <i class="fas fa-sort ms-1 text-gray-400"></i></th>
                                 <th data-sort="price">Price <i class="fas fa-sort ms-1 text-gray-400"></i></th>
                                 <th data-sort="category">Category <i class="fas fa-sort ms-1 text-gray-400"></i></th>
+                                <th data-sort="discount">Discount <i class="fas fa-sort ms-1 text-gray-400"></i></th>
+                                <th data-sort="discountPercentage">Discount % <i class="fas fa-sort ms-1 text-gray-400"></i></th>
                                 <th data-sort="total">Total <i class="fas fa-sort ms-1 text-gray-400"></i></th>
                             </tr>
                         </thead>
@@ -886,18 +926,21 @@
                                         <td><%= item.quantity %></td>
                                         <td>₹<%= item.price.toLocaleString() %></td>
                                         <td><span class="category-badge"><%= item.category %></span></td>
-                                        <td>  <%=item.category %></span></td>
+                                        <td>₹<%= (item.discount || 0).toLocaleString() %></td>
+                                        <td><span class="discount-badge"><%= (item.discountPercentage || 0) %>%</span></td>
                                         <td>₹<%= item.total.toLocaleString() %></td>
                                     </tr>
                                 <% }); %>
                             <% } else { %>
                                 <tr>
-                                    <td colspan="7" class="empty-state">
-                                        <i class="fas fa-chart-bar"></i>
-                                        <p>No sales data found for the selected period</p>
-                                        <button type="button" class="btn btn-primary" onclick="resetFilters()">
-                                            <i class="fas fa-sync-alt"></i> Reset Filters
-                                        </button>
+                                    <td colspan="9" class="text-center py-5">
+                                        <div class="empty-state">
+                                            <i class="fas fa-chart-bar mb-3 text-gray-300"></i>
+                                            <p class="text-gray-500 mb-3">No sales data found for the selected period</p>
+                                            <button type="button" class="btn btn-primary" onclick="resetFilters()">
+                                                <i class="fas fa-sync-alt me-2"></i> Reset Filters
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             <% } %>
@@ -941,184 +984,10 @@
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
                 </div>
-=======
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/adminStyle/sales.css">
-</head>
-<body>
-    <!-- Sidebar -->
-    <%- include("../partials/admin/header") %>
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="header">
-            <h2>Sales Report</h2>
-            <div class="profile">
-                <img src="" alt="Profile" class="profile-img">
-                <div class="profile-info">
-                    <p class="profile-name"><%= user?.fullname || 'Admin' %></p>
-                    <p class="profile-role">Admin</p>
-                </div>
-            </div>
-        </div>
-
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item">Dashboard</li>
-                <li class="breadcrumb-item active" aria-current="page">Sales Report</li>
-            </ol>
-        </nav>
-
-        <!-- Stats Cards -->
-        <div class="stats-container">
-            <div class="stat-card">
-                <div class="stat-icon sales">
-                    <i class="fas fa-dollar-sign"></i>
-                </div>
-                <div class="stat-info">
-                    <h3>₹<%= totalSales.toLocaleString() %></h3>
-                    <p>Total Sales</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon items">
-                    <i class="fas fa-shopping-bag"></i>
-                </div>
-                <div class="stat-info">
-                    <h3><%= totalItems %></h3>
-                    <p>Items Sold</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon customers">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-info">
-                    <h3><%= uniqueCustomers %></h3>
-                    <p>Unique Customers</p>
-                </div>
-            </div>
-        </div>
-
-        <form id="filterForm" action="/admin/sales" method="GET">
-            <div class="filter-section">
-                <div class="date-filter">
-                    <span>Sort by date</span>
-                    <span class="mx-3">from</span>
-                    <input type="date" name="from" value="<%= fromDate %>" class="border-0 bg-transparent">
-                    <span class="mx-3">to</span>
-                    <input type="date" name="to" value="<%= toDate %>" class="border-0 bg-transparent">
-                    <button type="submit" class="btn btn-sm btn-primary ms-3">Apply</button>
-                </div>
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input type="text" name="search" value="<%= searchQuery %>" placeholder="Search Order...">
-                </div>
-            </div>
-            
-            <!-- Quick filters -->
-            <div class="quick-filters mb-3">
-                <div class="btn-group">
-                    <a href="#" class="btn btn-sm btn-outline-secondary quick-filter" data-filter="today">Today</a>
-                    <a href="#" class="btn btn-sm btn-outline-secondary quick-filter" data-filter="yesterday">Yesterday</a>
-                    <a href="#" class="btn btn-sm btn-outline-secondary quick-filter" data-filter="week">Last 7 Days</a>
-                    <a href="#" class="btn btn-sm btn-outline-secondary quick-filter" data-filter="month">Last 30 Days</a>
-                    <a href="#" class="btn btn-sm btn-outline-secondary quick-filter" data-filter="year">Last Year</a>
-                </div>
-            </div>
-        </form>
-
-        <div class="card">
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th data-sort="buyer">Buyer</th>
-                            <th data-sort="productName">Product Name</th>
-                            <th data-sort="sku">Product ID</th>
-                            <th data-sort="quantity">Qty</th>
-                            <th data-sort="price">Price</th>
-                            <th data-sort="category">Category</th>
-                            <th data-sort="total">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (salesData && salesData.length > 0) { %>
-                            <% salesData.forEach(item => { %>
-                                <tr>
-                                    <td><%= item.buyer %></td>
-                                    <td><%= item.productName %></td>
-                                    <td><%= item.sku %></td>
-                                    <td><%= item.quantity %></td>
-                                    <td>₹<%= item.price.toLocaleString() %></td>
-                                    <td><span class="category-badge"><%= item.category %></span></td>
-                                    <td>₹<%= item.total.toLocaleString() %></td>
-                                </tr>
-                            <% }); %>
-                        <% } else { %>
-                            <tr>
-                                <td colspan="7" class="text-center py-5">
-                                    <i class="fas fa-search fa-3x mb-3 text-muted"></i>
-                                    <p class="text-muted">No sales data found for the selected period</p>
-                                </td>
-                            </tr>
-                        <% } %>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Pagination Controls -->
-        <% if (totalPages > 1) { %>
-            <nav aria-label="Sales report pagination">
-                <ul class="pagination justify-content-center mt-4">
-                    <!-- Previous Button -->
-                    <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                        <a class="page-link" href="?page=<%= currentPage - 1 %>&from=<%= fromDate %>&to=<%= toDate %>&search=<%= encodeURIComponent(searchQuery) %>" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                    <!-- Page Numbers -->
-                    <% for(let i = 1; i <= totalPages; i++) { %>
-                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                            <a class="page-link" href="?page=<%= i %>&from=<%= fromDate %>&to=<%= toDate %>&search=<%= encodeURIComponent(searchQuery) %>"><%= i %></a>
-                        </li>
-                    <% } %>
-                    <!-- Next Button -->
-                    <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                        <a class="page-link" href="?page=<%= currentPage + 1 %>&from=<%= fromDate %>&to=<%= toDate %>&search=<%= encodeURIComponent(searchQuery) %>" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        <% } %>
-
-        <div class="footer">
-            <div>
-                <a href="/admin/dashboard" class="btn btn-account me-2">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </a>
-                <a href="/admin/logout" class="btn btn-logout">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-            </div>
-            <div>
-                <button id="downloadPDF" class="btn btn-download">
-                    <i class="fas fa-download"></i> Download PDF
-                </button>
-                <button id="downloadExcel" class="btn btn-excel">
-                    <i class="fas fa-file-excel"></i> Get Excel sheet
-                </button>
->>>>>>> rezzarpay
             </div>
         </div>
     </div>
 
-<<<<<<< HEAD
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -1147,17 +1016,6 @@
                 const day = String(date.getDate()).padStart(2, '0');
                 return `${year}-${month}-${day}`;
             }
-=======
-    <!-- Bootstrap JS Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JavaScript -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Date filter functionality
-            const fromDateInput = document.querySelector('input[name="from"]');
-            const toDateInput = document.querySelector('input[name="to"]');
-            const applyFilterBtn = document.querySelector('.date-filter button');
->>>>>>> rezzarpay
             
             // Search functionality with debounce
             const searchInput = document.querySelector('input[name="search"]');
@@ -1170,100 +1028,17 @@
                 }, 500);
             });
             
-<<<<<<< HEAD
-=======
-            // PDF Download
-            document.getElementById('downloadPDF').addEventListener('click', function() {
-                const fromDate = fromDateInput.value;
-                const toDate = toDateInput.value;
-                const search = searchInput.value;
-                
-                window.location.href = `/admin/sales/download-pdf?from=${fromDate}&to=${toDate}&search=${search}`;
-            });
-            
-            // Excel Download
-            document.getElementById('downloadExcel').addEventListener('click', function() {
-                const fromDate = fromDateInput.value;
-                const toDate = toDateInput.value;
-                const search = searchInput.value;
-                
-                window.location.href = `/admin/sales/download-excel?from=${fromDate}&to=${toDate}&search=${search}`;
-            });
-            
-            // Table sorting
-            const tableHeaders = document.querySelectorAll('th[data-sort]');
-            tableHeaders.forEach(header => {
-                header.addEventListener('click', function() {
-                    const sortField = this.dataset.sort;
-                    const currentOrder = this.dataset.order || 'asc';
-                    const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
-                    
-                    // Update UI to show sort direction
-                    tableHeaders.forEach(h => {
-                        h.dataset.order = '';
-                        h.querySelector('i')?.remove();
-                    });
-                    
-                    this.dataset.order = newOrder;
-                    
-                    // Add sort icon
-                    const icon = document.createElement('i');
-                    icon.className = `fas fa-sort-${newOrder === 'asc' ? 'up' : 'down'} ms-1`;
-                    this.appendChild(icon);
-                    
-                    // Sort the table
-                    sortTable(sortField, newOrder);
-                });
-            });
-            
-            function sortTable(field, order) {
-                const tbody = document.querySelector('table tbody');
-                const rows = Array.from(tbody.querySelectorAll('tr'));
-                
-                // Get column index
-                const headerRow = document.querySelector('table thead tr');
-                const headers = Array.from(headerRow.querySelectorAll('th'));
-                const columnIndex = headers.findIndex(h => h.dataset.sort === field);
-                
-                if (columnIndex === -1) return;
-                
-                // Sort rows
-                rows.sort((a, b) => {
-                    const aValue = a.cells[columnIndex].textContent.trim();
-                    const bValue = b.cells[columnIndex].textContent.trim();
-                    
-                    // Handle numeric values (price, quantity, etc.)
-                    if (!isNaN(aValue.replace(/[₹,]/g, '')) && !isNaN(bValue.replace(/[₹,]/g, ''))) {
-                        const aNum = parseFloat(aValue.replace(/[₹,]/g, ''));
-                        const bNum = parseFloat(bValue.replace(/[₹,]/g, ''));
-                        return order === 'asc' ? aNum - bNum : bNum - aNum;
-                    }
-                    
-                    // Handle text values
-                    return order === 'asc' 
-                        ? aValue.localeCompare(bValue)
-                        : bValue.localeCompare(aValue);
-                });
-                
-                // Reorder rows in the DOM
-                rows.forEach(row => tbody.appendChild(row));
-            }
-            
->>>>>>> rezzarpay
             // Quick date filters
             const quickFilters = document.querySelectorAll('.quick-filter');
             quickFilters.forEach(filter => {
                 filter.addEventListener('click', function(e) {
                     e.preventDefault();
                     
-<<<<<<< HEAD
                     // Remove active class from all filters
                     quickFilters.forEach(f => f.classList.remove('active'));
                     // Add active class to clicked filter
                     this.classList.add('active');
                     
-=======
->>>>>>> rezzarpay
                     const filterType = this.dataset.filter;
                     const today = new Date();
                     let fromDate = new Date();
@@ -1286,18 +1061,12 @@
                             break;
                     }
                     
-<<<<<<< HEAD
                     document.getElementById('fromDate').value = formatDate(fromDate);
                     document.getElementById('toDate').value = formatDate(today);
-=======
-                    fromDateInput.value = fromDate.toISOString().split('T')[0];
-                    toDateInput.value = today.toISOString().split('T')[0];
->>>>>>> rezzarpay
                     
                     document.getElementById('filterForm').submit();
                 });
             });
-<<<<<<< HEAD
             
             // PDF Download
             document.getElementById('downloadPDF').addEventListener('click', function() {
@@ -1373,6 +1142,13 @@
                         return order === 'asc' ? aNum - bNum : bNum - aNum;
                     }
                     
+                    // Handle percentage values
+                    if (aValue.includes('%') && bValue.includes('%')) {
+                        const aNum = parseFloat(aValue.replace('%', ''));
+                        const bNum = parseFloat(bValue.replace('%', ''));
+                        return order === 'asc' ? aNum - bNum : bNum - aNum;
+                    }
+                    
                     // Handle text values
                     return order === 'asc' 
                         ? aValue.localeCompare(bValue)
@@ -1416,6 +1192,16 @@
                         tension: 0.4,
                         borderDash: [5, 5],
                         fill: false
+                    },
+                    {
+                        label: 'Discounts',
+                        data: [1200, 1900, 1500, 2500, 2200, 3000, 3500, 3200, 4000, 4200, 3800, 4500],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        borderDash: [3, 3],
+                        fill: false
                     }
                 ]
             };
@@ -1448,7 +1234,7 @@
                                         label += ': ';
                                     }
                                     if (context.parsed.y !== null) {
-                                        if (context.datasetIndex === 0) {
+                                        if (context.datasetIndex === 0 || context.datasetIndex === 2) {
                                             label += '₹' + context.parsed.y.toLocaleString();
                                         } else {
                                             label += context.parsed.y;
@@ -1491,9 +1277,3 @@
     </script>
 </body>
 </html>
-=======
-        });
-    </script>
-</body>
-</html>
->>>>>>> rezzarpay

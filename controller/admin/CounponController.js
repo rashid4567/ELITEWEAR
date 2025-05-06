@@ -50,7 +50,7 @@ const createCoupon = async (req, res) => {
 
 const getAllCoupons = async (req, res) => {
   try {
-    const coupons = await Coupon.find();
+    const coupons = await Coupon.find().sort({createdAt : -1});
     res.status(200).json({ success: true, data: coupons });
   } catch (error) {
     console.error("Error on loading the coupons:", error);
@@ -211,23 +211,21 @@ const getCouponById = async (req, res) => {
 const renderCouponsPage = async (req, res) => {
   try {
     const page = Number.parseInt(req.query.page) || 1;
-    const limit = 7; // Items per page
+    const limit = 7; 
     const skip = (page - 1) * limit;
 
-    // Fetch total number of coupons
     const totalcoupons = await Coupon.countDocuments();
 
-    // Calculate total pages
+
     const totalpages = Math.ceil(totalcoupons / limit);
 
-    // Render the EJS template with all required variables
     res.render("coupons", {
       title: "Coupon Management",
-      Coupon, // Pass the Coupon model if needed in the template
+      Coupon, 
       totalcoupons,
       currentPage: page,
       totalpages,
-      itemsPerPage: limit, // Explicitly pass itemsPerPage
+      itemsPerPage: limit,
     });
   } catch (error) {
     console.error("Error rendering coupons page:", error);

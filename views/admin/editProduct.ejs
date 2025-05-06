@@ -1,2074 +1,1739 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Edit Product | Admin Dashboard</title>
-   <!-- Bootstrap CSS -->
-   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-   <!-- Font Awesome -->
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-   <!-- Cropper.js -->
-   <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
-   <!-- Custom CSS -->
-   <style>
-       :root {
-           --primary-color: #6366f1;
-           --primary-hover: #4f46e5;
-           --secondary-color: #f3f4f6;
-           --success-color: #10b981;
-           --danger-color: #ef4444;
-           --warning-color: #f59e0b;
-           --dark-color: #111827;
-           --light-color: #f9fafb;
-           --border-color: #e5e7eb;
-           --text-color: #374151;
-           --text-muted: #6b7280;
-       }
-       
-       body {
-           background-color: #f9fafb;
-           color: var(--text-color);
-           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-       }
-       
-       .form-container {
-           background: white;
-           border-radius: 12px;
-           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-           max-width: 1200px;
-           margin: 0 auto;
-       }
-       
-       .form-header {
-           border-bottom: 1px solid var(--border-color);
-           padding-bottom: 1rem;
-           margin-bottom: 2rem;
-       }
-       
-       .form-section {
-           margin-bottom: 2.5rem;
-           position: relative;
-           padding: 1.5rem;
-           border-radius: 8px;
-           background-color: rgba(249, 250, 251, 0.5);
-           border: 1px solid var(--border-color);
-           transition: all 0.3s ease;
-       }
-       
-       .form-section:hover {
-           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-           background-color: rgba(249, 250, 251, 0.8);
-       }
-       
-       .section-title {
-           font-weight: 600;
-           margin-bottom: 1.5rem;
-           display: flex;
-           align-items: center;
-           gap: 0.5rem;
-           color: var(--primary-color);
-       }
-       
-       .section-title i {
-           color: var(--primary-color);
-           background-color: rgba(99, 102, 241, 0.1);
-           padding: 0.5rem;
-           border-radius: 50%;
-       }
-       
-       .form-label {
-           font-weight: 500;
-           margin-bottom: 0.5rem;
-           color: var(--dark-color);
-       }
-       
-       .form-control, .form-select {
-           border: 1px solid var(--border-color);
-           border-radius: 0.5rem;
-           padding: 0.75rem 1rem;
-           transition: all 0.2s ease;
-           box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-       }
-       
-       .form-control:focus, .form-select:focus {
-           border-color: var(--primary-color);
-           box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-       }
-       
-       .form-control.is-invalid, .form-select.is-invalid {
-           border-color: var(--danger-color);
-           background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23ef4444'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23ef4444' stroke='none'/%3e%3c/svg%3e");
-           background-repeat: no-repeat;
-           background-position: right calc(0.375em + 0.1875rem) center;
-           background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-       }
-       
-       .form-control.is-valid, .form-select.is-valid {
-           border-color: var(--success-color);
-           background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2310b981' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
-           background-repeat: no-repeat;
-           background-position: right calc(0.375em + 0.1875rem) center;
-           background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
-       }
-       
-       .invalid-feedback {
-           color: var(--danger-color);
-           font-size: 0.875rem;
-           margin-top: 0.25rem;
-           display: none;
-       }
-       
-       .form-control.is-invalid ~ .invalid-feedback,
-       .form-select.is-invalid ~ .invalid-feedback {
-           display: block;
-       }
-       
-       .btn-primary {
-           background-color: var(--primary-color);
-           border-color: var(--primary-color);
-           box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-           transition: all 0.2s ease;
-       }
-       
-       .btn-primary:hover, .btn-primary:focus {
-           background-color: var(--primary-hover);
-           border-color: var(--primary-hover);
-           transform: translateY(-1px);
-           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-       }
-       
-       .btn-outline-secondary {
-           color: var(--text-color);
-           border-color: var(--border-color);
-           box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-           transition: all 0.2s ease;
-       }
-       
-       .btn-outline-secondary:hover {
-           background-color: var(--secondary-color);
-           color: var(--text-color);
-           transform: translateY(-1px);
-           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-       }
-       
-       .upload-zone {
-           border: 2px dashed var(--border-color);
-           border-radius: 0.5rem;
-           padding: 1.5rem;
-           text-align: center;
-           cursor: pointer;
-           transition: all 0.3s ease;
-           position: relative;
-           background-size: cover;
-           background-position: center;
-           background-repeat: no-repeat;
-           overflow: hidden;
-       }
-       
-       .upload-zone:hover:not(.has-image) {
-           border-color: var(--primary-color);
-           background-color: rgba(99, 102, 241, 0.05);
-       }
-       
-       .upload-zone.has-image {
-           border-style: solid;
-           border-color: var(--primary-color);
-           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-           cursor: default;
-       }
-       
-       .upload-zone .upload-content {
-           display: flex;
-           flex-direction: column;
-           align-items: center;
-           justify-content: center;
-           height: 100%;
-           background-color: rgba(255, 255, 255, 0.8);
-           border-radius: 0.25rem;
-           padding: 1rem;
-           transition: all 0.3s ease;
-       }
-       
-       .upload-zone:hover:not(.has-image) .upload-content {
-           background-color: rgba(255, 255, 255, 0.9);
-       }
-       
-       .upload-zone .upload-icon {
-           font-size: 2rem;
-           color: var(--primary-color);
-           margin-bottom: 0.5rem;
-           transition: all 0.3s ease;
-       }
-       
-       .upload-zone:hover:not(.has-image) .upload-icon {
-           transform: scale(1.1);
-       }
-       
-       .upload-zone .upload-text {
-           color: var(--text-muted);
-           font-size: 0.875rem;
-           transition: all 0.3s ease;
-       }
-       
-       .upload-zone:hover:not(.has-image) .upload-text {
-           color: var(--text-color);
-       }
-       
-       .upload-zone .clear-image {
-           position: absolute;
-           top: 0.5rem;
-           right: 0.5rem;
-           background: var(--danger-color);
-           color: white;
-           border: none;
-           border-radius: 50%;
-           width: 2rem;
-           height: 2rem;
-           font-size: 1rem;
-           display: flex;
-           align-items: center;
-           justify-content: center;
-           cursor: pointer;
-           transition: all 0.3s ease;
-           z-index: 10;
-           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-       }
-       
-       .upload-zone.has-image .clear-image {
-           opacity: 1;
-       }
-       
-       .clear-image:hover {
-           background: #dc2626;
-           transform: scale(1.1);
-       }
-       
-       .main-image-container {
-           height: 300px;
-       }
-       
-       .additional-image-container {
-           height: 150px;
-       }
-       
-       .variant-row {
-           background-color: var(--light-color);
-           border-radius: 0.5rem;
-           padding: 1.25rem;
-           margin-bottom: 1rem;
-           position: relative;
-           transition: all 0.3s ease;
-           border: 1px solid var(--border-color);
-       }
-       
-       .variant-row:hover {
-           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-           border-color: var(--primary-color);
-       }
-       
-       .remove-variant {
-           position: absolute;
-           top: 0.5rem;
-           right: 0.5rem;
-           background: none;
-           border: none;
-           color: var(--danger-color);
-           cursor: pointer;
-           font-size: 1.25rem;
-           transition: all 0.2s ease;
-           z-index: 5;
-       }
-       
-       .remove-variant:hover {
-           color: #dc2626;
-           transform: scale(1.1);
-       }
-       
-       .size-btn {
-           border: 1px solid var(--border-color);
-           background-color: white;
-           color: var(--text-color);
-           border-radius: 0.5rem;
-           padding: 0.5rem 1rem;
-           margin-right: 0.5rem;
-           margin-bottom: 0.5rem;
-           cursor: pointer;
-           transition: all 0.3s ease;
-           font-weight: 500;
-           min-width: 3rem;
-           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-       }
-       
-       .size-btn:hover {
-           background-color: var(--secondary-color);
-           border-color: var(--primary-color);
-           transform: translateY(-1px);
-       }
-       
-       .size-btn.active {
-           background-color: var(--primary-color);
-           color: white;
-           border-color: var(--primary-color);
-       }
-       
-       .size-btn.disabled {
-           opacity: 0.5;
-           cursor: not-allowed;
-           transform: none;
-       }
-       
-       #cropModal .modal-content {
-           border-radius: 0.75rem;
-           border: none;
-           box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-       }
-       
-       #cropModal .modal-header {
-           border-bottom: 1px solid var(--border-color);
-           padding: 1rem 1.5rem;
-       }
-       
-       #cropModal .modal-body {
-           padding: 1.5rem;
-           max-height: 80vh;
-           overflow: hidden;
-       }
-       
-       #cropModal .modal-footer {
-           border-top: 1px solid var(--border-color);
-           padding: 1rem 1.5rem;
-       }
-       
-       #cropModal .modal-dialog {
-           max-width: 90%;
-           width: 900px;
-           margin: 1.75rem auto;
-       }
-       
-       #imageToCrop {
-           max-width: 100%;
-           max-height: 65vh;
-           display: block;
-           margin: 0 auto;
-       }
-       
-       .img-container {
-           height: 65vh;
-           width: 100%;
-           overflow: hidden;
-           background-color: #f3f4f6;
-           border-radius: 0.5rem;
-       }
-       
-       .cropper-container {
-           border-radius: 0.5rem;
-           overflow: hidden;
-           height: 100% !important;
-           width: 100% !important;
-       }
-       
-       .form-floating > .form-control {
-           height: calc(3.5rem + 2px);
-           line-height: 1.25;
-       }
-       
-       .form-floating > label {
-           padding: 1rem;
-       }
-       
-       .form-floating > .form-control:focus ~ label,
-       .form-floating > .form-control:not(:placeholder-shown) ~ label {
-           transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
-       }
-       
-       textarea.form-control {
-           min-height: 120px;
-       }
-       
-       .animate-fade-in { 
-           animation: fadeIn 0.3s ease-in forwards; 
-       }
-       
-       .animate-slide-in { 
-           animation: slideIn 0.3s ease-out forwards; 
-       }
-       
-       .animate-slide-out { 
-           animation: slideOut 0.3s ease-in forwards; 
-       }
-       
-       @keyframes fadeIn { 
-           from { opacity: 0; } 
-           to { opacity: 1; } 
-       }
-       
-       @keyframes slideIn { 
-           from { transform: translateY(20px); opacity: 0; } 
-           to { transform: translateY(0); opacity: 1; } 
-       }
-       
-       @keyframes slideOut { 
-           from { transform: translateY(0); opacity: 1; } 
-           to { transform: translateY(-20px); opacity: 0; } 
-       }
-       
-       .toast-container {
-           position: fixed;
-           top: 1rem;
-           right: 1rem;
-           z-index: 1050;
-       }
-       
-       .custom-toast {
-           min-width: 300px;
-           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-           border-radius: 0.5rem;
-       }
-       
-       .validation-tooltip {
-           position: absolute;
-           top: 100%;
-           left: 0;
-           z-index: 5;
-           max-width: 100%;
-           padding: 0.25rem 0.5rem;
-           margin-top: 0.1rem;
-           font-size: 0.875rem;
-           color: #fff;
-           background-color: rgba(220, 53, 69, 0.9);
-           border-radius: 0.25rem;
-           pointer-events: none;
-           opacity: 0;
-           transition: opacity 0.2s ease;
-       }
-       
-       .form-control:hover + .validation-tooltip,
-       .form-control:focus + .validation-tooltip {
-           opacity: 1;
-       }
-       
-       .crop-controls {
-           display: flex;
-           justify-content: center;
-           gap: 1rem;
-           margin-top: 1rem;
-       }
-       
-       .crop-control-btn {
-           background-color: var(--secondary-color);
-           border: none;
-           border-radius: 50%;
-           width: 2.5rem;
-           height: 2.5rem;
-           display: flex;
-           align-items: center;
-           justify-content: center;
-           cursor: pointer;
-           transition: all 0.2s ease;
-       }
-       
-       .crop-control-btn:hover {
-           background-color: var(--primary-color);
-           color: white;
-       }
-       
-       .crop-aspect-btn {
-           background-color: var(--secondary-color);
-           border: 1px solid var(--border-color);
-           border-radius: 0.25rem;
-           padding: 0.25rem 0.5rem;
-           font-size: 0.875rem;
-           cursor: pointer;
-           transition: all 0.2s ease;
-       }
-       
-       .crop-aspect-btn.active {
-           background-color: var(--primary-color);
-           color: white;
-           border-color: var(--primary-color);
-       }
-       
-       .required-field::after {
-           content: "*";
-           color: var(--danger-color);
-           margin-left: 0.25rem;
-       }
-       
-       .field-hint {
-           font-size: 0.75rem;
-           color: var(--text-muted);
-           margin-top: 0.25rem;
-       }
-
-       /* Enhanced offer information styles */
-       .offer-info {
-           margin-top: 0.75rem;
-           padding: 0.75rem;
-           border-radius: 0.5rem;
-           background-color: rgba(99, 102, 241, 0.1);
-           border: 1px dashed var(--primary-color);
-           font-size: 0.875rem;
-           transition: all 0.3s ease;
-       }
-
-       .offer-info:hover {
-           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-           transform: translateY(-1px);
-       }
-
-       .offer-info.effective-discount {
-           background-color: rgba(16, 185, 129, 0.15);
-           border: 1px dashed var(--success-color);
-       }
-
-       .offer-info-title {
-           font-weight: 600;
-           color: var(--primary-color);
-           margin-bottom: 0.25rem;
-           display: flex;
-           align-items: center;
-           gap: 0.5rem;
-       }
-
-       .effective-discount .offer-info-title {
-           color: var(--success-color);
-       }
-
-       .offer-badge {
-           display: inline-block;
-           padding: 0.25rem 0.5rem;
-           border-radius: 0.25rem;
-           font-size: 0.75rem;
-           font-weight: 600;
-           margin-left: auto;
-       }
-
-       .offer-badge.product {
-           background-color: rgba(99, 102, 241, 0.2);
-           color: var(--primary-color);
-       }
-
-       .offer-badge.category {
-           background-color: rgba(16, 185, 129, 0.2);
-           color: var(--success-color);
-       }
-
-       /* Enhanced discount preview styles */
-       .discount-preview {
-           margin-top: 1rem;
-           padding: 1rem;
-           border-radius: 0.5rem;
-           background-color: rgba(16, 185, 129, 0.1);
-           border: 1px solid var(--success-color);
-           transition: all 0.3s ease;
-       }
-
-       .discount-preview:hover {
-           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-       }
-
-       .discount-preview.hidden {
-           display: none;
-       }
-
-       .discount-preview-title {
-           font-weight: 600;
-           color: var(--success-color);
-           margin-bottom: 0.75rem;
-           display: flex;
-           align-items: center;
-           gap: 0.5rem;
-       }
-
-       .discount-preview-content {
-           display: flex;
-           justify-content: space-between;
-           align-items: center;
-       }
-
-       .original-price {
-           text-decoration: line-through;
-           color: var(--text-muted);
-           font-size: 0.9rem;
-       }
-
-       .discounted-price {
-           font-weight: 600;
-           color: var(--success-color);
-           font-size: 1.2rem;
-       }
-       
-       /* Loading overlay */
-       .loading-overlay {
-           position: fixed;
-           top: 0;
-           left: 0;
-           width: 100%;
-           height: 100%;
-           background-color: rgba(0, 0, 0, 0.5);
-           display: flex;
-           justify-content: center;
-           align-items: center;
-           z-index: 9999;
-       }
-
-       .loading-spinner {
-           background-color: white;
-           padding: 1.5rem;
-           border-radius: 0.5rem;
-           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-           display: flex;
-           flex-direction: column;
-           align-items: center;
-           gap: 1rem;
-       }
-
-       .spinner-border {
-           width: 3rem;
-           height: 3rem;
-       }
-       
-       /* Loading spinner for SKU check */
-       .sku-check-spinner {
-           display: none;
-           width: 1rem;
-           height: 1rem;
-           margin-left: 0.5rem;
-       }
-       
-       .sku-check-spinner.show {
-           display: inline-block;
-       }
-       
-       /* Enhanced offer comparison styles */
-       .offer-comparison {
-           margin-top: 1rem;
-           padding: 1rem;
-           border-radius: 0.5rem;
-           background-color: #f8fafc;
-           border: 1px solid var(--border-color);
-           transition: all 0.3s ease;
-       }
-       
-       .offer-comparison-title {
-           font-weight: 600;
-           margin-bottom: 1rem;
-           color: var(--dark-color);
-       }
-       
-       .offer-comparison-item {
-           display: flex;
-           justify-content: space-between;
-           align-items: center;
-           padding: 0.5rem 0;
-           border-bottom: 1px solid var(--border-color);
-       }
-       
-       .offer-comparison-item:last-child {
-           border-bottom: none;
-       }
-       
-       .offer-comparison-label {
-           display: flex;
-           align-items: center;
-           gap: 0.5rem;
-       }
-       
-       .offer-comparison-value {
-           font-weight: 600;
-       }
-       
-       .offer-comparison-winner {
-           background-color: rgba(16, 185, 129, 0.1);
-           border-color: var(--success-color);
-       }
-       
-       .offer-comparison-winner .offer-comparison-value {
-           color: var(--success-color);
-       }
-       
-       .offer-icon {
-           width: 1.5rem;
-           height: 1.5rem;
-           display: flex;
-           align-items: center;
-           justify-content: center;
-           border-radius: 50%;
-       }
-       
-       .offer-icon.product {
-           background-color: rgba(99, 102, 241, 0.2);
-           color: var(--primary-color);
-       }
-       
-       .offer-icon.category {
-           background-color: rgba(16, 185, 129, 0.2);
-           color: var(--success-color);
-       }
-       
-       .offer-icon.winner {
-           background-color: rgba(16, 185, 129, 0.2);
-           color: var(--success-color);
-       }
-       
-       /* Variant price with discount */
-       .variant-price-container {
-           position: relative;
-       }
-       
-       .variant-original-price {
-           position: absolute;
-           top: -1.2rem;
-           right: 0.5rem;
-           text-decoration: line-through;
-           color: var(--text-muted);
-           font-size: 0.8rem;
-       }
-       
-       .variant-discount-badge {
-           position: absolute;
-           bottom: -1.2rem;
-           right: 0.5rem;
-           background-color: var(--success-color);
-           color: white;
-           font-size: 0.7rem;
-           padding: 0.1rem 0.4rem;
-           border-radius: 0.25rem;
-       }
-   </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product | Admin Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Toastify CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <!-- Cropper.js CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/adminStyle/editProduct.css">
 </head>
 <body>
-   <div class="container py-5">
-       <div class="form-container p-4 p-md-5">
-           <div class="form-header mb-4">
-               <h1 class="h3 fw-bold">Edit Product</h1>
-               <p class="text-muted">Update the details of your product</p>
-           </div>
 
-           <% if (locals.error) { %>
-               <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                   <i class="fas fa-exclamation-circle me-2"></i> <%= error %>
-                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-               </div>
-           <% } %>
+    
+    <div class="container-fluid">
+        <div class="row">
+            
+            
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Edit Product</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <a href="/admin/productManagement" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Products
+                        </a>
+                    </div>
+                </div>
 
-           <!-- Loading Overlay -->
-           <div id="loadingOverlay" class="loading-overlay d-none">
-               <div class="loading-spinner">
-                   <div class="spinner-border text-primary" role="status">
-                       <span class="visually-hidden">Loading...</span>
-                   </div>
-                   <p class="mb-0">Updating product...</p>
-               </div>
-           </div>
+                <% if (error) { %>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <%= error %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <% } %>
 
-           <form id="productForm" method="post" action="/admin/editProduct/<%= product._id %>" enctype="multipart/form-data" class="needs-validation" novalidate>
-               <!-- Store original SKU for comparison -->
-               <input type="hidden" id="originalSku" value="<%= product.sku || '' %>">
-               
-               <!-- General Information Section -->
-               <div class="form-section animate-fade-in">
-                   <h2 class="section-title">
-                       <i class="fas fa-info-circle"></i> General Information
-                   </h2>
-                   <div class="row g-4">
-                       <div class="col-md-6">
-                           <div class="form-floating">
-                               <input type="text" class="form-control" id="productName" name="productName" placeholder="Product Name" required minlength="3" maxlength="100" value="<%= product.name %>">
-                               <label for="productName" class="required-field">Product Name</label>
-                               <div class="invalid-feedback">Please enter a product name (3-100 characters)</div>
-                               <div class="field-hint">Enter a descriptive name for your product</div>
-                           </div>
-                       </div>
-                       <div class="col-md-6">
-                           <div class="form-floating">
-                               <input type="number" class="form-control" id="productPrice" name="productPrice" placeholder="Price" min="0.01" max="1000000" step="0.01" required value="<%= product.regularPrice || (product.variants && product.variants.length > 0 ? product.variants[0].varientPrice : '') %>">
-                               <label for="productPrice" class="required-field">Price (₹)</label>
-                               <div class="invalid-feedback">Please enter a valid price (₹0.01 - ₹1,000,000)</div>
-                               <div class="field-hint">Enter the base price of your product (maximum ₹1,000,000)</div>
-                           </div>
-                       </div>
-                       <div class="col-12">
-                           <div class="form-floating">
-                               <textarea class="form-control" id="productDescription" name="productDescription" placeholder="Description" required minlength="10" maxlength="2000"><%= product.description %></textarea>
-                               <label for="productDescription" class="required-field">Product Description</label>
-                               <div class="invalid-feedback">Please enter a product description (minimum 10 characters)</div>
-                               <div class="field-hint">Provide a detailed description of your product</div>
-                           </div>
-                       </div>
-                   </div>
-               </div>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <form id="editProductForm" action="/admin/edit-product/<%= product._id %>" method="POST" enctype="multipart/form-data">
+                            <!-- Form Steps Navigation -->
+                            <div class="form-steps-container mb-4">
+                                <div class="form-step active" data-step="1">
+                                    <div class="step-number">1</div>
+                                    <div class="step-title">Basic Info</div>
+                                </div>
+                                <div class="form-step" data-step="2">
+                                    <div class="step-number">2</div>
+                                    <div class="step-title">Images</div>
+                                </div>
+                                <div class="form-step" data-step="3">
+                                    <div class="step-number">3</div>
+                                    <div class="step-title">Variants</div>
+                                </div>
+                                <div class="form-step" data-step="4">
+                                    <div class="step-number">4</div>
+                                    <div class="step-title">Pricing & Offers</div>
+                                </div>
+                            </div>
 
-               <!-- Product Images Section -->
-               <div class="form-section animate-fade-in">
-                   <h2 class="section-title">
-                       <i class="fas fa-images"></i> Product Images
-                   </h2>
-                   <div class="row g-4">
-                       <div class="col-md-6">
-                           <label class="form-label required-field">Main Product Image</label>
-                           <div class="upload-zone main-image-container <%= product.images && product.images.find(img => img.isMain) ? 'has-image' : '' %>" data-name="mainImage">
-                               <% const mainImage = product.images && product.images.find(img => img.isMain); %>
-                               <% if (mainImage) { %>
-                                   <div class="upload-content d-none"></div>
-                                   <button type="button" class="clear-image">
-                                       <i class="fas fa-times"></i>
-                                   </button>
-                                   <input type="hidden" name="existingImages[mainImage][url]" value="<%= mainImage.url %>">
-                                   <input type="hidden" name="existingImages[mainImage][isMain]" value="true">
-                               <% } else { %>
-                                   <div class="upload-content">
-                                       <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                       <p class="upload-text">Drag and drop or click to upload</p>
-                                       <p class="upload-text text-muted">Recommended: 1000x1000px</p>
-                                   </div>
-                                   <button type="button" class="clear-image d-none">
-                                       <i class="fas fa-times"></i>
-                                   </button>
-                               <% } %>
-                               <input type="file" name="mainImage" class="d-none" accept="image/*" <%= !mainImage ? 'required' : '' %>>
-                               <div class="invalid-feedback">Please upload a main product image</div>
-                           </div>
-                           <div class="field-hint mt-2">This will be the primary image shown to customers</div>
-                       </div>
-                       <div class="col-md-6">
-                           <label class="form-label">Additional Images</label>
-                           <div class="row g-3">
-                               <% const additionalImages = product.images ? product.images.filter(img => !img.isMain) : []; %>
-                               <% for (let i = 0; i < 3; i++) { %>
-                                   <div class="col-4">
-                                       <div class="upload-zone additional-image-container <%= additionalImages[i] ? 'has-image' : '' %>" data-name="additionalImage<%= i+1 %>">
-                                           <% if (additionalImages[i]) { %>
-                                               <div class="upload-content d-none"></div>
-                                               <button type="button" class="clear-image">
-                                                   <i class="fas fa-times"></i>
-                                               </button>
-                                               <input type="hidden" name="existingImages[additionalImage<%= i+1 %>][url]" value="<%= additionalImages[i].url %>">
-                                               <input type="hidden" name="existingImages[additionalImage<%= i+1 %>][isMain]" value="false">
-                                           <% } else { %>
-                                               <div class="upload-content">
-                                                   <i class="fas fa-plus upload-icon"></i>
-                                                   <p class="upload-text small">Image <%= i+1 %></p>
-                                               </div>
-                                               <button type="button" class="clear-image d-none">
-                                                   <i class="fas fa-times"></i>
-                                               </button>
-                                           <% } %>
-                                           <input type="file" name="additionalImage<%= i+1 %>" class="d-none" accept="image/*">
-                                       </div>
-                                   </div>
-                               <% } %>
-                           </div>
-                           <div class="field-hint mt-2">Additional images will be shown in the product gallery</div>
-                       </div>
-                   </div>
-               </div>
+                            <!-- Step 1: Basic Information -->
+                            <div class="form-step-content" id="step1">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="productName" class="form-label">Product Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="productName" name="productName" value="<%= product.name %>" required>
+                                        <div class="invalid-feedback">Please enter a product name.</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="productCategory" class="form-label">Category <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="productCategory" name="productCategory" required>
+                                            <option value="">Select Category</option>
+                                            <% categories.forEach(category => { %>
+                                                <option value="<%= category._id %>" <%= product.categoryId && product.categoryId._id.toString() === category._id.toString() ? 'selected' : '' %>>
+                                                    <%= category.name %>
+                                                </option>
+                                            <% }); %>
+                                        </select>
+                                        <div class="invalid-feedback">Please select a category.</div>
+                                    </div>
+                                </div>
 
-               <!-- Product Options Section -->
-               <div class="form-section animate-fade-in">
-                   <h2 class="section-title">
-                       <i class="fas fa-tags"></i> Product Options
-                   </h2>
-                   <div class="row g-4">
-                       <div class="col-md-6">
-                           <div class="form-floating">
-                               <select class="form-select" id="productCategory" name="productCategory" required>
-                                   <option value="" disabled>Select a category</option>
-                                   <% if (locals.categories && categories.length > 0) { %>
-                                       <% categories.forEach(category => { %>
-                                           <option value="<%= category.name %>" 
-                                               data-offer="<%= category.offer || 0 %>" 
-                                               <%= product.categoryId && product.categoryId.name === category.name ? 'selected' : '' %>>
-                                               <%= category.name %> <%= category.offer > 0 ? `(${category.offer}% OFF)` : '' %>
-                                           </option>
-                                       <% }); %>
-                                   <% } else { %>
-                                       <option value="" disabled>No categories available</option>
-                                   <% } %>
-                               </select>
-                               <label for="productCategory" class="required-field">Category</label>
-                               <div class="invalid-feedback">Please select a category</div>
-                               <div class="field-hint">Choose the category that best fits your product</div>
-                               
-                               <!-- Category Offer Information -->
-                               <% if (product.categoryId && product.categoryId.offer > 0) { %>
-                               <div class="offer-info">
-                                   <div class="offer-info-title">
-                                       <i class="fas fa-tag"></i> Category Offer
-                                       <span class="offer-badge category"><%= product.categoryId.offer %>% OFF</span>
-                                   </div>
-                                   <p class="mb-0">This product has a category offer of <%= product.categoryId.offer %>%</p>
-                               </div>
-                               <% } %>
-                           </div>
-                       </div>
-                       <div class="col-md-6">
-                            
-                           <div class="form-floating">
-                               <input type="number" class="form-control" id="productOffer" name="offer" placeholder="Offer" min="0" max="100" value="<%= product.offer || 0 %>" step="1">
-                               <label for="productOffer">Product Offer (%)</label>
-                               <div class="invalid-feedback">Offer must be between 0 and 100</div>
-                               <div class="field-hint">Enter a discount percentage (0-100)</div>
-                           </div>
-                           
-                           <!-- Product Offer Information -->
-                           <% if (product.productOffer > 0) { %>
-                           <div class="offer-info">
-                               <div class="offer-info-title">
-                                   <i class="fas fa-percent"></i> Product Offer
-                                   <span class="offer-badge product"><%= product.productOffer %>% OFF</span>
-                               </div>
-                               <p class="mb-0">This product has a specific offer of <%= product.productOffer %>%</p>
-                           </div>
-                           <% } %>
-                           
-                           <!-- Offer Comparison Section - New -->
-                           <div class="offer-comparison mt-3">
-                               <div class="offer-comparison-title">
-                                   <i class="fas fa-balance-scale me-2"></i> Offer Comparison
-                               </div>
-                               <div class="offer-comparison-item">
-                                   <div class="offer-comparison-label">
-                                       <span class="offer-icon product"><i class="fas fa-percent"></i></span>
-                                       Product Offer
-                                   </div>
-                                   <div class="offer-comparison-value" id="productOfferValue">
-                                       <%= product.productOffer || 0 %>%
-                                   </div>
-                               </div>
-                               <div class="offer-comparison-item">
-                                   <div class="offer-comparison-label">
-                                       <span class="offer-icon category"><i class="fas fa-tag"></i></span>
-                                       Category Offer
-                                   </div>
-                                   <div class="offer-comparison-value" id="categoryOfferValue">
-                                       <%= product.categoryId && product.categoryId.offer ? product.categoryId.offer : 0 %>%
-                                   </div>
-                               </div>
-                               <div class="offer-comparison-item offer-comparison-winner">
-                                   <div class="offer-comparison-label">
-                                       <span class="offer-icon winner"><i class="fas fa-trophy"></i></span>
-                                       Effective Discount
-                                   </div>
-                                   <div class="offer-comparison-value" id="effectiveDiscountValue">
-                                       <%= product.effectiveDiscount || 0 %>%
-                                       <span class="ms-2 badge <%= product.discountSource === 'product' ? 'bg-primary' : 'bg-success' %>">
-                                           <%= product.discountSource === 'product' ? 'Product' : 'Category' %>
-                                       </span>
-                                   </div>
-                               </div>
-                           </div>
-                           
-                           <!-- Discount preview section -->
-                           <div id="discountPreview" class="discount-preview <%= (product.productOffer > 0 || (product.categoryId && product.categoryId.offer > 0)) ? '' : 'hidden' %>">
-                               <div class="discount-preview-title">
-                                   <i class="fas fa-tag"></i> Discount Preview
-                               </div>
-                               <div class="discount-preview-content">
-                                   <div>
-                                       <div class="original-price">₹<span id="originalPrice"><%= product.regularPrice || (product.variants && product.variants.length > 0 ? product.variants[0].varientPrice : 0) %></span></div>
-                                       <div class="discounted-price">₹<span id="discountedPrice"><%= product.salePrice || 0 %></span></div>
-                                   </div>
-                                   <div>
-                                       <span class="badge bg-success" id="discountBadge"><%= product.effectiveDiscount || 0 %>% OFF</span>
-                                   </div>
-                               </div>
-                           </div>
-                       </div>
-                   </div>
-               </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="brand" class="form-label">Brand</label>
+                                        <input type="text" class="form-control" id="brand" name="brand" value="<%= product.brand || '' %>">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="sku" class="form-label">SKU</label>
+                                        <input type="text" class="form-control" id="sku" name="sku" value="<%= product.sku || '' %>">
+                                        <div class="invalid-feedback">Please enter a valid SKU (letters, numbers, hyphens and underscores only).</div>
+                                    </div>
+                                </div>
 
-               <!-- Product Variants Section -->
-               <div class="form-section animate-fade-in">
-                   <h2 class="section-title">
-                       <i class="fas fa-cubes"></i> Product Variants
-                   </h2>
-                   <div class="mb-4">
-                       <label class="form-label required-field">Available Sizes</label>
-                       <div class="d-flex flex-wrap">
-                           <button type="button" class="size-btn" data-size="S">S</button>
-                           <button type="button" class="size-btn" data-size="M">M</button>
-                           <button type="button" class="size-btn" data-size="L">L</button>
-                           <button type="button" class="size-btn" data-size="XL">XL</button>
-                           <button type="button" class="size-btn" data-size="XXL">XXL</button>
-                       </div>
-                       <div class="field-hint">Click on sizes to add variants</div>
-                   </div>
-                   <div id="variantContainer" class="mt-4">
-                       <!-- Variant rows will be added here -->
-                   </div>
-                   <div id="noVariantsMessage" class="alert alert-warning mt-3 <%= product.variants && product.variants.length > 0 ? 'd-none' : '' %>">
-                       <i class="fas fa-exclamation-triangle me-2"></i> Please add at least one size variant
-                   </div>
-               </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="color" class="form-label">Color <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="color" name="color" value="<%= product.color %>" required>
+                                        <div class="invalid-feedback">Please enter a color.</div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="fabric" class="form-label">Fabric <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="fabric" name="fabric" value="<%= product.fabric %>" required>
+                                        <div class="invalid-feedback">Please enter a fabric type.</div>
+                                    </div>
+                                </div>
 
-               <!-- Product Specifications Section -->
-               <div class="form-section animate-fade-in">
-                   <h2 class="section-title">
-                       <i class="fas fa-clipboard-list"></i> Product Specifications
-                   </h2>
-                   <div class="row g-4">
-                       <div class="col-md-6">
-                           <div class="form-floating">
-                               <input type="text" class="form-control" id="sku" name="sku" placeholder="SKU" pattern="[A-Za-z0-9-_]+" title="Only letters, numbers, hyphens and underscores are allowed" value="<%= product.sku || '' %>">
-                               <label for="sku">SKU (Optional)</label>
-                               <div class="invalid-feedback">SKU can only contain letters, numbers, hyphens and underscores</div>
-                               <div class="field-hint">Stock Keeping Unit - unique identifier for your product</div>
-                           </div>
-                       </div>
-                       <div class="col-md-6">
-                           <div class="form-floating">
-                               <input type="text" class="form-control" id="brand" name="brand" placeholder="Brand" value="<%= product.brand || '' %>">
-                               <label for="brand">Brand (Optional)</label>
-                               <div class="field-hint">Enter the brand name of the product</div>
-                           </div>
-                       </div>
-                       <div class="col-md-6">
-                           <div class="form-floating">
-                               <input type="text" class="form-control" id="color" name="color" placeholder="Color" required value="<%= product.color || '' %>">
-                               <label for="color" class="required-field">Color</label>
-                               <div class="invalid-feedback">Please specify the color</div>
-                               <div class="field-hint">Enter the primary color of the product</div>
-                           </div>
-                       </div>
-                       <div class="col-md-6">
-                           <div class="form-floating">
-                               <input type="text" class="form-control" id="fabric" name="fabric" placeholder="Fabric" required value="<%= product.fabric || '' %>">
-                               <label for="fabric" class="required-field">Fabric</label>
-                               <div class="invalid-feedback">Please specify the fabric</div>
-                               <div class="field-hint">Enter the fabric material of the product</div>
-                           </div>
-                       </div>
-                   </div>
-               </div>
+                                <div class="mb-3">
+                                    <label for="productDescription" class="form-label">Description <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="productDescription" name="productDescription" rows="4" required><%= product.description %></textarea>
+                                    <div class="invalid-feedback">Please enter a product description.</div>
+                                </div>
 
-               <!-- Form Actions -->
-               <div class="d-flex justify-content-end gap-3 mt-5">
-                   <button type="button" class="btn btn-outline-secondary px-4 py-2" onclick="window.location.href='/admin/productManagment'">
-                       <i class="fas fa-times me-2"></i> Cancel
-                   </button>
-                   <button type="button" id="submitBtn" class="btn btn-primary px-4 py-2">
-                       <i class="fas fa-save me-2"></i> Update Product
-                   </button>
-               </div>
-           </form>
-       </div>
-   </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-primary next-step">Next: Images</button>
+                                </div>
+                            </div>
 
-   <!-- Crop Modal -->
-   <div class="modal fade" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
-       <div class="modal-dialog modal-xl modal-dialog-centered">
-           <div class="modal-content">
-               <div class="modal-header">
-                   <h5 class="modal-title" id="cropModalLabel">Crop Image</h5>
-                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-               </div>
-               <div class="modal-body">
-                   <div class="img-container">
-                       <img id="imageToCrop" src="/placeholder.svg" alt="Image to crop">
-                   </div>
-                   <div class="crop-controls mt-3">
-                       <button type="button" class="crop-control-btn" id="zoomIn" title="Zoom In">
-                           <i class="fas fa-search-plus"></i>
-                       </button>
-                       <button type="button" class="crop-control-btn" id="zoomOut" title="Zoom Out">
-                           <i class="fas fa-search-minus"></i>
-                       </button>
-                       <button type="button" class="crop-control-btn" id="rotateLeft" title="Rotate Left">
-                           <i class="fas fa-undo"></i>
-                       </button>
-                       <button type="button" class="crop-control-btn" id="rotateRight" title="Rotate Right">
-                           <i class="fas fa-redo"></i>
-                       </button>
-                       <button type="button" class="crop-control-btn" id="flipHorizontal" title="Flip Horizontal">
-                           <i class="fas fa-arrows-alt-h"></i>
-                       </button>
-                       <button type="button" class="crop-control-btn" id="flipVertical" title="Flip Vertical">
-                           <i class="fas fa-arrows-alt-v"></i>
-                       </button>
-                   </div>
-                   <div class="d-flex justify-content-center gap-2 mt-3">
-                       <button type="button" class="crop-aspect-btn active" data-ratio="1">1:1</button>
-                       <button type="button" class="crop-aspect-btn" data-ratio="4/3">4:3</button>
-                       <button type="button" class="crop-aspect-btn" data-ratio="16/9">16:9</button>
-                       <button type="button" class="crop-aspect-btn" data-ratio="NaN">Free</button>
-                   </div>
-               </div>
-               <div class="modal-footer">
-                   <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                   <button type="button" id="cropImage" class="btn btn-primary">
-                       <i class="fas fa-crop-alt me-2"></i> Crop & Save
-                   </button>
-               </div>
-           </div>
-       </div>
-   </div>
+                            <!-- Step 2: Images -->
+                            <div class="form-step-content d-none" id="step2">
+                                <div class="mb-4">
+                                    <h4>Product Images</h4>
+                                    <div class="image-gallery-container">
+                                        <% if (product.images && product.images.length > 0) { %>
+                                            <div class="image-gallery">
+                                                <div class="current-image-display">
+                                                    <div class="image-navigation">
+                                                        <button type="button" class="nav-btn prev-image" aria-label="Previous image">
+                                                            <i class="fas fa-chevron-left"></i>
+                                                        </button>
+                                                        <div class="image-preview-container">
+                                                            <img id="currentImagePreview" src="<%= product.images[0].url %>" class="img-fluid" alt="Product Image">
+                                                            <div class="image-actions">
+                                                                <button type="button" class="btn btn-sm btn-light image-action-btn expand-image" data-bs-toggle="modal" data-bs-target="#imagePreviewModal">
+                                                                    <i class="fas fa-expand"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-sm btn-light image-action-btn set-as-main" data-image-index="0">
+                                                                    <i class="fas fa-star"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-sm btn-danger image-action-btn remove-image" data-image-index="0">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                            <div class="main-image-badge <%= product.images[0].isMain ? '' : 'd-none' %>">Main Image</div>
+                                                        </div>
+                                                        <button type="button" class="nav-btn next-image" aria-label="Next image">
+                                                            <i class="fas fa-chevron-right"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="image-counter">
+                                                        <span id="currentImageIndex">1</span> / <span id="totalImages"><%= product.images.length %></span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="image-thumbnails">
+                                                    <% product.images.forEach((image, index) => { %>
+                                                        <div class="image-thumbnail <%= index === 0 ? 'active' : '' %> <%= image.isMain ? 'is-main' : '' %>" 
+                                                             data-index="<%= index %>" 
+                                                             data-url  : '' %>" 
+                                                             data-index="<%= index %>" 
+                                                             data-url="<%= image.url %>"
+                                                             data-is-main="<%= image.isMain %>">
+                                                            <img src="<%= image.url %>" alt="Thumbnail <%= index + 1 %>">
+                                                            <% if (image.isMain) { %>
+                                                                <div class="thumbnail-badge">Main</div>
+                                                            <% } %>
+                                                        </div>
+                                                    <% }); %>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Hidden inputs to track image operations -->
+                                            <div id="imageOperations">
+                                                <% product.images.forEach((image, index) => { %>
+                                                    <input type="hidden" name="existingImages[<%= index %>][url]" value="<%= image.url %>">
+                                                    <input type="hidden" name="existingImages[<%= index %>][isMain]" value="<%= image.isMain %>">
+                                                    <% if (image.public_id) { %>
+                                                        <input type="hidden" name="existingImages[<%= index %>][public_id]" value="<%= image.public_id %>">
+                                                    <% } %>
+                                                <% }); %>
+                                            </div>
+                                        <% } else { %>
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle me-2"></i> No images have been uploaded for this product yet.
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                </div>
 
-   <!-- Toast Container -->
-   <div class="toast-container"></div>
+                                <!-- Update the upload section to support cropping -->
+                                <div class="upload-section mt-4">
+                                    <h5>Upload New Images</h5>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="mainImage" class="form-label">Main Product Image</label>
+                                            <div class="custom-file-upload">
+                                                <input type="file" class="form-control image-upload" id="mainImage" name="mainImage" accept="image/*" data-preview="mainImagePreview">
+                                                <div class="upload-preview" id="mainImagePreview">
+                                                    <div class="upload-placeholder">
+                                                        <i class="fas fa-cloud-upload-alt"></i>
+                                                        <span>Click or drag to upload</span>
+                                                    </div>
+                                                    <img class="preview-img d-none" src="#" alt="Preview">
+                                                    <button type="button" class="btn-clear-upload d-none">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="form-text">This will replace the current main image if set as main.</div>
+                                        </div>
+                                        
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Additional Images</label>
+                                            <div class="row">
+                                                <div class="col-4">
+                                                    <div class="custom-file-upload">
+                                                        <input type="file" class="form-control image-upload" name="additionalImage1" accept="image/*" data-preview="additionalImage1Preview">
+                                                        <div class="upload-preview" id="additionalImage1Preview">
+                                                            <div class="upload-placeholder">
+                                                                <i class="fas fa-plus"></i>
+                                                            </div>
+                                                            <img class="preview-img d-none" src="#" alt="Preview">
+                                                            <button type="button" class="btn-clear-upload d-none">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="custom-file-upload">
+                                                        <input type="file" class="form-control image-upload" name="additionalImage2" accept="image/*" data-preview="additionalImage2Preview">
+                                                        <div class="upload-preview" id="additionalImage2Preview">
+                                                            <div class="upload-placeholder">
+                                                                <i class="fas fa-plus"></i>
+                                                            </div>
+                                                            <img class="preview-img d-none" src="#" alt="Preview">
+                                                            <button type="button" class="btn-clear-upload d-none">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="custom-file-upload">
+                                                        <input type="file" class="form-control image-upload" name="additionalImage3" accept="image/*" data-preview="additionalImage3Preview">
+                                                        <div class="upload-preview" id="additionalImage3Preview">
+                                                            <div class="upload-placeholder">
+                                                                <i class="fas fa-plus"></i>
+                                                            </div>
+                                                            <img class="preview-img d-none" src="#" alt="Preview">
+                                                            <button type="button" class="btn-clear-upload d-none">
+                                                                <i class="fas fa-times"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-text">These will be added to your product gallery.</div>
+                                        </div>
+                                    </div>
+                                </div>
 
-   <!-- Bootstrap Bundle with Popper -->
-   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-   <!-- Cropper.js -->
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
-   <!-- SweetAlert2 -->
-   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-   
-   <script>
-       document.addEventListener('DOMContentLoaded', () => {
-           // Initialize variables
-           const uploadZones = document.querySelectorAll('.upload-zone');
-           const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
-           const imageToCrop = document.getElementById('imageToCrop');
-           const cropImageBtn = document.getElementById('cropImage');
-           const productForm = document.getElementById('productForm');
-           const submitBtn = document.getElementById('submitBtn');
-           const variantContainer = document.getElementById('variantContainer');
-           const sizeButtons = document.querySelectorAll('.size-btn');
-           const noVariantsMessage = document.getElementById('noVariantsMessage');
-           const productOfferInput = document.getElementById('productOffer');
-           const productPriceInput = document.getElementById('productPrice');
-           const productCategorySelect = document.getElementById('productCategory');
-           const discountPreview = document.getElementById('discountPreview');
-           const originalPriceSpan = document.getElementById('originalPrice');
-           const discountedPriceSpan = document.getElementById('discountedPrice');
-           const discountBadge = document.getElementById('discountBadge');
-           const loadingOverlay = document.getElementById('loadingOverlay');
-           const skuInput = document.getElementById('sku');
-           const originalSku = document.getElementById('originalSku').value;
-           
-           // Offer comparison elements
-           const productOfferValue = document.getElementById('productOfferValue');
-           const categoryOfferValue = document.getElementById('categoryOfferValue');
-           const effectiveDiscountValue = document.getElementById('effectiveDiscountValue');
-           
-           let cropper;
-           let currentFileInput;
-           let variantCount = 0;
-           const uploadedFiles = new Set();
-           const addedSizes = new Set();
-           let isSkuValid = true;
-           let skuCheckTimeout;
+                                <div class="d-flex justify-content-between mt-4">
+                                    <button type="button" class="btn btn-secondary prev-step">Previous: Basic Info</button>
+                                    <button type="button" class="btn btn-primary next-step">Next: Variants</button>
+                                </div>
+                            </div>
 
-           // Initialize existing variants
-           <% if (product.variants && product.variants.length > 0) { %>
-               <% product.variants.forEach((variant, index) => { %>
-                   addVariantRow('<%= variant.size %>', '<%= variant.varientPrice %>', '<%= variant.varientquatity %>');
-                   addedSizes.add('<%= variant.size %>');
-               <% }); %>
-               updateSizeButtons();
-           <% } %>
+                            <!-- Step 3: Variants -->
+                            <div class="form-step-content d-none" id="step3">
+                                <div class="mb-4">
+                                    <h4>Current Variants</h4>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover" id="currentVariantsTable">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Size</th>
+                                                    <th>Original Price</th>
+                                                    <th>Sale Price</th>
+                                                    <th>Stock</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% if (product.variants && product.variants.length > 0) { %>
+                                                    <% product.variants.forEach((variant, index) => { %>
+                                                        <tr data-variant-index="<%= index %>" data-variant-id="<%= variant._id %>" class="variant-summary-row" data-size="<%= variant.size %>">
+                                                            <td class="variant-size-cell">
+                                                                <span class="variant-size-display"><%= variant.size %></span>
+                                                                <div class="variant-size-edit d-none">
+                                                                    <select class="form-select form-select-sm variant-size-select">
+                                                                        <% 
+                                                                        const allSizes = ['S', 'M', 'L', 'XL', 'XXL'];
+                                                                        const productSizes = product.variants.map(v => v.size);
+                                                                        %>
+                                                                        <option value="<%= variant.size %>" selected><%= variant.size %></option>
+                                                                        <% allSizes.forEach(size => { 
+                                                                            if (size !== variant.size && !productSizes.includes(size)) { %>
+                                                                                <option value="<%= size %>"><%= size %></option>
+                                                                            <% }
+                                                                        }); %>
+                                                                    </select>
+                                                                </div>
+                                                            </td>
+                                                            <td class="variant-price-cell">
+    <span class="variant-price-display">₹<%= variant.varientPrice.toFixed(2) %></span>
+    <div class="variant-price-edit d-none">
+        <input type="number" 
+               class="form-control form-control-sm variant-price-input" 
+               value="<%= variant.varientPrice %>" 
+               min="100" 
+               max="500000" 
+               step="0.01"
+               oninput="validateVariantPrice(this)">
+        <div class="invalid-feedback" id="priceError">
+            Price must be between ₹100 and ₹5,00,000.
+        </div>
+    </div>
+</td>
+                                                            <td>₹<%= variant.salePrice ? variant.salePrice.toFixed(2) : variant.varientPrice.toFixed(2) %></td>
+                                                            <td class="variant-stock-cell">
+                                                                <span class="variant-stock-display"><%= variant.varientquatity %></span>
+                                                                <div class="variant-stock-edit d-none">
+                                                                    <input type="number" class="form-control form-control-sm variant-stock-input" 
+                                                                           value="<%= variant.varientquatity %>" min="0">
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <% if (variant.varientquatity > 10) { %>
+                                                                    <span class="badge bg-success">In Stock</span>
+                                                                <% } else if (variant.varientquatity > 0) { %>
+                                                                    <span class="badge bg-warning text-dark">Low Stock</span>
+                                                                <% } else { %>
+                                                                    <span class="badge bg-danger">Out of Stock</span>
+                                                                <% } %>
+                                                            </td>
+                                                            <td>
+                                                                <div class="btn-group btn-group-sm">
+                                                                    <button type="button" class="btn btn-outline-primary edit-variant" data-index="<%= index %>">
+                                                                        <i class="fas fa-edit"></i> Edit
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-outline-success save-variant d-none" data-index="<%= index %>">
+                                                                        <i class="fas fa-check"></i> Save
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    <% }); %>
+                                                <% } else { %>
+                                                    <tr>
+                                                        <td colspan="6" class="text-center">No variants available</td>
+                                                    </tr>
+                                                <% } %>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="d-flex justify-content-end mt-2">
+                                        <button type="button" class="btn btn-primary" id="updateVariantSizes">
+                                            <i class="fas fa-save"></i> Update Variants
+                                        </button>
+                                    </div>
+                                </div>
 
-           // Initialize upload zones with existing images
-           uploadZones.forEach(zone => {
-               if (zone.classList.contains('has-image')) {
-                   const fieldName = zone.dataset.name;
-                   const existingImageInput = document.querySelector(`input[name="existingImages[${fieldName}][url]"]`);
-                   if (existingImageInput) {
-                       zone.style.backgroundImage = `url(${existingImageInput.value})`;
-                   }
-               }
-           });
+                                <div class="mb-3">
+                                    <h4>Add New Variant</h4>
+                                    <p class="text-muted">Add a new size variant to this product</p>
+                                    
+                                    <div class="size-selector mb-3">
+                                        <% 
+                                        const availableSizes = ['S', 'M', 'L', 'XL', 'XXL'];
+                                        const productSizes = product.variants ? product.variants.map(v => v.size) : [];
+                                        %>
+                                        
+                                        <div class="btn-group" role="group" aria-label="Size selection">
+                                            <% availableSizes.forEach(size => { 
+                                                const exists = productSizes.includes(size);
+                                            %>
+                                                <button type="button" 
+                                                        class="btn <%= exists ? 'btn-secondary disabled' : 'btn-outline-secondary' %> size-btn" 
+                                                        data-size="<%= size %>"
+                                                        data-exists="<%= exists %>">
+                                                    <%= size %>
+                                                </button>
+                                            <% }); %>
+                                        </div>
+                                    </div>
 
-           // Function to calculate discounted price
-           function calculateDiscountedPrice(price, discount) {
-               if (!price || isNaN(price) || price <= 0) return 0;
-               if (!discount || isNaN(discount) || discount < 0 || discount > 100) return price;
-               
-               const discountAmount = (price * discount) / 100;
-               return price - discountAmount;
-           }
+                                    <div id="variantFormContainer" class="card p-3 mb-3 d-none">
+                                        <h5 id="variantFormTitle">Add New Variant</h5>
+                                        <div class="row">
+                                            <div class="col-md-4 mb-2">
+                                                <label for="variantSize" class="form-label">Size</label>
+                                                <select class="form-select" id="variantSize" name="variantSize">
+                                                    <option value="">Select Size</option>
+                                                    <% 
+                                                    const availableSizesForNew = ['S', 'M', 'L', 'XL', 'XXL'];
+                                                    const existingSizes = product.variants ? product.variants.map(v => v.size) : [];
+                                                    %>
+                                                    <% availableSizesForNew.forEach(size => { 
+                                                        if (!existingSizes.includes(size)) { %>
+                                                            <option value="<%= size %>"><%= size %></option>
+                                                        <% }
+                                                    }); %>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <label for="variantPrice" class="form-label">Price (₹)</label>
+                                                <input type="number" class="form-control" id="variantPrice" name="variantPrice" min="100" step="0.01">
+                                            </div>
+                                            <div class="col-md-4 mb-2">
+                                                <label for="variantQuantity" class="form-label">Stock Quantity</label>
+                                                <input type="number" class="form-control" id="variantQuantity" name="variantQuantity" min="0">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-end mt-2">
+                                            <button type="button" class="btn btn-secondary me-2" id="cancelVariant">Cancel</button>
+                                            <button type="button" class="btn btn-success" id="saveVariant">Save Variant</button>
+                                        </div>
+                                    </div>
 
-<<<<<<< Updated upstream
-                variantRows.forEach(row => {
-                    const size = row.querySelector('input[name$="[size]"]').value;
-                    const price = row.querySelector('input[name$="[varientPrice]"]').value;
-                    const stock = row.querySelector('input[name$="[varientquatity]"]').value;
-                    if (!size || !price || !stock) {
-                        row.querySelectorAll('input').forEach(input => {
-                            if (!input.value) input.classList.add('border-red-500');
-                        });
-                        isValid = false;
-                    }
-                });
-<<<<<<< HEAD
-=======
-           // Function to update discount preview
-           function updateDiscountPreview() {
-               const price = parseFloat(productPriceInput.value);
-               const offer = parseInt(productOfferInput.value);
-               let categoryOffer = 0;
-               
-               // Get category offer if a category is selected
-               if (productCategorySelect.value) {
-                   const selectedOption = productCategorySelect.options[productCategorySelect.selectedIndex];
-                   categoryOffer = parseInt(selectedOption.dataset.offer || 0);
-               }
-               
-               // Use the higher of product offer or category offer
-               const effectiveDiscount = Math.max(offer, categoryOffer);
-               
-               // Update the offer comparison section
-               productOfferValue.textContent = `${offer}%`;
-               categoryOfferValue.textContent = `${categoryOffer}%`;
-               effectiveDiscountValue.innerHTML = `${effectiveDiscount}% <span class="ms-2 badge ${offer > categoryOffer ? 'bg-primary' : 'bg-success'}">${offer > categoryOffer ? 'Product' : 'Category'}</span>`;
-               
-               if (!isNaN(price) && price > 0) {
-                   const discountedPrice = calculateDiscountedPrice(price, effectiveDiscount);
-                   
-                   originalPriceSpan.textContent = price.toFixed(2);
-                   discountedPriceSpan.textContent = discountedPrice.toFixed(2);
-                   discountBadge.textContent = `${effectiveDiscount}% OFF`;
-                   
-                   if (effectiveDiscount > 0) {
-                       discountPreview.classList.remove('hidden');
-                   } else {
-                       discountPreview.classList.add('hidden');
-                   }
-                   
-                   // Update all variant prices with the effective discount
-                   updateVariantPricesWithDiscount(effectiveDiscount);
-               } else {
-                   discountPreview.classList.add('hidden');
-               }
-           }
-           
-           // Function to update variant prices with discount
-           function updateVariantPricesWithDiscount(discount) {
-               const variantRows = variantContainer.querySelectorAll('.variant-row');
-               variantRows.forEach(row => {
-                   const priceInput = row.querySelector('input[name$="[varientPrice]"]');
-                   const originalPrice = parseFloat(priceInput.value);
-                   
-                   if (!isNaN(originalPrice) && originalPrice > 0) {
-                       const discountedPrice = calculateDiscountedPrice(originalPrice, discount);
-                       
-                       // Update or create the original price display
-                       let originalPriceDisplay = row.querySelector('.variant-original-price');
-                       if (!originalPriceDisplay && discount > 0) {
-                           originalPriceDisplay = document.createElement('div');
-                           originalPriceDisplay.className = 'variant-original-price';
-                           priceInput.parentNode.appendChild(originalPriceDisplay);
-                       }
-                       
-                       // Update or create the discount badge
-                       let discountBadge = row.querySelector('.variant-discount-badge');
-                       if (!discountBadge && discount > 0) {
-                           discountBadge = document.createElement('div');
-                           discountBadge.className = 'variant-discount-badge';
-                           priceInput.parentNode.appendChild(discountBadge);
-                       }
-                       
-                       if (discount > 0) {
-                           originalPriceDisplay.textContent = `₹${originalPrice.toFixed(2)}`;
-                           discountBadge.textContent = `${discount}% OFF`;
-                           originalPriceDisplay.style.display = 'block';
-                           discountBadge.style.display = 'block';
-                       } else if (originalPriceDisplay) {
-                           originalPriceDisplay.style.display = 'none';
-                           if (discountBadge) discountBadge.style.display = 'none';
-                       }
-                   }
-               });
-           }
->>>>>>> Stashed changes
-=======
+                                    <div id="variantsContainer">
+                                        <!-- Variants will be added here dynamically -->
+                                        <% if (product.variants && product.variants.length > 0) { %>
+                                            <% product.variants.forEach((variant, index) => { %>
+                                                <div class="variant-item" id="variant-<%= index %>" data-variant-id="<%= variant._id %>">
+                                                    <input type="hidden" name="variants[<%= index %>][_id]" value="<%= variant._id %>">
+                                                    <input type="hidden" name="variants[<%= index %>][size]" value="<%= variant.size %>">
+                                                    <input type="hidden" name="variants[<%= index %>][varientPrice]" value="<%= variant.varientPrice %>">
+                                                    <input type="hidden" name="variants[<%= index %>][varientquatity]" value="<%= variant.varientquatity %>">
+                                                </div>
+                                            <% }); %>
+                                        <% } %>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-secondary prev-step">Previous: Images</button>
+                                    <button type="button" class="btn btn-primary next-step">Next: Pricing & Offers</button>
+                                </div>
+                            </div>
+
+                            <!-- Step 4: Pricing & Offers -->
+                            <div class="form-step-content d-none" id="step4">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+    <label for="productOffer" class="form-label">Product Discount (%)</label>
+    <input 
+        type="number" 
+        class="form-control" 
+        id="productOffer" 
+        name="productOffer" 
+        min="0" 
+        max="100" 
+        step="0.01"
+        value="<%= product.offer || 0 %>"
+        required
+        oninput="validateDiscount(this)"
+    >
+    <div class="invalid-feedback" id="discountError">
+        Discount must be between 0% and 100%.
+    </div>
+    <small class="form-text text-muted">Enter a percentage discount for this product (0-100%).</small>
+</div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Category Discount</label>
+                                        <input type="text" class="form-control" value="<%= product.categoryId && product.categoryId.offer ? product.categoryId.offer + '%' : '0%' %>" disabled>
+                                        <small class="form-text text-muted">This is applied from the category and cannot be changed here.</small>
+                                    </div>
+                                </div>
+
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Effective Discount</h5>
+                                        <p class="card-text">
+                                            <span class="badge bg-info"><%= product.effectiveDiscount || 0 %>%</span>
+                                            <small class="text-muted ms-2">
+                                                (Applied from <%= product.discountSource || 'none' %>)
+                                            </small>
+                                        </p>
+                                        <p class="text-muted">The higher discount between product and category will be applied automatically.</p>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-secondary prev-step">Previous: Variants</button>
+                                    <button type="submit" class="btn btn-success">Update Product</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imagePreviewModalLabel">Product Image Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImagePreview" src="/placeholder.svg" class="img-fluid" alt="Product Image Preview">
+                </div>
+                <div class="modal-footer">
+                    <div class="modal-image-actions">
+                        <button type="button" class="btn btn-outline-primary modal-set-main">
+                            <i class="fas fa-star me-1"></i> Set as Main Image
+                        </button>
+                        <button type="button" class="btn btn-outline-danger modal-remove-image">
+                            <i class="fas fa-trash me-1"></i> Remove Image
+                        </button>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Crop Modal -->
+    <div class="modal fade" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="cropModalLabel">Crop Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="img-container">
+                        <img id="imageToCrop" src="/placeholder.svg" class="img-fluid" alt="Image to crop">
+                    </div>
+                    <div class="crop-controls mt-3">
+                        <button type="button" class="crop-control-btn" id="zoomIn" title="Zoom In">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button type="button" class="crop-control-btn" id="zoomOut" title="Zoom Out">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button type="button" class="crop-control-btn" id="rotateLeft" title="Rotate Left">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        <button type="button" class="crop-control-btn" id="rotateRight" title="Rotate Right">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                        <button type="button" class="crop-control-btn" id="flipHorizontal" title="Flip Horizontal">
+                            <i class="fas fa-arrows-alt-h"></i>
+                        </button>
+                        <button type="button" class="crop-control-btn" id="flipVertical" title="Flip Vertical">
+                            <i class="fas fa-arrows-alt-v"></i>
+                        </button>
+                    </div>
+                    <div class="d-flex justify-content-center gap-2 mt-3">
+                        <button type="button" class="crop-aspect-btn active" data-ratio="1">1:1</button>
+                        <button type="button" class="crop-aspect-btn" data-ratio="4/3">4:3</button>
+                        <button type="button" class="crop-aspect-btn" data-ratio="16/9">16:9</button>
+                        <button type="button" class="crop-aspect-btn" data-ratio="NaN">Free</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="cropImage" class="btn btn-primary">
+                        <i class="fas fa-crop-alt me-2"></i> Crop & Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Toastify JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <!-- Cropper.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Custom JS -->
+    <script>
+        // Global variables
+        // Global variables
+let cropper
+let currentImageIndex = 0
+const existingSizes = new Set()
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Form elements
+  const editProductForm = document.getElementById("editProductForm")
+  const formSteps = document.querySelectorAll(".form-step")
+  const formStepContents = document.querySelectorAll(".form-step-content")
+  const nextStepButtons = document.querySelectorAll(".next-step")
+  const prevStepButtons = document.querySelectorAll(".prev-step")
+
+  // Variant management elements
+  const variantFormContainer = document.getElementById("variantFormContainer")
+  const variantSizeSelect = document.getElementById("variantSize")
+  const variantPrice = document.getElementById("variantPrice")
+  const variantQuantity = document.getElementById("variantQuantity")
+  const saveVariantBtn = document.getElementById("saveVariant")
+  const cancelVariantBtn = document.getElementById("cancelVariant")
+  const variantsContainer = document.getElementById("variantsContainer")
+  const sizeButtons = document.querySelectorAll(".size-btn")
+  const updateVariantSizesBtn = document.getElementById("updateVariantSizes")
+
+  // Image management
+  const imageUploads = document.querySelectorAll(".image-upload")
+  const currentImagePreview = document.getElementById("currentImagePreview")
+  const imageThumbnails = document.querySelectorAll(".image-thumbnail")
+  const prevImageBtn = document.querySelector(".prev-image")
+  const nextImageBtn = document.querySelector(".next-image")
+  const modalImagePreview = document.getElementById("modalImagePreview")
+  const modalSetMainBtn = document.querySelector(".modal-set-main")
+  const modalRemoveImageBtn = document.querySelector(".modal-remove-image")
+
+  // Declare $ if not already declared
+  const $ = window.jQuery
+
+  // Declare Swal if not already declared
+  const Swal = window.Swal
+
+  // Declare bootstrap if not already declared
+  const bootstrap = window.bootstrap
+
+  // Declare Cropper if not already declared
+  const Cropper = window.Cropper
+
+  // DataTable for variants
+  let variantTable
+  if ($.fn.DataTable && document.getElementById("variantTable")) {
+    variantTable = $("#variantTable").DataTable({
+      responsive: true,
+      columnDefs: [
+        { orderable: false, targets: -1 }, // Disable sorting on action column
+      ],
+    })
+  }
+
+  // Track current state
+  let currentStep = 1
+  let selectedSize = null
+
+  // Initialize existing sizes
+  document.querySelectorAll(".variant-summary-row").forEach((row) => {
+    existingSizes.add(row.dataset.size)
+  })
+
+  // ===== FORM NAVIGATION =====
+
+  // Show a specific step
+  function showStep(stepNumber) {
+    // Hide all steps
+    formStepContents.forEach((content) => {
+      content.classList.add("d-none")
+    })
+
+    // Show the selected step
+    document.getElementById(`step${stepNumber}`).classList.remove("d-none")
+
+    // Update step indicators
+    formSteps.forEach((step) => {
+      const stepNum = Number.parseInt(step.dataset.step)
+      step.classList.remove("active", "completed")
+
+      if (stepNum === stepNumber) {
+        step.classList.add("active")
+      } else if (stepNum < stepNumber) {
+        step.classList.add("completed")
+      }
+    })
+
+    currentStep = stepNumber
+
+    // Scroll to top
+    window.scrollTo({
+      top: document.querySelector(".form-steps-container").offsetTop - 20,
+      behavior: "smooth",
+    })
+  }
+
+  // Validate current step
+  function validateStep(stepNumber) {
+    const stepContent = document.getElementById(`step${stepNumber}`)
+    const requiredFields = stepContent.querySelectorAll("[required]")
+    let isValid = true
+
+    // Reset validation state
+    requiredFields.forEach((field) => {
+      field.classList.remove("is-invalid")
+    })
+
+    // Check required fields
+    requiredFields.forEach((field) => {
+      if (!field.value.trim()) {
+        field.classList.add("is-invalid")
+        isValid = false
+      }
+    })
+
+    // Step-specific validation
+    if (stepNumber === 3) {
+      // Validate variants exist
+      if (document.querySelectorAll(".variant-summary-row").length === 0) {
+        showToast("At least one variant is required", "error")
+        isValid = false
+      }
+    }
+
+    return isValid
+  }
+
+  // Next step button handler
+  nextStepButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      if (validateStep(currentStep)) {
+        showStep(currentStep + 1)
+      } else {
+        showToast("Please fill in all required fields", "error")
+      }
+    })
+  })
+
+  // Previous step button handler
+  prevStepButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      showStep(currentStep - 1)
+    })
+  })
+
+  // Step indicator click handler
+  formSteps.forEach((step) => {
+    step.addEventListener("click", function () {
+      const targetStep = Number.parseInt(this.dataset.step)
+
+      // Only allow going to previous steps or completed steps
+      if (targetStep < currentStep || this.classList.contains("completed")) {
+        showStep(targetStep)
+      }
+    })
+  })
+
+  // ===== VARIANT MANAGEMENT =====
+
+  // Show variant form for adding a new variant
+  function showVariantForm(size) {
+    selectedSize = size
+    variantSizeSelect.value = size
+    variantPrice.value = ""
+    variantQuantity.value = ""
+    variantFormContainer.classList.remove("d-none")
+    variantPrice.focus()
+  }
+
+  // Size button click handler
+  sizeButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      if (!this.classList.contains("disabled")) {
+        const size = this.dataset.size
+        showVariantForm(size)
+      }
+    })
+  })
+
+  // Save variant button handler
+  if (saveVariantBtn) {
+    saveVariantBtn.addEventListener("click", () => {
+      // Validate inputs
+      if (!variantSizeSelect.value) {
+        variantSizeSelect.classList.add("is-invalid")
+        return
+      }
+
+      const price = Number.parseFloat(variantPrice.value)
+      if (isNaN(price) || price < 100) {
+        variantPrice.classList.add("is-invalid")
+        return
+      }
+
+      const quantity = Number.parseInt(variantQuantity.value)
+      if (isNaN(quantity) || quantity < 0) {
+        variantQuantity.classList.add("is-invalid")
+        return
+      }
+
+      // Get the next variant index
+      const variantIndex = document.querySelectorAll(".variant-item").length
+
+      // Create hidden inputs for the new variant
+      const variantItem = document.createElement("div")
+      variantItem.className = "variant-item"
+      variantItem.id = `variant-${variantIndex}`
+      variantItem.innerHTML = `
+        <input type="hidden" name="variants[${variantIndex}][size]" value="${variantSizeSelect.value}">
+        <input type="hidden" name="variants[${variantIndex}][varientPrice]" value="${price}">
+        <input type="hidden" name="variants[${variantIndex}][varientquatity]" value="${quantity}">
+      `
+
+      variantsContainer.appendChild(variantItem)
+
+      // Add to existing sizes
+      existingSizes.add(variantSizeSelect.value)
+
+      // Update size buttons
+      updateSizeButtons()
+
+      // Update variant summary table
+      updateVariantSummaryTable()
+
+      // Hide the form
+      variantFormContainer.classList.add("d-none")
+
+      // Show success message
+      showToast("Variant added successfully", "success")
+    })
+  }
+
+  // Cancel variant button handler
+  if (cancelVariantBtn) {
+    cancelVariantBtn.addEventListener("click", () => {
+      variantFormContainer.classList.add("d-none")
+    })
+  }
+
+  // Update size buttons based on existing variants
+  function updateSizeButtons() {
+    sizeButtons.forEach((button) => {
+      const size = button.dataset.size
+      if (existingSizes.has(size)) {
+        button.classList.add("disabled")
+      } else {
+        button.classList.remove("disabled")
+      }
+    })
+  }
+
+  // Update variant summary table
+  function updateVariantSummaryTable() {
+    const tableBody = document.querySelector("#currentVariantsTable tbody")
+    if (!tableBody) return
+
+    tableBody.innerHTML = ""
+
+    // Get all variant items
+    const variantItems = document.querySelectorAll(".variant-item")
+
+    if (variantItems.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center">No variants available</td>
+        </tr>
+      `
+      return
+    }
+
+    // Add each variant to the table
+    variantItems.forEach((item, index) => {
+      const size = item.querySelector("input[name$='[size]']").value
+      const price = Number.parseFloat(item.querySelector("input[name$='[varientPrice]']").value)
+      const quantity = Number.parseInt(item.querySelector("input[name$='[varientquatity]']").value)
+
+      // Determine stock status
+      let stockStatus, stockBadge
+      if (quantity <= 0) {
+        stockStatus = "out-of-stock"
+        stockBadge = '<span class="badge bg-danger">Out of Stock</span>'
+      } else if (quantity <= 10) {
+        stockStatus = "low-stock"
+        stockBadge = '<span class="badge bg-warning text-dark">Low Stock</span>'
+      } else {
+        stockStatus = "in-stock"
+        stockBadge = '<span class="badge bg-success">In Stock</span>'
+      }
+
+      const row = document.createElement("tr")
+      row.className = "variant-summary-row"
+      row.dataset.variantIndex = index
+      row.dataset.size = size
+
+      row.innerHTML = `
+        <td class="variant-size-cell">
+          <span class="variant-size-display">${size}</span>
+          <div class="variant-size-edit d-none">
+            <select class="form-select form-select-sm variant-size-select">
+              <option value="${size}" selected>${size}</option>
+              ${["S", "M", "L", "XL", "XXL"]
+                .filter((s) => s !== size && !existingSizes.has(s))
+                .map((s) => `<option value="${s}">${s}</option>`)
+                .join("")}
+            </select>
+          </div>
+        </td>
+<td class="variant-price-cell">
+  <span class="variant-price-display">₹${price.toFixed(2)}</span>
+  <div class="variant-price-edit d-none">
+    <input type="number" class="form-control form-control-sm variant-price-input" 
+           value="${price}" min="100" max="500000" step="0.01">
+  </div>
+</td>
+
+        <td>₹${price.toFixed(2)}</td>
+        <td class="variant-stock-cell">
+          <span class="variant-stock-display">${quantity}</span>
+          <div class="variant-stock-edit d-none">
+            <input type="number" class="form-control form-control-sm variant-stock-input" 
+                   value="${quantity}" min="0">
+          </div>
+        </td>
+        <td>${stockBadge}</td>
+        <td>
+          <div class="btn-group btn-group-sm">
+            <button type="button" class="btn btn-outline-primary edit-variant" data-index="${index}">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button type="button" class="btn btn-outline-success save-variant d-none" data-index="${index}">
+              <i class="fas fa-check"></i> Save
+            </button>
+          </div>
+        </td>
+      `
+
+      tableBody.appendChild(row)
+    })
+
+    // Add edit variant handlers
+    document.querySelectorAll(".edit-variant").forEach((button) => {
+      button.addEventListener("click", handleEditVariant)
+    })
+  }
+
+  // Edit variant handler - Fixed to properly show edit fields
+  function handleEditVariant() {
+    const row = this.closest("tr")
+    if (!row) return
+
+    // Show edit fields
+    const priceDisplay = row.querySelector(".variant-price-display")
+    const priceEdit = row.querySelector(".variant-price-edit")
+    const stockDisplay = row.querySelector(".variant-stock-display")
+    const stockEdit = row.querySelector(".variant-stock-edit")
+
+    if (priceDisplay) priceDisplay.classList.add("d-none")
+    if (priceEdit) priceEdit.classList.remove("d-none")
+    if (stockDisplay) stockDisplay.classList.add("d-none")
+    if (stockEdit) stockEdit.classList.remove("d-none")
+
+    // Hide edit button, show save button
+    this.classList.add("d-none")
+    const saveBtn = row.querySelector(".save-variant")
+    if (saveBtn) saveBtn.classList.remove("d-none")
+
+    // Add save variant handler if not already added
+    if (saveBtn && !saveBtn._hasClickHandler) {
+      saveBtn.addEventListener("click", handleSaveVariant)
+      saveBtn._hasClickHandler = true
+    }
+  }
+
+  // Save variant handler - Fixed to properly update variant data
+  function handleSaveVariant() {
+    const index = this.dataset.index
+    const row = this.closest("tr")
+
+    // Get updated values
+    const priceInput = row.querySelector(".variant-price-input")
+    const stockInput = row.querySelector(".variant-stock-input")
+
+    const price = Number.parseFloat(priceInput.value)
+    const quantity = Number.parseInt(stockInput.value)
+
+    // Validate inputs
+    let isValid = true
+
+    if (isNaN(price) || price < 100) {
+      priceInput.classList.add("is-invalid")
+      isValid = false
+    } else {
+      priceInput.classList.remove("is-invalid")
+    }
+
+    if (isNaN(quantity) || quantity < 0) {
+      stockInput.classList.add("is-invalid")
+      isValid = false
+    } else {
+      stockInput.classList.remove("is-invalid")
+    }
+
+    if (!isValid) {
+      return
+    }
+
+    // Update hidden inputs
+    const variantItem = document.getElementById(`variant-${index}`)
+    if (variantItem) {
+      variantItem.querySelector("input[name$='[varientPrice]']").value = price
+      variantItem.querySelector("input[name$='[varientquatity]']").value = quantity
+    }
+
+    // Update display values
+    row.querySelector(".variant-price-display").textContent = `₹${price.toFixed(2)}`
+    row.querySelector(".variant-stock-display").textContent = quantity
+
+    // Update stock status
+    let stockBadge
+    if (quantity <= 0) {
+      stockBadge = '<span class="badge bg-danger">Out of Stock</span>'
+    } else if (quantity <= 10) {
+      stockBadge = '<span class="badge bg-warning text-dark">Low Stock</span>'
+    } else {
+      stockBadge = '<span class="badge bg-success">In Stock</span>'
+    }
+    row.querySelector("td:nth-child(5)").innerHTML = stockBadge
+
+    // Hide edit fields, show display values
+    row.querySelector(".variant-price-display").classList.remove("d-none")
+    row.querySelector(".variant-price-edit").classList.add("d-none")
+    row.querySelector(".variant-stock-display").classList.remove("d-none")
+    row.querySelector(".variant-stock-edit").classList.add("d-none")
+
+    // Hide save button, show edit button
+    this.classList.add("d-none")
+    row.querySelector(".edit-variant").classList.remove("d-none")
+
+    // Show success message
+    showToast("Variant updated successfully", "success")
+
+    // Highlight the row briefly
+    row.classList.add("row-highlight")
+    setTimeout(() => {
+      row.classList.remove("row-highlight")
+    }, 2000)
+  }
+
+  // Update variant sizes button handler
+  if (updateVariantSizesBtn) {
+    updateVariantSizesBtn.addEventListener("click", () => {
+      // Get all modified rows
+      const modifiedRows = document.querySelectorAll(".variant-summary-row[data-modified='true']")
+
+      if (modifiedRows.length === 0) {
+        showToast("No changes to save", "info")
+        return
+      }
+
+      // Update each modified row
+      modifiedRows.forEach((row) => {
+        const index = row.dataset.variantIndex
+        const newSize = row.querySelector(".variant-size-display").textContent
+
+        // Update hidden input
+        const variantItem = document.getElementById(`variant-${index}`)
+        if (variantItem) {
+          variantItem.querySelector("input[name$='[size]']").value = newSize
+        }
+
+        // Remove modified marker
+        row.classList.remove("table-warning")
+        row.removeAttribute("data-modified")
+      })
+
+      showToast("Variant sizes updated successfully", "success")
+    })
+  }
+
+  // ===== IMAGE MANAGEMENT =====
+
+  // Initialize image uploads - Fixed to properly show image previews
+  imageUploads.forEach((upload) => {
+    const previewId = upload.dataset.preview
+    const previewContainer = document.getElementById(previewId)
+    if (!previewContainer) return
+
+    const previewImg = previewContainer.querySelector(".preview-img")
+    const clearBtn = previewContainer.querySelector(".btn-clear-upload")
+    const placeholder = previewContainer.querySelector(".upload-placeholder")
+
+    upload.addEventListener("change", function () {
+      if (this.files && this.files[0]) {
+        const file = this.files[0]
+
+        // Validate file type
+        if (!file.type.startsWith("image/")) {
+          showToast("Please select a valid image file", "error")
+          this.value = ""
+          return
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          showToast("Image size should be less than 5MB", "error")
+          this.value = ""
+          return
+        }
+
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          previewImg.src = e.target.result
+          previewImg.classList.remove("d-none")
+          clearBtn.classList.remove("d-none")
+          placeholder.classList.add("d-none")
+
+          // Store the current file for potential cropping
+          upload.dataset.currentFile = e.target.result
+
+          // Show crop modal option
+          showCropModal(e.target.result, upload)
+        }
+        reader.readAsDataURL(file)
+      }
+    })
+
+    // Clear button handler
+    if (clearBtn) {
+      clearBtn.addEventListener("click", (e) => {
+        e.stopPropagation()
+        upload.value = ""
+        previewImg.classList.add("d-none")
+        clearBtn.classList.add("d-none")
+        placeholder.classList.remove("d-none")
+        delete upload.dataset.currentFile
+      })
+    }
+  })
+
+  // Show crop modal
+  function showCropModal(imageSrc, fileInput) {
+    const cropModal = document.getElementById("cropModal")
+    if (!cropModal) return
+
+    const imageToCrop = document.getElementById("imageToCrop")
+    imageToCrop.src = imageSrc
+
+    // Store reference to the file input
+    cropModal.dataset.fileInput = fileInput.id
+
+    // Show the modal
+    const modal = new bootstrap.Modal(cropModal)
+    modal.show()
+  }
+
+  // Image gallery navigation
+  if (imageThumbnails.length > 0) {
+    // Thumbnail click handler - Fixed to properly show images
+    imageThumbnails.forEach((thumbnail, index) => {
+      thumbnail.addEventListener("click", () => {
+        // Update active thumbnail
+        imageThumbnails.forEach((thumb) => thumb.classList.remove("active"))
+        thumbnail.classList.add("active")
+
+        // Get the image URL from the thumbnail's img element
+        const thumbnailImg = thumbnail.querySelector("img")
+        if (thumbnailImg && thumbnailImg.src) {
+          // Update preview image with the thumbnail's image source
+          currentImagePreview.src = thumbnailImg.src
+          currentImageIndex = index
+
+          // Update counter
+          const currentIndexEl = document.getElementById("currentImageIndex")
+          if (currentIndexEl) {
+            currentIndexEl.textContent = index + 1
+          }
+
+          // Update main image badge
+          const mainImageBadge = document.querySelector(".main-image-badge")
+          if (mainImageBadge) {
+            if (thumbnail.dataset.isMain === "true") {
+              mainImageBadge.classList.remove("d-none")
+            } else {
+              mainImageBadge.classList.add("d-none")
+            }
+          }
+
+          // Update navigation buttons
+          updateImageNavButtons()
+        }
+      })
+    })
+
+    // Previous image button handler
+    if (prevImageBtn) {
+      prevImageBtn.addEventListener("click", () => {
+        if (currentImageIndex > 0) {
+          currentImageIndex--
+          imageThumbnails[currentImageIndex].click()
+        }
+      })
+    }
+
+    // Next image button handler
+    if (nextImageBtn) {
+      nextImageBtn.addEventListener("click", () => {
+        if (currentImageIndex < imageThumbnails.length - 1) {
+          currentImageIndex++
+          imageThumbnails[currentImageIndex].click()
+        }
+      })
+    }
+
+    // Update navigation buttons state
+    function updateImageNavButtons() {
+      if (prevImageBtn) {
+        prevImageBtn.disabled = currentImageIndex === 0
+      }
+      if (nextImageBtn) {
+        nextImageBtn.disabled = currentImageIndex === imageThumbnails.length - 1
+      }
+    }
+
+    // Initialize image preview
+    if (imageThumbnails[0]) {
+      imageThumbnails[0].click()
+    }
+
+    // Image preview modal
+    const expandImageBtn = document.querySelector(".expand-image")
+    if (expandImageBtn && modalImagePreview) {
+      expandImageBtn.addEventListener("click", () => {
+        modalImagePreview.src = currentImagePreview.src
+
+        // Set data attributes for modal actions
+        if (modalSetMainBtn) {
+          modalSetMainBtn.dataset.index = currentImageIndex
+        }
+        if (modalRemoveImageBtn) {
+          modalRemoveImageBtn.dataset.index = currentImageIndex
+        }
+
+        // Update set as main button state
+        if (
+          modalSetMainBtn &&
+          imageThumbnails[currentImageIndex] &&
+          imageThumbnails[currentImageIndex].dataset.isMain === "true"
+        ) {
+          modalSetMainBtn.disabled = true
+        } else if (modalSetMainBtn) {
+          modalSetMainBtn.disabled = false
+        }
+      })
+    }
+
+    // Set as main image handler
+    document.querySelectorAll(".set-as-main").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const index = Number.parseInt(this.dataset.imageIndex)
+        setMainImage(index)
+      })
+    })
+
+    // Modal set as main image handler
+    if (modalSetMainBtn) {
+      modalSetMainBtn.addEventListener("click", function () {
+        const index = Number.parseInt(this.dataset.index)
+        setMainImage(index)
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById("imagePreviewModal"))
+        if (modal) {
+          modal.hide()
+        }
+      })
+    }
+
+    // Set main image function
+    function setMainImage(index) {
+      // Update hidden inputs
+      const imageOperations = document.getElementById("imageOperations")
+      if (imageOperations) {
+        const existingMainInput = imageOperations.querySelector('input[name$="[isMain]"][value="true"]')
+        if (existingMainInput) {
+          existingMainInput.value = "false"
+        }
+
+        const newMainInput = imageOperations.querySelector(`input[name="existingImages[${index}][isMain]"]`)
+        if (newMainInput) {
+          newMainInput.value = "true"
+        }
+      }
+
+      // Update thumbnails
+      imageThumbnails.forEach((thumb, i) => {
+        const badge = thumb.querySelector(".thumbnail-badge")
+        if (i === index) {
+          thumb.dataset.isMain = "true"
+          thumb.classList.add("is-main")
+          if (!badge) {
+            const newBadge = document.createElement("div")
+            newBadge.className = "thumbnail-badge"
+            newBadge.textContent = "Main"
+            thumb.appendChild(newBadge)
+          }
+        } else {
+          thumb.dataset.isMain = "false"
+          thumb.classList.remove("is-main")
+          if (badge) {
+            badge.remove()
+          }
+        }
+      })
+
+      // Update main image badge
+      const mainImageBadge = document.querySelector(".main-image-badge")
+      if (mainImageBadge) {
+        if (currentImageIndex === index) {
+          mainImageBadge.classList.remove("d-none")
+        } else if (currentImageIndex !== index) {
+          mainImageBadge.classList.add("d-none")
+        }
+      }
+
+      showToast("Main image updated successfully", "success")
+    }
+
+    // Remove image handler
+    document.querySelectorAll(".remove-image").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const index = Number.parseInt(this.dataset.imageIndex)
+        removeImage(index)
+      })
+    })
+
+    // Modal remove image handler
+    if (modalRemoveImageBtn) {
+      modalRemoveImageBtn.addEventListener("click", function () {
+        const index = Number.parseInt(this.dataset.index)
+        removeImage(index)
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById("imagePreviewModal"))
+        if (modal) {
+          modal.hide()
+        }
+      })
+    }
+
+    // Remove image function
+    function removeImage(index) {
+      // Confirm deletion
+      if (!confirm("Are you sure you want to remove this image?")) {
+        return
+      }
+
+      // Check if it's the only image
+      if (imageThumbnails.length <= 1) {
+        showToast("Cannot remove the only product image. Please upload a replacement first.", "error")
+        return
+      }
+
+      // Check if it's the main image
+      const isMain = imageThumbnails[index].dataset.isMain === "true"
+      if (isMain && imageThumbnails.length > 1) {
+        // Set another image as main
+        const newMainIndex = index === 0 ? 1 : 0
+        setMainImage(newMainIndex)
+      }
+
+      // Add to removed images
+      const imageUrl = imageThumbnails[index].dataset.url
+      const imageOperations = document.getElementById("imageOperations")
+      if (imageOperations && imageUrl) {
+        const removeInput = document.createElement("input")
+        removeInput.type = "hidden"
+        removeInput.name = "removeImages[]"
+        removeInput.value = imageUrl
+        imageOperations.appendChild(removeInput)
+      }
+
+      // Get public_id if available
+      const publicIdInput = document.querySelector(`input[name="existingImages[${index}][public_id]"]`)
+      if (publicIdInput && imageOperations) {
+        const removePublicIdInput = document.createElement("input")
+        removePublicIdInput.type = "hidden"
+        removePublicIdInput.name = "removePublicIds[]"
+        removePublicIdInput.value = publicIdInput.value
+        imageOperations.appendChild(removePublicIdInput)
+      }
+
+      // Remove thumbnail
+      imageThumbnails[index].remove()
+
+      // Update total count
+      const totalImagesEl = document.getElementById("totalImages")
+      if (totalImagesEl) {
+        totalImagesEl.textContent = imageThumbnails.length - 1
+      }
+
+      // Reset current index if needed
+      if (currentImageIndex >= imageThumbnails.length - 1) {
+        currentImageIndex = imageThumbnails.length - 2
+      }
+
+      // Update current image
+      if (imageThumbnails[currentImageIndex]) {
+        imageThumbnails[currentImageIndex].click()
+      }
+
+      showToast("Image removed successfully", "warning")
+    }
+  }
+
+  // ===== FORM SUBMISSION =====
+
+  // Form submit handler - Fixed to redirect to product management page
+  if (editProductForm) {
+    editProductForm.addEventListener("submit", function (e) {
+      // Validate all steps
+      let allValid = true
+      for (let i = 1; i <= 4; i++) {
+        if (!validateStep(i)) {
+          allValid = false
+          showStep(i)
+          break
+        }
+      }
+
+      if (!allValid) {
+        e.preventDefault()
+        showToast("Please fix the errors before submitting", "error")
+      } else {
+        // Show loading state
+        const submitBtn = this.querySelector("button[type='submit']")
+        submitBtn.disabled = true
+        submitBtn.innerHTML =
+          '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...'
+
+        // Modify the form action to include the redirect parameter
+        const currentAction = this.getAttribute("action")
+        if (!currentAction.includes("redirect=")) {
+          this.setAttribute("action", `${currentAction}?redirect=/admin/productManagement`)
+        }
+      }
+    })
+  }
+
+  // ===== HELPER FUNCTIONS =====
+
+  // Show toast notification
+  function showToast(message, type = "success") {
+    // Map error type to danger for Bootstrap
+    const bsType = type === "error" ? "danger" : type
+
+    // Create toast container if it doesn't exist
+    let toastContainer = document.querySelector(".toast-container")
+    if (!toastContainer) {
+      toastContainer = document.createElement("div")
+      toastContainer.className = "toast-container position-fixed top-0 end-0 p-3"
+      document.body.appendChild(toastContainer)
+    }
+
+    // Create toast element
+    const toastEl = document.createElement("div")
+    toastEl.className = `toast align-items-center text-white bg-${bsType} border-0`
+    toastEl.setAttribute("role", "alert")
+    toastEl.setAttribute("aria-live", "assertive")
+    toastEl.setAttribute("aria-atomic", "true")
+
+    // Create toast content
+    toastEl.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">
+          <i class="fas fa-${type === "success" ? "check-circle" : type === "error" ? "exclamation-circle" : type === "warning" ? "exclamation-triangle" : "info-circle"} me-2"></i>
+          ${message}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    `
+
+    // Add toast to container
+    toastContainer.appendChild(toastEl)
+
+    // Initialize and show toast
+    if (typeof bootstrap !== "undefined" && bootstrap.Toast) {
+      const toast = new bootstrap.Toast(toastEl, { delay: 3000 })
+      toast.show()
+    } else {
+      // Fallback if Bootstrap Toast is not available
+      toastEl.style.display = "block"
+      setTimeout(() => {
+        toastEl.style.display = "none"
+        toastEl.remove()
+      }, 3000)
+    }
+
+    // Remove toast after it's hidden
+    toastEl.addEventListener("hidden.bs.toast", () => {
+      toastEl.remove()
+    })
+  }
+
+  // Initialize cropper if needed
+  if (typeof Cropper !== "undefined" && document.getElementById("imageToCrop")) {
+    let cropper
+
+    // Initialize cropper when modal is shown
+    document.getElementById("cropModal").addEventListener("shown.bs.modal", () => {
+      cropper = new Cropper(document.getElementById("imageToCrop"), {
+        aspectRatio: 1,
+        viewMode: 1,
+        autoCropArea: 0.9,
+        responsive: true,
+        zoomable: true,
+        scalable: true,
+        rotatable: true,
+      })
+    })
+
+    // Destroy cropper when modal is hidden
+    document.getElementById("cropModal").addEventListener("hidden.bs.modal", () => {
+      if (cropper) {
+        cropper.destroy()
+        cropper = null
+      }
+    })
+
+    // Crop image button handler
+    document.getElementById("cropImage").addEventListener("click", () => {
+      if (!cropper) return
+
+      const canvas = cropper.getCroppedCanvas({
+        width: 1000,
+        height: 1000,
+        fillColor: "#fff",
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: "high",
+      })
+
+      if (canvas) {
+        // Convert canvas to blob
+        canvas.toBlob(
+          (blob) => {
+            // Get the file input that triggered the crop
+            const cropModal = document.getElementById("cropModal")
+            const fileInputId = cropModal.dataset.fileInput
+            const fileInput = document.getElementById(fileInputId)
+
+            if (fileInput) {
+              // Create a new File object
+              const file = new File([blob], "cropped-image.webp", { type: "image/webp" })
+
+              // Create a FileList-like object
+              const dataTransfer = new DataTransfer()
+              dataTransfer.items.add(file)
+
+              // Set the file input's files
+              fileInput.files = dataTransfer.files
+
+              // Trigger change event to update preview
+              const event = new Event("change", { bubbles: true })
+              fileInput.dispatchEvent(event)
+            }
+
+            // Hide modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById("cropModal"))
+            if (modal) {
+              modal.hide()
+            }
+
+            showToast("Image cropped successfully", "success")
+          },
+          "image/webp",
+          0.9,
+        )
+      }
+    })
+
+    // Crop controls
+    document.getElementById("zoomIn").addEventListener("click", () => {
+      if (cropper) cropper.zoom(0.1)
+    })
+
+    document.getElementById("zoomOut").addEventListener("click", () => {
+      if (cropper) cropper.zoom(-0.1)
+    })
+
+    document.getElementById("rotateLeft").addEventListener("click", () => {
+      if (cropper) cropper.rotate(-45)
+    })
+
+    document.getElementById("rotateRight").addEventListener("click", () => {
+      if (cropper) cropper.rotate(45)
+    })
+
+    document.getElementById("flipHorizontal").addEventListener("click", () => {
+      if (cropper) cropper.scaleX(-cropper.getData().scaleX || -1)
+    })
+
+    document.getElementById("flipVertical").addEventListener("click", () => {
+      if (cropper) cropper.scaleY(-cropper.getData().scaleY || -1)
+    })
+
+    // Aspect ratio buttons
+    document.querySelectorAll(".crop-aspect-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".crop-aspect-btn").forEach((b) => b.classList.remove("active"))
+        btn.classList.add("active")
+
+        const ratio = btn.dataset.ratio
+        if (cropper) {
+          cropper.setAspectRatio(ratio === "NaN" ? Number.NaN : eval(ratio))
+        }
+      })
+    })
+  }
+
+  // Initialize the page
+  updateSizeButtons()
+  showStep(1)
+
+  // Initialize Select2 if available
+  if (typeof $ !== "undefined" && $.fn && $.fn.select2 && document.getElementById("productCategory")) {
+    $("#productCategory").select2({
+      theme: "bootstrap-5",
+      placeholder: "Select a category",
+    })
+  }
+
+  // Add event listeners to all edit variant buttons when the page loads
+  document.querySelectorAll(".edit-variant").forEach((button) => {
+    button.addEventListener("click", handleEditVariant)
+  })
+})
+// document.querySelector("form").addEventListener("submit", function (e) {
+//     const offerInput = document.getElementById("productOffer");
+//     const offerValue = parseFloat(offerInput.value);
+
+//     if (isNaN(offerValue) || offerValue < 0 || offerValue > 100) {
+//       e.preventDefault(); // stop form from submitting
+//       alert("Please enter a valid discount between 0% and 100%.");
+//       offerInput.focus();
+//     }
+//   });
+function validateDiscount(input) {
+    // Get the input value and parse it as a float
+    const value = parseFloat(input.value);
+    const errorElement = document.getElementById('discountError');
+    
+    // Check if the value is a number and within the valid range
+    if (isNaN(value)) {
+        input.setCustomValidity('Please enter a valid number');
+        errorElement.textContent = 'Please enter a valid number.';
+        input.classList.add('is-invalid');
+        return false;
+    } else if (value < 0) {
+        input.setCustomValidity('Discount cannot be negative');
+        errorElement.textContent = 'Discount cannot be negative.';
+        input.classList.add('is-invalid');
+        return false;
+    } else if (value > 100) {
+        input.setCustomValidity('Discount cannot exceed 100%');
+        errorElement.textContent = 'Discount cannot exceed 100%.';
+        input.classList.add('is-invalid');
+        return false;
+    } else {
+        // Valid input
+        input.setCustomValidity('');
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+        return true;
+    }
+}
+
+// Add form submission validation
+document.querySelector('form').addEventListener('submit', function(event) {
+    const discountInput = document.getElementById('productOffer');
+    if (!validateDiscount(discountInput)) {
+        event.preventDefault();
+    }
+});
+
+// Validate on page load for pre-filled values
+document.addEventListener('DOMContentLoaded', function() {
+    const discountInput = document.getElementById('productOffer');
+    validateDiscount(discountInput);
+});
+function validateVariantPrice(input) {
+    // Get the input value and parse it as a float
+    const value = parseFloat(input.value);
+    
+    // Check if the value is a number and within the valid range
+    if (isNaN(value)) {
+        input.setCustomValidity('Please enter a valid price');
+        input.classList.add('is-invalid');
+        return false;
+    } else if (value < 100) {
+        input.setCustomValidity('Price cannot be less than ₹100');
+        input.classList.add('is-invalid');
+        return false;
+    } else if (value > 500000) {
+        input.setCustomValidity('Price cannot exceed ₹5,00,000 (5 lakhs)');
+        input.classList.add('is-invalid');
+        return false;
+    } else {
+        // Valid input
+        input.setCustomValidity('');
+        input.classList.remove('is-invalid');
+        return true;
+    }
+}
+
+// Add event listeners to all variant price inputs
+document.addEventListener('DOMContentLoaded', function() {
+    const priceInputs = document.querySelectorAll('.variant-price-input');
+    priceInputs.forEach(input => {
+        // Validate on initial load
+        validateVariantPrice(input);
+        
+        // Add blur event to format the displayed price when editing is complete
+        input.addEventListener('blur', function() {
+            if (validateVariantPrice(this)) {
+                const priceCell = this.closest('.variant-price-cell');
+                const priceDisplay = priceCell.querySelector('.variant-price-display');
+                priceDisplay.textContent = '₹' + parseFloat(this.value).toFixed(2);
                 
->>>>>>> rezzarpay
+                // Hide edit mode
+                this.closest('.variant-price-edit').classList.add('d-none');
+                priceDisplay.classList.remove('d-none');
+            }
+        });
+    });
+});
 
-           // Add event listeners for discount preview
-           productPriceInput.addEventListener('input', updateDiscountPreview);
-           productOfferInput.addEventListener('input', updateDiscountPreview);
-           productCategorySelect.addEventListener('change', updateDiscountPreview);
-
-           // Initialize discount preview
-           updateDiscountPreview();
-
-           // Function to check if SKU already exists
-           async function checkSkuExists(sku) {
-               if (!sku) return false;
-               
-               // If the SKU is the same as the original, it's valid
-               if (sku === originalSku) {
-                   skuInput.classList.remove('is-invalid');
-                   skuInput.classList.add('is-valid');
-                   isSkuValid = true;
-                   return false;
-               }
-               
-               try {
-                   const response = await fetch(`/admin/check-sku?sku=${encodeURIComponent(sku)}`);
-                   const data = await response.json();
-                   
-                   if (data.exists) {
-                       skuInput.classList.add('is-invalid');
-                       skuInput.nextElementSibling.nextElementSibling.textContent = 'This SKU already exists. Please use a different one.';
-                       isSkuValid = false;
-                       
-                       // Show SweetAlert2 message for SKU already exists
-                       Swal.fire({
-                           title: 'SKU Already Exists',
-                           text: 'The SKU you entered is already in use. Please use a different SKU.',
-                           icon: 'error',
-                           confirmButtonColor: '#6366f1'
-                       });
-                       
-                       return true;
-                   } else {
-                       if (skuInput.value.match(/^[A-Za-z0-9-_]+$/)) {
-                           skuInput.classList.remove('is-invalid');
-                           skuInput.classList.add('is-valid');
-                           isSkuValid = true;
-                       }
-                       return false;
-                   }
-               } catch (error) {
-                   console.error('Error checking SKU:', error);
-                   return false;
-               }
-           }
-
-           // Add event listener for SKU input
-           skuInput.addEventListener('input', function() {
-               const sku = this.value.trim();
-               
-               // Clear previous timeout
-               if (skuCheckTimeout) {
-                   clearTimeout(skuCheckTimeout);
-               }
-               
-               // Validate SKU format
-               if (sku && !sku.match(/^[A-Za-z0-9-_]+$/)) {
-                   this.classList.add('is-invalid');
-                   this.nextElementSibling.nextElementSibling.textContent = 'SKU can only contain letters, numbers, hyphens and underscores';
-                   isSkuValid = false;
-                   return;
-               }
-               
-               // Check if SKU exists after a short delay (to avoid too many requests)
-               if (sku && sku !== originalSku) {
-                   skuCheckTimeout = setTimeout(() => {
-                       checkSkuExists(sku);
-                   }, 500);
-               } else if (sku === originalSku) {
-                   // If the SKU is the same as the original, it's valid
-                   this.classList.remove('is-invalid');
-                   this.classList.add('is-valid');
-                   isSkuValid = true;
-               }
-           });
-
-           // Show toast notification
-           function showToast(message, type = 'success') {
-               const toastContainer = document.querySelector('.toast-container');
-               const toast = document.createElement('div');
-               toast.className = `toast custom-toast align-items-center text-white bg-${type} border-0 show animate-fade-in`;
-               toast.setAttribute('role', 'alert');
-               toast.setAttribute('aria-live', 'assertive');
-               toast.setAttribute('aria-atomic', 'true');
-               
-               toast.innerHTML = `
-                   <div class="d-flex">
-                       <div class="toast-body">
-                           <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'} me-2"></i>
-                           ${message}
-                       </div>
-                       <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                   </div>
-               `;
-               
-               toastContainer.appendChild(toast);
-               
-               setTimeout(() => {
-                   toast.classList.add('fade');
-                   setTimeout(() => toast.remove(), 300);
-               }, 3000);
-           }
-
-           // Enhanced form validation
-           function validateForm() {
-               let isValid = true;
-               const form = document.getElementById('productForm');
-               
-               // Reset all validation states
-               const allInputs = form.querySelectorAll('input, textarea, select');
-               allInputs.forEach(input => {
-                   input.classList.remove('is-invalid');
-                   input.classList.remove('is-valid');
-               });
-               
-               // Check all required fields
-               const requiredFields = form.querySelectorAll('[required]');
-               requiredFields.forEach(field => {
-                   if (!field.value.trim()) {
-                       field.classList.add('is-invalid');
-                       isValid = false;
-                   }
-               });
-               
-               // Validate offer percentage (0-100)
-               const offerValue = parseInt(productOfferInput.value);
-               if (isNaN(offerValue) || offerValue < 0 || offerValue > 100) {
-                   productOfferInput.classList.add('is-invalid');
-                   isValid = false;
-               }
-               
-               // Validate price (must be greater than 0 and less than 1,000,000)
-               const priceValue = parseFloat(productPriceInput.value);
-               if (isNaN(priceValue) || priceValue <= 0 || priceValue > 1000000) {
-                   productPriceInput.classList.add('is-invalid');
-                   isValid = false;
-               }
-               
-               // Check if at least one variant exists
-               if (variantContainer.children.length === 0) {
-                   noVariantsMessage.classList.remove('d-none');
-                   isValid = false;
-               } else {
-                   noVariantsMessage.classList.add('d-none');
-                   
-                   // Validate each variant
-                   const variantRows = variantContainer.querySelectorAll('.variant-row');
-                   variantRows.forEach(row => {
-                       const priceInput = row.querySelector('input[name$="[varientPrice]"]');
-                       const stockInput = row.querySelector('input[name$="[varientquatity]"]');
-                       
-                       if (!priceInput.value || isNaN(parseFloat(priceInput.value)) || parseFloat(priceInput.value) <= 0 || parseFloat(priceInput.value) > 1000000) {
-                           priceInput.classList.add('is-invalid');
-                           isValid = false;
-                       }
-                       
-                       if (!stockInput.value || isNaN(parseInt(stockInput.value)) || parseInt(stockInput.value) < 0) {
-                           stockInput.classList.add('is-invalid');
-                           isValid = false;
-                       }
-                   });
-               }
-               
-               // Check if main image exists
-               const mainImageExists = document.querySelector('input[name="existingImages[mainImage][url]"]') || 
-                                      document.querySelector('input[name="mainImage"]').files.length > 0;
-               
-               if (!mainImageExists) {
-                   const mainImageInput = document.querySelector('input[name="mainImage"]');
-                   mainImageInput.classList.add('is-invalid');
-                   isValid = false;
-               }
-               
-               // Check SKU validity if provided
-               if (skuInput.value.trim() && !isSkuValid) {
-                   skuInput.classList.add('is-invalid');
-                   isValid = false;
-               }
-               
-               return isValid;
-           }
-
-           // Handle image uploads
-           uploadZones.forEach(zone => {
-               const fileInput = zone.querySelector('input[type="file"]');
-               const clearBtn = zone.querySelector('.clear-image');
-               const uploadContent = zone.querySelector('.upload-content');
-               
-               zone.addEventListener('click', (e) => {
-                   // Only allow clicking if there's no image or if clicking the clear button
-                   if (!zone.classList.contains('has-image') || e.target === clearBtn || e.target === clearBtn.querySelector('i')) {
-                       if (!zone.classList.contains('has-image')) {
-                           fileInput.click();
-                       }
-                   }
-               });
-               
-               zone.addEventListener('dragover', (e) => {
-                   // Only allow drag if there's no image
-                   if (!zone.classList.contains('has-image')) {
-                       e.preventDefault();
-                       zone.classList.add('border-primary');
-                   }
-               });
-               
-               zone.addEventListener('dragleave', () => {
-                   zone.classList.remove('border-primary');
-               });
-               
-               zone.addEventListener('drop', (e) => {
-                   // Only allow drop if there's no image
-                   if (!zone.classList.contains('has-image')) {
-                       e.preventDefault();
-                       zone.classList.remove('border-primary');
-                       
-                       if (e.dataTransfer.files.length) {
-                           fileInput.files = e.dataTransfer.files;
-                           handleFileSelect(fileInput);
-                       }
-                   }
-               });
-               
-               fileInput.addEventListener('change', () => {
-                   // Only process if there's no image or if the file input has a file
-                   if (!zone.classList.contains('has-image') || fileInput.files.length > 0) {
-                       handleFileSelect(fileInput);
-                   }
-               });
-               
-               if (clearBtn) {
-                   clearBtn.addEventListener('click', (e) => {
-                       e.preventDefault();
-                       e.stopPropagation();
-                       
-                       const fieldName = zone.dataset.name;
-                       
-                       // If there's an existing image, add a hidden input to mark it for removal
-                       const existingImageInput = document.querySelector(`input[name="existingImages[${fieldName}][url]"]`);
-                       if (existingImageInput) {
-                           const removeInput = document.createElement('input');
-                           removeInput.type = 'hidden';
-                           removeInput.name = 'removeImages[]';
-                           removeInput.value = fieldName;
-                           productForm.appendChild(removeInput);
-                           
-                           // Remove the existing image inputs
-                           existingImageInput.remove();
-                           document.querySelector(`input[name="existingImages[${fieldName}][isMain]"]`).remove();
-                       }
-                       
-                       // Clear the file input
-                       fileInput.value = '';
-                       zone.style.backgroundImage = '';
-                       zone.classList.remove('has-image');
-                       
-                       // Show the upload content
-                       if (uploadContent) {
-                           uploadContent.classList.remove('d-none');
-                       } else {
-                           // Create upload content if it doesn't exist
-                           const newUploadContent = document.createElement('div');
-                           newUploadContent.className = 'upload-content';
-                           
-                           if (fieldName === 'mainImage') {
-                               newUploadContent.innerHTML = `
-                                   <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                   <p class="upload-text">Drag and drop or click to upload</p>
-                                   <p class="upload-text text-muted">Recommended: 1000x1000px</p>
-                               `;
-                           } else {
-                               newUploadContent.innerHTML = `
-                                   <i class="fas fa-plus upload-icon"></i>
-                                   <p class="upload-text small">Image ${fieldName.replace('additionalImage', '')}</p>
-                               `;
-                           }
-                           
-                           zone.appendChild(newUploadContent);
-                       }
-                       
-                       // Hide the clear button
-                       clearBtn.classList.add('d-none');
-                       
-                       // If the input is required, mark it as invalid
-                       if (fileInput.hasAttribute('required')) {
-                           fileInput.classList.add('is-invalid');
-                       }
-                   });
-               }
-           });
-
-           function handleFileSelect(fileInput) {
-               const file = fileInput.files[0];
-               if (!file) return;
-               
-               const fileHash = `${file.name}-${file.size}`;
-               const zone = fileInput.closest('.upload-zone');
-               
-               // Check if the zone already has an image
-               if (zone.classList.contains('has-image')) {
-                   showToast('Please remove the current image first', 'warning');
-                   fileInput.value = '';
-                   return;
-               }
-               
-               // Validate file
-               if (!file.type.startsWith('image/')) {
-                   showToast('Please upload a valid image file', 'danger');
-                   fileInput.value = '';
-                   return;
-               }
-               
-               if (file.size > 5 * 1024 * 1024) {
-                   showToast('File size must be under 5MB', 'danger');
-                   fileInput.value = '';
-                   return;
-               }
-               
-               if (uploadedFiles.has(fileHash)) {
-                   showToast('This image is already uploaded', 'warning');
-                   fileInput.value = '';
-                   return;
-               }
-               
-               uploadedFiles.add(fileHash);
-               currentFileInput = fileInput;
-               
-               // Open cropper modal
-               const reader = new FileReader();
-               reader.onload = (e) => {
-                   imageToCrop.src = e.target.result;
-                   cropModal.show();
-                   
-                   if (cropper) {
-                       cropper.destroy();
-                   }
-                   
-                   // Initialize cropper with a slight delay to ensure the modal is fully visible
-                   setTimeout(() => {
-                       cropper = new Cropper(imageToCrop, {
-                           aspectRatio: 1,
-                           viewMode: 1,
-                           autoCropArea: 0.9,
-                           responsive: true,
-                           zoomable: true,
-                           scalable: true,
-                           rotatable: true,
-                           minContainerWidth: 800,
-                           minContainerHeight: 500
-                       });
-                   }, 300);
-               };
-               reader.readAsDataURL(file);
-           }
-
-           // Enhanced image cropping with controls
-           document.getElementById('zoomIn').addEventListener('click', () => {
-               if (cropper) cropper.zoom(0.1);
-           });
-           
-           document.getElementById('zoomOut').addEventListener('click', () => {
-               if (cropper) cropper.zoom(-0.1);
-           });
-           
-           document.getElementById('rotateLeft').addEventListener('click', () => {
-               if (cropper) cropper.rotate(-45);
-           });
-           
-           document.getElementById('rotateRight').addEventListener('click', () => {
-               if (cropper) cropper.rotate(45);
-           });
-           
-           document.getElementById('flipHorizontal').addEventListener('click', () => {
-               if (cropper) cropper.scaleX(-cropper.getData().scaleX || -1);
-           });
-           
-           document.getElementById('flipVertical').addEventListener('click', () => {
-               if (cropper) cropper.scaleY(-cropper.getData().scaleY || -1);
-           });
-           
-           // Aspect ratio buttons
-           document.querySelectorAll('.crop-aspect-btn').forEach(btn => {
-               btn.addEventListener('click', () => {
-                   document.querySelectorAll('.crop-aspect-btn').forEach(b => b.classList.remove('active'));
-                   btn.classList.add('active');
-                   
-                   const ratio = btn.dataset.ratio;
-                   if (cropper) {
-                       cropper.setAspectRatio(ratio === 'NaN' ? NaN : eval(ratio));
-                   }
-               });
-           });
-
-           // Handle image cropping
-           cropImageBtn.addEventListener('click', () => {
-               cropper.getCroppedCanvas({
-                   width: 2000,
-                   height: 2000,
-                   fillColor: '#fff',
-                   imageSmoothingEnabled: true,
-                   imageSmoothingQuality: 'high'
-               }).toBlob((blob) => {
-                   const originalFile = currentFileInput.files[0];
-                   const file = new File([blob], originalFile.name, { type: 'image/webp' });
-                   const dataTransfer = new DataTransfer();
-                   dataTransfer.items.add(file);
-                   currentFileInput.files = dataTransfer.files;
-                   
-                   const zone = currentFileInput.closest('.upload-zone');
-                   const uploadContent = zone.querySelector('.upload-content');
-                   const clearBtn = zone.querySelector('.clear-image');
-                   
-                   // Create preview
-                   const reader = new FileReader();
-                   reader.onload = (e) => {
-                       zone.style.backgroundImage = `url(${e.target.result})`;
-                       zone.classList.add('has-image');
-                       
-                       if (uploadContent) {
-                           uploadContent.classList.add('d-none');
-                       }
-                       
-                       if (clearBtn) {
-                           clearBtn.classList.remove('d-none');
-                       } else {
-                           // Create clear button if it doesn't exist
-                           const newClearBtn = document.createElement('button');
-                           newClearBtn.type = 'button';
-                           newClearBtn.className = 'clear-image';
-                           newClearBtn.innerHTML = '<i class="fas fa-times"></i>';
-                           
-                           newClearBtn.addEventListener('click', (e) => {
-                               e.preventDefault();
-                               e.stopPropagation();
-                               
-                               currentFileInput.value = '';
-                               zone.style.backgroundImage = '';
-                               zone.classList.remove('has-image');
-                               
-                               if (uploadContent) {
-                                   uploadContent.classList.remove('d-none');
-                               }
-                               
-                               newClearBtn.classList.add('d-none');
-                               
-                               if (currentFileInput.hasAttribute('required')) {
-                                   currentFileInput.classList.add('is-invalid');
-                               }
-                           });
-                           
-                           zone.appendChild(newClearBtn);
-                       }
-                       
-                       if (currentFileInput.hasAttribute('required')) {
-                           currentFileInput.classList.remove('is-invalid');
-                       }
-                   };
-                   reader.readAsDataURL(file);
-                   
-                   cropModal.hide();
-                   if (cropper) {
-                       cropper.destroy();
-                       cropper = null;
-                   }
-                   
-                   showToast('Image cropped successfully', 'success');
-               }, 'image/webp', 0.9);
-           });
-
-           // Handle variant management
-           function updateSizeButtons() {
-               sizeButtons.forEach(btn => {
-                   const size = btn.dataset.size;
-                   if (addedSizes.has(size)) {
-                       btn.classList.add('disabled');
-                       btn.classList.remove('active');
-                   } else {
-                       btn.classList.remove('disabled');
-                   }
-               });
-           }
-
-           function addVariantRow(size = '', price = '', stock = '') {
-               if (size && addedSizes.has(size)) {
-                   return false;
-               }
-               
-               if (size) {
-                   addedSizes.add(size);
-               }
-               
-               const variantDiv = document.createElement('div');
-               variantDiv.className = 'variant-row animate-slide-in';
-               variantDiv.dataset.size = size;
-               
-               // Get the current product offer
-               const productOffer = parseInt(productOfferInput.value) || 0;
-               
-               // Get the category offer if a category is selected
-               let categoryOffer = 0;
-               if (productCategorySelect.value) {
-                   const selectedOption = productCategorySelect.options[productCategorySelect.selectedIndex];
-                   categoryOffer = parseInt(selectedOption.dataset.offer || 0);
-               }
-               
-               // Use the higher of product offer or category offer
-               const effectiveDiscount = Math.max(productOffer, categoryOffer);
-               
-               // Calculate discounted price if applicable
-               const originalPrice = parseFloat(price);
-               const discountedPrice = !isNaN(originalPrice) && effectiveDiscount > 0 ? 
-                   calculateDiscountedPrice(originalPrice, effectiveDiscount) : originalPrice;
-               
-               // Fix: Ensure proper naming convention for form fields to match backend expectations
-               variantDiv.innerHTML = `
-                   <div class="row g-3">
-                       <div class="col-md-4">
-                           <div class="form-floating">
-                               <input type="text" class="form-control" name="variants[${variantCount}][size]" value="${size}" ${size ? 'readonly' : ''} required>
-                               <label>Size</label>
-                               <div class="invalid-feedback">Please enter a size</div>
-                           </div>
-                       </div>
-                       <div class="col-md-4">
-                           <div class="form-floating variant-price-container">
-                               <input type="number" class="form-control variant-price" name="variants[${variantCount}][varientPrice]" value="${price}" placeholder="Price" min="0.01" max="1000000" step="0.01" required>
-                               <label>Price (₹)</label>
-                               <div class="invalid-feedback">Please enter a valid price (₹0.01 - ₹1,000,000)</div>
-                               ${effectiveDiscount > 0 && !isNaN(originalPrice) ? `
-                                   <div class="variant-original-price">₹${originalPrice.toFixed(2)}</div>
-                                   <div class="variant-discount-badge">${effectiveDiscount}% OFF</div>
-                               ` : ''}
-                           </div>
-                       </div>
-                       <div class="col-md-4">
-                           <div class="form-floating">
-                               <input type="number" class="form-control variant-stock" name="variants[${variantCount}][varientquatity]" value="${stock}" placeholder="Stock" min="0" required>
-                               <label>Stock</label>
-                               <div class="invalid-feedback">Please enter a valid stock quantity (minimum 0)</div>
-                           </div>
-                       </div>
-                   </div>
-                   <button type="button" class="remove-variant" title="Remove Variant">
-                       <i class="fas fa-times-circle"></i>
-                   </button>
-               `;
-               
-               variantContainer.appendChild(variantDiv);
-               noVariantsMessage.classList.add('d-none');
-               
-               // Add event listeners to variant inputs
-               const priceInput = variantDiv.querySelector('.variant-price');
-               const stockInput = variantDiv.querySelector('.variant-stock');
-               
-               priceInput.addEventListener('input', () => {
-                   const value = parseFloat(priceInput.value);
-                   if (isNaN(value) || value <= 0 || value > 1000000) {
-                       priceInput.classList.add('is-invalid');
-                   } else {
-                       priceInput.classList.remove('is-invalid');
-                       
-                       // Update discount display if applicable
-                       const productOffer = parseInt(productOfferInput.value) || 0;
-                       let categoryOffer = 0;
-                       if (productCategorySelect.value) {
-                           const selectedOption = productCategorySelect.options[productCategorySelect.selectedIndex];
-                           categoryOffer = parseInt(selectedOption.dataset.offer || 0);
-                       }
-                       const effectiveDiscount = Math.max(productOffer, categoryOffer);
-                       
-                       let originalPriceDisplay = variantDiv.querySelector('.variant-original-price');
-                       let discountBadge = variantDiv.querySelector('.variant-discount-badge');
-                       
-                       if (effectiveDiscount > 0) {
-                           if (!originalPriceDisplay) {
-                               originalPriceDisplay = document.createElement('div');
-                               originalPriceDisplay.className = 'variant-original-price';
-                               priceInput.parentNode.appendChild(originalPriceDisplay);
-                           }
-                           
-                           if (!discountBadge) {
-                               discountBadge = document.createElement('div');
-                               discountBadge.className = 'variant-discount-badge';
-                               priceInput.parentNode.appendChild(discountBadge);
-                           }
-                           
-                           originalPriceDisplay.textContent = `₹${value.toFixed(2)}`;
-                           discountBadge.textContent = `${effectiveDiscount}% OFF`;
-                           originalPriceDisplay.style.display = 'block';
-                           discountBadge.style.display = 'block';
-                       } else if (originalPriceDisplay) {
-                           originalPriceDisplay.style.display = 'none';
-                           if (discountBadge) discountBadge.style.display = 'none';
-                       }
-                   }
-               });
-               
-               stockInput.addEventListener('input', () => {
-                   const value = parseInt(stockInput.value);
-                   if (isNaN(value) || value < 0) {
-                       stockInput.classList.add('is-invalid');
-                   } else {
-                       stockInput.classList.remove('is-invalid');
-                   }
-               });
-               
-               variantDiv.querySelector('.remove-variant').addEventListener('click', () => {
-                   const sizeToRemove = variantDiv.dataset.size;
-                   if (sizeToRemove) {
-                       addedSizes.delete(sizeToRemove);
-                       updateSizeButtons();
-                   }
-                   
-                   variantDiv.classList.add('animate-slide-out');
-                   setTimeout(() => {
-                       variantDiv.remove();
-                       if (variantContainer.children.length === 0) {
-                           noVariantsMessage.classList.remove('d-none');
-                       }
-                   }, 300);
-               });
-               
-               variantCount++;
-               updateSizeButtons();
-               return true;
-           }
-           
-           // Size button click handlers
-           sizeButtons.forEach(btn => {
-               btn.addEventListener('click', () => {
-                   const size = btn.dataset.size;
-                   if (!addedSizes.has(size)) {
-                       if (addVariantRow(size)) {
-                           btn.classList.add('active');
-                           setTimeout(() => {
-                               btn.classList.remove('active');
-                           }, 300);
-                       }
-                   }
-               });
-           });
-           
-           // Additional validation for offer field
-           productOfferInput.addEventListener('input', () => {
-               const value = parseInt(productOfferInput.value);
-               if (isNaN(value) || value < 0) {
-                   productOfferInput.value = 0;
-               } else if (value > 100) {
-                   productOfferInput.value = 100;
-               }
-               
-               if (productOfferInput.value.trim() && !isNaN(parseInt(productOfferInput.value)) && 
-                   parseInt(productOfferInput.value) >= 0 && parseInt(productOfferInput.value) <= 100) {
-                   productOfferInput.classList.remove('is-invalid');
-               } else {
-                   productOfferInput.classList.add('is-invalid');
-               }
-               
-               updateDiscountPreview();
-           });
-           
-           // Additional validation for price field
-           productPriceInput.addEventListener('input', () => {
-               const value = parseFloat(productPriceInput.value);
-               if (isNaN(value) || value <= 0 || value > 1000000) {
-                   productPriceInput.classList.add('is-invalid');
-               } else {
-                   productPriceInput.classList.remove('is-invalid');
-               }
-               
-               updateDiscountPreview();
-           });
-           
-           // Form submission with enhanced validation
-           submitBtn.addEventListener('click', async (e) => {
-               e.preventDefault();
-               
-               // Check if SKU exists before form validation
-               if (skuInput.value.trim() && skuInput.value.trim() !== originalSku) {
-                   const skuExists = await checkSkuExists(skuInput.value.trim());
-                   if (skuExists) {
-                       // SweetAlert2 message is shown in the checkSkuExists function
-                       skuInput.focus();
-                       return;
-                   }
-               }
-               
-               if (!validateForm()) {
-                   showToast('Please fill in all required fields correctly', 'danger');
-                   
-                   // Scroll to the first invalid field
-                   const firstInvalid = document.querySelector('.is-invalid');
-                   if (firstInvalid) {
-                       firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                       firstInvalid.focus();
-                   }
-                   return;
-               }
-               
-               // Ensure at least one variant exists
-               if (variantContainer.children.length === 0) {
-                   showToast('Please add at least one size variant', 'danger');
-                   document.querySelector('.size-btn').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                   return;
-               }
-               
-               // Confirm submission with SweetAlert2
-               Swal.fire({
-                   title: 'Update Product?',
-                   text: 'Are you sure you want to update this product?',
-                   icon: 'question',
-                   showCancelButton: true,
-                   confirmButtonColor: '#6366f1',
-                   cancelButtonColor: '#d33',
-                   confirmButtonText: 'Yes, update it!',
-                   cancelButtonText: 'Cancel'
-               }).then(async (result) => {
-                   if (result.isConfirmed) {
-                       submitBtn.disabled = true;
-                       submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Updating...';
-                       loadingOverlay.classList.remove('d-none');
-                       
-                       try {
-                           const formData = new FormData(productForm);
-                           
-                           // Log form data for debugging
-                           console.log("Form data being submitted:");
-                           for (let [key, value] of formData.entries()) {
-                               console.log(key, value);
-                           }
-                           
-                           const response = await fetch(productForm.action, {
-                               method: 'POST',
-                               body: formData
-                           });
-                           
-                           if (response.ok) {
-                               Swal.fire({
-                                   title: 'Success!',
-                                   text: 'Product has been updated successfully',
-                                   icon: 'success',
-                                   confirmButtonColor: '#6366f1'
-                               }).then(() => {
-                                   window.location.href = '/admin/productManagment';
-                               });
-                           } else {
-                               let errorMessage = 'Failed to update product';
-                               try {
-                                   const errorData = await response.json();
-                                   errorMessage = errorData.message || errorMessage;
-                               } catch (e) {
-                                   console.error("Error parsing error response:", e);
-                               }
-                               throw new Error(errorMessage);
-                           }
-                       } catch (error) {
-                           Swal.fire({
-                               title: 'Error!',
-                               text: error.message || 'Something went wrong',
-                               icon: 'error',
-                               confirmButtonColor: '#6366f1'
-                           });
-                       } finally {
-                           submitBtn.disabled = false;
-                           submitBtn.innerHTML = '<i class="fas fa-save me-2"></i> Update Product';
-                           loadingOverlay.classList.add('d-none');
-                       }
-                   }
-               });
-           });
-           
-           // Handle modal close event to clean up cropper
-           document.getElementById('cropModal').addEventListener('hidden.bs.modal', function () {
-               if (cropper) {
-                   cropper.destroy();
-                   cropper = null;
-               }
-           });
-           
-           // Prevent modal from closing when clicking outside
-           document.getElementById('cropModal').addEventListener('click', function (e) {
-               if (e.target === this) {
-                   e.stopPropagation();
-               }
-           });
-       });
-   </script>
+// Function to toggle edit mode for variant prices
+function togglePriceEdit(cell) {
+    const priceDisplay = cell.querySelector('.variant-price-display');
+    const priceEdit = cell.querySelector('.variant-price-edit');
+    
+    priceDisplay.classList.add('d-none');
+    priceEdit.classList.remove('d-none');
+    priceEdit.querySelector('input').focus();
+}
+    </script>
 </body>
 </html>
-                       
