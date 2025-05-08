@@ -6,6 +6,7 @@ const User = require("../../model/userSchema");
 const Coupon = require("../../model/couponScheema");
 const Wallet = require("../../model/walletScheema");
 const Address = require("../../model/AddressScheema");
+const Review = require("../../model/ReviewScheema")
 const {
   generateOrderNumber,
   generateTransactionId,
@@ -470,11 +471,14 @@ const getUserOrders = async (req, res) => {
 };
 const getOrderDetails = async (req, res) => {
   try {
-    const userId = req.session.user || req.user._id;
+    const userId = req.session.user?._id || req.session.user;
     const orderId = req.params.id;
+
+    console.log(`[DEBUG] Getting order details for order: ${orderId}, user: ${userId}`);
 
     const user = await User.findById(userId);
     if (!user) {
+      console.log(`[ERROR] User not found: ${userId}`);
       return res.redirect("/login");
     }
 
@@ -491,6 +495,7 @@ const getOrderDetails = async (req, res) => {
       .populate("address");
 
     if (!order) {
+      console.log(`[ERROR] Order not found: ${orderId} for user ${userId}`);
       return res.redirect("/orders");
     }
 
@@ -498,11 +503,71 @@ const getOrderDetails = async (req, res) => {
       "productId"
     );
 
+    console.log(`[DEBUG] Found ${orderItems.length} order items for order ${orderId}`);
+
+    // Create a reviews map for each order item
+    const reviewsMap = {};
+    
+    // Only attempt to fetch reviews if we have order items
+    if (orderItems && orderItems.length > 0) {
+      try {
+        // Process each order item sequentially to avoid overwhelming the database
+        for (const item of orderItems) {
+          // Skip review lookup if productId is missing
+          if (!item.productId) {
+            console.log(`[WARN] Order item ${item._id} has no productId`);
+            reviewsMap[item._id.toString()] = {
+              hasReview: false,
+              review: null,
+              canReview: false
+            };
+            continue;
+          }
+          
+          // Safely get the product ID, handling both populated and non-populated cases
+          const productId = item.productId._id ? item.productId._id : item.productId;
+          
+          // Check if the item is delivered (can be reviewed)
+          const canReview = item.status === "Delivered";
+          
+          try {
+            const review = await Review.findOne({
+              user: userId,
+              product: productId,
+              orderItem: item._id
+            });
+            
+            console.log(`[DEBUG] Review for item ${item._id}: ${review ? 'Found' : 'Not found'}, Can review: ${canReview}`);
+            
+            reviewsMap[item._id.toString()] = {
+              hasReview: !!review,
+              review: review,
+              canReview: canReview
+            };
+          } catch (reviewError) {
+            console.error(`[ERROR] Error fetching review for item ${item._id}:`, reviewError);
+            // Don't let a review error block the page
+            reviewsMap[item._id.toString()] = {
+              hasReview: false,
+              review: null,
+              canReview: canReview
+            };
+          }
+        }
+      } catch (reviewsError) {
+        console.error("[ERROR] Error processing reviews:", reviewsError);
+        // If there's an error with reviews, continue without them
+      }
+    }
+
+    console.log(`[DEBUG] Rendering order details page for order ${orderId}`);
+
     res.render("orderDetails", {
       title: "Order Details",
       user,
       order,
       orderItems,
+      reviewsMap, // Pass the reviews map to the template
       page: "order-details",
     });
   } catch (error) {

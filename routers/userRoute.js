@@ -196,7 +196,6 @@ router.post(
   orderController.returnOrderItem
 );
 
-
 router.post(
   "/orders/item/:orderItemId/cancel",
   UserAuth,
@@ -220,7 +219,6 @@ router.post(
   UserAuth,
   razorpayController.retryRazorpayPayment
 );
-
 
 router.post(
   "/handle-payment-failure/:id",
@@ -254,12 +252,23 @@ router.get("/coupons", UserAuth, CouponController.getAvailableCoupons);
 router.post("/apply-coupon", UserAuth, CouponController.applyCoupon);
 router.post("/remove-coupon", UserAuth, CouponController.removeCoupon);
 
-// review router
-router.get("/reviews", UserAuth, reviewController.getUserReviews)
-router.get("/product/:productId/reviews", reviewController.getProductReviews)
-router.get("/can-review/:productId/:orderItemId", UserAuth, reviewController.canReviewProduct)
-router.post("/review/:productId/:orderItemId", UserAuth, reviewController.submitReview)
-router.delete("/review/:id", UserAuth, reviewController.deleteReview)
+// Review routes - Updated to match controller method names
+router.get("/reviews", UserAuth, reviewController.getUserReviews);
+router.get("/product/:productId/reviews", reviewController.getProductReviews);
+router.get("/can-review/:productId", UserAuth, reviewController.checkReviewEligibility);
+router.post("/review/submit", UserAuth, reviewController.submitReview);
+router.delete("/review/:reviewId", UserAuth, reviewController.deleteReview);
+
+// Additional review routes
+router.get("/order-item/:orderItemId/review", UserAuth, reviewController.getOrderItemReview);
+router.post("/review/order-item/:productId/:orderItemId", UserAuth, reviewController.submitOrderItemReview);
+router.post("/review/helpful/:reviewId", UserAuth, reviewController.markReviewHelpful);
+router.get("/product/:productId/review-stats", reviewController.getReviewStatistics);
+
+// API route for checking authentication
+router.get("/api/check-auth", (req, res) => {
+  res.json({ authenticated: !!req.session.user });
+});
 
 // Error handling
 router.get("/page-not-found", userControllers.pageNotfound);
