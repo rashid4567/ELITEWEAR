@@ -11,8 +11,10 @@
   "description": "",
   "dependencies": {
     "bcrypt": "^5.1.1",
+    "chart.js": "^4.4.9",
     "cloudinary": "^1.41.3",
     "connect-flash": "^0.1.1",
+    "csv-writer": "^1.6.0",
     "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
     "exceljs": "^4.4.0",

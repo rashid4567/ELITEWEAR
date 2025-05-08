@@ -1,1356 +1,1588 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Wear Admin Dashboard</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
-    <!-- Select2 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <!-- Daterangepicker CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="/adminStyle/dashboard.css">
-</head>
-<body data-theme="light">
-    <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="brand">
-                    <img src="/adminStyle/images/logo.png" alt="Elite Wear Logo" class="brand-logo">
-                    <h2 class="brand-name">ELITE WEAR</h2>
-                </div>
-                <button class="sidebar-close d-md-none">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="sidebar-user">
-                <div class="user-avatar">
-                    <img src="/adminStyle/images/admin-avatar.png" alt="Admin Avatar">
-                    <span class="status-indicator online"></span>
-                </div>
-                <div class="user-info">
-                    <h5 class="user-name"><%= admin.fullname %></h5>
-                    <span class="user-role">Administrator</span>
-                </div>
-            </div>
-            
-            <div class="sidebar-search">
-                <div class="input-group">
-                    <span class="input-group-text bg-transparent border-end-0">
-                        <i class="fas fa-search"></i>
-                    </span>
-                    <input type="text" class="form-control border-start-0" placeholder="Search...">
-                </div>
-            </div>
-            
-            <nav class="sidebar-nav">
-                <div class="nav-section">
-                    <h6 class="nav-section-title">MAIN</h6>
-                    <ul class="nav-list">
-                        <li class="nav-item active">
-                            <a href="/admin/dashboard" class="nav-link">
-                                <i class="fas fa-tachometer-alt"></i>
-                                <span>Dashboard</span>
-                                <span class="badge bg-primary rounded-pill ms-auto">New</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="fas fa-box"></i>
-                                <span>Products</span>
-                                <i class="fas fa-chevron-right ms-auto"></i>
-                            </a>
-                            <ul class="nav-submenu">
-                                <li><a href="/admin/products">All Products</a></li>
-                                <li><a href="/admin/products/add">Add New</a></li>
-                                <li><a href="/admin/categories">Categories</a></li>
-                                <li><a href="/admin/inventory">Inventory</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/admin/orders" class="nav-link">
-                                <i class="fas fa-shopping-cart"></i>
-                                <span>Orders</span>
-                                <% if (pendingOrdersCount > 0) { %>
-                                <span class="badge bg-danger rounded-pill ms-auto"><%= pendingOrdersCount %></span>
-                                <% } %>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/admin/customers" class="nav-link">
-                                <i class="fas fa-users"></i>
-                                <span>Customers</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="nav-section">
-                    <h6 class="nav-section-title">MANAGEMENT</h6>
-                    <ul class="nav-list">
-                        <li class="nav-item">
-                            <a href="/admin/analytics" class="nav-link">
-                                <i class="fas fa-chart-line"></i>
-                                <span>Analytics</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="fas fa-tags"></i>
-                                <span>Marketing</span>
-                                <i class="fas fa-chevron-right ms-auto"></i>
-                            </a>
-                            <ul class="nav-submenu">
-                                <li><a href="/admin/marketing/campaigns">Campaigns</a></li>
-                                <li><a href="/admin/marketing/discounts">Discounts</a></li>
-                                <li><a href="/admin/marketing/coupons">Coupons</a></li>
-                            </ul>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/admin/settings" class="nav-link">
-                                <i class="fas fa-cog"></i>
-                                <span>Settings</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="nav-section">
-                    <h6 class="nav-section-title">EXTRAS</h6>
-                    <ul class="nav-list">
-                        <li class="nav-item">
-                            <a href="/admin/help" class="nav-link">
-                                <i class="fas fa-question-circle"></i>
-                                <span>Help Center</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/admin/notifications" class="nav-link">
-                                <i class="fas fa-bell"></i>
-                                <span>Notifications</span>
-                                <% if (notificationsCount > 0) { %>
-                                <span class="badge bg-warning rounded-pill ms-auto"><%= notificationsCount %></span>
-                                <% } %>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-            
-            <div class="sidebar-footer">
-                <div class="theme-switch">
-                    <span class="theme-switch-label">Theme</span>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="themeSwitch">
-                        <label class="form-check-label" for="themeSwitch">
-                            <i class="fas fa-sun"></i>
-                            <i class="fas fa-moon"></i>
-                        </label>
-                    </div>
-                </div>
-                <div class="sidebar-actions">
-                    <a href="/admin/settings" class="btn btn-outline-secondary btn-sm">
-                        <i class="fas fa-cog"></i> Settings
-                    </a>
-                    <a href="/admin/logout" class="btn btn-danger btn-sm">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </a>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="main-header">
-                <div class="header-left">
-                    <button class="toggle-sidebar" id="toggle-sidebar">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div class="breadcrumb-wrapper d-none d-md-flex">
-                        <nav aria-label="breadcrumb">
-                            <ol class="breadcrumb mb-0">
-                                <li class="breadcrumb-item"><a href="/admin/dashboard">Home</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                            </ol>
-                        </nav>
-                    </div>
-                </div>
-                
-                <div class="header-right">
-                    <div class="header-actions">
-                        <div class="dropdown me-3">
-                            <button class="btn btn-icon" type="button" id="notificationsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-bell"></i>
-                                <% if (notificationsCount > 0) { %>
-                                <span class="badge bg-danger badge-pill notification-badge"><%= notificationsCount %></span>
-                                <% } %>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationsDropdown">
-                                <div class="dropdown-header d-flex justify-content-between align-items-center">
-                                    <span>Notifications</span>
-                                    <a href="#" class="text-muted small">Mark all as read</a>
-                                </div>
-                                <div class="notification-list">
-                                    <% notifications.forEach(notification => { %>
-                                    <a href="#" class="dropdown-item notification-item <%= notification.isRead ? '' : 'unread' %>">
-                                        <div class="notification-icon <%= notification.iconBg %>">
-                                            <i class="fas fa-<%= notification.icon %>"></i>
-                                        </div>
-                                        <div class="notification-content">
-                                            <p class="mb-1"><%= notification.text %></p>
-                                            <span class="text-muted small"><%= notification.timeAgo %></span>
-                                        </div>
-                                    </a>
-                                    <% }); %>
-                                </div>
-                                <div class="dropdown-footer">
-                                    <a href="/admin/notifications" class="text-center">View All Notifications</a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="dropdown me-3">
-                            <button class="btn btn-icon" type="button" id="messagesDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-envelope"></i>
-                                <% if (messagesCount > 0) { %>
-                                <span class="badge bg-success badge-pill notification-badge"><%= messagesCount %></span>
-                                <% } %>
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="messagesDropdown">
-                                <div class="dropdown-header">Messages</div>
-                                <% messages.forEach(message => { %>
-                                <a class="dropdown-item" href="/admin/messages/<%= message._id %>">
-                                    <div class="d-flex align-items-center">
-                                        <img src="<%= message.senderAvatar %>" class="rounded-circle me-2" alt="User">
-                                        <div>
-                                            <p class="mb-0 fw-bold"><%= message.senderName %></p>
-                                            <p class="text-muted small mb-0"><%= message.preview %></p>
-                                        </div>
-                                    </div>
-                                </a>
-                                <% }); %>
-                                <div class="dropdown-footer">
-                                    <a href="/admin/messages" class="text-center">View All Messages</a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="dropdown">
-                            <button class="btn user-dropdown" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="/adminStyle/images/admin-avatar.png" alt="Admin Avatar" class="user-avatar">
-                                <div class="user-info d-none d-md-block">
-                                    <span class="user-name"><%= admin.fullname %></span>
-                                    <span class="user-role">Admin</span>
-                                </div>
-                                <i class="fas fa-chevron-down ms-2"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                <li><a class="dropdown-item" href="/admin/profile"><i class="fas fa-user me-2"></i> Profile</a></li>
-                                <li><a class="dropdown-item" href="/admin/settings"><i class="fas fa-cog me-2"></i> Settings</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="/admin/logout"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Dashboard Content -->
-            <div class="dashboard-content">
-                <!-- Page Header -->
-                <div class="page-header">
-                    <div>
-                        <h1 class="page-title">Dashboard</h1>
-                        <p class="page-subtitle">Welcome back, <%= admin.fullname %>! Here's what's happening with your store today.</p>
-                    </div>
-                    <div class="page-actions">
-                        <div class="date-filter">
-                            <button class="btn btn-outline-secondary" id="dateRangeBtn">
-                                <i class="fas fa-calendar-alt me-2"></i>
-                                <span>Last 7 Days</span>
-                                <i class="fas fa-chevron-down ms-2"></i>
-                            </button>
-                        </div>
-                        <button class="btn btn-primary" id="exportReportBtn">
-                            <i class="fas fa-download me-2"></i> Export Report
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Metrics Cards -->
-                <div class="row metrics-row">
-                    <div class="col-md-6 col-lg-3 mb-4">
-                        <div class="metric-card">
-                            <div class="metric-card-body">
-                                <div class="metric-icon bg-primary-light">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                                <div class="metric-details">
-                                    <h3 class="metric-value"><%= metrics.totalCustomers.toLocaleString() %></h3>
-                                    <p class="metric-label">Total Customers</p>
-                                    <div class="metric-trend <%= metrics.customersTrend >= 0 ? 'positive' : 'negative' %>">
-                                        <i class="fas fa-arrow-<%= metrics.customersTrend >= 0 ? 'up' : 'down' %>"></i> 
-                                        <%= Math.abs(metrics.customersTrend) %>% this month
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="metric-chart">
-                                <canvas id="customersChart" height="50"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3 mb-4">
-                        <div class="metric-card">
-                            <div class="metric-card-body">
-                                <div class="metric-icon bg-success-light">
-                                    <i class="fas fa-shopping-cart"></i>
-                                </div>
-                                <div class="metric-details">
-                                    <h3 class="metric-value"><%= metrics.totalOrders.toLocaleString() %></h3>
-                                    <p class="metric-label">Total Orders</p>
-                                    <div class="metric-trend <%= metrics.ordersTrend >= 0 ? 'positive' : 'negative' %>">
-                                        <i class="fas fa-arrow-<%= metrics.ordersTrend >= 0 ? 'up' : 'down' %>"></i> 
-                                        <%= Math.abs(metrics.ordersTrend) %>% this month
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="metric-chart">
-                                <canvas id="ordersChart" height="50"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3 mb-4">
-                        <div class="metric-card">
-                            <div class="metric-card-body">
-                                <div class="metric-icon bg-info-light">
-                                    <i class="fas fa-rupee-sign"></i>
-                                </div>
-                                <div class="metric-details">
-                                    <h3 class="metric-value">₹<%= metrics.totalRevenue.toLocaleString() %></h3>
-                                    <p class="metric-label">Total Revenue</p>
-                                    <div class="metric-trend <%= metrics.revenueTrend >= 0 ? 'positive' : 'negative' %>">
-                                        <i class="fas fa-arrow-<%= metrics.revenueTrend >= 0 ? 'up' : 'down' %>"></i> 
-                                        <%= Math.abs(metrics.revenueTrend) %>% this month
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="metric-chart">
-                                <canvas id="revenueChart" height="50"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3 mb-4">
-                        <div class="metric-card">
-                            <div class="metric-card-body">
-                                <div class="metric-icon bg-warning-light">
-                                    <i class="fas fa-clock"></i>
-                                </div>
-                                <div class="metric-details">
-                                    <h3 class="metric-value"><%= metrics.pendingOrders.toLocaleString() %></h3>
-                                    <p class="metric-label">Pending Orders</p>
-                                    <div class="metric-trend <%= metrics.pendingOrdersTrend >= 0 ? 'negative' : 'positive' %>">
-                                        <i class="fas fa-arrow-<%= metrics.pendingOrdersTrend >= 0 ? 'up' : 'down' %>"></i> 
-                                        <%= Math.abs(metrics.pendingOrdersTrend) %>% this month
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="metric-chart">
-                                <canvas id="pendingChart" height="50"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Charts Section -->
-                <div class="row mb-4">
-                    <div class="col-lg-8 mb-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Sales Analytics</div>
-                                <div class="card-actions">
-                                    <div class="btn-group chart-filter" role="group">
-                                        <button type="button" class="btn btn-sm btn-filter active" data-filter="yearly">Yearly</button>
-                                        <button type="button" class="btn btn-sm btn-filter" data-filter="monthly">Monthly</button>
-                                        <button type="button" class="btn btn-sm btn-filter" data-filter="weekly">Weekly</button>
-                                        <button type="button" class="btn btn-sm btn-filter" data-filter="daily">Daily</button>
-                                    </div>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-icon" type="button" id="chartOptionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="chartOptionsDropdown">
-                                            <li><a class="dropdown-item" href="#" id="downloadChartPNG"><i class="fas fa-download me-2"></i> Download PNG</a></li>
-                                            <li><a class="dropdown-item" href="#" id="downloadChartPDF"><i class="fas fa-file-pdf me-2"></i> Download PDF</a></li>
-                                            <li><a class="dropdown-item" href="#" id="refreshChart"><i class="fas fa-sync me-2"></i> Refresh Data</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="chart-container">
-                                    <canvas id="salesChart" height="300"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <div class="card-title">Sales Progress</div>
-                                <div class="card-actions">
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-icon" type="button" id="progressOptionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="progressOptionsDropdown">
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i> View Details</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-sync me-2"></i> Refresh</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="progress-circle-container">
-                                    <canvas id="progressChart" width="200" height="200"></canvas>
-                                    <div class="progress-text">
-                                        <h2 class="progress-percentage"><%= metrics.salesProgress.toFixed(2) %>%</h2>
-                                        <p class="progress-label"><%= metrics.salesProgressTrend >= 0 ? '+' : '-' %><%= Math.abs(metrics.salesProgressTrend) %>% from last quarter</p>
-                                    </div>
-                                </div>
-                                <div class="progress-details mt-4">
-                                    <div class="row">
-                                        <div class="col-4">
-                                            <div class="progress-item">
-                                                <p class="progress-item-label">Target</p>
-                                                <h5 class="progress-item-value text-<%= metrics.targetStatus %>">₹<%= metrics.target.toLocaleString() %> <i class="fas fa-arrow-<%= metrics.targetTrend >= 0 ? 'up' : 'down' %> small"></i></h5>
-                                            </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="progress-item">
-                                                <p class="progress-item-label">Revenue</p>
-                                                <h5 class="progress-item-value text-<%= metrics.revenueStatus %>">₹<%= metrics.currentRevenue.toLocaleString() %> <i class="fas fa-arrow-<%= metrics.currentRevenueTrend >= 0 ? 'up' : 'down' %> small"></i></h5>
-                                            </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <div class="progress-item">
-                                                <p class="progress-item-label">Today</p>
-                                                <h5 class="progress-item-value text-<%= metrics.todayStatus %>">₹<%= metrics.todayRevenue.toLocaleString() %> <i class="fas fa-arrow-<%= metrics.todayRevenueTrend >= 0 ? 'up' : 'down' %> small"></i></h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="mt-4">
-                                    <p class="text-center">You succeeded in earning ₹<%= metrics.todayRevenue.toLocaleString() %> today, <%= metrics.todayRevenueTrend >= 0 ? 'higher' : 'lower' %> than yesterday</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Top 10 Lists Section -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Top Performers</div>
-                                <div class="card-actions">
-                                    <ul class="nav nav-tabs card-tabs" id="topListsTabs" role="tablist">
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link active" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="true">Products</button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button" role="tab" aria-controls="categories" aria-selected="false">Categories</button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link" id="brands-tab" data-bs-toggle="tab" data-bs-target="#brands" type="button" role="tab" aria-controls="brands" aria-selected="false">Brands</button>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="tab-content" id="topListsTabContent">
-                                    <div class="tab-pane fade show active" id="products" role="tabpanel" aria-labelledby="products-tab">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover datatable" id="productsTable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Rank</th>
-                                                        <th>Product</th>
-                                                        <th>Category</th>
-                                                        <th>Price</th>
-                                                        <th>Sales</th>
-                                                        <th>Revenue</th>
-                                                        <th>Stock</th>
-                                                        <th>Status</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <% topProducts.forEach((product, index) => { %>
-                                                    <tr>
-                                                        <td><%= index + 1 %></td>
-                                                        <td>
-                                                            <div class="d-flex align-items-center">
-                                                                <img src="<%= product.image %>" alt="<%= product.name %>" class="product-img me-2">
-                                                                <div>
-                                                                    <p class="mb-0 fw-medium"><%= product.name %></p>
-                                                                    <small class="text-muted">#<%= product.sku || 'PRD-' + product._id.toString().slice(-4) %></small>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td><%= product.category %></td>
-                                                        <td>₹<%= product.price.toLocaleString() %></td>
-                                                        <td><%= product.sales %></td>
-                                                        <td>₹<%= product.revenue.toLocaleString() %></td>
-                                                        <td><%= product.stock %></td>
-                                                        <td><span class="badge bg-<%= product.stock > 20 ? 'success' : 'warning' %>"><%= product.stock > 20 ? 'In Stock' : 'Low Stock' %></span></td>
-                                                    </tr>
-                                                    <% }); %>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                    <div class="tab-pane fade" id="categories" role="tabpanel" aria-labelledby="categories-tab">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover datatable" id="categoriesTable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Rank</th>
-                                                        <th>Category</th>
-                                                        <th>Products</th>
-                                                        <th>Total Sales</th>
-                                                        <th>Revenue</th>
-                                                        <th>Growth</th>
-                                                        <th>Status</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <% topCategories.forEach((category, index) => { %>
-                                                    <tr>
-                                                        <td><%= index + 1 %></td>
-                                                        <td>
-                                                            <div class="d-flex align-items-center">
-                                                                <img src="<%= category.image %>" alt="<%= category.name %>" class="product-img me-2">
-                                                                <div>
-                                                                    <p class="mb-0 fw-medium"><%= category.name %></p>
-                                                                    <small class="text-muted">#CAT-<%= category._id.toString().slice(-3) %></small>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td><%= category.productsCount %></td>
-                                                        <td><%= category.sales %></td>
-                                                        <td>₹<%= category.revenue.toLocaleString() %></td>
-                                                        <td><span class="text-<%= category.growth >= 0 ? 'success' : 'danger' %>"><%= category.growth >= 0 ? '+' : '' %><%= category.growth %>%</span></td>
-                                                        <td><span class="badge bg-<%= category.isListed ? 'success' : 'danger' %>"><%= category.isListed ? 'Active' : 'Inactive' %></span></td>
-                                                    </tr>
-                                                    <% }); %>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                    <div class="tab-pane fade" id="brands" role="tabpanel" aria-labelledby="brands-tab">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover datatable" id="brandsTable">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Rank</th>
-                                                        <th>Brand</th>
-                                                        <th>Products</th>
-                                                        <th>Total Sales</th>
-                                                        <th>Revenue</th>
-                                                        <th>Growth</th>
-                                                        <th>Status</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <% topBrands.forEach((brand, index) => { %>
-                                                    <tr>
-                                                        <td><%= index + 1 %></td>
-                                                        <td>
-                                                            <div class="d-flex align-items-center">
-                                                                <img src="<%= brand.image %>" alt="<%= brand.name %>" class="product-img me-2">
-                                                                <div>
-                                                                    <p class="mb-0 fw-medium"><%= brand.name %></p>
-                                                                    <small class="text-muted">#BRD-<%= (index + 1).toString().padStart(3, '0') %></small>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td><%= brand.productsCount %></td>
-                                                        <td><%= brand.sales %></td>
-                                                        <td>₹<%= brand.revenue.toLocaleString() %></td>
-                                                        <td><span class="text-<%= brand.growth >= 0 ? 'success' : 'danger' %>"><%= brand.growth >= 0 ? '+' : '' %><%= brand.growth %>%</span></td>
-                                                        <td><span class="badge bg-success">Active</span></td>
-                                                    </tr>
-                                                    <% }); %>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Ledger Book Section -->
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <div class="card-title">Ledger Book</div>
-                                <div class="card-actions">
-                                    <div class="input-group me-2 d-none d-md-flex" style="width: 250px;">
-                                        <input type="text" class="form-control" placeholder="Search transactions...">
-                                        <button class="btn btn-outline-secondary" type="button">
-                                            <i class="fas fa-search"></i>
-                                        </button>
-                                    </div>
-                                    <button class="btn btn-sm btn-primary me-2" data-bs-toggle="modal" data-bs-target="#newEntryModal">
-                                        <i class="fas fa-plus me-1"></i> New Entry
-                                    </button>
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-download me-1"></i> Export
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
-                                            <li><a class="dropdown-item" href="/admin/ledger/export/csv"><i class="fas fa-file-csv me-2"></i> CSV</a></li>
-                                            <li><a class="dropdown-item" href="/admin/ledger/export/excel"><i class="fas fa-file-excel me-2"></i> Excel</a></li>
-                                            <li><a class="dropdown-item" href="/admin/ledger/export/pdf"><i class="fas fa-file-pdf me-2"></i> PDF</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="table-responsive">
-                                    <table class="table table-hover datatable" id="ledgerTable">
-                                        <thead>
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Transaction ID</th>
-                                                <th>Description</th>
-                                                <th>Category</th>
-                                                <th>Debit (₹)</th>
-                                                <th>Credit (₹)</th>
-                                                <th>Balance (₹)</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <% ledgerEntries.forEach(entry => { %>
-                                            <tr>
-                                                <td><%= new Date(entry.date).toISOString().split('T')[0] %></td>
-                                                <td><%= entry.transactionId %></td>
-                                                <td><%= entry.description %></td>
-                                                <td><span class="badge bg-<%= entry.category === 'Income' ? 'success' : 'danger' %>"><%= entry.category %></span></td>
-                                                <td><%= entry.debit ? entry.debit.toLocaleString() : '-' %></td>
-                                                <td><%= entry.credit ? entry.credit.toLocaleString() : '-' %></td>
-                                                <td><%= entry.balance.toLocaleString() %></td>
-                                                <td>
-                                                    <div class="d-flex">
-                                                        <a href="/admin/ledger/edit/<%= entry._id %>" class="btn btn-sm btn-icon btn-outline-primary me-1" title="Edit">
-                                                            <i class="fas fa-edit"></i>
-                                                        </a>
-                                                        <button class="btn btn-sm btn-icon btn-outline-danger delete-entry" data-id="<%= entry._id %>" title="Delete">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <% }); %>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            <div class="card-footer">
-                                <nav aria-label="Ledger pagination">
-                                    <ul class="pagination justify-content-end mb-0">
-                                        <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-                                            <a class="page-link" href="/admin/dashboard?ledgerPage=<%= currentPage - 1 %>" tabindex="-1" aria-disabled="<%= currentPage === 1 ? 'true' : 'false' %>">Previous</a>
-                                        </li>
-                                        <% for(let i = 1; i <= totalPages; i++) { %>
-                                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                                            <a class="page-link" href="/admin/dashboard?ledgerPage=<%= i %>"><%= i %></a>
-                                        </li>
-                                        <% } %>
-                                        <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-                                            <a class="page-link" href="/admin/dashboard?ledgerPage=<%= currentPage + 1 %>">Next</a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- New Entry Modal -->
-    <div class="modal fade" id="newEntryModal" tabindex="-1" aria-labelledby="newEntryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="newEntryModalLabel">Add New Ledger Entry</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="ledgerEntryForm" action="/admin/ledger/add" method="POST">
-                        <div class="mb-3">
-                            <label for="transactionDate" class="form-label">Date</label>
-                            <input type="date" class="form-control" id="transactionDate" name="date" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="transactionDescription" class="form-label">Description</label>
-                            <input type="text" class="form-control" id="transactionDescription" name="description" placeholder="Enter description" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="transactionCategory" class="form-label">Category</label>
-                            <select class="form-select" id="transactionCategory" name="category" required>
-                                <option value="" selected disabled>Select category</option>
-                                <option value="Income">Income</option>
-                                <option value="Expenses">Expenses</option>
-                                <option value="Investment">Investment</option>
-                                <option value="Transfer">Transfer</option>
-                            </select>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <label for="transactionDebit" class="form-label">Debit (₹)</label>
-                                <input type="number" class="form-control" id="transactionDebit" name="debit" placeholder="0.00">
-                            </div>
-                            <div class="col-6">
-                                <label for="transactionCredit" class="form-label">Credit (₹)</label>
-                                <input type="number" class="form-control" id="transactionCredit" name="credit" placeholder="0.00">
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="transactionNotes" class="form-label">Notes</label>
-                            <textarea class="form-control" id="transactionNotes" name="notes" rows="3" placeholder="Additional notes"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="ledgerEntryForm" class="btn btn-primary">Save Entry</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Theme Switcher -->
-    <div class="theme-switcher" id="themeSwitcher">
-        <i class="fas fa-moon"></i>
-    </div>
-
-    <!-- Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- DataTables -->
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-    <!-- Select2 -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <!-- Moment.js -->
-    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
-    <!-- Daterangepicker -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-    <!-- Custom JS -->
-    <script src="/adminStyle/js/dashboard.js"></script>
-    
-    <script>
-        // Initialize DataTables
-        $(document).ready(function() {
-            $('#productsTable').DataTable({
-                responsive: true,
-                pageLength: 10,
-                language: {
-                    search: "",
-                    searchPlaceholder: "Search products..."
-                }
-            });
-            
-            $('#categoriesTable').DataTable({
-                responsive: true,
-                pageLength: 10,
-                language: {
-                    search: "",
-                    searchPlaceholder: "Search categories..."
-                }
-            });
-            
-            $('#brandsTable').DataTable({
-                responsive: true,
-                pageLength: 10,
-                language: {
-                    search: "",
-                    searchPlaceholder: "Search brands..."
-                }
-            });
-            
-            $('#ledgerTable').DataTable({
-                responsive: true,
-                pageLength: 5,
-                language: {
-                    search: "",
-                    searchPlaceholder: "Search transactions..."
-                }
-            });
-            
-            // Initialize Select2
-            $('.form-select').select2({
-                theme: 'bootstrap-5',
-                dropdownParent: $('#newEntryModal')
-            });
-            
-            // Initialize Daterangepicker
-            $('#dateRangeBtn').daterangepicker({
-                ranges: {
-                    'Today': [moment(), moment()],
-                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                    'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-                },
-                startDate: moment().subtract(6, 'days'),
-                endDate: moment()
-            }, function(start, end, label) {
-                $('#dateRangeBtn span').html(label);
-                // Update dashboard data based on selected date range
-                window.location.href = `/admin/dashboard?startDate=${start.format('YYYY-MM-DD')}&endDate=${end.format('YYYY-MM-DD')}`;
-            });
-            
-            // Delete ledger entry confirmation
-            $('.delete-entry').on('click', function() {
-                const entryId = $(this).data('id');
-                if (confirm('Are you sure you want to delete this entry?')) {
-                    window.location.href = `/admin/ledger/delete/${entryId}`;
-                }
-            });
-            
-            // Export report button
-            $('#exportReportBtn').on('click', function() {
-                const startDate = $('#dateRangeBtn').data('daterangepicker').startDate.format('YYYY-MM-DD');
-                const endDate = $('#dateRangeBtn').data('daterangepicker').endDate.format('YYYY-MM-DD');
-                window.location.href = `/admin/dashboard/export?startDate=${startDate}&endDate=${endDate}`;
-            });
-            
-            // Initialize charts
-            initCharts();
-            
-            // Theme switcher
-            $('#themeSwitcher, #themeSwitch').on('click', function() {
-                const body = document.body;
-                const isDarkTheme = body.getAttribute('data-theme') === 'dark';
-                
-                body.setAttribute('data-theme', isDarkTheme ? 'light' : 'dark');
-                localStorage.setItem('theme', isDarkTheme ? 'light' : 'dark');
-                
-                // Update icon
-                if (isDarkTheme) {
-                    $('#themeSwitcher i').removeClass('fa-sun').addClass('fa-moon');
-                } else {
-                    $('#themeSwitcher i').removeClass('fa-moon').addClass('fa-sun');
-                }
-            });
-            
-            // Check for saved theme
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme) {
-                document.body.setAttribute('data-theme', savedTheme);
-                if (savedTheme === 'dark') {
-                    $('#themeSwitcher i').removeClass('fa-moon').addClass('fa-sun');
-                    $('#themeSwitch').prop('checked', true);
-                }
-            }
-            
-            // Toggle sidebar on mobile
-            $('#toggle-sidebar, .sidebar-close').on('click', function() {
-                $('.sidebar').toggleClass('active');
-            });
-            
-            // Toggle submenu
-            $('.nav-link').on('click', function(e) {
-                const submenu = $(this).siblings('.nav-submenu');
-                if (submenu.length) {
-                    e.preventDefault();
-                    $(this).parent().toggleClass('active');
-                }
-            });
-        });
-        
-        // Initialize charts
-        function initCharts() {
-            // Sales Chart
-            const salesCtx = document.getElementById('salesChart');
-            if (salesCtx) {
-                const salesData = <%- JSON.stringify(chartData.sales) %>;
-                new Chart(salesCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: salesData.labels,
-                        datasets: [{
-                            label: 'Sales',
-                            data: salesData.data,
-                            backgroundColor: 'rgba(67, 97, 238, 0.6)',
-                            borderColor: 'rgba(67, 97, 238, 1)',
-                            borderWidth: 1,
-                            borderRadius: 5,
-                            barThickness: 'flex',
-                            maxBarThickness: 25
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                                padding: 10,
-                                titleFont: {
-                                    size: 14
-                                },
-                                bodyFont: {
-                                    size: 13
-                                },
-                                callbacks: {
-                                    label: function(context) {
-                                        return `₹${context.parsed.y.toLocaleString()}`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(0, 0, 0, 0.05)'
-                                },
-                                ticks: {
-                                    callback: function(value) {
-                                        return value >= 1000 ? `${value/1000}k` : value;
-                                    }
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-            
-            // Progress Chart
-            const progressCtx = document.getElementById('progressChart');
-            if (progressCtx) {
-                new Chart(progressCtx, {
-                    type: 'doughnut',
-                    data: {
-                        datasets: [{
-                            data: [<%= metrics.salesProgress %>, <%= 100 - metrics.salesProgress %>],
-                            backgroundColor: [
-                                'rgba(67, 97, 238, 0.8)',
-                                'rgba(240, 240, 240, 0.5)'
-                            ],
-                            borderWidth: 0,
-                            cutout: '80%'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                enabled: false
-                            }
-                        }
-                    }
-                });
-            }
-            
-            // Mini Charts
-            const miniCharts = [
-                { id: 'customersChart', data: <%- JSON.stringify(chartData.customers) %>, color: 'rgba(67, 97, 238, 1)', bgColor: 'rgba(67, 97, 238, 0.2)' },
-                { id: 'ordersChart', data: <%- JSON.stringify(chartData.orders) %>, color: 'rgba(25, 135, 84, 1)', bgColor: 'rgba(25, 135, 84, 0.2)' },
-                { id: 'revenueChart', data: <%- JSON.stringify(chartData.revenue) %>, color: 'rgba(13, 110, 253, 1)', bgColor: 'rgba(13, 110, 253, 0.2)' },
-                { id: 'pendingChart', data: <%- JSON.stringify(chartData.pending) %>, color: 'rgba(253, 126, 20, 1)', bgColor: 'rgba(253, 126, 20, 0.2)' }
-            ];
-            
-            miniCharts.forEach(chart => {
-                const ctx = document.getElementById(chart.id);
-                if (ctx) {
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: chart.data.labels,
-                            datasets: [{
-                                data: chart.data.data,
-                                backgroundColor: chart.bgColor,
-                                borderColor: chart.color,
-                                borderWidth: 2,
-                                pointRadius: 0,
-                                tension: 0.4,
-                                fill: true
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                },
-                                tooltip: {
-                                    enabled: false
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    display: false
-                                },
-                                y: {
-                                    display: false
-                                }
-                            }
-                        }
-                    });
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-    // Toggle sidebar on mobile
-    const toggleBtn = document.getElementById('toggle-sidebar');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarClose = document.querySelector('.sidebar-close');
-    
-    if (toggleBtn && sidebar) {
-        toggleBtn.addEventListener('click', function() {
-            sidebar.classList.toggle('active');
-        });
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  
+  <!-- Custom CSS -->
+  <style>
+    :root {
+      --primary-color: #4f46e5;
+      --secondary-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --info-color: #0ea5e9;
+      --light-color: #f9fafb;
+      --dark-color: #111827;
+      --gray-color: #6b7280;
+      --sidebar-width: 250px;
     }
     
-    if (sidebarClose) {
-        sidebarClose.addEventListener('click', function() {
-            sidebar.classList.remove('active');
-        });
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f4f6;
+      color: #1f2937;
+      overflow-x: hidden;
     }
     
-    // Initialize submenu toggles
-    initSubmenuToggles();
-    
-    // Initialize theme switcher
-    initThemeSwitcher();
-    
-    // Initialize chart download buttons
-    initChartDownloads();
-    
-    // Initialize form validation
-    initFormValidation();
-});
-
-// Initialize submenu toggles
-function initSubmenuToggles() {
-    const navItems = document.querySelectorAll('.nav-item');
-    
-    navItems.forEach(item => {
-        const link = item.querySelector('.nav-link');
-        const submenu = item.querySelector('.nav-submenu');
-        
-        if (link && submenu) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                item.classList.toggle('active');
-                
-                // Close other open submenus
-                navItems.forEach(otherItem => {
-                    if (otherItem !== item && otherItem.classList.contains('active')) {
-                        otherItem.classList.remove('active');
-                    }
-                });
-            });
-        }
-    });
-}
-
-// Initialize theme switcher
-function initThemeSwitcher() {
-    const themeSwitcher = document.getElementById('themeSwitcher');
-    const themeSwitch = document.getElementById('themeSwitch');
-    
-    if (themeSwitcher) {
-        // Check for saved theme preference
-        const savedTheme = localStorage.getItem('theme');
-        
-        // Apply saved theme
-        if (savedTheme) {
-            document.body.setAttribute('data-theme', savedTheme);
-            if (savedTheme === 'dark' && themeSwitch) {
-                themeSwitch.checked = true;
-                themeSwitcher.innerHTML = '<i class="fas fa-sun"></i>';
-            }
-        }
-        
-        // Toggle theme on click
-        themeSwitcher.addEventListener('click', function() {
-            const currentTheme = document.body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
-            document.body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            
-            // Update icon
-            themeSwitcher.innerHTML = newTheme === 'dark' 
-                ? '<i class="fas fa-sun"></i>' 
-                : '<i class="fas fa-moon"></i>';
-                
-            // Update switch if it exists
-            if (themeSwitch) {
-                themeSwitch.checked = newTheme === 'dark';
-            }
-        });
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: #fff;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      z-index: 100;
+      transition: all 0.3s;
+      overflow-y: auto;
     }
     
-    if (themeSwitch) {
-        themeSwitch.addEventListener('change', function() {
-            const newTheme = this.checked ? 'dark' : 'light';
-            
-            document.body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            
-            // Update icon on theme switcher button
-            if (themeSwitcher) {
-                themeSwitcher.innerHTML = newTheme === 'dark' 
-                    ? '<i class="fas fa-sun"></i>' 
-                    : '<i class="fas fa-moon"></i>';
-            }
-        });
-    }
-}
-
-// Initialize chart download buttons
-function initChartDownloads() {
-    const downloadPNG = document.getElementById('downloadChartPNG');
-    const downloadPDF = document.getElementById('downloadChartPDF');
-    const refreshChart = document.getElementById('refreshChart');
-    
-    if (downloadPNG) {
-        downloadPNG.addEventListener('click', function(e) {
-            e.preventDefault();
-            const salesChart = document.getElementById('salesChart');
-            if (salesChart && window.Chart) {
-                const chartInstance = Chart.getChart(salesChart);
-                if (chartInstance) {
-                    const link = document.createElement('a');
-                    link.download = 'sales-chart.png';
-                    link.href = chartInstance.toBase64Image();
-                    link.click();
-                }
-            }
-        });
+    .sidebar-collapsed {
+      left: calc(var(--sidebar-width) * -1);
     }
     
-    if (downloadPDF) {
-        downloadPDF.addEventListener('click', function(e) {
-            e.preventDefault();
-            alert('PDF download functionality would be implemented with a PDF generation library');
-        });
+    .main-content {
+      margin-left: var(--sidebar-width);
+      padding: 20px;
+      transition: all 0.3s;
+      min-height: 100vh;
     }
     
-    if (refreshChart) {
-        refreshChart.addEventListener('click', function(e) {
-            e.preventDefault();
-            const salesChart = document.getElementById('salesChart');
-            if (salesChart && window.Chart) {
-                const chartInstance = Chart.getChart(salesChart);
-                if (chartInstance) {
-                    // Simulate data refresh
-                    const currentData = [...chartInstance.data.datasets[0].data];
-                    const newData = currentData.map(value => {
-                        const change = Math.floor(Math.random() * 20) - 10; // Random change between -10 and +10
-                        return Math.max(0, value + change); // Ensure value doesn't go below 0
-                    });
-                    
-                    chartInstance.data.datasets[0].data = newData;
-                    chartInstance.update();
-                    
-                    // Show toast notification
-                    showToast('Chart data refreshed successfully!', 'success');
-                }
-            }
-        });
-    }
-}
-
-// Initialize form validation
-function initFormValidation() {
-    const ledgerForm = document.getElementById('ledgerEntryForm');
-    
-    if (ledgerForm) {
-        ledgerForm.addEventListener('submit', function(e) {
-            if (!this.checkValidity()) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            
-            const debit = document.getElementById('transactionDebit');
-            const credit = document.getElementById('transactionCredit');
-            
-            if (debit && credit) {
-                if ((debit.value && credit.value) || (!debit.value && !credit.value)) {
-                    e.preventDefault();
-                    alert('Please provide either debit or credit amount, not both or none.');
-                }
-            }
-        });
-    }
-}
-
-// Show toast notification
-function showToast(message, type = 'info') {
-    // Check if toast container exists, if not create it
-    let toastContainer = document.querySelector('.toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-        document.body.appendChild(toastContainer);
+    .main-content-expanded {
+      margin-left: 0;
     }
     
-    // Create toast element
-    const toastId = 'toast-' + Date.now();
-    const toast = document.createElement('div');
-    toast.className = `toast align-items-center text-white bg-${type} border-0`;
-    toast.id = toastId;
-    toast.setAttribute('role', 'alert');
-    toast.setAttribute('aria-live', 'assertive');
-    toast.setAttribute('aria-atomic', 'true');
-    
-    toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">
-                ${message}
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-    `;
-    
-    // Add toast to container
-    toastContainer.appendChild(toast);
-    
-    // Initialize and show toast
-    if (typeof bootstrap !== 'undefined') {
-        const bsToast = new bootstrap.Toast(toast, {
-            autohide: true,
-            delay: 3000
-        });
-        bsToast.show();
-        
-        // Remove toast after it's hidden
-        toast.addEventListener('hidden.bs.toast', function() {
-            toast.remove();
-        });
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #e5e7eb;
     }
-}
-
-// Filter buttons for chart
-document.addEventListener('DOMContentLoaded', function() {
-    const filterButtons = document.querySelectorAll('.btn-filter');
     
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Remove active class from all buttons in the same group
-            const group = this.closest('.chart-filter');
-            if (group) {
-                group.querySelectorAll('.btn-filter').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-            }
-            
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            // Get filter type
-            const filterType = this.getAttribute('data-filter');
-            
-            // Update chart data based on filter type
-            updateChartData(filterType);
-        });
-    });
-});
-
-// Update chart data based on filter
-function updateChartData(filterType) {
-    const salesChart = document.getElementById('salesChart');
-    if (!salesChart || !window.Chart) return;
+    .sidebar-menu {
+      padding: 0;
+      list-style: none;
+      margin-bottom: 0;
+    }
     
-    const chartInstance = Chart.getChart(salesChart);
-    if (!chartInstance) return;
+    .sidebar-menu li a {
+      display: flex;
+      align-items: center;
+      padding: 12px 20px;
+      color: #4b5563;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
     
-    // Example data for different time periods
-    const chartData = {
-        yearly: {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-            data: [65, 85, 80, 120, 150, 110, 90, 70, 85, 120, 130, 170]
-        },
-        monthly: {
-            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-            data: [42, 55, 48, 60]
-        },
-        weekly: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-            data: [12, 19, 15, 17, 22, 24, 18]
-        },
-        daily: {
-            labels: ['12AM', '4AM', '8AM', '12PM', '4PM', '8PM'],
-            data: [5, 3, 8, 15, 12, 7]
-        }
+    .sidebar-menu li a:hover {
+      background-color: #f9fafb;
+      color: var(--primary-color);
+    }
+    
+    .sidebar-menu li a.active {
+      background-color: #f3f4f6;
+      color: var(--primary-color);
+      border-left: 3px solid var(--primary-color);
+    }
+    
+    .sidebar-menu li a i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+    
+    .navbar {
+      background-color: #fff;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+    
+    .card {
+      border: none;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      margin-bottom: 20px;
+      height: 100%;
+    }
+    
+    .card-header {
+      background-color: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 15px 20px;
+    }
+    
+    .card-body {
+      padding: 20px;
+      overflow: auto;
+    }
+    
+    .stats-card {
+      border-radius: 0.5rem;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      transition: transform 0.3s;
+      height: 100%;
+    }
+    
+    .stats-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .stats-card .icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+    
+    .stats-card .icon.primary {
+      background-color: rgba(79, 70, 229, 0.1);
+      color: var(--primary-color);
+    }
+    
+    .stats-card .icon.success {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--secondary-color);
+    }
+    
+    .stats-card .icon.warning {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: var(--warning-color);
+    }
+    
+    .stats-card .icon.info {
+      background-color: rgba(14, 165, 233, 0.1);
+      color: var(--info-color);
+    }
+    
+    .stats-card h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    
+    .stats-card p {
+      color: #6b7280;
+      margin-bottom: 0;
+    }
+    
+    .stats-card .change {
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      margin-top: 5px;
+    }
+    
+    .stats-card .change.positive {
+      color: var(--secondary-color);
+    }
+    
+    .stats-card .change.negative {
+      color: var(--danger-color);
+    }
+    
+    .table th {
+      font-weight: 600;
+      color: #4b5563;
+    }
+    
+    .table td {
+      vertical-align: middle;
+    }
+    
+    .status-badge {
+      padding: 5px 10px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .status-badge.delivered {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--secondary-color);
+    }
+    
+    .status-badge.processing {
+      background-color: rgba(14, 165, 233, 0.1);
+      color: var(--info-color);
+    }
+    
+    .status-badge.shipped {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: var(--warning-color);
+    }
+    
+    .status-badge.cancelled {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: var(--danger-color);
+    }
+    
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 15px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+    
+    .activity-item .icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+    
+    .activity-item .icon.order {
+      background-color: rgba(79, 70, 229, 0.1);
+      color: var(--primary-color);
+    }
+    
+    .activity-item .icon.user {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--secondary-color);
+    }
+    
+    .activity-item .content {
+      flex-grow: 1;
+    }
+    
+    .activity-item .content p {
+      margin-bottom: 5px;
+    }
+    
+    .activity-item .content .time {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+    
+    .product-item {
+      display: flex;
+      align-items: center;
+    }
+    
+    .product-item img {
+      width: 40px;
+      height: 40px;
+      border-radius: 0.25rem;
+      object-fit: cover;
+      margin-right: 10px;
+    }
+    
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+    
+    .data-refresh-indicator {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin-left: 10px;
+    }
+    
+    .data-refresh-indicator i {
+      margin-right: 5px;
+    }
+    
+    .refresh-btn {
+      background: none;
+      border: none;
+      color: var(--primary-color);
+      cursor: pointer;
+      padding: 0;
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+    }
+    
+    .refresh-btn i {
+      margin-right: 5px;
+    }
+    
+    .refresh-btn:hover {
+      text-decoration: underline;
+    }
+    
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      border-radius: 0.5rem;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(79, 70, 229, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--primary-color);
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .error-message {
+      color: var(--danger-color);
+      font-size: 0.875rem;
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .error-message i {
+      margin-right: 5px;
+    }
+    
+    .chart-placeholder {
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f9fafb;
+      border-radius: 0.5rem;
+      color: #6b7280;
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 1199.98px) {
+      .stats-card h3 {
+        font-size: 1.25rem;
+      }
+    }
+    
+    @media (max-width: 991.98px) {
+      .sidebar {
+        left: calc(var(--sidebar-width) * -1);
+      }
+      
+      .sidebar.show {
+        left: 0;
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .chart-container {
+        height: 250px;
+      }
+    }
+    
+    @media (max-width: 767.98px) {
+      .card-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+      }
+      
+      .card-header .d-flex {
+        margin-top: 10px;
+        width: 100%;
+      }
+      
+      .chart-container {
+        height: 200px;
+      }
+      
+      .stats-card {
+        margin-bottom: 15px;
+      }
+    }
+    
+    @media (max-width: 575.98px) {
+      .main-content {
+        padding: 15px;
+      }
+      
+      .navbar .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+      }
+      
+      .table-responsive {
+        font-size: 0.875rem;
+      }
+      
+      .chart-container {
+        height: 180px;
+      }
+    }
+  </style>
+  
+  <!-- Make chart data available to the page -->
+  <script>
+    window.dashboardData = {
+      monthlySalesData: <%- JSON.stringify(monthlySalesData || []) %>,
+      weeklySalesData: <%- JSON.stringify(weeklySalesData || []) %>,
+      dailySalesData: <%- JSON.stringify(dailySalesData || []) %>,
+      paymentMethodDistribution: <%- JSON.stringify(paymentMethodDistribution || []) %>,
+      orderStatusDistribution: <%- JSON.stringify(orderStatusDistribution || []) %>,
+      lastUpdated: "<%= new Date().toISOString() %>"
     };
-    
-    // Update chart data
-    chartInstance.data.labels = chartData[filterType].labels;
-    chartInstance.data.datasets[0].data = chartData[filterType].data;
-    
-    // Update chart type based on filter
-    if (filterType === 'yearly' || filterType === 'monthly') {
-        chartInstance.config.type = 'bar';
-        chartInstance.data.datasets[0].backgroundColor = 'rgba(67, 97, 238, 0.6)';
-        chartInstance.data.datasets[0].borderColor = 'rgba(67, 97, 238, 1)';
-        chartInstance.data.datasets[0].borderRadius = 5;
-        chartInstance.data.datasets[0].tension = undefined;
-        chartInstance.data.datasets[0].fill = undefined;
-    } else {
-        chartInstance.config.type = 'line';
-        chartInstance.data.datasets[0].backgroundColor = 'rgba(67, 97, 238, 0.2)';
-        chartInstance.data.datasets[0].borderColor = 'rgba(67, 97, 238, 1)';
-        chartInstance.data.datasets[0].tension = 0.4;
-        chartInstance.data.datasets[0].fill = true;
-    }
-    
-    // Update chart
-    chartInstance.update();
-    
-    // Show toast notification
-    showToast(`Chart updated to show ${filterType} data`, 'info');
-}
-    </script>
+  </script>
+  
+  
+  
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="d-flex align-items-center">
+        <i class="fas fa-shopping-bag fs-4 text-primary me-2"></i>
+        <h5 class="mb-0">Admin Panel</h5>
+      </div>
+    </div>
+    <ul class="sidebar-menu mt-4">
+      <li>
+        <a href="/admin" class="active">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li>
+        <a href="/admin/products">
+          <i class="fas fa-box"></i>
+          <span>Products</span>
+        </a>
+      </li>
+      <li>
+        <a href="/admin/categories">
+          <i class="fas fa-tags"></i>
+          <span>Categories</span>
+        </a>
+      </li>
+      <li>
+        <a href="/admin/orders">
+          <i class="fas fa-shopping-cart"></i>
+          <span>Orders</span>
+        </a>
+      </li>
+      <li>
+        <a href="/admin/customers">
+          <i class="fas fa-users"></i>
+          <span>Customers</span>
+        </a>
+      </li>
+      <li>
+        <a href="/admin/coupons">
+          <i class="fas fa-ticket-alt"></i>
+          <span>Coupons</span>
+        </a>
+      </li>
+      <li>
+        <a href="/admin/reports">
+          <i class="fas fa-chart-bar"></i>
+          <span>Reports</span>
+        </a>
+      </li>
+      <li>
+        <a href="/admin/settings">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content" id="main-content">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg mb-4">
+      <div class="container-fluid">
+        <button class="btn btn-light" id="sidebar-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h4 class="mb-0 ms-3 d-none d-sm-block">Dashboard</h4>
+        <h5 class="mb-0 ms-2 d-block d-sm-none">Dashboard</h5>
+        <div class="ms-auto d-flex align-items-center">
+          <div class="data-refresh-indicator me-3 d-none d-md-flex" id="last-updated">
+            <i class="fas fa-clock"></i>
+            <span>Updated: Just now</span>
+          </div>
+          <button class="refresh-btn me-3" id="refresh-data">
+            <i class="fas fa-sync-alt"></i>
+            <span class="d-none d-md-inline">Refresh Data</span>
+          </button>
+          <div class="dropdown">
+            <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-user-circle me-1"></i>
+              <span class="d-none d-md-inline"><%= admin.fullname %></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+              <li><a class="dropdown-item" href="/admin/profile">Profile</a></li>
+              <li><a class="dropdown-item" href="/admin/settings">Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="/admin/logout">Logout</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4" id="stats-container">
+      <div class="col-sm-6 col-lg-3">
+        <div class="stats-card" id="revenue-card">
+          <div class="d-flex justify-content-between">
+            <div>
+              <div class="icon primary">
+                <i class="fas fa-rupee-sign"></i>
+              </div>
+              <h3 id="total-revenue">₹<%= totalRevenue.toLocaleString('en-IN') %></h3>
+              <p>Total Revenue</p>
+              <div class="change <%= revenueChange >= 0 ? 'positive' : 'negative' %>" id="revenue-change">
+                <i class="fas <%= revenueChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' %> me-1"></i>
+                <span><%= Math.abs(revenueChange).toFixed(1) %>% from last month</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="stats-card" id="orders-card">
+          <div class="d-flex justify-content-between">
+            <div>
+              <div class="icon success">
+                <i class="fas fa-shopping-cart"></i>
+              </div>
+              <h3 id="total-orders"><%= totalOrders.toLocaleString('en-IN') %></h3>
+              <p>Total Orders</p>
+              <div class="change <%= orderChange >= 0 ? 'positive' : 'negative' %>" id="order-change">
+                <i class="fas <%= orderChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' %> me-1"></i>
+                <span><%= Math.abs(orderChange).toFixed(1) %>% from last month</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="stats-card" id="customers-card">
+          <div class="d-flex justify-content-between">
+            <div>
+              <div class="icon warning">
+                <i class="fas fa-users"></i>
+              </div>
+              <h3 id="total-customers"><%= customerCount.toLocaleString('en-IN') %></h3>
+              <p>Total Customers</p>
+              <div class="change <%= customerChange >= 0 ? 'positive' : 'negative' %>" id="customer-change">
+                <i class="fas <%= customerChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' %> me-1"></i>
+                <span><%= Math.abs(customerChange).toFixed(1) %>% from last month</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="stats-card" id="products-card">
+          <div class="d-flex justify-content-between">
+            <div>
+              <div class="icon info">
+                <i class="fas fa-box"></i>
+              </div>
+              <h3 id="total-products"><%= productCount.toLocaleString('en-IN') %></h3>
+              <p>Total Products</p>
+              <div class="change <%= productChange >= 0 ? 'positive' : 'negative' %>" id="product-change">
+                <i class="fas <%= productChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' %> me-1"></i>
+                <span><%= Math.abs(productChange).toFixed(1) %>% from last month</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row g-3 mb-4">
+      <!-- Revenue Distribution Chart -->
+      <div class="col-lg-6">
+        <div class="card h-100" id="distribution-chart-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Revenue Distribution</h5>
+            <select class="form-select form-select-sm distribution-chart-type" style="width: auto;">
+              <option value="payment">By Payment Method</option>
+              <option value="channel">By Channel</option>
+            </select>
+          </div>
+          <div class="card-body position-relative">
+            <div class="chart-container">
+              <canvas id="distributionChart"></canvas>
+            </div>
+            <div class="loading-overlay" id="distribution-chart-loading" style="display: none;">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales Overview Chart -->
+      <div class="col-lg-6">
+        <div class="card h-100" id="sales-chart-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Sales Overview</h5>
+            <div class="d-flex gap-2">
+              <select class="form-select form-select-sm sales-chart-type">
+                <option value="revenue">Revenue</option>
+                <option value="orders">Orders</option>
+              </select>
+              <select class="form-select form-select-sm sales-chart-period">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly" selected>Monthly</option>
+                <option value="yearly">Yearly</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body position-relative">
+            <div class="chart-container">
+              <canvas id="salesChart"></canvas>
+            </div>
+            <div class="loading-overlay" id="sales-chart-loading" style="display: none;">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Orders and Top Products -->
+    <div class="row g-3 mb-4">
+      <!-- Recent Orders -->
+      <div class="col-lg-6">
+        <div class="card h-100" id="recent-orders-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Recent Orders</h5>
+            <a href="/admin/orders" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+          <div class="card-body position-relative">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-orders-table">
+                  <% recentOrders.forEach(order => { %>
+                    <tr>
+                      <td><a href="/admin/orders/<%= order._id %>" class="text-decoration-none"><%= order.orderNumber %></a></td>
+                      <td><%= order.customer.name %></td>
+                      <td><%= moment(order.createdAt).format('MMM DD, YYYY') %></td>
+                      <td>₹<%= order.totalAmount.toLocaleString('en-IN') %></td>
+                      <td>
+                        <span class="status-badge <%= order.status.toLowerCase() %>">
+                          <%= order.status %>
+                        </span>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+            <div class="loading-overlay" id="recent-orders-loading" style="display: none;">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Products -->
+      <div class="col-lg-6">
+        <div class="card h-100" id="top-products-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Top Selling Products</h5>
+            <a href="/admin/products" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+          <div class="card-body position-relative">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Sold</th>
+                    <th>Revenue</th>
+                  </tr>
+                </thead>
+                <tbody id="top-products-table">
+                  <% topProducts.forEach(product => { %>
+                    <tr>
+                      <td>
+                        <div class="product-item">
+                          <img src="<%= product.image %>" alt="<%= product.name %>" onerror="this.src='/images/placeholder-product.jpg'">
+                          <span><%= product.name %></span>
+                        </div>
+                      </td>
+                      <td><%= product.soldCount %></td>
+                      <td>₹<%= product.revenue.toLocaleString('en-IN') %></td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+            <div class="loading-overlay" id="top-products-loading" style="display: none;">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Categories and Customer Activities -->
+    <div class="row g-3 mb-4">
+      <!-- Top Categories -->
+      <div class="col-lg-6">
+        <div class="card h-100" id="top-categories-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Top Categories</h5>
+            <a href="/admin/categories" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+          <div class="card-body position-relative">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Category</th>
+                    <th>Sold</th>
+                    <th>Revenue</th>
+                  </tr>
+                </thead>
+                <tbody id="top-categories-table">
+                  <% topCategories.forEach(category => { %>
+                    <tr>
+                      <td>
+                        <div class="product-item">
+                          <img src="<%= category.image %>" alt="<%= category.name %>" onerror="this.src='/images/placeholder-category.jpg'">
+                          <span><%= category.name %></span>
+                        </div>
+                      </td>
+                      <td><%= category.soldCount %></td>
+                      <td>₹<%= category.revenue.toLocaleString('en-IN') %></td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+            <div class="loading-overlay" id="top-categories-loading" style="display: none;">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Customer Activities -->
+      <div class="col-lg-6">
+        <div class="card h-100" id="customer-activities-card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Recent Activities</h5>
+          </div>
+          <div class="card-body position-relative">
+            <div id="activities-container">
+              <% customerActivities.forEach(activity => { %>
+                <div class="activity-item">
+                  <div class="icon <%= activity.type %>">
+                    <i class="<%= activity.icon %>"></i>
+                  </div>
+                  <div class="content">
+                    <p><%= activity.message %></p>
+                    <p class="time"><%= activity.timeAgo %></p>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+            <div class="loading-overlay" id="activities-loading" style="display: none;">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ledger Entries -->
+    <div class="row g-3 mb-4">
+      <div class="col-12">
+        <div class="card" id="ledger-entries-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Recent Ledger Entries</h5>
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addLedgerModal">
+              <i class="fas fa-plus me-1"></i> Add Entry
+            </button>
+          </div>
+          <div class="card-body position-relative">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Transaction ID</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                    <th>Balance</th>
+                  </tr>
+                </thead>
+                <tbody id="ledger-entries-table">
+                  <% recentLedgerEntries.forEach(entry => { %>
+                    <tr>
+                      <td><%= moment(entry.date).format('MMM DD, YYYY') %></td>
+                      <td><%= entry.transactionId %></td>
+                      <td><%= entry.description %></td>
+                      <td><%= entry.category %></td>
+                      <td class="<%= entry.debit > 0 ? 'text-danger' : '' %>">
+                        <%= entry.debit > 0 ? '₹' + entry.debit.toLocaleString('en-IN') : '-' %>
+                      </td>
+                      <td class="<%= entry.credit > 0 ? 'text-success' : '' %>">
+                        <%= entry.credit > 0 ? '₹' + entry.credit.toLocaleString('en-IN') : '-' %>
+                      </td>
+                      <td class="<%= entry.balance >= 0 ? 'text-success' : 'text-danger' %>">
+                        ₹<%= entry.balance.toLocaleString('en-IN') %>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+            <div class="loading-overlay" id="ledger-entries-loading" style="display: none;">
+              <div class="spinner"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Ledger Entry Modal -->
+  <div class="modal fade" id="addLedgerModal" tabindex="-1" aria-labelledby="addLedgerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addLedgerModalLabel">Add Ledger Entry</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="/admin/ledger/add" method="POST" id="add-ledger-form">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="date" class="form-label">Date</label>
+              <input type="date" class="form-control" id="date" name="date" value="<%= new Date().toISOString().split('T')[0] %>" required>
+            </div>
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <input type="text" class="form-control" id="description" name="description" required>
+            </div>
+            <div class="mb-3">
+              <label for="category" class="form-label">Category</label>
+              <select class="form-select" id="category" name="category" required>
+                <option value="Income">Income</option>
+                <option value="Expenses">Expenses</option>
+                <option value="Investment">Investment</option>
+                <option value="Transfer">Transfer</option>
+              </select>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="debit" class="form-label">Debit</label>
+                <input type="number" class="form-control" id="debit" name="debit" min="0" step="0.01" placeholder="0.00">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="credit" class="form-label">Credit</label>
+                <input type="number" class="form-control" id="credit" name="credit" min="0" step="0.01" placeholder="0.00">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="notes" class="form-label">Notes</label>
+              <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="save-ledger-btn">Save Entry</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Toast -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header bg-danger text-white">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <strong class="me-auto">Error</strong>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body" id="error-toast-message">
+        An error occurred. Please try again.
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Custom JavaScript -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize toast
+      const errorToast = new bootstrap.Toast(document.getElementById('errorToast'));
+      
+      // Sidebar Toggle
+      const sidebarToggle = document.getElementById('sidebar-toggle');
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('main-content');
+      
+      sidebarToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('show');
+      });
+      
+      // Check screen size on load and resize
+      function checkScreenSize() {
+        if (window.innerWidth < 992) {
+          sidebar.classList.remove('show');
+          mainContent.classList.add('main-content-expanded');
+        } else {
+          sidebar.classList.add('show');
+          mainContent.classList.remove('main-content-expanded');
+        }
+      }
+      
+      checkScreenSize();
+      window.addEventListener('resize', checkScreenSize);
+
+      // Chart color palette
+      const chartColors = [
+        'rgba(59, 130, 246, 0.8)', // Blue
+        'rgba(16, 185, 129, 0.8)', // Green
+        'rgba(249, 115, 22, 0.8)', // Orange
+        'rgba(139, 92, 246, 0.8)', // Purple
+        'rgba(236, 72, 153, 0.8)', // Pink
+        'rgba(14, 165, 233, 0.8)', // Sky
+        'rgba(168, 85, 247, 0.8)', // Violet
+        'rgba(251, 146, 60, 0.8)'  // Amber
+      ];
+
+      // Chart border colors (darker versions of the fill colors)
+      const chartBorderColors = [
+        'rgb(59, 130, 246)', // Blue
+        'rgb(16, 185, 129)', // Green
+        'rgb(249, 115, 22)', // Orange
+        'rgb(139, 92, 246)', // Purple
+        'rgb(236, 72, 153)', // Pink
+        'rgb(14, 165, 233)', // Sky
+        'rgb(168, 85, 247)', // Violet
+        'rgb(251, 146, 60)'  // Amber
+      ];
+
+      // Format currency function
+      function formatCurrency(value) {
+        return new Intl.NumberFormat('en-IN', {
+          style: 'currency',
+          currency: 'INR',
+          maximumFractionDigits: 0
+        }).format(value);
+      }
+
+      // Format date function
+      function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-IN', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      }
+
+      // Format time ago function
+      function timeAgo(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+        
+        let interval = Math.floor(seconds / 31536000);
+        if (interval >= 1) {
+          return interval + ' year' + (interval === 1 ? '' : 's') + ' ago';
+        }
+        
+        interval = Math.floor(seconds / 2592000);
+        if (interval >= 1) {
+          return interval + ' month' + (interval === 1 ? '' : 's') + ' ago';
+        }
+        
+        interval = Math.floor(seconds / 86400);
+        if (interval >= 1) {
+          return interval + ' day' + (interval === 1 ? '' : 's') + ' ago';
+        }
+        
+        interval = Math.floor(seconds / 3600);
+        if (interval >= 1) {
+          return interval + ' hour' + (interval === 1 ? '' : 's') + ' ago';
+        }
+        
+        interval = Math.floor(seconds / 60);
+        if (interval >= 1) {
+          return interval + ' minute' + (interval === 1 ? '' : 's') + ' ago';
+        }
+        
+        return Math.floor(seconds) + ' second' + (seconds === 1 ? '' : 's') + ' ago';
+      }
+
+      // Update last updated time
+      function updateLastUpdatedTime() {
+        const lastUpdatedElement = document.getElementById('last-updated');
+        if (lastUpdatedElement && window.dashboardData.lastUpdated) {
+          lastUpdatedElement.innerHTML = `<i class="fas fa-clock"></i> <span>Updated: ${timeAgo(window.dashboardData.lastUpdated)}</span>`;
+        }
+      }
+
+      // Initialize Distribution Chart (Donut Chart)
+      let distributionChart;
+      function initDistributionChart() {
+        const ctx = document.getElementById('distributionChart').getContext('2d');
+        
+        // Show loading
+        document.getElementById('distribution-chart-loading').style.display = 'flex';
+        
+        // Check if we have payment method distribution data
+        if (!window.dashboardData.paymentMethodDistribution || window.dashboardData.paymentMethodDistribution.length === 0) {
+          // Create fallback data if no data is available
+          window.dashboardData.paymentMethodDistribution = [
+            { _id: 'Online Payment', revenue: 50000, count: 100 },
+            { _id: 'Cash on Delivery', revenue: 30000, count: 60 },
+            { _id: 'Wallet', revenue: 20000, count: 40 }
+          ];
+        }
+        
+        // Prepare data for the chart
+        const labels = window.dashboardData.paymentMethodDistribution.map(item => item._id);
+        const data = window.dashboardData.paymentMethodDistribution.map(item => item.revenue);
+        
+        // Destroy existing chart if it exists
+        if (distributionChart) {
+          distributionChart.destroy();
+        }
+        
+        // Create the chart
+        distributionChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: data,
+              backgroundColor: chartColors.slice(0, data.length),
+              borderColor: chartBorderColors.slice(0, data.length),
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  boxWidth: 12,
+                  padding: 15,
+                  font: {
+                    size: 11
+                  }
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.label || '';
+                    const value = context.raw || 0;
+                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                    const percentage = Math.round((value / total) * 100);
+                    return `${label}: ${formatCurrency(value)} (${percentage}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+        
+        // Hide loading
+        document.getElementById('distribution-chart-loading').style.display = 'none';
+      }
+
+      // Initialize Sales Chart (Line Chart)
+      let salesChart;
+      function initSalesChart(period = 'monthly', type = 'revenue') {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        
+        // Show loading
+        document.getElementById('sales-chart-loading').style.display = 'flex';
+        
+        // Determine which data to use based on period
+        let chartData;
+        let labels;
+        
+        switch(period) {
+          case 'daily':
+            chartData = window.dashboardData.dailySalesData || [];
+            break;
+          case 'weekly':
+            chartData = window.dashboardData.weeklySalesData || [];
+            break;
+          case 'yearly':
+            chartData = window.dashboardData.yearlySalesData || [];
+            break;
+          case 'monthly':
+          default:
+            chartData = window.dashboardData.monthlySalesData || [];
+            break;
+        }
+        
+        // Create fallback data if no data is available
+        if (!chartData || chartData.length === 0) {
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          chartData = months.map((month, index) => ({
+            _id: `2023-${(index + 1).toString().padStart(2, '0')}`,
+            revenue: Math.floor(Math.random() * 50000) + 10000,
+            count: Math.floor(Math.random() * 100) + 20,
+            label: month
+          }));
+        }
+        
+        // Format labels based on period
+        if (period === 'monthly') {
+          labels = chartData.map(item => {
+            const [year, month] = item._id.split('-');
+            return `${new Date(parseInt(year), parseInt(month) - 1).toLocaleString('default', { month: 'short' })} ${year}`;
+          });
+        } else if (period === 'weekly') {
+          labels = chartData.map(item => item.label || item._id);
+        } else if (period === 'daily') {
+          labels = chartData.map(item => {
+            const date = new Date(item._id);
+            return date.toLocaleString('default', { weekday: 'short', day: 'numeric' });
+          });
+        } else {
+          labels = chartData.map(item => item._id);
+        }
+        
+        // Determine which values to use based on type
+        const values = chartData.map(item => type === 'revenue' ? item.revenue : item.count);
+        
+        // Destroy existing chart if it exists
+        if (salesChart) {
+          salesChart.destroy();
+        }
+        
+        // Create the chart
+        salesChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: type === 'revenue' ? 'Revenue' : 'Orders',
+              data: values,
+              backgroundColor: type === 'revenue' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+              borderColor: type === 'revenue' ? 'rgb(59, 130, 246)' : 'rgb(16, 185, 129)',
+              borderWidth: 2,
+              tension: 0.4,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function(value) {
+                    return type === 'revenue' ? formatCurrency(value) : value;
+                  },
+                  font: {
+                    size: 10
+                  }
+                },
+                grid: {
+                  color: 'rgba(0, 0, 0, 0.05)'
+                }
+              },
+              x: {
+                ticks: {
+                  font: {
+                    size: 10
+                  },
+                  maxRotation: 45,
+                  minRotation: 45
+                },
+                grid: {
+                  display: false
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                  boxWidth: 12,
+                  padding: 15,
+                  font: {
+                    size: 11
+                  }
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const label = context.dataset.label || '';
+                    const value = context.raw;
+                    return type === 'revenue' 
+                      ? `${label}: ${formatCurrency(value)}` 
+                      : `${label}: ${value}`;
+                  }
+                }
+              }
+            }
+          }
+        });
+        
+        // Hide loading
+        document.getElementById('sales-chart-loading').style.display = 'none';
+      }
+
+      // Fetch dashboard data from API
+      async function fetchDashboardData() {
+        try {
+          // Show loading indicators
+          document.getElementById('stats-container').querySelectorAll('.stats-card').forEach(card => {
+            card.classList.add('opacity-50');
+          });
+          document.getElementById('distribution-chart-loading').style.display = 'flex';
+          document.getElementById('sales-chart-loading').style.display = 'flex';
+          document.getElementById('recent-orders-loading').style.display = 'flex';
+          document.getElementById('top-products-loading').style.display = 'flex';
+          document.getElementById('top-categories-loading').style.display = 'flex';
+          document.getElementById('activities-loading').style.display = 'flex';
+          document.getElementById('ledger-entries-loading').style.display = 'flex';
+          
+          // Fetch data from API
+          const response = await fetch('/api/admin/dashboard-data');
+          
+          if (!response.ok) {
+            throw new Error('Failed to fetch dashboard data');
+          }
+          
+          const data = await response.json();
+          
+          // Update global data
+          window.dashboardData = {
+            ...data,
+            lastUpdated: new Date().toISOString()
+          };
+          
+          // Update stats cards
+          document.getElementById('total-revenue').textContent = formatCurrency(data.totalRevenue);
+          document.getElementById('total-orders').textContent = data.totalOrders.toLocaleString('en-IN');
+          document.getElementById('total-customers').textContent = data.customerCount.toLocaleString('en-IN');
+          document.getElementById('total-products').textContent = data.productCount.toLocaleString('en-IN');
+          
+          // Update revenue change indicator
+          const revenueChangeElement = document.getElementById('revenue-change');
+          revenueChangeElement.className = `change ${data.revenueChange >= 0 ? 'positive' : 'negative'}`;
+          revenueChangeElement.innerHTML = `<i class="fas ${data.revenueChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'} me-1"></i>
+                                           <span>${Math.abs(data.revenueChange).toFixed(1)}% from last month</span>`;
+          
+          // Update order change indicator
+          const orderChangeElement = document.getElementById('order-change');
+          orderChangeElement.className = `change ${data.orderChange >= 0 ? 'positive' : 'negative'}`;
+          orderChangeElement.innerHTML = `<i class="fas ${data.orderChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'} me-1"></i>
+                                         <span>${Math.abs(data.orderChange).toFixed(1)}% from last month</span>`;
+          
+          // Update customer change indicator
+          const customerChangeElement = document.getElementById('customer-change');
+          customerChangeElement.className = `change ${data.customerChange >= 0 ? 'positive' : 'negative'}`;
+          customerChangeElement.innerHTML = `<i class="fas ${data.customerChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'} me-1"></i>
+                                            <span>${Math.abs(data.customerChange).toFixed(1)}% from last month</span>`;
+          
+          // Update product change indicator
+          const productChangeElement = document.getElementById('product-change');
+          productChangeElement.className = `change ${data.productChange >= 0 ? 'positive' : 'negative'}`;
+          productChangeElement.innerHTML = `<i class="fas ${data.productChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'} me-1"></i>
+                                           <span>${Math.abs(data.productChange).toFixed(1)}% from last month</span>`;
+          
+          // Update recent orders table
+          const recentOrdersTable = document.getElementById('recent-orders-table');
+          recentOrdersTable.innerHTML = '';
+          
+          data.recentOrders.forEach(order => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td><a href="/admin/orders/${order._id}" class="text-decoration-none">${order.orderNumber}</a></td>
+              <td>${order.customer.name}</td>
+              <td>${formatDate(order.createdAt)}</td>
+              <td>₹${order.totalAmount.toLocaleString('en-IN')}</td>
+              <td>
+                <span class="status-badge ${order.status.toLowerCase()}">
+                  ${order.status}
+                </span>
+              </td>
+            `;
+            recentOrdersTable.appendChild(row);
+          });
+          
+          // Update top products table
+          const topProductsTable = document.getElementById('top-products-table');
+          topProductsTable.innerHTML = '';
+          
+          data.topProducts.forEach(product => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>
+                <div class="product-item">
+                  <img src="${product.image}" alt="${product.name}" onerror="this.src='/images/placeholder-product.jpg'">
+                  <span>${product.name}</span>
+                </div>
+              </td>
+              <td>${product.soldCount}</td>
+              <td>₹${product.revenue.toLocaleString('en-IN')}</td>
+            `;
+            topProductsTable.appendChild(row);
+          });
+          
+          // Update top categories table
+          const topCategoriesTable = document.getElementById('top-categories-table');
+          topCategoriesTable.innerHTML = '';
+          
+          data.topCategories.forEach(category => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>
+                <div class="product-item">
+                  <img src="${category.image}" alt="${category.name}" onerror="this.src='/images/placeholder-category.jpg'">
+                  <span>${category.name}</span>
+                </div>
+              </td>
+              <td>${category.soldCount}</td>
+              <td>₹${category.revenue.toLocaleString('en-IN')}</td>
+            `;
+            topCategoriesTable.appendChild(row);
+          });
+          
+          // Update activities container
+          const activitiesContainer = document.getElementById('activities-container');
+          activitiesContainer.innerHTML = '';
+          
+          data.customerActivities.forEach(activity => {
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-item';
+            activityItem.innerHTML = `
+              <div class="icon ${activity.type}">
+                <i class="${activity.icon}"></i>
+              </div>
+              <div class="content">
+                <p>${activity.message}</p>
+                <p class="time">${activity.timeAgo}</p>
+              </div>
+            `;
+            activitiesContainer.appendChild(activityItem);
+          });
+          
+          // Update ledger entries table
+          const ledgerEntriesTable = document.getElementById('ledger-entries-table');
+          ledgerEntriesTable.innerHTML = '';
+          
+          data.recentLedgerEntries.forEach(entry => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${formatDate(entry.date)}</td>
+              <td>${entry.transactionId}</td>
+              <td>${entry.description}</td>
+              <td>${entry.category}</td>
+              <td class="${entry.debit > 0 ? 'text-danger' : ''}">
+                ${entry.debit > 0 ? '₹' + entry.debit.toLocaleString('en-IN') : '-'}
+              </td>
+              <td class="${entry.credit > 0 ? 'text-success' : ''}">
+                ${entry.credit > 0 ? '₹' + entry.credit.toLocaleString('en-IN') : '-'}
+              </td>
+              <td class="${entry.balance >= 0 ? 'text-success' : 'text-danger'}">
+                ₹${entry.balance.toLocaleString('en-IN')}
+              </td>
+            `;
+            ledgerEntriesTable.appendChild(row);
+          });
+          
+          // Update charts
+          initDistributionChart();
+          initSalesChart(
+            document.querySelector('.sales-chart-period').value,
+            document.querySelector('.sales-chart-type').value
+          );
+          
+          // Update last updated time
+          updateLastUpdatedTime();
+          
+          // Hide loading indicators
+          document.getElementById('stats-container').querySelectorAll('.stats-card').forEach(card => {
+            card.classList.remove('opacity-50');
+          });
+          document.getElementById('distribution-chart-loading').style.display = 'none';
+          document.getElementById('sales-chart-loading').style.display = 'none';
+          document.getElementById('recent-orders-loading').style.display = 'none';
+          document.getElementById('top-products-loading').style.display = 'none';
+          document.getElementById('top-categories-loading').style.display = 'none';
+          document.getElementById('activities-loading').style.display = 'none';
+          document.getElementById('ledger-entries-loading').style.display = 'none';
+          
+        } catch (error) {
+          console.error('Error fetching dashboard data:', error);
+          
+          // Show error toast
+          document.getElementById('error-toast-message').textContent = 'Failed to fetch dashboard data. Please try again.';
+          errorToast.show();
+          
+          // Hide loading indicators
+          document.getElementById('stats-container').querySelectorAll('.stats-card').forEach(card => {
+            card.classList.remove('opacity-50');
+          });
+          document.getElementById('distribution-chart-loading').style.display = 'none';
+          document.getElementById('sales-chart-loading').style.display = 'none';
+          document.getElementById('recent-orders-loading').style.display = 'none';
+          document.getElementById('top-products-loading').style.display = 'none';
+          document.getElementById('top-categories-loading').style.display = 'none';
+          document.getElementById('activities-loading').style.display = 'none';
+          document.getElementById('ledger-entries-loading').style.display = 'none';
+        }
+      }
+
+      // Initialize charts
+      initDistributionChart();
+      initSalesChart();
+      updateLastUpdatedTime();
+
+      // Add event listeners for chart controls
+      document.querySelector('.distribution-chart-type').addEventListener('change', function(e) {
+        // This would update the distribution chart based on selection
+        // For now, we'll just reinitialize with the same data
+        if (distributionChart) {
+          distributionChart.destroy();
+        }
+        initDistributionChart();
+      });
+
+      document.querySelector('.sales-chart-type').addEventListener('change', function(e) {
+        initSalesChart(
+          document.querySelector('.sales-chart-period').value,
+          e.target.value
+        );
+      });
+
+      document.querySelector('.sales-chart-period').addEventListener('change', function(e) {
+        initSalesChart(
+          e.target.value,
+          document.querySelector('.sales-chart-type').value
+        );
+      });
+
+      // Add event listener for refresh button
+      document.getElementById('refresh-data').addEventListener('click', function() {
+        fetchDashboardData();
+      });
+
+      // Add event listener for add ledger form
+      document.getElementById('add-ledger-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        try {
+          // Show loading
+          const saveButton = document.getElementById('save-ledger-btn');
+          saveButton.disabled = true;
+          saveButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+          
+          // Get form data
+          const formData = new FormData(this);
+          const formObject = Object.fromEntries(formData.entries());
+          
+          // Send data to server
+          const response = await fetch('/admin/ledger/add', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formObject)
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to add ledger entry');
+          }
+          
+          // Close modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('addLedgerModal'));
+          modal.hide();
+          
+          // Reset form
+          this.reset();
+          
+          // Refresh dashboard data
+          fetchDashboardData();
+          
+          // Enable save button
+          saveButton.disabled = false;
+          saveButton.innerHTML = 'Save Entry';
+          
+        } catch (error) {
+          console.error('Error adding ledger entry:', error);
+          
+          // Show error toast
+          document.getElementById('error-toast-message').textContent = 'Failed to add ledger entry. Please try again.';
+          errorToast.show();
+          
+          // Enable save button
+          const saveButton = document.getElementById('save-ledger-btn');
+          saveButton.disabled = false;
+          saveButton.innerHTML = 'Save Entry';
+        }
+      });
+
+      // Set up auto-refresh interval (every 5 minutes)
+      setInterval(function() {
+        fetchDashboardData();
+      }, 5 * 60 * 1000);
+
+      // Initial data fetch
+      // Uncomment this line to fetch data on page load
+      // fetchDashboardData();
+    });
+  </script>
 </body>
 </html>

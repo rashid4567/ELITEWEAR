@@ -13,6 +13,7 @@ const variantSchema = new Schema({
   salePrice: {
     type: Number,
     required: true,
+    // min: [500, 'Sale price must be at least ₹500.']
   },
   varientquatity: {
     type: Number,
