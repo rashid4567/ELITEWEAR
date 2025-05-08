@@ -18,15 +18,12 @@ router.get("/login", adminControll.loadLogin)
 router.post("/login", adminControll.login)
 router.get("/dashboard", adminAuth, (req, res) => res.redirect("/admin"))
 router.get("/logout", adminAuth, adminControll.logout)
-router.get("/dashboard/export", adminAuth, adminControll.exportReport)
+
+// Dashboard data API
 router.get("/dashboard/chart-data", adminAuth, adminControll.getChartDataAPI)
 
-// Ledger routes
-router.post("/ledger/add", adminAuth, adminControll.addLedgerEntry)
-router.get("/ledger/:id", adminAuth, adminControll.getLedgerEntry)
-router.post("/ledger/edit", adminAuth, adminControll.editLedgerEntry)
-router.get("/ledger/delete/:id", adminAuth, adminControll.deleteLedgerEntry)
-router.get("/ledger/export", adminAuth, adminControll.exportLedger)
+// Export functionality
+router.get("/dashboard/export", adminAuth, adminControll.exportReport)
 
 // Customer management routes
 router.get("/customers", adminAuth, customerController.customerInfo)

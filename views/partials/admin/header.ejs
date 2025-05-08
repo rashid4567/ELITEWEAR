@@ -3,87 +3,404 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="/adminStyle/dashboard.css">
+    <title>Elite Wear Admin Sidebar</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --primary-dark: #4338ca;
+            --secondary: #10b981;
+            --secondary-light: #34d399;
+            --secondary-dark: #059669;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #0ea5e9;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --gray-dark: #475569;
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 70px;
+            --header-height: 70px;
+            --card-border-radius: 12px;
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: var(--dark);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            transition: all var(--transition-speed) ease;
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .sidebar-header .logo i {
+            font-size: 1.5rem;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+            list-style: none;
+            flex: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--gray-dark);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-radius: 0 30px 30px 0;
+            margin-right: 15px;
+            font-weight: 500;
+        }
+
+        .sidebar-menu a i {
+            min-width: 24px;
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-menu a:hover {
+            background-color: rgba(79, 70, 229, 0.08);
+            color: var(--primary);
+        }
+
+        .sidebar-menu a.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .sidebar-collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-collapsed .sidebar-header .logo span,
+        .sidebar-collapsed .sidebar-menu a span {
+            display: none;
+        }
+
+        .sidebar-collapsed .sidebar-menu a {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .sidebar-collapsed .sidebar-menu a i {
+            margin-right: 0;
+            font-size: 1.25rem;
+        }
+
+        /* Sidebar Footer */
+        .sidebar-footer {
+            padding: 15px 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .sidebar-footer .btn {
+            flex: 1;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-footer .btn-logout {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+        }
+
+        .sidebar-footer .btn-logout:hover {
+            background-color: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        /* Sidebar Toggle Button */
+        #sidebar-toggle {
+            position: fixed;
+            top: 20px;
+            left: calc(var(--sidebar-width) - 15px);
+            width: 30px;
+            height: 30px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            transition: left var(--transition-speed) ease;
+            border: none;
+            color: var(--primary);
+        }
+
+        #sidebar-toggle:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .sidebar-collapsed + .main-content #sidebar-toggle {
+            left: calc(var(--sidebar-collapsed-width) - 15px);
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            transition: margin-left var(--transition-speed) ease;
+            min-height: 100vh;
+        }
+
+        .main-content-expanded {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            :root {
+                --sidebar-width: 240px;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            #sidebar-toggle {
+                left: 20px;
+                top: 20px;
+            }
+
+            .sidebar-collapsed + .main-content #sidebar-toggle {
+                left: 20px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-       
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">
-            <h2>ELITE WEAR</h2>
-        </div>
-        <div class="sidebar-menu">
-            <div class="menu-item active">
-                <i class="fas fa-tachometer-alt"></i>
-                <a href="/admin/" class="menu-link">Dashboard</a>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-box"></i>
-                <a href="/admin/productManagement" class="menu-link">Products</a>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-list"></i>
-                <a href="/admin/adminorder" class="menu-link">Order List</a>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-user"></i>
-                <a href="/admin/customers" class="menu-link">Customer</a>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-chart-line"></i>
-                <a href="/admin/sales" class="menu-link">Sales</a>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-tag"></i>
-                <a href="/admin/categories" class="menu-link">Category</a>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-percent"></i>
-                <a href="/admin/coupons" class="menu-link">Coupons</a>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-image"></i>
-                <a href="/admin/getbannerPage" class="menu-link">Banner</a>
-                <i class="fas fa-chevron-right arrow"></i>
-            </div>
-            <div class="menu-item">
-                <i class="fas fa-wallet"></i>
-                <a href="/admin/wallet-transactions" class="menu-link">Wallet</a>
-                <i class="fas fa-chevron-right arrow"></i>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-shopping-bag"></i>
+                <span>ELITE WEAR</span>
             </div>
         </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/admin/" class="active">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/productManagement">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/adminorder">
+                    <i class="fas fa-list"></i>
+                    <span>Order List</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/customers">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/sales">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Sales</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/categories">
+                    <i class="fas fa-tag"></i>
+                    <span>Category</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/coupons">
+                    <i class="fas fa-percent"></i>
+                    <span>Coupons</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/getbannerPage">
+                    <i class="fas fa-image"></i>
+                    <span>Banner</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/wallet-transactions">
+                    <i class="fas fa-wallet"></i>
+                    <span>Wallet</span>
+                </a>
+            </li>
+        </ul>
         <div class="sidebar-footer">
-            <button class="btn">Account</button>
+            <button class="btn btn-outline-primary">Account</button>
             <a href="/admin/logout" class="btn btn-logout">Logout</a>
         </div>
-    </aside>
-    
+    </nav>
+
+    <!-- Sidebar Toggle Button -->
+    <button id="sidebar-toggle">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+
+    <!-- Main Content (placeholder) -->
+    <div class="main-content" id="main-content">
+        <!-- Your content goes here -->
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom Script -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
-            
-            menuItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    menuItems.forEach(menuItem => {
-                        menuItem.classList.remove('active');
-                    });
-                    this.classList.add('active');
+        document.addEventListener("DOMContentLoaded", () => {
+            // Sidebar Toggle
+            const sidebarToggle = document.getElementById("sidebar-toggle");
+            const sidebar = document.getElementById("sidebar");
+            const mainContent = document.getElementById("main-content");
+
+            if (sidebarToggle && sidebar && mainContent) {
+                sidebarToggle.addEventListener("click", () => {
+                    sidebar.classList.toggle("sidebar-collapsed");
+                    mainContent.classList.toggle("main-content-expanded");
+                    
+                    // Change the icon direction
+                    const icon = sidebarToggle.querySelector("i");
+                    if (icon) {
+                        icon.classList.toggle("fa-chevron-left");
+                        icon.classList.toggle("fa-chevron-right");
+                    }
                 });
-            });
-            
+            }
+
+            // Check screen size on load and resize
+            function checkScreenSize() {
+                if (window.innerWidth < 992 && sidebar && mainContent) {
+                    sidebar.classList.add("sidebar-collapsed");
+                    mainContent.classList.add("main-content-expanded");
+                    
+                    // Update toggle icon
+                    const icon = sidebarToggle.querySelector("i");
+                    if (icon && icon.classList.contains("fa-chevron-left")) {
+                        icon.classList.remove("fa-chevron-left");
+                        icon.classList.add("fa-chevron-right");
+                    }
+                }
+            }
+
+            checkScreenSize();
+            window.addEventListener("resize", checkScreenSize);
+
+            // Active menu item
             const currentPath = window.location.pathname;
+            const menuItems = document.querySelectorAll('.sidebar-menu a');
+            
             menuItems.forEach(item => {
-                const link = item.querySelector('.menu-link');
-                if (link && link.getAttribute('href') === currentPath) {
+                if (item.getAttribute('href') === currentPath) {
+                    // Remove active class from all menu items
                     menuItems.forEach(menuItem => {
                         menuItem.classList.remove('active');
                     });
+                    // Add active class to current menu item
                     item.classList.add('active');
                 }
             });

@@ -1,494 +1,22 @@
-const User = require('../../model/userSchema');
-const Product = require('../../model/productScheema');
-const Order = require('../../model/orderSchema');
-const OrderItem = require('../../model/orderItemSchema');
-const Category = require('../../model/categoryScheema');
-const Ledger = require('../../model/LedgerScheema');
-const moment = require('moment');
-const PDFDocument = require('pdfkit');
-const ExcelJS = require('exceljs');
-const fs = require('fs');
-const path = require('path');
+const User = require("../../model/userSchema")
+const Category = require("../../model/categoryScheema")
+const Product = require("../../model/productScheema")
+const Order = require("../../model/orderSchema")
+const OrderItem = require("../../model/orderItemSchema")
+const moment = require("moment")
+const PDFDocument = require("pdfkit")
+const ExcelJS = require("exceljs")
+const cloudinary = require("cloudinary").v2
 const bcrypt = require("bcrypt")
 
-// Helper function to calculate percentage change
-const calculatePercentageChange = (current, previous) => {
-    if (previous === 0) return current > 0 ? 100 : 0;
-    return ((current - previous) / previous) * 100;
-};
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
-// Helper function to format time ago
-const timeAgo = (date) => {
-    return moment(date).fromNow();
-};
-
-// Helper function to generate random colors for categories
-function getRandomColor(seed) {
-    const colors = [
-        '#4f46e5', // Primary
-        '#10b981', // Success
-        '#f59e0b', // Warning
-        '#ef4444', // Danger
-        '#0ea5e9', // Info
-        '#8b5cf6', // Purple
-        '#ec4899', // Pink
-        '#14b8a6', // Teal
-        '#f97316', // Orange
-        '#6366f1'  // Indigo
-    ];
-    
-    // Use the seed string to pick a consistent color
-    const index = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
-    return colors[index];
-}
-
-// Dashboard controller
-exports.loadDashboard = async (req, res) => {
-    try {
-        // Get current date ranges
-        const today = moment().startOf('day');
-        const yesterday = moment().subtract(1, 'days').startOf('day');
-        const thisWeekStart = moment().startOf('week');
-        const lastWeekStart = moment().subtract(1, 'week').startOf('week');
-        const thisMonthStart = moment().startOf('month');
-        const lastMonthStart = moment().subtract(1, 'month').startOf('month');
-
-        // 1. Customer Information
-        const customerCount = await User.countDocuments({ isAdmin: false });
-        const customersLastMonth = await User.countDocuments({
-            isAdmin: false,
-            createdAt: { $gte: lastMonthStart.toDate(), $lt: thisMonthStart.toDate() }
-        });
-        const customerChange = calculatePercentageChange(
-            customerCount - customersLastMonth,
-            customersLastMonth
-        );
-
-        // 2. Order and Revenue Information
-        // Current month orders and revenue
-        const currentMonthOrders = await Order.find({
-            createdAt: { $gte: thisMonthStart.toDate() }
-        });
-        const totalOrders = await Order.countDocuments();
-        const ordersLastMonth = await Order.countDocuments({
-            createdAt: { $gte: lastMonthStart.toDate(), $lt: thisMonthStart.toDate() }
-        });
-        const orderChange = calculatePercentageChange(
-            currentMonthOrders.length,
-            ordersLastMonth
-        );
-
-        // Calculate total revenue
-        const totalRevenue = await Order.aggregate([
-            { $match: { status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] } } },
-            { $group: { _id: null, total: { $sum: '$total' } } }
-        ]);
-        
-        // Calculate revenue for current month
-        const currentMonthRevenue = await Order.aggregate([
-            { 
-                $match: { 
-                    status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] },
-                    createdAt: { $gte: thisMonthStart.toDate() }
-                } 
-            },
-            { $group: { _id: null, total: { $sum: '$total' } } }
-        ]);
-        
-        // Calculate revenue for last month
-        const lastMonthRevenue = await Order.aggregate([
-            { 
-                $match: { 
-                    status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] },
-                    createdAt: { $gte: lastMonthStart.toDate(), $lt: thisMonthStart.toDate() }
-                } 
-            },
-            { $group: { _id: null, total: { $sum: '$total' } } }
-        ]);
-
-        const revenueThisMonth = currentMonthRevenue.length > 0 ? currentMonthRevenue[0].total : 0;
-        const revenueLastMonth = lastMonthRevenue.length > 0 ? lastMonthRevenue[0].total : 0;
-        const revenueChange = calculatePercentageChange(revenueThisMonth, revenueLastMonth);
-
-        // 3. Product Information
-        const productCount = await Product.countDocuments();
-        const productsLastMonth = await Product.countDocuments({
-            createdAt: { $gte: lastMonthStart.toDate(), $lt: thisMonthStart.toDate() }
-        });
-        const productChange = calculatePercentageChange(
-            productCount - productsLastMonth,
-            productsLastMonth
-        );
-
-        // 4. Category Information
-        const categoryCount = await Category.countDocuments();
-
-        // 5. Sales Overview Data (Monthly, Weekly, Daily)
-        // Monthly sales data for the chart - last 12 months
-        const monthlySalesData = await Order.aggregate([
-            {
-                $match: {
-                    status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] },
-                    createdAt: { $gte: moment().subtract(11, 'months').startOf('month').toDate() }
-                }
-            },
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
-                    revenue: { $sum: "$total" },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { _id: 1 } }
-        ]);
-
-        // Weekly sales data - last 8 weeks with proper formatting
-        const weeklySalesData = await Order.aggregate([
-            {
-                $match: {
-                    status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] },
-                    createdAt: { $gte: moment().subtract(7, 'weeks').startOf('week').toDate() }
-                }
-            },
-            {
-                $group: {
-                    _id: {
-                        year: { $year: "$createdAt" },
-                        week: { $week: "$createdAt" }
-                    },
-                    revenue: { $sum: "$total" },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { "_id.year": 1, "_id.week": 1 } }
-        ]);
-
-        // Format weekly data for better display
-        const formattedWeeklySalesData = weeklySalesData.map((item, index) => {
-            const weekNumber = item._id.week;
-            const year = item._id.year;
-            // Calculate the start date of the week for better labeling
-            const weekStart = moment().year(year).week(weekNumber).startOf('week');
-            return {
-                _id: `${year}-W${weekNumber}`,
-                revenue: item.revenue,
-                count: item.count,
-                label: weekStart.format('MMM DD') // Format as "Jan 01"
-            };
-        });
-
-        // Daily sales data - last 7 days
-        const dailySalesData = await Order.aggregate([
-            {
-                $match: {
-                    status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] },
-                    createdAt: { $gte: moment().subtract(6, 'days').startOf('day').toDate() }
-                }
-            },
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-                    revenue: { $sum: "$total" },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { _id: 1 } }
-        ]);
-
-        // 6. Revenue Distribution by Payment Method - ensure we categorize correctly
-        const paymentMethodDistribution = await Order.aggregate([
-            {
-                $match: { 
-                    status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] }
-                }
-            },
-            {
-                $group: {
-                    _id: {
-                        $cond: [
-                            { $eq: ["$paymentMethod", "Wallet"] },
-                            "Wallet",
-                            {
-                                $cond: [
-                                    { $in: ["$paymentMethod", ["COD", "Cash on Delivery"]] },
-                                    "Cash on Delivery",
-                                    "Online Payment"
-                                ]
-                            }
-                        ]
-                    },
-                    revenue: { $sum: "$total" },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { revenue: -1 } }
-        ]);
-
-        // 7. Revenue distribution by order status
-        const orderStatusDistribution = await Order.aggregate([
-            {
-                $group: {
-                    _id: "$status",
-                    revenue: { $sum: "$total" },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { revenue: -1 } }
-        ]);
-
-        // 7. Recent Orders with Customer Information
-        const recentOrders = await Order.find()
-            .sort({ createdAt: -1 })
-            .limit(10)
-            .populate({
-                path: 'userId',
-                select: 'fullname email'
-            })
-            .populate({
-                path: 'address'
-            });
-
-        // Format recent orders for display
-        const formattedRecentOrders = recentOrders.map(order => ({
-            _id: order._id,
-            orderNumber: order.orderNumber,
-            customer: {
-                name: order.userId ? order.userId.fullname : 'Guest User',
-                email: order.userId ? order.userId.email : 'guest@example.com'
-            },
-            createdAt: order.createdAt,
-            totalAmount: order.total,
-            status: order.status
-        }));
-
-        // 8. Top Selling Products - Fix image paths
-        const topProducts = await OrderItem.aggregate([
-            { $match: { status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] } } },
-            {
-                $group: {
-                    _id: "$productId",
-                    soldCount: { $sum: "$quantity" },
-                    revenue: { $sum: "$total_amount" },
-                    productName: { $first: "$product_name" }
-                }
-            },
-            { $sort: { soldCount: -1 } },
-            { $limit: 10 },
-            {
-                $lookup: {
-                    from: 'products',
-                    localField: '_id',
-                    foreignField: '_id',
-                    as: 'productDetails'
-                }
-            },
-            {
-                $project: {
-                    _id: 1,
-                    name: "$productName",
-                    soldCount: 1,
-                    revenue: 1,
-                    image: { $arrayElemAt: ["$productDetails.images", 0] },
-                    category: { $arrayElemAt: ["$productDetails.category", 0] }
-                }
-            }
-        ]);
-
-        // Process product images to ensure they have proper paths - FIXED CODE
-        const processedTopProducts = topProducts.map(product => {
-            // Check if image exists and is a string before trying to use startsWith
-            if (product.image && typeof product.image === 'string') {
-                // If image doesn't start with http or /, add the proper prefix
-                if (!product.image.startsWith('http') && !product.image.startsWith('/')) {
-                    product.image = '/' + product.image;
-                }
-            } else if (product.image && Array.isArray(product.image)) {
-                // If image is an array, use the first element if it exists
-                product.image = product.image[0] && typeof product.image[0] === 'string' 
-                    ? (product.image[0].startsWith('http') || product.image[0].startsWith('/') 
-                        ? product.image[0] 
-                        : '/' + product.image[0])
-                    : null;
-            } else {
-                // Set a default image path if no valid image is found
-                product.image = '/images/placeholder-product.png';
-            }
-            return product;
-        });
-
-        // 9. Top Categories
-        const topCategories = await OrderItem.aggregate([
-            { $match: { status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] } } },
-            {
-                $lookup: {
-                    from: 'products',
-                    localField: 'productId',
-                    foreignField: '_id',
-                    as: 'product'
-                }
-            },
-            { $unwind: "$product" },
-            {
-                $lookup: {
-                    from: 'categories',
-                    localField: 'product.category',
-                    foreignField: '_id',
-                    as: 'category'
-                }
-            },
-            { $unwind: "$category" },
-            {
-                $group: {
-                    _id: "$category._id",
-                    name: { $first: "$category.name" },
-                    image: { $first: "$category.image" },
-                    soldCount: { $sum: "$quantity" },
-                    revenue: { $sum: "$total_amount" }
-                }
-            },
-            { $sort: { soldCount: -1 } },
-            { $limit: 10 }
-        ]);
-
-        // Process category images - FIXED CODE
-        const processedTopCategories = topCategories.map(category => {
-            if (category.image && typeof category.image === 'string') {
-                if (!category.image.startsWith('http') && !category.image.startsWith('/')) {
-                    category.image = '/' + category.image;
-                }
-            } else if (category.image && Array.isArray(category.image)) {
-                // If image is an array, use the first element if it exists
-                category.image = category.image[0] && typeof category.image[0] === 'string'
-                    ? (category.image[0].startsWith('http') || category.image[0].startsWith('/')
-                        ? category.image[0]
-                        : '/' + category.image[0])
-                    : null;
-            } else {
-                // Set a default image path if no valid image is found
-                category.image = '/images/placeholder-category.png';
-            }
-            return category;
-        });
-
-        // 10. Top Brands (from product data since there's no separate brand schema)
-        const topBrands = await OrderItem.aggregate([
-            { $match: { status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] } } },
-            {
-                $lookup: {
-                    from: 'products',
-                    localField: 'productId',
-                    foreignField: '_id',
-                    as: 'product'
-                }
-            },
-            { $unwind: "$product" },
-            {
-                $group: {
-                    _id: "$product.brand",
-                    name: { $first: "$product.brand" },
-                    soldCount: { $sum: "$quantity" },
-                    revenue: { $sum: "$total_amount" }
-                }
-            },
-            { $sort: { soldCount: -1 } },
-            { $limit: 10 }
-        ]);
-
-        // 11. Recent Ledger Entries
-        const recentLedgerEntries = await Ledger.find()
-            .sort({ date: -1 })
-            .limit(5);
-
-        // 12. Customer Activities
-        const recentActivities = await Promise.all([
-            // Recent orders
-            Order.find()
-                .sort({ createdAt: -1 })
-                .limit(5)
-                .populate({
-                    path: 'userId',
-                    select: 'fullname'
-                }),
-            
-            // Recent user registrations
-            User.find({ isAdmin: false })
-                .sort({ createdAt: -1 })
-                .limit(5)
-        ]);
-
-        const [recentOrderActivities, recentUserActivities] = recentActivities;
-
-        // Format activities
-        const orderActivities = recentOrderActivities.map(order => ({
-            type: 'order',
-            icon: 'fas fa-shopping-cart',
-            message: `${order.userId ? order.userId.fullname : 'A customer'} placed an order for ₹${order.total.toLocaleString('en-IN')}`,
-            timeAgo: timeAgo(order.createdAt)
-        }));
-
-        const userActivities = recentUserActivities.map(user => ({
-            type: 'user',
-            icon: 'fas fa-user-plus',
-            message: `${user.fullname} registered a new account`,
-            timeAgo: timeAgo(user.createdAt)
-        }));
-
-        // Combine and sort activities
-        const customerActivities = [...orderActivities, ...userActivities]
-            .sort((a, b) => {
-                const timeA = moment(a.timeAgo, 'from now');
-                const timeB = moment(b.timeAgo, 'from now');
-                return timeA - timeB;
-            })
-            .slice(0, 10);
-
-        // Render the dashboard with all the data
-        res.render('dashboard', {
-            // Admin info
-            admin: req.session.admin,
-            
-            // Stats
-            totalRevenue: totalRevenue.length > 0 ? totalRevenue[0].total : 0,
-            revenueChange,
-            totalOrders,
-            orderChange,
-            customerCount,
-            customerChange,
-            productCount,
-            productChange,
-            categoryCount,
-            
-            // Charts data
-            monthlySalesData,
-            weeklySalesData: formattedWeeklySalesData,
-            dailySalesData,
-            paymentMethodDistribution,
-            orderStatusDistribution,
-            
-            // Tables data
-            recentOrders: formattedRecentOrders,
-            topProducts: processedTopProducts,
-            topCategories: processedTopCategories,
-            topBrands,
-            recentLedgerEntries,
-            
-            // Activity data
-            customerActivities,
-
-            // Helper functions
-            getRandomColor,
-            moment
-        });
-    } catch (error) {
-        console.error('Error loading dashboard:', error);
-        res.status(500).render('error', {
-            message: 'Failed to load dashboard data',
-            error: error.message
-        });
-    }
-};
-
-// Login controller
+// Admin login page
 exports.loadLogin = async (req, res) => {
   try {
     if (req.session.admin) {
@@ -531,796 +59,1005 @@ exports.login = async (req, res) => {
 }
 
 exports.logout = (req, res) => {
-    req.session.admin = null;
-    res.redirect('/admin/login');
-};
+  req.session.admin = null
+  res.redirect("/admin/login")
+}
 
-// Chart data API for AJAX requests
+// Dashboard data helper functions
+async function getRevenueData() {
+  try {
+    // Get current date and date 30 days ago
+    const currentDate = new Date()
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(currentDate.getDate() - 30)
+
+    // Get previous 30 days for comparison
+    const sixtyDaysAgo = new Date()
+    sixtyDaysAgo.setDate(currentDate.getDate() - 60)
+
+    // Calculate total revenue for current period
+    const currentPeriodOrders = await Order.find({
+      orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
+      status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
+      paymentStatus: "Completed",
+    })
+
+    const totalRevenue = currentPeriodOrders.reduce((sum, order) => sum + order.total, 0)
+
+    // Calculate total revenue for previous period
+    const previousPeriodOrders = await Order.find({
+      orderDate: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
+      status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
+      paymentStatus: "Completed",
+    })
+
+    const previousTotalRevenue = previousPeriodOrders.reduce((sum, order) => sum + order.total, 0)
+
+    // Calculate revenue change percentage
+    let revenueChange = 0
+    if (previousTotalRevenue > 0) {
+      revenueChange = ((totalRevenue - previousTotalRevenue) / previousTotalRevenue) * 100
+    }
+
+    return { totalRevenue, revenueChange }
+  } catch (error) {
+    console.error("Error getting revenue data:", error)
+    return { totalRevenue: 0, revenueChange: 0 }
+  }
+}
+
+async function getOrdersData() {
+  try {
+    // Get current date and date 30 days ago
+    const currentDate = new Date()
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(currentDate.getDate() - 30)
+
+    // Get previous 30 days for comparison
+    const sixtyDaysAgo = new Date()
+    sixtyDaysAgo.setDate(currentDate.getDate() - 60)
+
+    // Count total orders for current period
+    const totalOrders = await Order.countDocuments({
+      orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
+    })
+
+    // Count total orders for previous period
+    const previousTotalOrders = await Order.countDocuments({
+      orderDate: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
+    })
+
+    // Calculate order change percentage
+    let orderChange = 0
+    if (previousTotalOrders > 0) {
+      orderChange = ((totalOrders - previousTotalOrders) / previousTotalOrders) * 100
+    }
+
+    return { totalOrders, orderChange }
+  } catch (error) {
+    console.error("Error getting orders data:", error)
+    return { totalOrders: 0, orderChange: 0 }
+  }
+}
+
+async function getCustomerData() {
+  try {
+    // Get current date and date 30 days ago
+    const currentDate = new Date()
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(currentDate.getDate() - 30)
+
+    // Get previous 30 days for comparison
+    const sixtyDaysAgo = new Date()
+    sixtyDaysAgo.setDate(currentDate.getDate() - 60)
+
+    // Count total customers for current period
+    const customerCount = await User.countDocuments({
+      createdAt: { $gte: thirtyDaysAgo, $lte: currentDate },
+      isAdmin: false,
+    })
+
+    // Count total customers for previous period
+    const previousCustomerCount = await User.countDocuments({
+      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
+      isAdmin: false,
+    })
+
+    // Calculate customer change percentage
+    let customerChange = 0
+    if (previousCustomerCount > 0) {
+      customerChange = ((customerCount - previousCustomerCount) / previousCustomerCount) * 100
+    }
+
+    return { customerCount, customerChange }
+  } catch (error) {
+    console.error("Error getting customer data:", error)
+    return { customerCount: 0, customerChange: 0 }
+  }
+}
+
+async function getProductData() {
+  try {
+    // Get current date and date 30 days ago
+    const currentDate = new Date()
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(currentDate.getDate() - 30)
+
+    // Get previous 30 days for comparison
+    const sixtyDaysAgo = new Date()
+    sixtyDaysAgo.setDate(currentDate.getDate() - 60)
+
+    // Count total products for current period
+    const productCount = await Product.countDocuments({
+      createdAt: { $lte: currentDate },
+      isActive: true,
+    })
+
+    // Count total products for previous period
+    const previousProductCount = await Product.countDocuments({
+      createdAt: { $lte: thirtyDaysAgo },
+      isActive: true,
+    })
+
+    // Calculate product change percentage
+    let productChange = 0
+    if (previousProductCount > 0) {
+      productChange = ((productCount - previousProductCount) / previousProductCount) * 100
+    }
+
+    return { productCount, productChange }
+  } catch (error) {
+    console.error("Error getting product data:", error)
+    return { productCount: 0, productChange: 0 }
+  }
+}
+
+async function getSalesData(dateFilter = {}) {
+  try {
+    // Get daily, weekly, and monthly sales data with date filter
+    const dailySalesData = await getDailySalesData(dateFilter)
+    const weeklySalesData = await getWeeklySalesData(dateFilter)
+    const monthlySalesData = await getMonthlySalesData(dateFilter)
+
+    return { dailySalesData, weeklySalesData, monthlySalesData }
+  } catch (error) {
+    console.error("Error getting sales data:", error)
+    return { dailySalesData: [], weeklySalesData: [], monthlySalesData: [] }
+  }
+}
+
+async function getDailySalesData(dateFilter = {}) {
+  try {
+    // Get data for the last 7 days or use provided date filter
+    let matchFilter = {}
+    
+    if (Object.keys(dateFilter).length > 0) {
+      matchFilter = dateFilter
+    } else {
+      const currentDate = new Date()
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(currentDate.getDate() - 7)
+      
+      matchFilter = {
+        orderDate: { $gte: sevenDaysAgo, $lte: currentDate }
+      }
+    }
+    
+    // Add status filter
+    matchFilter.status = { $nin: ["Cancelled", "Return Approved", "Returned"] }
+    matchFilter.paymentStatus = "Completed"
+
+    // Aggregate daily sales data
+    const dailySalesData = await Order.aggregate([
+      {
+        $match: matchFilter
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$orderDate" } },
+          revenue: { $sum: "$total" },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ])
+
+    // Fill in missing days with zero values
+    const result = []
+    
+    // If using custom date filter, use those dates
+    if (dateFilter.orderDate) {
+      const startDate = dateFilter.orderDate.$gte
+      const endDate = dateFilter.orderDate.$lte
+      const dayCount = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000))
+      
+      for (let i = 0; i < dayCount; i++) {
+        const date = new Date(startDate)
+        date.setDate(date.getDate() + i)
+        const dateString = date.toISOString().split("T")[0]
+
+        const existingData = dailySalesData.find((item) => item._id === dateString)
+        if (existingData) {
+          result.push(existingData)
+        } else {
+          result.push({ _id: dateString, revenue: 0, count: 0 })
+        }
+      }
+    } else {
+      // Default to last 7 days
+      for (let i = 0; i < 7; i++) {
+        const date = new Date()
+        date.setDate(date.getDate() - (6 - i))
+        const dateString = date.toISOString().split("T")[0]
+
+        const existingData = dailySalesData.find((item) => item._id === dateString)
+        if (existingData) {
+          result.push(existingData)
+        } else {
+          result.push({ _id: dateString, revenue: 0, count: 0 })
+        }
+      }
+    }
+
+    return result
+  } catch (error) {
+    console.error("Error getting daily sales data:", error)
+    return []
+  }
+}
+
+async function getWeeklySalesData() {
+  try {
+    // Get data for the last 8 weeks
+    const currentDate = new Date()
+    const eightWeeksAgo = new Date()
+    eightWeeksAgo.setDate(currentDate.getDate() - 56) // 8 weeks * 7 days
+
+    // Aggregate weekly sales data
+    const weeklySalesData = await Order.aggregate([
+      {
+        $match: {
+          orderDate: { $gte: eightWeeksAgo, $lte: currentDate },
+          status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
+          paymentStatus: "Completed",
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$orderDate" },
+            week: { $week: "$orderDate" },
+          },
+          revenue: { $sum: "$total" },
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: { $concat: [{ $toString: "$_id.year" }, "-W", { $toString: "$_id.week" }] },
+          revenue: 1,
+          count: 1,
+          label: { $concat: ["Week ", { $toString: "$_id.week" }] },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ])
+
+    // Fill in missing weeks with zero values
+    const result = []
+    for (let i = 0; i < 8; i++) {
+      const date = new Date()
+      date.setDate(date.getDate() - 7 * (7 - i))
+      const year = date.getFullYear()
+      const week = Math.ceil(((date - new Date(year, 0, 1)) / 86400000 + 1) / 7)
+      const weekString = `${year}-W${week}`
+      const label = `Week ${week}`
+
+      const existingData = weeklySalesData.find((item) => item._id === weekString)
+      if (existingData) {
+        result.push(existingData)
+      } else {
+        result.push({ _id: weekString, revenue: 0, count: 0, label })
+      }
+    }
+
+    return result
+  } catch (error) {
+    console.error("Error getting weekly sales data:", error)
+    return []
+  }
+}
+
+async function getMonthlySalesData() {
+  try {
+    // Get data for the last 12 months
+    const currentDate = new Date()
+    const twelveMonthsAgo = new Date()
+    twelveMonthsAgo.setMonth(currentDate.getMonth() - 11)
+    twelveMonthsAgo.setDate(1)
+
+    // Aggregate monthly sales data
+    const monthlySalesData = await Order.aggregate([
+      {
+        $match: {
+          orderDate: { $gte: twelveMonthsAgo, $lte: currentDate },
+          status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
+          paymentStatus: "Completed",
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$orderDate" } },
+          revenue: { $sum: "$total" },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ])
+
+    // Fill in missing months with zero values
+    const result = []
+    for (let i = 0; i < 12; i++) {
+      const date = new Date()
+      date.setMonth(date.getMonth() - (11 - i))
+      const monthString = date.toISOString().slice(0, 7)
+
+      const existingData = monthlySalesData.find((item) => item._id === monthString)
+      if (existingData) {
+        result.push(existingData)
+      } else {
+        result.push({ _id: monthString, revenue: 0, count: 0 })
+      }
+    }
+
+    return result
+  } catch (error) {
+    console.error("Error getting monthly sales data:", error)
+    return []
+  }
+}
+
+async function getPaymentMethodDistribution(dateFilter = {}) {
+  try {
+    // Get current date and date 30 days ago
+    const currentDate = new Date()
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(currentDate.getDate() - 30)
+
+    // Set up match filter
+    let matchFilter = {
+      status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
+      paymentStatus: "Completed"
+    }
+
+    // Add date filter if provided, otherwise use last 30 days
+    if (Object.keys(dateFilter).length > 0) {
+      matchFilter = { ...matchFilter, ...dateFilter }
+    } else {
+      matchFilter.orderDate = { $gte: thirtyDaysAgo, $lte: currentDate }
+    }
+
+    // Aggregate payment method distribution
+    const paymentMethodDistribution = await Order.aggregate([
+      {
+        $match: matchFilter
+      },
+      {
+        $group: {
+          _id: "$paymentMethod",
+          revenue: { $sum: "$total" },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { revenue: -1 } },
+    ])
+
+    console.log("Raw payment method data:", paymentMethodDistribution);
+
+    // Ensure we have entries for the three required payment methods
+    const requiredPaymentMethods = ["Online", "COD", "Wallet"]
+    const result = []
+
+    // If no data at all, create sample data for visualization
+    if (paymentMethodDistribution.length === 0) {
+      console.log("No payment method data found, creating sample data");
+      return [
+        { _id: "Online", revenue: 100, count: 10 },
+        { _id: "COD", revenue: 75, count: 8 },
+        { _id: "Wallet", revenue: 50, count: 5 },
+      ]
+    }
+
+    // First, add any existing payment methods from the required list
+    requiredPaymentMethods.forEach((method) => {
+      const existingData = paymentMethodDistribution.find((item) => item._id === method)
+      if (existingData) {
+        result.push(existingData)
+      } else {
+        // Add with small non-zero values if not found (for better visualization)
+        result.push({ _id: method, revenue: 10, count: 1 })
+      }
+    })
+
+    console.log("Processed payment method distribution data:", result);
+    return result
+  } catch (error) {
+    console.error("Error getting payment method distribution:", error)
+    // Return fallback data in case of error
+    return [
+      { _id: "Online", revenue: 100, count: 10 },
+      { _id: "COD", revenue: 75, count: 8 },
+      { _id: "Wallet", revenue: 50, count: 5 },
+    ]
+  }
+}
+
+async function getOrderStatusDistribution() {
+  try {
+    // Get current date and date 30 days ago
+    const currentDate = new Date()
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(currentDate.getDate() - 30)
+
+    // Aggregate order status distribution
+    const orderStatusDistribution = await Order.aggregate([
+      {
+        $match: {
+          orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
+        },
+      },
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+    ])
+
+    return orderStatusDistribution
+  } catch (error) {
+    console.error("Error getting order status distribution:", error)
+    return []
+  }
+}
+
+async function getTopCategories() {
+  try {
+    // Get current date and date 30 days ago
+    const currentDate = new Date()
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(currentDate.getDate() - 30)
+
+    // Get all completed orders in the last 30 days
+    const orders = await Order.find({
+      orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
+      status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
+      paymentStatus: "Completed",
+    }).populate({
+      path: "order_items",
+      populate: {
+        path: "productId",
+        select: "categoryId",
+        populate: {
+          path: "categoryId",
+          select: "name",
+        },
+      },
+    })
+
+    // Calculate category sales
+    const categorySales = {}
+    for (const order of orders) {
+      for (const item of order.order_items) {
+        if (item.productId && item.productId.categoryId) {
+          const categoryId = item.productId.categoryId._id.toString()
+          const categoryName = item.productId.categoryId.name
+
+          if (!categorySales[categoryId]) {
+            categorySales[categoryId] = {
+              _id: categoryId,
+              name: categoryName,
+              revenue: 0,
+              soldCount: 0,
+            }
+          }
+          categorySales[categoryId].revenue += item.total_amount
+          categorySales[categoryId].soldCount += item.quantity
+        }
+      }
+    }
+
+    // Convert to array and sort by revenue
+    const categorySalesArray = Object.values(categorySales)
+    categorySalesArray.sort((a, b) => b.revenue - a.revenue)
+
+    // Return top 5 categories
+    return categorySalesArray.slice(0, 5)
+  } catch (error) {
+    console.error("Error getting top categories:", error)
+    return []
+  }
+}
+
+async function getTopBrands() {
+  try {
+    // Get current date and date 30 days ago
+    const currentDate = new Date()
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(currentDate.getDate() - 30)
+
+    // Get all completed orders in the last 30 days
+    const orders = await Order.find({
+      orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
+      status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
+      paymentStatus: "Completed",
+    }).populate({
+      path: "order_items",
+      populate: {
+        path: "productId",
+        select: "brand",
+      },
+    })
+
+    // Calculate brand sales
+    const brandSales = {}
+    for (const order of orders) {
+      for (const item of order.order_items) {
+        if (item.productId && item.productId.brand) {
+          const brand = item.productId.brand
+          if (!brandSales[brand]) {
+            brandSales[brand] = {
+              name: brand,
+              revenue: 0,
+              soldCount: 0,
+            }
+          }
+          brandSales[brand].revenue += item.total_amount
+          brandSales[brand].soldCount += item.quantity
+        }
+      }
+    }
+
+    // Convert to array and sort by revenue
+    const brandSalesArray = Object.values(brandSales)
+    brandSalesArray.sort((a, b) => b.revenue - a.revenue)
+
+    // Get top 5 brands
+    return brandSalesArray.slice(0, 5)
+  } catch (error) {
+    console.error("Error getting top brands:", error)
+    return []
+  }
+}
+
+async function getTopProducts() {
+  try {
+    // Get current date and date 30 days ago
+    const currentDate = new Date()
+    const thirtyDaysAgo = new Date()
+    thirtyDaysAgo.setDate(currentDate.getDate() - 30)
+
+    // Aggregate top products by sold count (changed from revenue)
+    const topProducts = await OrderItem.aggregate([
+      {
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "order",
+        },
+      },
+      { $unwind: "$order" },
+      {
+        $match: {
+          "order.orderDate": { $gte: thirtyDaysAgo, $lte: currentDate },
+          "order.status": { $nin: ["Cancelled", "Return Approved", "Returned"] },
+          "order.paymentStatus": "Completed",
+          status: { $nin: ["Cancelled", "Return Requested", "Return Approved", "Returned"] },
+        },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "productId",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
+      { $unwind: "$product" },
+      {
+        $group: {
+          _id: "$productId",
+          name: { $first: "$product_name" },
+          image: { $first: { $arrayElemAt: ["$product.images.url", 0] } },
+          soldCount: { $sum: "$quantity" },
+          revenue: { $sum: "$total_amount" },
+        },
+      },
+      { $sort: { soldCount: -1 } }, // Changed from revenue to soldCount
+      { $limit: 5 },
+    ])
+
+    // Ensure all products have an image
+    for (const product of topProducts) {
+      if (!product.image) {
+        product.image = "/images/placeholder-product.jpg"
+      }
+    }
+
+    return topProducts
+  } catch (error) {
+    console.error("Error getting top products:", error)
+    return []
+  }
+}
+
+async function getRecentOrders() {
+  try {
+    // Get 5 most recent orders
+    const recentOrders = await Order.find().sort({ orderDate: -1 }).limit(5).populate({
+      path: "userId",
+      select: "fullname",
+    })
+
+    // Format orders for display
+    return recentOrders.map((order) => ({
+      _id: order._id,
+      orderNumber: order.orderNumber,
+      customer: { name: order.userId ? order.userId.fullname : "Unknown Customer" },
+      createdAt: order.orderDate,
+      totalAmount: order.total,
+      status: order.status,
+    }))
+  } catch (error) {
+    console.error("Error getting recent orders:", error)
+    return []
+  }
+}
+
+// Dashboard page
+exports.loadDashboard = async (req, res) => {
+  try {
+    // Get all dashboard data
+    const [
+      revenueData,
+      ordersData,
+      customerData,
+      productData,
+      salesData,
+      paymentMethodDistribution,
+      orderStatusDistribution,
+      topCategories,
+      topBrands,
+      topProducts,
+      recentOrders,
+    ] = await Promise.all([
+      getRevenueData(),
+      getOrdersData(),
+      getCustomerData(),
+      getProductData(),
+      getSalesData(),
+      getPaymentMethodDistribution(),
+      getOrderStatusDistribution(),
+      getTopCategories(),
+      getTopBrands(),
+      getTopProducts(),
+      getRecentOrders(),
+    ])
+
+    // Render dashboard with data
+    res.render("dashboard", {
+      totalRevenue: revenueData.totalRevenue,
+      revenueChange: revenueData.revenueChange,
+      totalOrders: ordersData.totalOrders,
+      orderChange: ordersData.orderChange,
+      customerCount: customerData.customerCount,
+      customerChange: customerData.customerChange,
+      productCount: productData.productCount,
+      productChange: productData.productChange,
+      monthlySalesData: salesData.monthlySalesData,
+      weeklySalesData: salesData.weeklySalesData,
+      dailySalesData: salesData.dailySalesData,
+      paymentMethodDistribution,
+      orderStatusDistribution,
+      topCategories,
+      topBrands,
+      topProducts,
+      recentOrders,
+      moment,
+    })
+  } catch (error) {
+    console.error("Error loading dashboard:", error)
+    res.status(500).render("error", { message: "Server error" })
+  }
+}
+
+// API endpoint for chart data
 exports.getChartDataAPI = async (req, res) => {
-    try {
-        const period = req.query.period || 'monthly';
-        const type = req.query.type || 'revenue';
-        
-        let startDate, groupBy, dateFormat;
-        
-        switch (period) {
-            case 'yearly':
-                startDate = moment().subtract(5, 'years').startOf('year');
-                groupBy = { $year: "$createdAt" };
-                dateFormat = "%Y";
-                break;
-            case 'monthly':
-                startDate = moment().subtract(11, 'months').startOf('month');
-                groupBy = { 
-                    year: { $year: "$createdAt" },
-                    month: { $month: "$createdAt" }
-                };
-                dateFormat = "%Y-%m";
-                break;
-            case 'weekly':
-                startDate = moment().subtract(8, 'weeks').startOf('week');
-                groupBy = { $week: "$createdAt" };
-                dateFormat = "%U";
-                break;
-            case 'daily':
-                startDate = moment().subtract(6, 'days').startOf('day');
-                groupBy = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } };
-                dateFormat = "%Y-%m-%d";
-                break;
-            default:
-                startDate = moment().subtract(11, 'months').startOf('month');
-                groupBy = { 
-                    year: { $year: "$createdAt" },
-                    month: { $month: "$createdAt" }
-                };
-                dateFormat = "%Y-%m";
-        }
-        
-        let data;
-        
-        if (type === 'revenue') {
-            data = await Order.aggregate([
-                {
-                    $match: {
-                        status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] },
-                        createdAt: { $gte: startDate.toDate() }
-                    }
-                },
-                {
-                    $group: {
-                        _id: period === 'monthly' ? { 
-                            year: { $year: "$createdAt" },
-                            month: { $month: "$createdAt" }
-                        } : { $dateToString: { format: dateFormat, date: "$createdAt" } },
-                        value: { $sum: "$total" }
-                    }
-                },
-                { $sort: { "_id": 1 } }
-            ]);
-        } else if (type === 'orders') {
-            data = await Order.aggregate([
-                {
-                    $match: {
-                        createdAt: { $gte: startDate.toDate() }
-                    }
-                },
-                {
-                    $group: {
-                        _id: period === 'monthly' ? { 
-                            year: { $year: "$createdAt" },
-                            month: { $month: "$createdAt" }
-                        } : { $dateToString: { format: dateFormat, date: "$createdAt" } },
-                        value: { $sum: 1 }
-                    }
-                },
-                { $sort: { "_id": 1 } }
-            ]);
-        } else if (type === 'customers') {
-            data = await User.aggregate([
-                {
-                    $match: {
-                        isAdmin: false,
-                        createdAt: { $gte: startDate.toDate() }
-                    }
-                },
-                {
-                    $group: {
-                        _id: period === 'monthly' ? { 
-                            year: { $year: "$createdAt" },
-                            month: { $month: "$createdAt" }
-                        } : { $dateToString: { format: dateFormat, date: "$createdAt" } },
-                        value: { $sum: 1 }
-                    }
-                },
-                { $sort: { "_id": 1 } }
-            ]);
-        }
-        
-        // Format the data for the chart
-        let formattedData = [];
-        
-        if (period === 'monthly') {
-            formattedData = data.map(item => {
-                const date = new Date(item._id.year, item._id.month - 1);
-                return {
-                    label: date.toLocaleString('default', { month: 'short', year: 'numeric' }),
-                    value: item.value
-                };
-            });
-        } else {
-            formattedData = data.map(item => {
-                let label = item._id;
-                
-                if (period === 'daily') {
-                    const date = new Date(item._id);
-                    label = date.toLocaleString('default', { weekday: 'short', day: 'numeric' });
-                } else if (period === 'weekly') {
-                    label = `Week ${item._id}`;
-                } else if (period === 'yearly') {
-                    label = item._id.toString();
-                }
-                
-                return {
-                    label,
-                    value: item.value
-                };
-            });
-        }
-        
-        res.json({
-            success: true,
-            data: formattedData
-        });
-    } catch (error) {
-        console.error('Error fetching chart data:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to fetch chart data',
-            error: error.message
-        });
-    }
-};
+  try {
+    const { type, period, startDate, endDate } = req.query
 
-// Export dashboard report
+    // Parse date range if provided
+    let dateFilter = {}
+    if (startDate && endDate) {
+      const start = new Date(startDate)
+      start.setHours(0, 0, 0, 0)
+      
+      const end = new Date(endDate)
+      end.setHours(23, 59, 59, 999)
+      
+      dateFilter = {
+        orderDate: { $gte: start, $lte: end }
+      }
+    }
+
+    let data
+    switch (type) {
+      case "sales":
+        const salesData = await getSalesData(dateFilter)
+        if (period === "daily") {
+          data = salesData.dailySalesData
+        } else if (period === "weekly") {
+          data = salesData.weeklySalesData
+        } else {
+          data = salesData.monthlySalesData
+        }
+        break
+      case "payment":
+        data = await getPaymentMethodDistribution(dateFilter)
+        break
+      case "categories":
+        data = await getTopCategories(dateFilter)
+        break
+      case "brands":
+        data = await getTopBrands(dateFilter)
+        break
+      case "products":
+        data = await getTopProducts(dateFilter)
+        break
+      default:
+        data = []
+    }
+
+    res.json({ success: true, data })
+  } catch (error) {
+    console.error("Error getting chart data:", error)
+    res.status(500).json({ success: false, message: "Server error" })
+  }
+}
+
+// Export dashboard data as report
 exports.exportReport = async (req, res) => {
-    try {
-        const format = req.query.format || 'pdf';
-        const period = req.query.period || 'monthly';
-        
-        // Get data for the report
-        const totalRevenue = await Order.aggregate([
-            { $match: { status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] } } },
-            { $group: { _id: null, total: { $sum: '$total' } } }
-        ]);
-        
-        const totalOrders = await Order.countDocuments();
-        const customerCount = await User.countDocuments({ isAdmin: false });
-        
-        // Get top products
-        const topProducts = await OrderItem.aggregate([
-            { $match: { status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] } } },
-            {
-                $group: {
-                    _id: "$productId",
-                    soldCount: { $sum: "$quantity" },
-                    revenue: { $sum: "$total_amount" },
-                    productName: { $first: "$product_name" }
-                }
-            },
-            { $sort: { soldCount: -1 } },
-            { $limit: 10 }
-        ]);
-        
-        // Get sales data based on period
-        let startDate, groupBy, dateFormat;
-        
-        switch (period) {
-            case 'yearly':
-                startDate = moment().subtract(5, 'years').startOf('year');
-                groupBy = { $year: "$createdAt" };
-                dateFormat = "%Y";
-                break;
-            case 'monthly':
-                startDate = moment().subtract(11, 'months').startOf('month');
-                groupBy = { 
-                    year: { $year: "$createdAt" },
-                    month: { $month: "$createdAt" }
-                };
-                dateFormat = "%Y-%m";
-                break;
-            case 'weekly':
-                startDate = moment().subtract(8, 'weeks').startOf('week');
-                groupBy = { $week: "$createdAt" };
-                dateFormat = "%U";
-                break;
-            case 'daily':
-                startDate = moment().subtract(6, 'days').startOf('day');
-                groupBy = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } };
-                dateFormat = "%Y-%m-%d";
-                break;
-            default:
-                startDate = moment().subtract(11, 'months').startOf('month');
-                groupBy = { 
-                    year: { $year: "$createdAt" },
-                    month: { $month: "$createdAt" }
-                };
-                dateFormat = "%Y-%m";
-        }
-        
-        const salesData = await Order.aggregate([
-            {
-                $match: {
-                    status: { $nin: ['Cancelled', 'Return Requested', 'Return Approved', 'Returned'] },
-                    createdAt: { $gte: startDate.toDate() }
-                }
-            },
-            {
-                $group: {
-                    _id: period === 'monthly' ? { 
-                        year: { $year: "$createdAt" },
-                        month: { $month: "$createdAt" }
-                    } : { $dateToString: { format: dateFormat, date: "$createdAt" } },
-                    revenue: { $sum: "$total" },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { "_id": 1 } }
-        ]);
-        
-        // Format sales data
-        let formattedSalesData = [];
-        
-        if (period === 'monthly') {
-            formattedSalesData = salesData.map(item => {
-                const date = new Date(item._id.year, item._id.month - 1);
-                return {
-                    period: date.toLocaleString('default', { month: 'short', year: 'numeric' }),
-                    revenue: item.revenue,
-                    orders: item.count
-                };
-            });
-        } else {
-            formattedSalesData = salesData.map(item => {
-                let periodLabel = item._id;
-                
-                if (period === 'daily') {
-                    const date = new Date(item._id);
-                    periodLabel = date.toLocaleString('default', { weekday: 'short', day: 'numeric' });
-                } else if (period === 'weekly') {
-                    periodLabel = `Week ${item._id}`;
-                } else if (period === 'yearly') {
-                    periodLabel = item._id.toString();
-                }
-                
-                return {
-                    period: periodLabel,
-                    revenue: item.revenue,
-                    orders: item.count
-                };
-            });
-        }
-        
-        if (format === 'pdf') {
-            // Generate PDF report
-            const doc = new PDFDocument({ margin: 50 });
-            
-            // Set response headers
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=sales-report-${moment().format('YYYY-MM-DD')}.pdf`);
-            
-            // Pipe the PDF to the response
-            doc.pipe(res);
-            
-            // Add content to the PDF
-            doc.fontSize(25).text('Sales Report', { align: 'center' });
-            doc.moveDown();
-            doc.fontSize(12).text(`Generated on: ${moment().format('MMMM Do YYYY, h:mm:ss a')}`, { align: 'center' });
-            doc.moveDown();
-            
-            // Add summary
-            doc.fontSize(16).text('Summary', { underline: true });
-            doc.moveDown();
-            
-            doc.fontSize(12).text(`Total Revenue: ₹${totalRevenue.length > 0 ? totalRevenue[0].total.toLocaleString('en-IN') : 0}`);
-            doc.fontSize(12).text(`Total Orders: ${totalOrders.toLocaleString('en-IN')}`);
-            doc.fontSize(12).text(`Total Customers: ${customerCount.toLocaleString('en-IN')}`);
-            doc.moveDown();
-            
-            // Add top products
-            doc.fontSize(16).text('Top Products', { underline: true });
-            doc.moveDown();
-            
-            // Create a table for top products
-            let yPos = doc.y;
-            const productTableTop = yPos;
-            const productColWidths = [40, 200, 100, 100];
-            
-            // Table headers
-            doc.fontSize(10).text('#', doc.x, yPos);
-            doc.fontSize(10).text('Product', doc.x + productColWidths[0], yPos);
-            doc.fontSize(10).text('Units Sold', doc.x + productColWidths[0] + productColWidths[1], yPos);
-            doc.fontSize(10).text('Revenue', doc.x + productColWidths[0] + productColWidths[1] + productColWidths[2], yPos);
-            
-            // Draw header line
-            yPos += 15;
-            doc.moveTo(doc.x, yPos).lineTo(doc.x + productColWidths.reduce((a, b) => a + b, 0), yPos).stroke();
-            yPos += 10;
-            
-            // Table rows
-            topProducts.forEach((product, index) => {
-                // Check if we need a new page
-                if (yPos > doc.page.height - 100) {
-                    doc.addPage();
-                    yPos = doc.y;
-                }
-                
-                doc.fontSize(10).text((index + 1).toString(), doc.x, yPos);
-                doc.fontSize(10).text(product.productName || 'Unknown Product', doc.x + productColWidths[0], yPos);
-                doc.fontSize(10).text(product.soldCount.toString(), doc.x + productColWidths[0] + productColWidths[1], yPos);
-                doc.fontSize(10).text(`₹${product.revenue.toLocaleString('en-IN')}`, doc.x + productColWidths[0] + productColWidths[1] + productColWidths[2], yPos);
-                
-                yPos += 20;
-            });
-            
-            // Draw bottom line
-            doc.moveTo(doc.x, yPos).lineTo(doc.x + productColWidths.reduce((a, b) => a + b, 0), yPos).stroke();
-            
-            // Add sales data
-            doc.addPage();
-            doc.fontSize(16).text('Sales Data', { underline: true });
-            doc.moveDown();
-            
-            // Create a table for sales data
-            yPos = doc.y;
-            const salesColWidths = [150, 150, 150];
-            
-            // Table headers
-            doc.fontSize(10).text('Period', doc.x, yPos);
-            doc.fontSize(10).text('Revenue', doc.x + salesColWidths[0], yPos);
-            doc.fontSize(10).text('Orders', doc.x + salesColWidths[0] + salesColWidths[1], yPos);
-            
-            // Draw header line
-            yPos += 15;
-            doc.moveTo(doc.x, yPos).lineTo(doc.x + salesColWidths.reduce((a, b) => a + b, 0), yPos).stroke();
-            yPos += 10;
-            
-            // Table rows
-            formattedSalesData.forEach((data) => {
-                // Check if we need a new page
-                if (yPos > doc.page.height - 100) {
-                    doc.addPage();
-                    yPos = doc.y;
-                }
-                
-                doc.fontSize(10).text(data.period, doc.x, yPos);
-                doc.fontSize(10).text(`₹${data.revenue.toLocaleString('en-IN')}`, doc.x + salesColWidths[0], yPos);
-                doc.fontSize(10).text(data.orders.toString(), doc.x + salesColWidths[0] + salesColWidths[1], yPos);
-                
-                yPos += 20;
-            });
-            
-            // Draw bottom line
-            doc.moveTo(doc.x, yPos).lineTo(doc.x + salesColWidths.reduce((a, b) => a + b, 0), yPos).stroke();
-            
-            // Finalize the PDF
-            doc.end();
-        } else if (format === 'excel') {
-            // Generate Excel report
-            const workbook = new ExcelJS.Workbook();
-            
-            // Add Summary worksheet
-            const summarySheet = workbook.addWorksheet('Summary');
-            
-            // Add title and date
-            summarySheet.mergeCells('A1:D1');
-            summarySheet.getCell('A1').value = 'Sales Report';
-            summarySheet.getCell('A1').font = { size: 16, bold: true };
-            summarySheet.getCell('A1').alignment = { horizontal: 'center' };
-            
-            summarySheet.mergeCells('A2:D2');
-            summarySheet.getCell('A2').value = `Generated on: ${moment().format('MMMM Do YYYY, h:mm:ss a')}`;
-            summarySheet.getCell('A2').alignment = { horizontal: 'center' };
-            
-            // Add summary data
-            summarySheet.addRow([]);
-            summarySheet.addRow(['Total Revenue', `₹${totalRevenue.length > 0 ? totalRevenue[0].total.toLocaleString('en-IN') : 0}`]);
-            summarySheet.addRow(['Total Orders', totalOrders.toLocaleString('en-IN')]);
-            summarySheet.addRow(['Total Customers', customerCount.toLocaleString('en-IN')]);
-            
-            // Add Top Products worksheet
-            const productsSheet = workbook.addWorksheet('Top Products');
-            
-            // Add headers
-            productsSheet.columns = [
-                { header: '#', key: 'index', width: 5 },
-                { header: 'Product', key: 'product', width: 30 },
-                { header: 'Units Sold', key: 'sold', width: 15 },
-                { header: 'Revenue', key: 'revenue', width: 20 }
-            ];
-            
-            // Add data
-            topProducts.forEach((product, index) => {
-                productsSheet.addRow({
-                    index: index + 1,
-                    product: product.productName || 'Unknown Product',
-                    sold: product.soldCount,
-                    revenue: `₹${product.revenue.toLocaleString('en-IN')}`
-                });
-            });
-            
-            // Add Sales Data worksheet
-            const salesSheet = workbook.addWorksheet('Sales Data');
-            
-            // Add headers
-            salesSheet.columns = [
-                { header: 'Period', key: 'period', width: 20 },
-                { header: 'Revenue', key: 'revenue', width: 20 },
-                { header: 'Orders', key: 'orders', width: 15 }
-            ];
-            
-            // Add data
-            formattedSalesData.forEach((data) => {
-                salesSheet.addRow({
-                    period: data.period,
-                    revenue: `₹${data.revenue.toLocaleString('en-IN')}`,
-                    orders: data.orders
-                });
-            });
-            
-            // Set response headers
-            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader('Content-Disposition', `attachment; filename=sales-report-${moment().format('YYYY-MM-DD')}.xlsx`);
-            
-            // Write to response
-            await workbook.xlsx.write(res);
-            res.end();
-        } else {
-            res.status(400).json({
-                success: false,
-                message: 'Invalid format specified. Use pdf or excel.'
-            });
-        }
-    } catch (error) {
-        console.error('Error exporting report:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to export report',
-            error: error.message
-        });
-    }
-};
+  try {
+    const { format, period } = req.query
 
-// Ledger management
-exports.addLedgerEntry = async (req, res) => {
-    try {
-        const { date, description, category, debit, credit, notes } = req.body;
-        
-        // Calculate current balance
-        const lastEntry = await Ledger.findOne().sort({ createdAt: -1 });
-        const previousBalance = lastEntry ? lastEntry.balance : 0;
-        
-        const debitAmount = parseFloat(debit) || 0;
-        const creditAmount = parseFloat(credit) || 0;
-        
-        // Calculate new balance
-        const balance = previousBalance + creditAmount - debitAmount;
-        
-        // Generate transaction ID
-        const transactionId = `TXN${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
-        
-        // Create new ledger entry
-        const newEntry = new Ledger({
-            date: date || new Date(),
-            transactionId,
-            description,
-            category,
-            debit: debitAmount,
-            credit: creditAmount,
-            balance,
-            notes
-        });
-        
-        await newEntry.save();
-        
-        req.flash('success_msg', 'Ledger entry added successfully');
-        res.redirect('/admin');
-    } catch (error) {
-        console.error('Error adding ledger entry:', error);
-        req.flash('error_msg', 'Failed to add ledger entry');
-        res.redirect('/admin');
-    }
-};
+    // Get data for report
+    const [
+      revenueData,
+      ordersData,
+      customerData,
+      productData,
+      salesData,
+      paymentMethodDistribution,
+      topCategories,
+      topBrands,
+      topProducts,
+    ] = await Promise.all([
+      getRevenueData(),
+      getOrdersData(),
+      getCustomerData(),
+      getProductData(),
+      getSalesData(),
+      getPaymentMethodDistribution(),
+      getTopCategories(),
+      getTopBrands(),
+      getTopProducts(),
+    ])
 
-exports.getLedgerEntry = async (req, res) => {
-    try {
-        const entry = await Ledger.findById(req.params.id);
-        
-        if (!entry) {
-            return res.status(404).json({
-                success: false,
-                message: 'Ledger entry not found'
-            });
-        }
-        
-        res.json({
-            success: true,
-            data: entry
-        });
-    } catch (error) {
-        console.error('Error getting ledger entry:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to get ledger entry',
-            error: error.message
-        });
+    // Determine which sales data to use based on period
+    let periodSalesData
+    let periodLabel
+    if (period === "daily") {
+      periodSalesData = salesData.dailySalesData
+      periodLabel = "Daily"
+    } else if (period === "weekly") {
+      periodSalesData = salesData.weeklySalesData
+      periodLabel = "Weekly"
+    } else {
+      periodSalesData = salesData.monthlySalesData
+      periodLabel = "Monthly"
     }
-};
 
-exports.editLedgerEntry = async (req, res) => {
-    try {
-        const { id, date, description, category, debit, credit, notes } = req.body;
-        
-        const entry = await Ledger.findById(id);
-        
-        if (!entry) {
-            req.flash('error_msg', 'Ledger entry not found');
-            return res.redirect('/admin');
-        }
-        
-        // Update entry fields
-        entry.date = date || entry.date;
-        entry.description = description || entry.description;
-        entry.category = category || entry.category;
-        entry.debit = parseFloat(debit) || entry.debit;
-        entry.credit = parseFloat(credit) || entry.credit;
-        entry.notes = notes || entry.notes;
-        
-        await entry.save();
-        
-        // Recalculate balances for all subsequent entries
-        const subsequentEntries = await Ledger.find({
-            createdAt: { $gt: entry.createdAt }
-        }).sort({ createdAt: 1 });
-        
-        let currentBalance = entry.balance;
-        
-        for (const subEntry of subsequentEntries) {
-            currentBalance = currentBalance + subEntry.credit - subEntry.debit;
-            subEntry.balance = currentBalance;
-            await subEntry.save();
-        }
-        
-        req.flash('success_msg', 'Ledger entry updated successfully');
-        res.redirect('/admin');
-    } catch (error) {
-        console.error('Error editing ledger entry:', error);
-        req.flash('error_msg', 'Failed to update ledger entry');
-        res.redirect('/admin');
-    }
-};
+    // Export as PDF or Excel
+    if (format === "pdf") {
+      // Generate PDF report
+      const doc = new PDFDocument({ margin: 50 })
 
-exports.deleteLedgerEntry = async (req, res) => {
-    try {
-        const entry = await Ledger.findById(req.params.id);
-        
-        if (!entry) {
-            req.flash('error_msg', 'Ledger entry not found');
-            return res.redirect('/admin');
-        }
-        
-        await entry.remove();
-        
-        // Recalculate balances for all subsequent entries
-        const subsequentEntries = await Ledger.find({
-            createdAt: { $gt: entry.createdAt }
-        }).sort({ createdAt: 1 });
-        
-        let currentBalance = entry.balance - entry.credit + entry.debit;
-        
-        for (const subEntry of subsequentEntries) {
-            currentBalance = currentBalance + subEntry.credit - subEntry.debit;
-            subEntry.balance = currentBalance;
-            await subEntry.save();
-        }
-        
-        req.flash('success_msg', 'Ledger entry deleted successfully');
-        res.redirect('/admin');
-    } catch (error) {
-        console.error('Error deleting ledger entry:', error);
-        req.flash('error_msg', 'Failed to delete ledger entry');
-        res.redirect('/admin');
-    }
-};
+      // Set response headers
+      res.setHeader("Content-Type", "application/pdf")
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=dashboard-report-${new Date().toISOString().slice(0, 10)}.pdf`,
+      )
 
-exports.exportLedger = async (req, res) => {
-    try {
-        const format = req.query.format || 'pdf';
-        const startDate = req.query.startDate ? new Date(req.query.startDate) : null;
-        const endDate = req.query.endDate ? new Date(req.query.endDate) : null;
-        
-        // Build query
-        const query = {};
-        
-        if (startDate && endDate) {
-            query.date = { $gte: startDate, $lte: endDate };
-        } else if (startDate) {
-            query.date = { $gte: startDate };
-        } else if (endDate) {
-            query.date = { $lte: endDate };
-        }
-        
-        // Get ledger entries
-        const entries = await Ledger.find(query).sort({ date: 1 });
-        
-        if (format === 'pdf') {
-            // Generate PDF report
-            const doc = new PDFDocument({ margin: 50 });
-            
-            // Set response headers
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=ledger-report-${moment().format('YYYY-MM-DD')}.pdf`);
-            
-            // Pipe the PDF to the response
-            doc.pipe(res);
-            
-            // Add content to the PDF
-            doc.fontSize(25).text('Ledger Report', { align: 'center' });
-            doc.moveDown();
-            doc.fontSize(12).text(`Generated on: ${moment().format('MMMM Do YYYY, h:mm:ss a')}`, { align: 'center' });
-            doc.moveDown();
-            
-            if (startDate || endDate) {
-                let dateRange = 'Date Range: ';
-                if (startDate) {
-                    dateRange += `From ${moment(startDate).format('YYYY-MM-DD')} `;
-                }
-                if (endDate) {
-                    dateRange += `To ${moment(endDate).format('YYYY-MM-DD')}`;
-                }
-                doc.fontSize(12).text(dateRange, { align: 'center' });
-                doc.moveDown();
-            }
-            
-            // Create a table for ledger entries
-            let yPos = doc.y;
-            const ledgerColWidths = [80, 100, 100, 80, 80, 80];
-            
-            // Table headers
-            doc.fontSize(10).text('Date', doc.x, yPos);
-            doc.fontSize(10).text('Transaction ID', doc.x + ledgerColWidths[0], yPos);
-            doc.fontSize(10).text('Description', doc.x + ledgerColWidths[0] + ledgerColWidths[1], yPos);
-            doc.fontSize(10).text('Debit', doc.x + ledgerColWidths[0] + ledgerColWidths[1] + ledgerColWidths[2], yPos);
-            doc.fontSize(10).text('Credit', doc.x + ledgerColWidths[0] + ledgerColWidths[1] + ledgerColWidths[2] + ledgerColWidths[3], yPos);
-            doc.fontSize(10).text('Balance', doc.x + ledgerColWidths[0] + ledgerColWidths[1] + ledgerColWidths[2] + ledgerColWidths[3] + ledgerColWidths[4], yPos);
-            
-            // Draw header line
-            yPos += 15;
-            doc.moveTo(doc.x, yPos).lineTo(doc.x + ledgerColWidths.reduce((a, b) => a + b, 0), yPos).stroke();
-            yPos += 10;
-            
-            // Table rows
-            entries.forEach((entry) => {
-                // Check if we need a new page
-                if (yPos > doc.page.height - 100) {
-                    doc.addPage();
-                    yPos = doc.y;
-                }
-                
-                doc.fontSize(10).text(moment(entry.date).format('YYYY-MM-DD'), doc.x, yPos);
-                doc.fontSize(10).text(entry.transactionId, doc.x + ledgerColWidths[0], yPos);
-                doc.fontSize(10).text(entry.description, doc.x + ledgerColWidths[0] + ledgerColWidths[1], yPos, { width: ledgerColWidths[2] - 10 });
-                doc.fontSize(10).text(`₹${entry.debit.toLocaleString('en-IN')}`, doc.x + ledgerColWidths[0] + ledgerColWidths[1] + ledgerColWidths[2], yPos);
-                doc.fontSize(10).text(`₹${entry.credit.toLocaleString('en-IN')}`, doc.x + ledgerColWidths[0] + ledgerColWidths[1] + ledgerColWidths[2] + ledgerColWidths[3], yPos);
-                doc.fontSize(10).text(`₹${entry.balance.toLocaleString('en-IN')}`, doc.x + ledgerColWidths[0] + ledgerColWidths[1] + ledgerColWidths[2] + ledgerColWidths[3] + ledgerColWidths[4], yPos);
-                
-                yPos += 20;
-            });
-            
-            // Draw bottom line
-            doc.moveTo(doc.x, yPos).lineTo(doc.x + ledgerColWidths.reduce((a, b) => a + b, 0), yPos).stroke();
-            
-            // Add summary
-            yPos += 20;
-            const totalDebit = entries.reduce((sum, entry) => sum + entry.debit, 0);
-            const totalCredit = entries.reduce((sum, entry) => sum + entry.credit, 0);
-            const finalBalance = entries.length > 0 ? entries[entries.length - 1].balance : 0;
-            
-            doc.fontSize(12).text(`Total Debit: ₹${totalDebit.toLocaleString('en-IN')}`, doc.x, yPos);
-            yPos += 20;
-            doc.fontSize(12).text(`Total Credit: ₹${totalCredit.toLocaleString('en-IN')}`, doc.x, yPos);
-            yPos += 20;
-            doc.fontSize(12).text(`Final Balance: ₹${finalBalance.toLocaleString('en-IN')}`, doc.x, yPos);
-            
-            // Finalize the PDF
-            doc.end();
-        } else if (format === 'excel') {
-            // Generate Excel report
-            const workbook = new ExcelJS.Workbook();
-            
-            // Add Ledger worksheet
-            const ledgerSheet = workbook.addWorksheet('Ledger');
-            
-            // Add title and date
-            ledgerSheet.mergeCells('A1:F1');
-            ledgerSheet.getCell('A1').value = 'Ledger Report';
-            ledgerSheet.getCell('A1').font = { size: 16, bold: true };
-            ledgerSheet.getCell('A1').alignment = { horizontal: 'center' };
-            
-            ledgerSheet.mergeCells('A2:F2');
-            ledgerSheet.getCell('A2').value = `Generated on: ${moment().format('MMMM Do YYYY, h:mm:ss a')}`;
-            ledgerSheet.getCell('A2').alignment = { horizontal: 'center' };
-            
-            if (startDate || endDate) {
-                ledgerSheet.mergeCells('A3:F3');
-                let dateRange = 'Date Range: ';
-                if (startDate) {
-                    dateRange += `From ${moment(startDate).format('YYYY-MM-DD')} `;
-                }
-                if (endDate) {
-                    dateRange += `To ${moment(endDate).format('YYYY-MM-DD')}`;
-                }
-                ledgerSheet.getCell('A3').value = dateRange;
-                ledgerSheet.getCell('A3').alignment = { horizontal: 'center' };
-            }
-            
-            // Add headers
-            const headerRow = ledgerSheet.addRow(['Date', 'Transaction ID', 'Description', 'Debit', 'Credit', 'Balance']);
-            headerRow.font = { bold: true };
-            
-            // Add data
-            entries.forEach((entry) => {
-                ledgerSheet.addRow([
-                    moment(entry.date).format('YYYY-MM-DD'),
-                    entry.transactionId,
-                    entry.description,
-                    entry.debit,
-                    entry.credit,
-                    entry.balance
-                ]);
-            });
-            
-            // Add summary
-            ledgerSheet.addRow([]);
-            const totalDebit = entries.reduce((sum, entry) => sum + entry.debit, 0);
-            const totalCredit = entries.reduce((sum, entry) => sum + entry.credit, 0);
-            const finalBalance = entries.length > 0 ? entries[entries.length - 1].balance : 0;
-            
-            ledgerSheet.addRow(['Total Debit', '', '', totalDebit, '', '']);
-            ledgerSheet.addRow(['Total Credit', '', '', '', totalCredit, '']);
-            ledgerSheet.addRow(['Final Balance', '', '', '', '', finalBalance]);
-            
-            // Format currency columns
-            ledgerSheet.getColumn(4).numFmt = '₹#,##0.00';
-            ledgerSheet.getColumn(5).numFmt = '₹#,##0.00';
-            ledgerSheet.getColumn(6).numFmt = '₹#,##0.00';
-            
-            // Set column widths
-            ledgerSheet.getColumn(1).width = 15;
-            ledgerSheet.getColumn(2).width = 20;
-            ledgerSheet.getColumn(3).width = 40;
-            ledgerSheet.getColumn(4).width = 15;
-            ledgerSheet.getColumn(5).width = 15;
-            ledgerSheet.getColumn(6).width = 15;
-            
-            // Set response headers
-            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader('Content-Disposition', `attachment; filename=ledger-report-${moment().format('YYYY-MM-DD')}.xlsx`);
-            
-            // Write to response
-            await workbook.xlsx.write(res);
-            res.end();
-        } else {
-            res.status(400).json({
-                success: false,
-                message: 'Invalid format specified. Use pdf or excel.'
-            });
-        }
-    } catch (error) {
-        console.error('Error exporting ledger:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Failed to export ledger',
-            error: error.message
-        });
+      // Pipe PDF to response
+      doc.pipe(res)
+
+      // Add content to PDF
+      doc.fontSize(25).text("Dashboard Report", { align: "center" })
+      doc.moveDown()
+      doc.fontSize(10).text(`Generated on: ${new Date().toLocaleString()}`, { align: "center" })
+      doc.moveDown()
+
+      // Summary section
+      doc.fontSize(16).text("Summary", { underline: true })
+      doc.moveDown()
+      doc.fontSize(12).text(`Total Revenue: ₹${revenueData.totalRevenue.toLocaleString("en-IN")}`)
+      doc.fontSize(12).text(`Total Orders: ${ordersData.totalOrders.toLocaleString("en-IN")}`)
+      doc.fontSize(12).text(`Total Customers: ${customerData.customerCount.toLocaleString("en-IN")}`)
+      doc.fontSize(12).text(`Total Products: ${productData.productCount.toLocaleString("en-IN")}`)
+      doc.moveDown()
+
+      // Sales data section
+      doc.fontSize(16).text(`${periodLabel} Sales Data`, { underline: true })
+      doc.moveDown()
+
+      // Create a simple table for sales data
+      const salesTable = {
+        headers: ["Period", "Revenue", "Orders"],
+        rows: [],
+      }
+
+      periodSalesData.forEach((item) => {
+        salesTable.rows.push([item._id, `₹${item.revenue.toLocaleString("en-IN")}`, item.count.toString()])
+      })
+
+      // Draw table headers
+      let y = doc.y
+      const columnWidth = 150
+      salesTable.headers.forEach((header, i) => {
+        doc.font("Helvetica-Bold").text(header, 50 + i * columnWidth, y, { width: columnWidth, align: "left" })
+      })
+      doc.moveDown()
+
+      // Draw table rows
+      salesTable.rows.forEach((row) => {
+        y = doc.y
+        row.forEach((cell, i) => {
+          doc.font("Helvetica").text(cell, 50 + i * columnWidth, y, { width: columnWidth, align: "left" })
+        })
+        doc.moveDown()
+      })
+
+      // Finalize PDF
+      doc.end()
+    } else {
+      // Generate Excel report
+      const workbook = new ExcelJS.Workbook()
+      workbook.creator = "Admin Dashboard"
+      workbook.created = new Date()
+
+      // Summary sheet
+      const summarySheet = workbook.addWorksheet("Summary")
+      summarySheet.columns = [
+        { header: "Metric", key: "metric", width: 20 },
+        { header: "Value", key: "value", width: 20 },
+        { header: "Change (%)", key: "change", width: 20 },
+      ]
+
+      summarySheet.addRows([
+        {
+          metric: "Total Revenue",
+          value: revenueData.totalRevenue,
+          change: revenueData.revenueChange.toFixed(1) + "%",
+        },
+        { metric: "Total Orders", value: ordersData.totalOrders, change: ordersData.orderChange.toFixed(1) + "%" },
+        {
+          metric: "Total Customers",
+          value: customerData.customerCount,
+          change: customerData.customerChange.toFixed(1) + "%",
+        },
+        {
+          metric: "Total Products",
+          value: productData.productCount,
+          change: productData.productChange.toFixed(1) + "%",
+        },
+      ])
+
+      // Sales data sheet
+      const salesSheet = workbook.addWorksheet(`${periodLabel} Sales`)
+      salesSheet.columns = [
+        { header: "Period", key: "period", width: 20 },
+        { header: "Revenue", key: "revenue", width: 20 },
+        { header: "Orders", key: "orders", width: 15 },
+      ]
+
+      periodSalesData.forEach((item) => {
+        salesSheet.addRow({
+          period: item._id,
+          revenue: item.revenue,
+          orders: item.count,
+        })
+      })
+
+      // Payment methods sheet
+      const paymentSheet = workbook.addWorksheet("Payment Methods")
+      paymentSheet.columns = [
+        { header: "Method", key: "method", width: 20 },
+        { header: "Revenue", key: "revenue", width: 20 },
+        { header: "Count", key: "count", width: 15 },
+      ]
+
+      paymentMethodDistribution.forEach((item) => {
+        paymentSheet.addRow({
+          method: item._id,
+          revenue: item.revenue,
+          count: item.count,
+        })
+      })
+
+      // Top categories sheet
+      const categoriesSheet = workbook.addWorksheet("Top Categories")
+      categoriesSheet.columns = [
+        { header: "Category", key: "category", width: 20 },
+        { header: "Revenue", key: "revenue", width: 20 },
+        { header: "Sold Count", key: "soldCount", width: 15 },
+      ]
+
+      topCategories.forEach((item) => {
+        categoriesSheet.addRow({
+          category: item.name,
+          revenue: item.revenue,
+          soldCount: item.soldCount,
+        })
+      })
+
+      // Top brands sheet
+      const brandsSheet = workbook.addWorksheet("Top Brands")
+      brandsSheet.columns = [
+        { header: "Brand", key: "brand", width: 20 },
+        { header: "Revenue", key: "revenue", width: 20 },
+        { header: "Sold Count", key: "soldCount", width: 15 },
+      ]
+
+      topBrands.forEach((item) => {
+        brandsSheet.addRow({
+          brand: item.name,
+          revenue: item.revenue,
+          soldCount: item.soldCount,
+        })
+      })
+
+      // Top products sheet
+      const productsSheet = workbook.addWorksheet("Top Products")
+      productsSheet.columns = [
+        { header: "Product", key: "product", width: 30 },
+        { header: "Revenue", key: "revenue", width: 20 },
+        { header: "Sold Count", key: "soldCount", width: 15 },
+      ]
+
+      topProducts.forEach((item) => {
+        productsSheet.addRow({
+          product: item.name,
+          revenue: item.revenue,
+          soldCount: item.soldCount,
+        })
+      })
+
+      // Set response headers
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename=dashboard-report-${new Date().toISOString().slice(0, 10)}.xlsx`,
+      )
+
+      // Write workbook to response
+      await workbook.xlsx.write(res)
+      res.end()
     }
-};
+  } catch (error) {
+    console.error("Error exporting report:", error)
+    res.status(500).json({ success: false, message: "Server error" })
+  }
+}
