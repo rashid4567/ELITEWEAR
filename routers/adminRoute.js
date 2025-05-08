@@ -9,6 +9,7 @@ const adminorderController = require("../controller/admin/adminOrderController")
 const CouponController = require("../controller/admin/CounponController")
 const salesontroller = require("../controller/admin/salesController")
 const adminWalletController = require("../controller/admin/adminWalletController")
+const reviewController = require("../controller/admin/adminReviewController")
 const upload = require("../middleware/cluadinaryConfig")
 const { userAuth, adminAuth } = require("../middleware/auth")
 
@@ -121,6 +122,13 @@ router.get("/user-wallet/:userId", adminAuth, adminWalletController.getUserWalle
 router.get("/refund-statistics", adminAuth, adminWalletController.getRefundStatistics)
 router.post("/process-manual-refund", adminAuth, adminWalletController.processManualRefund)
 router.get("/refund-details/:transactionRef", adminAuth, adminWalletController.getRefundDetails)
+
+router.get("/reviews", adminAuth, reviewController.getAllReviews)
+router.post("/reviews/:id/approve", adminAuth, reviewController.approveReview)
+router.post("/reviews/:id/reject", adminAuth, reviewController.rejectReview)
+router.delete("/reviews/:id", adminAuth, reviewController.deleteReview)
+router.get("/review-statistics", adminAuth, reviewController.getReviewStatistics)
+
 
 // Settings route
 router.get("/settings", adminAuth, (req, res) => {

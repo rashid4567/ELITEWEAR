@@ -13,6 +13,7 @@ const walletController = require("../controller/user/walletController");
 const referralController = require("../controller/user/referalController");
 const CouponController = require("../controller/user/userCouponCoontroller");
 const razorpayController = require("../controller/user/razzerpayController");
+const reviewController = require('../controller/user/reviewController')
 const { UserAuth } = require("../middleware/auth");
 
 const { checkBlockedStatus } = userControllers;
@@ -252,6 +253,13 @@ router.get("/allcoupons", UserAuth, CouponController.allCoupons);
 router.get("/coupons", UserAuth, CouponController.getAvailableCoupons);
 router.post("/apply-coupon", UserAuth, CouponController.applyCoupon);
 router.post("/remove-coupon", UserAuth, CouponController.removeCoupon);
+
+// review router
+router.get("/reviews", UserAuth, reviewController.getUserReviews)
+router.get("/product/:productId/reviews", reviewController.getProductReviews)
+router.get("/can-review/:productId/:orderItemId", UserAuth, reviewController.canReviewProduct)
+router.post("/review/:productId/:orderItemId", UserAuth, reviewController.submitReview)
+router.delete("/review/:id", UserAuth, reviewController.deleteReview)
 
 // Error handling
 router.get("/page-not-found", userControllers.pageNotfound);
