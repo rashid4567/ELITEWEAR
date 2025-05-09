@@ -255,20 +255,26 @@ router.post("/remove-coupon", UserAuth, CouponController.removeCoupon);
 // Review routes - Updated to match controller method names
 router.get("/reviews", UserAuth, reviewController.getUserReviews);
 router.get("/product/:productId/reviews", reviewController.getProductReviews);
-router.get("/can-review/:productId", UserAuth, reviewController.checkReviewEligibility);
-router.post("/review/submit", UserAuth, reviewController.submitReview);
+// router.get("/can-review/:productId", UserAuth, reviewController.checkReviewEligibility);
+// router.post("/review/submit", UserAuth, reviewController.submitReview);
 router.delete("/review/:reviewId", UserAuth, reviewController.deleteReview);
 
 // Additional review routes
-router.get("/order-item/:orderItemId/review", UserAuth, reviewController.getOrderItemReview);
+// router.get("/order-item/:orderItemId/review", UserAuth, reviewController.getOrderItemReview);
+
+// FIXED: Added this route to match the client-side request path
+router.post("/review/:productId/:orderItemId", UserAuth, reviewController.submitOrderItemReview);
+
+// Keep the original route for backward compatibility
 router.post("/review/order-item/:productId/:orderItemId", UserAuth, reviewController.submitOrderItemReview);
+
 router.post("/review/helpful/:reviewId", UserAuth, reviewController.markReviewHelpful);
-router.get("/product/:productId/review-stats", reviewController.getReviewStatistics);
+// router.get("/product/:productId/review-stats", reviewController.getReviewStatistics);
 
 // API route for checking authentication
-router.get("/api/check-auth", (req, res) => {
-  res.json({ authenticated: !!req.session.user });
-});
+// router.get("/api/check-auth", (req, res) => {
+//   res.json({ authenticated: !!req.session.user });
+// });
 
 // Error handling
 router.get("/page-not-found", userControllers.pageNotfound);

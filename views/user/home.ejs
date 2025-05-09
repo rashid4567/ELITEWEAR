@@ -12,6 +12,8 @@
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <link rel="stylesheet" href="/userStyle/header.css">
     <link rel="stylesheet" href="/userStyle/footer.css">
+    <link rel="stylesheet" href="/userStyle/trending-section-styles.css">
+    <link rel="stylesheet" href="/userStyle/customer-reviews.css">
     <style>
         :root {
             --primary-color: #0f172a;
@@ -91,6 +93,7 @@
         img {
             max-width: 100%;
             height: auto;
+            display: block; /* Added to fix image display issues */
         }
 
         /* Scrollbar styling */
@@ -516,6 +519,13 @@
             display: block;
             padding-top: 125%; /* 4:5 aspect ratio */
         }
+        .product-image-link1 {
+            position: relative;
+            overflow: hidden;
+            display: block;
+            /* padding-top: 125%; 4:5 aspect ratio */
+        }
+
 
         .product-image {
             position: absolute;
@@ -792,23 +802,6 @@
             opacity: 1;
         }
 
-        /* Trending Products Section */
-        .trending-products-section {
-            padding: 5rem 0;
-            background-color: var(--secondary-color);
-        }
-
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 1s ease;
-        }
-
-        .fade-in.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
         /* Collection Showcase */
         .collection-showcase {
             padding: 5rem 0;
@@ -848,6 +841,16 @@
             height: 100%;
             object-fit: cover;
             transition: transform var(--transition-normal);
+            opacity: 0.8;
+            transition: opacity var(--transition-normal), transform var(--transition-normal);
+        }
+
+        .collection-video.loaded {
+            opacity: 1;
+        }
+
+        .video-loaded .video-overlay {
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.4), transparent);
         }
 
         .collection-card:hover .collection-video {
@@ -965,136 +968,6 @@
 
         .btn-collection:hover::before {
             opacity: 1;
-        }
-
-        /* Testimonials Section */
-        .testimonials-section {
-            padding: 5rem 0;
-            background-color: var(--secondary-color);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .testimonials-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('/images/pattern-dots.svg');
-            opacity: 0.03;
-            z-index: 0;
-        }
-
-        .testimonials-section .section-title {
-            margin-bottom: 3rem;
-        }
-
-        .testimonials-section .section-title::after {
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .testimonials-swiper {
-            overflow: visible;
-            padding-bottom: 3rem;
-        }
-
-        .testimonial-card {
-            background-color: var(--card-bg);
-            border-radius: var(--border-radius-lg);
-            padding: 2rem;
-            box-shadow: var(--card-shadow);
-            transition: all var(--transition-normal);
-            height: 100%;
-            position: relative;
-            z-index: 1;
-        }
-
-        .testimonial-card::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: var(--gradient-primary);
-            z-index: -1;
-            border-radius: calc(var(--border-radius-lg) + 2px);
-            opacity: 0;
-            transition: opacity var(--transition-normal);
-        }
-
-        .testimonial-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--card-hover-shadow);
-        }
-
-        .testimonial-card:hover::before {
-            opacity: 1;
-        }
-
-        .testimonial-rating {
-            display: flex;
-            gap: 0.25rem;
-            color: var(--warning-color);
-            margin-bottom: 1rem;
-        }
-
-        .testimonial-text {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            margin-bottom: 1.5rem;
-            line-height: 1.6;
-            font-style: italic;
-            position: relative;
-        }
-
-        .testimonial-text::before {
-            content: '"';
-            font-size: 4rem;
-            font-family: var(--font-secondary);
-            position: absolute;
-            top: -2rem;
-            left: -1rem;
-            color: var(--accent-color);
-            opacity: 0.1;
-        }
-
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .author-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 2px solid transparent;
-            background: var(--gradient-primary);
-            padding: 2px;
-        }
-
-        .author-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        .author-info h4 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .author-info p {
-            font-size: 0.9rem;
-            color: var(--text-light);
-            margin: 0;
         }
 
         /* Newsletter Section */
@@ -1393,15 +1266,6 @@
             }
         }
 
-        @keyframes shimmer {
-            0% {
-                background-position: -1000px 0;
-            }
-            100% {
-                background-position: 1000px 0;
-            }
-        }
-
         /* Futuristic Elements */
         .futuristic-badge {
             position: absolute;
@@ -1648,6 +1512,795 @@
             width: 0%;
             transition: width 0.1s ease;
         }
+
+        /* Floating Heart Animation */
+        .floating-heart {
+            position: absolute;
+            color: var(--accent-color);
+            font-size: 1.5rem;
+            pointer-events: none;
+            animation: float-heart 1s ease-out forwards;
+            z-index: 10;
+        }
+        
+        @keyframes float-heart {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            50% {
+                opacity: 0.8;
+                transform: translate(-50%, -100%) scale(1.2);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -150%) scale(1);
+            }
+        }
+
+        /* Wishlist Icon Click Animation */
+        .wishlist-icon.clicked {
+            animation: pulse 0.3s ease;
+        }
+
+        /* Fix for product images in New Arrivals section */
+        .products-swiper .product-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Enhanced Trending Products Section Styles */
+.trending-products-section {
+  padding: 5rem 0;
+  background-color: var(--secondary-color);
+  position: relative;
+  overflow: visible; /* Change from 'hidden' to 'visible' */
+  z-index: 1; /* Add this to establish a stacking context */
+  min-height: 400px; /* Add minimum height to ensure visibility */
+}
+
+.trending-products-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("/images/pattern-grid.svg");
+  opacity: 0.03;
+  z-index: 0;
+}
+
+/* Modern Grid Layout - UPDATED WITH SMALLER CARDS */
+.trending-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); /* Reduced from 280px to 240px */
+  gap: 1.5rem; /* Reduced from 2rem to 1.5rem */
+  margin-top: 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+@media (min-width: 768px) {
+  .trending-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 992px) {
+  .trending-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.trending-item {
+  position: relative;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1 !important; /* Force visibility */
+  visibility: visible !important; /* Force visibility */
+  display: block !important; /* Force display */
+  z-index: 5; /* Ensure it's above other elements */
+  transform: none !important; /* Reset any transforms that might be hiding it */
+}
+
+.trending-item:hover {
+  transform: translateY(-10px) !important;
+  z-index: 1000; /* Increase z-index on hover as requested */
+}
+
+/* Enhanced Product Card */
+.trending-item .product-card {
+  height: auto !important; /* Allow height to be determined by content */
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.trending-item .product-card-inner {
+  position: relative;
+  height: 100%;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  transition: all var(--transition-normal), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  opacity: 1 !important; /* Force opacity */
+  visibility: visible !important; /* Force visibility */
+  z-index: 10; /* Ensure proper stacking */
+}
+
+.trending-item .product-card:hover .product-card-inner {
+  box-shadow: var(--card-hover-shadow);
+}
+
+/* Futuristic Border Effect */
+.trending-item .product-card-inner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--border-radius-lg);
+  padding: 2px;
+  background: linear-gradient(135deg, transparent 0%, var(--accent-color) 50%, transparent 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.trending-item .product-card:hover .product-card-inner::before {
+  opacity: 1;
+  animation: rotate-gradient 3s linear infinite;
+}
+
+@keyframes rotate-gradient {
+  0% {
+    background: linear-gradient(135deg, transparent 0%, var(--accent-color) 50%, transparent 100%);
+  }
+  50% {
+    background: linear-gradient(315deg, transparent 0%, var(--accent-secondary) 50%, transparent 100%);
+  }
+  100% {
+    background: linear-gradient(135deg, transparent 0%, var(--accent-color) 50%, transparent 100%);
+  }
+}
+
+/* Product Image Enhancements - CRITICAL FIX */
+.trending-item .product-image-link1 {
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+/* Critical fixes for trending product images */
+/* Critical fixes for trending product images */
+.trending-item .product-image-wrapper {
+  position: relative !important;
+  padding-top: 100% !important; /* Changed from 125% to 100% for a square aspect ratio */
+  overflow: hidden !important;
+  display: block !important;
+  background-color: #f9f9f9 !important;
+  z-index: 1 !important;
+}
+
+.trending-item .product-image {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 1 !important;
+  border: 1px solid #f0f0f0 !important;
+}
+
+/* Ensure product cards are visible */
+.trending-item .product-card,
+.trending-item .product-card-inner {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: auto !important;
+  transform: none !important;
+  position: relative !important;
+  z-index: 10 !important;
+  background-color: var(--card-bg) !important;
+  border-radius: var(--border-radius-lg) !important;
+  box-shadow: var(--card-shadow) !important;
+}
+
+/* Force image display regardless of file type */
+img.product-image[src$=".jpg"],
+img.product-image[src$=".jpeg"],
+img.product-image[src$=".png"],
+img.product-image[src$=".webp"],
+img.product-image[src$=".svg"],
+img.product-image[src*="placeholder"] {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Product Info - UPDATED WITH SMALLER PADDING */
+.trending-item .product-info {
+  padding: 1rem !important; /* Reduced from 1.5rem */
+}
+
+/* Product Name - UPDATED WITH SMALLER FONT */
+.trending-item .product-name {
+  font-size: 0.95rem !important; /* Reduced from 1.1rem */
+  margin-bottom: 0.5rem !important; /* Reduced from 0.75rem */
+  line-height: 1.3 !important; /* Reduced from 1.4 */
+}
+
+/* Product Price and Rating - UPDATED WITH SMALLER MARGINS */
+.trending-item .product-price-rating {
+  margin-bottom: 0.75rem !important; /* Reduced from 1rem */
+}
+
+/* View Product Button - UPDATED WITH SMALLER PADDING */
+.trending-item .btn-view-product {
+  padding: 0.5rem 1rem !important; /* Reduced from 0.75rem 1.5rem */
+  font-size: 0.9rem !important; /* Added smaller font size */
+}
+
+/* Wishlist Icon - UPDATED WITH SMALLER SIZE AND POSITION */
+.trending-item .wishlist-icon {
+  top: 0.75rem !important; /* Reduced from 1rem */
+  right: 0.75rem !important; /* Reduced from 1rem */
+  width: 32px !important; /* Reduced from 40px */
+  height: 32px !important; /* Reduced from 40px */
+}
+
+.trending-item .wishlist-heart {
+  width: 20px !important; /* Reduced from 24px */
+  height: 20px !important; /* Reduced from 24px */
+}
+
+/* Product Badge - UPDATED WITH SMALLER SIZE */
+.trending-item .product-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  background-color: rgba(59, 130, 246, 0.1);
+  color: var(--accent-color);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-sm);
+  font-size: 0.7rem;
+  font-weight: 500;
+  z-index: 2;
+}
+
+/* Add styles for star ratings to match the image */
+.trending-item .star-rating {
+  display: flex;
+  gap: 0.15rem;
+  font-size: 0.8rem !important; /* Smaller stars */
+}
+
+/* Add styles for the view product button to match the image */
+.trending-item .btn-view-product {
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  border-radius: var(--border-radius);
+  transition: all var(--transition-fast);
+}
+
+.trending-item .btn-view-product i {
+  font-size: 0.75rem;
+  transition: transform var(--transition-fast);
+}
+
+.trending-item .btn-view-product:hover i {
+  transform: translateX(3px);
+}
+/* Customer Reviews Section Styles */
+.customer-reviews-section {
+  padding: 5rem 0;
+  background-color: var(--secondary-color);
+  position: relative;
+  overflow: hidden;
+}
+
+.customer-reviews-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("/images/pattern-dots.svg");
+  opacity: 0.03;
+  z-index: 0;
+}
+
+.customer-reviews-section .section-title {
+  margin-bottom: 3rem;
+  text-align: center;
+  position: relative;
+}
+
+.customer-reviews-section .section-title::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: var(--gradient-primary);
+  border-radius: var(--border-radius-full);
+  transition: width var(--transition-normal);
+}
+
+.customer-reviews-section .section-title:hover::after {
+  width: 120px;
+}
+
+.reviews-container {
+  position: relative;
+  padding: 1rem 0 3rem;
+}
+
+.reviews-swiper {
+  overflow: visible;
+  padding: 2rem 0.5rem;
+}
+
+.review-card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  box-shadow: var(--card-shadow);
+  transition: all var(--transition-normal);
+  height: 100%;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.review-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 0;
+  background: var(--gradient-primary);
+  transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+}
+
+.review-card:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.review-card:hover::before {
+  height: 100%;
+}
+
+.review-card::after {
+  content: '"';
+  font-size: 12rem;
+  font-family: var(--font-secondary);
+  position: absolute;
+  top: -2rem;
+  right: -1rem;
+  color: var(--accent-color);
+  opacity: 0.03;
+  z-index: 0;
+  transition: all var(--transition-normal);
+}
+
+.review-card:hover::after {
+  transform: rotate(10deg) scale(1.1);
+  opacity: 0.05;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.review-rating {
+  display: flex;
+  gap: 0.25rem;
+  color: var(--warning-color);
+}
+
+.review-product {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+.review-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 2;
+  transition: color var(--transition-normal);
+}
+
+.review-card:hover .review-title {
+  color: var(--accent-color);
+}
+
+.review-content {
+  flex: 1;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.review-text {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-style: italic;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.review-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.reviewer {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.reviewer-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: var(--gradient-primary);
+  padding: 2px;
+  transition: transform var(--transition-normal);
+}
+
+.review-card:hover .reviewer-avatar {
+  transform: scale(1.1);
+}
+
+.reviewer-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--accent-color);
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border-radius: 50%;
+}
+
+.reviewer-info h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.reviewer-info p {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin: 0;
+}
+
+.review-date {
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.helpful-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success-color);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--border-radius-full);
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  z-index: 3;
+}
+
+.helpful-badge i {
+  font-size: 0.75rem;
+}
+
+.reviews-swiper .swiper-pagination {
+  bottom: -10px;
+}
+
+.reviews-swiper .swiper-pagination-bullet {
+  width: 10px;
+  height: 10px;
+  background: var(--text-light);
+  opacity: 0.5;
+  transition: all var(--transition-normal);
+}
+
+.reviews-swiper .swiper-pagination-bullet-active {
+  opacity: 1;
+  background: var(--accent-color);
+  width: 25px;
+  border-radius: 10px;
+}
+
+.reviews-navigation {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1rem;
+}
+
+.reviews-button-prev,
+.reviews-button-next {
+  width: 40px;
+  height: 40px;
+  background: var(--card-bg);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--card-shadow);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  pointer-events: auto;
+  color: var(--text-primary);
+}
+
+.reviews-button-prev:hover,
+.reviews-button-next:hover {
+  background: var(--accent-color);
+  color: white;
+  transform: scale(1.1);
+}
+
+.reviews-button-prev::after,
+.reviews-button-next::after {
+  content: none;
+}
+
+.reviews-cta {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.btn-view-all-reviews {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--gradient-primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius-full);
+  font-weight: 500;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.btn-view-all-reviews::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-secondary);
+  z-index: -1;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.btn-view-all-reviews:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+  color: white;
+}
+
+.btn-view-all-reviews:hover::before {
+  opacity: 1;
+}
+
+.btn-view-all-reviews i {
+  transition: transform var(--transition-normal);
+}
+
+.btn-view-all-reviews:hover i {
+  transform: translateX(5px);
+}
+
+/* Empty state */
+.no-reviews {
+  text-align: center;
+  padding: 3rem;
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+}
+
+.no-reviews-icon {
+  font-size: 3rem;
+  color: var(--text-light);
+  margin-bottom: 1rem;
+}
+
+.no-reviews p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Responsive styles */
+@media (max-width: 991.98px) {
+  .reviews-navigation {
+    display: none;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .review-card {
+    padding: 1.5rem;
+  }
+
+  .review-title {
+    font-size: 1.1rem;
+  }
+
+  .review-text {
+    font-size: 0.95rem;
+    -webkit-line-clamp: 3;
+  }
+
+  .reviewer-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .avatar-placeholder {
+    font-size: 1.2rem;
+  }
+
+  .helpful-badge {
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .customer-reviews-section {
+    padding: 3rem 0;
+  }
+
+  .review-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .review-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .review-date {
+    font-size: 0.8rem;
+  }
+}
+
+/* Animation for review cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.review-card {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Shimmer effect for review cards */
+.shimmer {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(30deg);
+  animation: shimmer 6s infinite;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.review-card:hover .shimmer {
+  opacity: 1;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) rotate(30deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(30deg);
+  }
+}
+
+/* Read more button for reviews */
+.read-more-btn {
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  font-size: 0.9rem;
+  padding: 0;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
     </style>
 </head>
 
@@ -1669,36 +2322,52 @@
     <section class="hero-section">
         <div class="swiper hero-swiper">
             <div class="swiper-wrapper">
-                <div class="swiper-slide">
-                    <div class="hero-slide" style="background-image: url('/Uploads/LP-Mos_main_banner-Summer-Banner-D.jpg');">
-                        <span class="futuristic-badge">New Collection</span>
-                        <div class="hero-content" data-aos="fade-up" data-aos-delay="200">
-                            <h1 class="hero-title">Redefine Your Style</h1>
-                            <p class="hero-subtitle">Discover our premium collection crafted for the modern individual who appreciates elegance and comfort</p>
-                            <a href="/allproduct" class="btn-shop-now">Explore Collection</a>
+                <% if (Banner && Banner.length > 0) { %>
+                    <% Banner.forEach((banner) => { %>
+                        <div class="swiper-slide">
+                            <div class="hero-slide" style="background-image: url('<%= banner.image %>');">
+                                <span class="futuristic-badge"><%= banner.title %></span>
+                                <div class="hero-content" data-aos="fade-up" data-aos-delay="200">
+                                    <h1 class="hero-title"><%= banner.heading %></h1>
+                                    <p class="hero-subtitle"><%= banner.description %></p>
+                                    <a href="<%= banner.buttonLink %>" class="btn-shop-now"><%= banner.buttonText %></a>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <!-- Default banners if none are available -->
+                    <div class="swiper-slide">
+                        <div class="hero-slide" style="background-image: url('/Uploads/LP-Mos_main_banner-Summer-Banner-D.jpg');">
+                            <span class="futuristic-badge">New Collection</span>
+                            <div class="hero-content" data-aos="fade-up" data-aos-delay="200">
+                                <h1 class="hero-title">Redefine Your Style</h1>
+                                <p class="hero-subtitle">Discover our premium collection crafted for the modern individual who appreciates elegance and comfort</p>
+                                <a href="/allproduct" class="btn-shop-now">Explore Collection</a>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="swiper-slide">
-                    <div class="hero-slide" style="background-image: url('/Uploads/LP_Hero Banner_linen_D-2.jpg');">
-                        <span class="futuristic-badge">Premium Linen</span>
-                        <div class="hero-content" data-aos="fade-up" data-aos-delay="200">
-                            <h1 class="hero-title">Breathable Luxury</h1>
-                            <p class="hero-subtitle">Experience the perfect blend of comfort and sophistication with our premium linen collection</p>
-                            <a href="/allproduct" class="btn-shop-now">Shop Now</a>
+                    <div class="swiper-slide">
+                        <div class="hero-slide" style="background-image: url('/Uploads/LP_Hero Banner_linen_D-2.jpg');">
+                            <span class="futuristic-badge">Premium Linen</span>
+                            <div class="hero-content" data-aos="fade-up" data-aos-delay="200">
+                                <h1 class="hero-title">Breathable Luxury</h1>
+                                <p class="hero-subtitle">Experience the perfect blend of comfort and sophistication with our premium linen collection</p>
+                                <a href="/allproduct" class="btn-shop-now">Shop Now</a>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="swiper-slide">
-                    <div class="hero-slide" style="background-image: url('/Uploads/timesnap.jpeg');">
-                        <span class="futuristic-badge">Formal Collection</span>
-                        <div class="hero-content" data-aos="fade-up" data-aos-delay="200">
-                            <h1 class="hero-title">Elevate Your Presence</h1>
-                            <p class="hero-subtitle">Make a lasting impression with our meticulously crafted formal wear designed for the modern professional</p>
-                            <a href="/allproduct" class="btn-shop-now">View Collection</a>
+                    <div class="swiper-slide">
+                        <div class="hero-slide" style="background-image: url('/Uploads/timesnap.jpeg');">
+                            <span class="futuristic-badge">Formal Collection</span>
+                            <div class="hero-content" data-aos="fade-up" data-aos-delay="200">
+                                <h1 class="hero-title">Elevate Your Presence</h1>
+                                <p class="hero-subtitle">Make a lasting impression with our meticulously crafted formal wear designed for the modern professional</p>
+                                <a href="/allproduct" class="btn-shop-now">View Collection</a>
+                            </div>
                         </div>
                     </div>
-                </div>
+                <% } %>
             </div>
             <div class="swiper-pagination"></div>
             <div class="swiper-button-next"></div>
@@ -1780,7 +2449,12 @@
                                         </svg>
                                     </div>
                                     <a href="/productdetails/<%= product._id %>" class="product-image-link">
-                                        <img src="<%= product.images && product.images.length > 0 ? product.images[0].url : '/placeholder.svg?height=300&width=300&query=shirt' %>" alt="<%= product.name || 'Product Image' %>" class="product-image">
+                                        <img 
+                                            src="<%= product.images && product.images.length > 0 ? product.images[0].url : '/placeholder.svg?height=300&width=300&query=shirt' %>" 
+                                            alt="<%= product.name || 'Product Image' %>" 
+                                            class="product-image"
+                                            onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=shirt';"
+                                        >
                                         <div class="product-overlay">
                                             <span class="quick-view">Quick View</span>
                                         </div>
@@ -1848,70 +2522,182 @@
     </section>
 
     <!-- Trending Products Section -->
-    <section class="trending-products-section">
-        <div class="container">
-            <div class="section-header" data-aos="fade-up">
-                <h2 class="section-title">Trending Now</h2>
-                <a href="/allproduct?sort=popular" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
-            </div>
-            
-            <div class="row g-4 fade-in">
-                <% if (data && Array.isArray(data) && data.length > 0) { %>
-                    <% data.slice(0, 4).forEach((product, index) => { %>
-                        <div class="col-6 col-md-3" data-aos="fade-up" data-aos-delay="<%= index * 100 %>">
-                            <div class="product-card">
-                                <div class="wishlist-icon">
-                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart" data-product-id="<%= product._id %>">
-                                        <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                                    </svg>
-                                </div>
-                                <a href="/productdetails/<%= product._id %>" class="product-image-link">
-                                    <img src="<%= product.images && product.images.length > 0 ? product.images[0].url : '/placeholder.svg?height=300&width=300&query=shirt' %>" alt="<%= product.name || 'Product Image' %>" class="product-image">
-                                        <div class="product-overlay">
-                                            <span class="quick-view">Quick View</span>
-                                        </div>
-                                    </a>
-                                    <div class="product-info">
-                                        <h3 class="product-name"><%= product.name || 'Unnamed Product' %></h3>
-                                        <div class="product-price-rating">
-                                            <p class="product-price">₹<%= (product.variants && product.variants.length > 0 ? product.variants[0].salePrice : 0).toFixed(2) %></p>
-                                            <div class="star-rating">
-                                                <% const rating = product.ratings && product.ratings.average ? product.ratings.average : 0;
-                                                    for(let i = 1; i <= 5; i++) {
-                                                        if(i <= rating) { %>
-                                                            <i class="fas fa-star"></i>
-                                                        <% } else if(i - 0.5 <= rating) { %>
-                                                            <i class="fas fa-star-half-alt"></i>
-                                                        <% } else { %>
-                                                            <i class="far fa-star"></i>
-                                                        <% } 
-                                                    } 
-                                                %>
-                                            </div>
-                                        </div>
-                                        <a href="/productdetails/<%= product._id %>" class="btn-view-product">View Product</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    <% }) %>
-                <% } else { %>
-                    <div class="col-12">
-                        <p class="no-products">No trending products available at this time.</p>
+<section class="trending-products-section">
+  <div class="container">
+    <div class="section-header" data-aos="fade-up">
+      <h2 class="section-title">Trending Now</h2>
+      <a href="/allproduct?sort=popular" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+    
+    <div class="trending-grid">
+      <% if (data && Array.isArray(data) && data.length > 0) { %>
+        <% data.slice(0, 4).forEach((product, index) => { %>
+          <div class="trending-item" data-aos="fade-up" data-aos-delay="<%= index * 100 %>">
+            <div class="product-card">
+              <div class="product-card-inner">
+                <div class="wishlist-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart" data-product-id="<%= product._id %>">
+                    <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                </div>
+                <a href="/productdetails/<%= product._id %>" class="product-image-link1">
+                  <div class="product-image-wrapper">
+                    <% 
+                    let imageUrl = '/placeholder.svg?height=300&width=300&query=fashion+product';
+                    if (product.images && product.images.length > 0 && product.images[0].url) {
+                      imageUrl = product.images[0].url;
+                    }
+                    %>
+                    <img 
+                      src="<%= imageUrl %>" 
+                      alt="<%= product.name || 'Product Image' %>" 
+                      class="product-image"
+                      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block !important; opacity: 1 !important; visibility: visible !important; z-index: 1;"
+                      onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';"
+                    >
+                  </div>
+                </a>
+                <div class="product-info">
+                  <div class="product-badge">
+                    <span>Trending</span>
+                  </div>
+                  <h3 class="product-name"><%= product.name || 'Unnamed Product' %></h3>
+                  <div class="product-price-rating">
+                    <p class="product-price">₹<%= (product.variants && product.variants.length > 0 ? product.variants[0].salePrice : 0).toFixed(2) %></p>
+                    <div class="star-rating">
+                      <% const rating = product.ratings && product.ratings.average ? product.ratings.average : 0;
+                        for(let i = 1; i <= 5; i++) {
+                          if(i <= rating) { %>
+                            <i class="fas fa-star"></i>
+                          <% } else if(i - 0.5 <= rating) { %>
+                            <i class="fas fa-star-half-alt"></i>
+                          <% } else { %>
+                            <i class="far fa-star"></i>
+                          <% } 
+                        } 
+                      %>
                     </div>
-                <% } %>
+                  </div>
+                  <a href="/productdetails/<%= product._id %>" class="btn-view-product">
+                    View Product <i class="fas fa-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
             </div>
-        </div>
-    </section>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <!-- Fallback products if no data is available -->
+        <% 
+        const fallbackProducts = [
+          { 
+            name: "Signature Twill Paisley Effect Shirt", 
+            price: 3612.00, 
+            rating: 0, 
+            image: "/placeholder.svg?height=300&width=300&query=pink%20dress%20shirt" 
+          },
+          { 
+            name: "Solid Merino Wool Shirt", 
+            price: 18275.00, 
+            rating: 5, 
+            image: "/placeholder.svg?height=300&width=300&query=brown%20dress%20shirt" 
+          },
+          { 
+            name: "Paisley Pulse Twill Shirt", 
+            price: 3807.00, 
+            rating: 0, 
+            image: "/placeholder.svg?height=300&width=300&query=paisley%20pattern%20shirt" 
+          },
+          { 
+            name: "Solid Signature Twill Shirt", 
+            price: 5727.00, 
+            rating: 0, 
+            image: "/placeholder.svg?height=300&width=300&query=cream%20dress%20shirt" 
+          }
+        ];
+        
+        fallbackProducts.forEach((product, index) => { 
+        %>
+          <div class="trending-item" data-aos="fade-up" data-aos-delay="<%= index * 100 %>">
+            <div class="product-card">
+              <div class="product-card-inner">
+                <div class="wishlist-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart">
+                    <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                </div>
+                <a href="/allproduct" class="product-image-link1">
+                  <div class="product-image-wrapper">
+                    <img 
+                      src="<%= product.image %>" 
+                      alt="<%= product.name %>" 
+                      class="product-image"
+                      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block !important; opacity: 1 !important; visibility: visible !important; z-index: 1;"
+                      onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';"
+                    >
+                  </div>
+                </a>
+                <div class="product-info">
+                  <div class="product-badge">
+                    <span>Trending</span>
+                  </div>
+                  <h3 class="product-name"><%= product.name %></h3>
+                  <div class="product-price-rating">
+                    <p class="product-price">₹<%= product.price.toFixed(2) %></p>
+                    <div class="star-rating">
+                      <% for(let i = 1; i <= 5; i++) {
+                        if(i <= Math.floor(product.rating)) { %>
+                          <i class="fas fa-star"></i>
+                        <% } else if(i - 0.5 <= product.rating) { %>
+                          <i class="fas fa-star-half-alt"></i>
+                        <% } else { %>
+                          <i class="far fa-star"></i>
+                        <% } 
+                      } %>
+                    </div>
+                  </div>
+                  <a href="/allproduct" class="btn-view-product">
+                    View Product <i class="fas fa-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+</section>
 
-    <!-- Collection Showcase -->
+    <!-- Add this script to fix image rendering issues -->
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Fix for trending product images
+      const trendingImages = document.querySelectorAll('.trending-item .product-image');
+      
+      trendingImages.forEach((img) => {
+        // Force image display properties
+        img.style.display = "block";
+        img.style.opacity = "1";
+        img.style.visibility = "visible";
+        
+        // Add error handling
+        img.onerror = function() {
+          this.src = '/placeholder.svg?height=300&width=300&query=fashion+product';
+        };
+      });
+    });
+    </script>
+
+    <!-- Collection Showcase with Video -->
     <section class="collection-showcase">
         <div class="container">
             <div class="collection-card" data-aos="fade-up">
                 <div class="collection-video-container">
                     <video class="collection-video" autoplay loop muted playsinline>
-                        <source src="/placeholder.svg?height=500&width=500&query=formal shirt video" type="video/mp4">
-                        Your browser does not support the video tag.
+                        <source src="/videos/formal-collection.mp4" type="video/mp4">
+                        <!-- Fallback image if video doesn't load -->
+                        <img src="/Uploads/Screenshot 2025-04-07 201605.png" alt="Formal Collection" class="collection-video">
                     </video>
                     <div class="video-overlay"></div>
                 </div>
@@ -1938,78 +2724,179 @@
         </div>
     </section>
 
-    <!-- Testimonials Section -->
-    <section class="testimonials-section">
+    <!-- Customer Reviews Section -->
+    <section class="customer-reviews-section">
         <div class="container">
             <h2 class="section-title text-center" data-aos="fade-up">What Our Customers Say</h2>
             
-            <div class="swiper testimonials-swiper" data-aos="fade-up" data-aos-delay="200">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide">
-                        <div class="testimonial-card">
-                            <div class="testimonial-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                            </div>
-                            <p class="testimonial-text">"The quality of shirts from Elite Wear is exceptional. The fabric feels premium and the fit is perfect. I've received numerous compliments whenever I wear them. Definitely my go-to brand for formal wear."</p>
-                            <div class="testimonial-author">
-                                <div class="author-avatar">
-                                    <img src="/placeholder.svg?height=50&width=50&query=man portrait" alt="Customer">
+            <div class="reviews-container" data-aos="fade-up" data-aos-delay="200">
+                <div class="swiper reviews-swiper">
+                    <div class="swiper-wrapper">
+                        <% if (reviews && reviews.length > 0) { %>
+                            <% reviews.forEach((review, index) => { %>
+                                <div class="swiper-slide">
+                                    <div class="review-card" data-aos="fade-up" data-aos-delay="<%= index * 100 %>">
+                                        <div class="shimmer"></div>
+                                        <div class="review-header">
+                                            <div class="review-rating">
+                                                <% for(let i = 1; i <= 5; i++) { %>
+                                                    <% if(i <= review.rating) { %>
+                                                        <i class="fas fa-star"></i>
+                                                    <% } else { %>
+                                                        <i class="far fa-star"></i>
+                                                    <% } %>
+                                                <% } %>
+                                            </div>
+                                            <div class="review-product">
+                                                <span>on <%= review.product ? review.product.name : 'Product' %></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <h4 class="review-title"><%= review.title %></h4>
+                                        
+                                        <div class="review-content">
+                                            <p class="review-text"><%= review.description %></p>
+                                        </div>
+                                        
+                                        <div class="review-footer">
+                                            <div class="reviewer">
+                                                <div class="reviewer-avatar">
+                                                    <% if (review.user && review.user.profileImage) { %>
+                                                        <img src="<%= review.user.profileImage %>" alt="<%= review.user.fullname %>">
+                                                    <% } else { %>
+                                                        <div class="avatar-placeholder">
+                                                            <%= review.user && review.user.fullname ? review.user.fullname.charAt(0).toUpperCase() : 'U' %>
+                                                        </div>
+                                                    <% } %>
+                                                </div>
+                                                <div class="reviewer-info">
+                                                    <h5><%= review.user ? review.user.fullname : 'Anonymous' %></h5>
+                                                    <p>Verified Buyer</p>
+                                                </div>
+                                            </div>
+                                            <div class="review-date">
+                                                <%= new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) %>
+                                            </div>
+                                        </div>
+                                        
+                                        <% if (review.helpfulVotes && review.helpfulVotes.length > 0) { %>
+                                            <div class="helpful-badge">
+                                                <i class="fas fa-thumbs-up"></i> <%= review.helpfulVotes.length %> found this helpful
+                                            </div>
+                                        <% } %>
+                                    </div>
                                 </div>
-                                <div class="author-info">
-                                    <h4>Rajesh Kumar</h4>
-                                    <p>Verified Buyer</p>
+                            <% }) %>
+                        <% } else { %>
+                            <!-- Fallback testimonials if no reviews are available -->
+                            <div class="swiper-slide">
+                                <div class="review-card">
+                                    <div class="shimmer"></div>
+                                    <div class="review-header">
+                                        <div class="review-rating">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                    </div>
+                                    <h4 class="review-title">Exceptional Quality</h4>
+                                    <div class="review-content">
+                                        <p class="review-text">"The quality of shirts from Elite Wear is exceptional. The fabric feels premium and the fit is perfect. I've received numerous compliments whenever I wear them. Definitely my go-to brand for formal wear."</p>
+                                    </div>
+                                    <div class="review-footer">
+                                        <div class="reviewer">
+                                            <div class="reviewer-avatar">
+                                                <div class="avatar-placeholder">R</div>
+                                            </div>
+                                            <div class="reviewer-info">
+                                                <h5>Rajesh Kumar</h5>
+                                                <p>Verified Buyer</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                            <div class="swiper-slide">
+                                <div class="review-card">
+                                    <div class="shimmer"></div>
+                                    <div class="review-header">
+                                        <div class="review-rating">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star-half-alt"></i>
+                                        </div>
+                                    </div>
+                                    <h4 class="review-title">Always Up-to-Date</h4>
+                                    <div class="review-content">
+                                        <p class="review-text">"I've been shopping with Elite Wear for over a year now. Their collection is always up-to-date with the latest trends, and the quality never disappoints. The customer service is also exceptional."</p>
+                                    </div>
+                                    <div class="review-footer">
+                                        <div class="reviewer">
+                                            <div class="reviewer-avatar">
+                                                <div class="avatar-placeholder">V</div>
+                                            </div>
+                                            <div class="reviewer-info">
+                                                <h5>Vikram Singh</h5>
+                                                <p>Loyal Customer</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="review-card">
+                                    <div class="shimmer"></div>
+                                    <div class="review-header">
+                                        <div class="review-rating">
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                    </div>
+                                    <h4 class="review-title">Remarkable Attention to Detail</h4>
+                                    <div class="review-content">
+                                        <p class="review-text">"The attention to detail in Elite Wear shirts is remarkable. From the stitching to the buttons, everything speaks quality. The linen collection is perfect for summer, breathable yet elegant. Highly recommend!"</p>
+                                    </div>
+                                    <div class="review-footer">
+                                        <div class="reviewer">
+                                            <div class="reviewer-avatar">
+                                                <div class="avatar-placeholder">A</div>
+                                            </div>
+                                            <div class="reviewer-info">
+                                                <h5>Arun Patel</h5>
+                                                <p>Verified Buyer</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } %>
                     </div>
-                    <div class="swiper-slide">
-                        <div class="testimonial-card">
-                            <div class="testimonial-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i>
-                            </div>
-                            <p class="testimonial-text">"I've been shopping with Elite Wear for over a year now. Their collection is always up-to-date with the latest trends, and the quality never disappoints. The customer service is also exceptional."</p>
-                            <div class="testimonial-author">
-                                <div class="author-avatar">
-                                    <img src="/placeholder.svg?height=50&width=50&query=young man portrait" alt="Customer">
-                                </div>
-                                <div class="author-info">
-                                    <h4>Vikram Singh</h4>
-                                    <p>Loyal Customer</p>
-                                </div>
-                            </div>
+                    
+                    <div class="swiper-pagination"></div>
+                    
+                    <div class="reviews-navigation">
+                        <div class="reviews-button-prev">
+                            <i class="fas fa-chevron-left"></i>
                         </div>
-                    </div>
-                    <div class="swiper-slide">
-                        <div class="testimonial-card">
-                            <div class="testimonial-rating">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                            </div>
-                            <p class="testimonial-text">"The attention to detail in Elite Wear shirts is remarkable. From the stitching to the buttons, everything speaks quality. The linen collection is perfect for summer, breathable yet elegant. Highly recommend!"</p>
-                            <div class="testimonial-author">
-                                <div class="author-avatar">
-                                    <img src="/placeholder.svg?height=50&width=50&query=professional man" alt="Customer">
-                                </div>
-                                <div class="author-info">
-                                    <h4>Arun Patel</h4>
-                                    <p>Verified Buyer</p>
-                                </div>
-                            </div>
+                        <div class="reviews-button-next">
+                            <i class="fas fa-chevron-right"></i>
                         </div>
                     </div>
                 </div>
-                <div class="swiper-pagination"></div>
+            </div>
+            
+            <div class="reviews-cta" data-aos="fade-up">
+                <a href="/reviews" class="btn-view-all-reviews">
+                    <span>View All Reviews</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
         </div>
     </section>
@@ -2187,24 +3074,35 @@
                 },
             });
 
-            const testimonialsSwiper = new Swiper('.testimonials-swiper', {
+            // Initialize Reviews Swiper
+            const reviewsSwiper = new Swiper('.reviews-swiper', {
                 slidesPerView: 1,
                 spaceBetween: 20,
                 loop: true,
                 autoplay: {
-                    delay: 6000,
+                    delay: 5000,
                     disableOnInteraction: false,
                 },
                 pagination: {
-                    el: '.testimonials-swiper .swiper-pagination',
+                    el: '.reviews-swiper .swiper-pagination',
                     clickable: true,
                 },
+                navigation: {
+                    nextEl: '.reviews-button-next',
+                    prevEl: '.reviews-button-prev',
+                },
                 breakpoints: {
+                    640: {
+                        slidesPerView: 1,
+                        spaceBetween: 20,
+                    },
                     768: {
                         slidesPerView: 2,
+                        spaceBetween: 30,
                     },
-                    992: {
+                    1024: {
                         slidesPerView: 3,
+                        spaceBetween: 30,
                     },
                 },
             });
@@ -2240,6 +3138,12 @@
                     const isActive = heartPath.classList.contains('active');
                     const url = isActive ? '/wishlist/remove' : '/addTowhislist';
 
+                    // Add click animation
+                    this.closest('.wishlist-icon').classList.add('clicked');
+                    setTimeout(() => {
+                        this.closest('.wishlist-icon').classList.remove('clicked');
+                    }, 300);
+
                     try {
                         const response = await fetch(url, {
                             method: 'POST',
@@ -2262,6 +3166,19 @@
                             toastElement.classList.add('toast-success');
                             toastIcon.className = 'toast-icon fas fa-check-circle';
                             heartPath.classList.toggle('active');
+
+                            // Show floating heart animation if adding to wishlist
+                            if (!isActive) {
+                                const icon = this.closest('.wishlist-icon');
+                                const floatingHeart = document.createElement('div');
+                                floatingHeart.className = 'floating-heart';
+                                floatingHeart.innerHTML = '<i class="fas fa-heart"></i>';
+                                icon.appendChild(floatingHeart);
+
+                                setTimeout(() => {
+                                    floatingHeart.remove();
+                                }, 1000);
+                            }
                         } else {
                             toastElement.classList.remove('toast-success');
                             toastElement.classList.add('toast-error');
@@ -2291,7 +3208,7 @@
                         e.preventDefault();
                         e.stopPropagation();
                         
-                        const productCard = this.closest('.product-card');
+                        const productCard = this.closest('.product-card') || this.closest('.product-card-inner').parentElement;
                         const productLink = productCard.querySelector('.product-image-link').getAttribute('href');
                         const productImage = productCard.querySelector('.product-image').getAttribute('src');
                         const productName = productCard.querySelector('.product-name').textContent;
@@ -2323,16 +3240,50 @@
                 }
             });
 
-            // Fade-in animation
-            const fadeElements = document.querySelectorAll('.fade-in');
+            // Trending Items Animation
+            const trendingItems = document.querySelectorAll('.trending-item');
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        entry.target.classList.add('active');
+                        entry.target.classList.add('show');
                     }
                 });
             }, { threshold: 0.1 });
-            fadeElements.forEach(element => observer.observe(element));
+            
+            trendingItems.forEach(item => observer.observe(item));
+
+            // Parallax effect for trending product cards
+            document.addEventListener('mousemove', (e) => {
+                const trendingSection = document.querySelector('.trending-products-section');
+                if (!trendingSection) return;
+
+                const sectionBounds = trendingSection.getBoundingClientRect();
+                if (
+                    e.clientY >= sectionBounds.top &&
+                    e.clientY <= sectionBounds.bottom &&
+                    e.clientX >= sectionBounds.left &&
+                    e.clientX <= sectionBounds.right
+                ) {
+                    const cards = document.querySelectorAll('.trending-item .product-card');
+                    cards.forEach((card) => {
+                        const cardBounds = card.getBoundingClientRect();
+                        const cardCenterX = cardBounds.left + cardBounds.width / 2;
+                        const cardCenterY = cardBounds.top + cardBounds.height / 2;
+
+                        const deltaX = (e.clientX - cardCenterX) / 30;
+                        const deltaY = (e.clientY - cardCenterY) / 30;
+
+                        // Apply subtle rotation based on mouse position
+                        card.style.transform = `perspective(1000px) rotateY(${-deltaX * 0.5}deg) rotateX(${deltaY * 0.5}deg)`;
+                    });
+                } else {
+                    // Reset all cards when mouse leaves section
+                    const cards = document.querySelectorAll('.trending-item .product-card');
+                    cards.forEach((card) => {
+                        card.style.transform = "perspective(1000px) rotateY(0deg) rotateX(0deg)";
+                    });
+                }
+            });
             
             // Newsletter form submission
             document.querySelector('.newsletter-form')?.addEventListener('submit', function(e) {
@@ -2380,14 +3331,14 @@
                 }
             });
             
-            // Add animation to product cards
-            const productCards = document.querySelectorAll('.product-card');
-            productCards.forEach((card, index) => {
-                setTimeout(() => {
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, index * 100);
-            });
+            // Video loading event
+            const collectionVideo = document.querySelector('.collection-video');
+            if (collectionVideo) {
+                collectionVideo.addEventListener('loadeddata', function() {
+                    this.classList.add('loaded');
+                    this.closest('.collection-video-container').classList.add('video-loaded');
+                });
+            }
             
             // Parallax effect for hero section
             const heroSection = document.querySelector('.hero-section');
@@ -2416,8 +3367,294 @@
                     parent.replaceChild(img, this);
                 });
             });
+
+            // Add shimmer effect to review cards
+            document.querySelectorAll('.review-card').forEach(card => {
+                // Micro-interactions on hover
+                card.addEventListener('mouseenter', () => {
+                    // Subtle scale effect
+                    card.style.transform = 'translateY(-10px)';
+                    
+                    // Highlight the rating stars
+                    const stars = card.querySelectorAll('.review-rating i');
+                    stars.forEach((star, index) => {
+                        setTimeout(() => {
+                            star.style.transform = 'scale(1.2)';
+                            setTimeout(() => {
+                                star.style.transform = 'scale(1)';
+                            }, 300);
+                        }, index * 100);
+                    });
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0)';
+                });
+            });
+
+            // "Read more" functionality for long reviews
+            document.querySelectorAll('.review-text').forEach(text => {
+                const content = text.textContent;
+                if (content.length > 150) {
+                    const truncated = content.substring(0, 150) + '...';
+                    const fullText = content;
+                    
+                    text.textContent = truncated;
+                    text.dataset.fullText = fullText;
+                    
+                    const readMoreBtn = document.createElement('button');
+                    readMoreBtn.className = 'read-more-btn';
+                    readMoreBtn.textContent = 'Read more';
+                    
+                    readMoreBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        if (text.classList.contains('expanded')) {
+                            text.textContent = truncated;
+                            text.classList.remove('expanded');
+                            readMoreBtn.textContent = 'Read more';
+                        } else {
+                            text.textContent = fullText;
+                            text.classList.add('expanded');
+                            readMoreBtn.textContent = 'Read less';
+                        }
+                        
+                        text.parentNode.appendChild(readMoreBtn);
+                    });
+                    
+                    text.parentNode.appendChild(readMoreBtn);
+                }
+            });
+
+            // Initialize trending section specific functionality
+            const trendingImages = document.querySelectorAll('.trending-item .product-image');
+            trendingImages.forEach((img) => {
+                img.addEventListener('error', function() {
+                    this.src = '/placeholder.svg?height=300&width=300&query=shirt';
+                });
+            });
         });
     </script>
+
+    <!-- Trending Section Specific JavaScript -->
+    <!-- Add this script immediately after the trending products section -->
+<!-- Force Trending Products Visibility -->
+<script>
+  // Execute immediately without waiting for DOMContentLoaded
+  (function() {
+    // Force trending section to be visible
+    const trendingSection = document.querySelector('.trending-products-section');
+    if (trendingSection) {
+      trendingSection.style.display = 'block';
+      trendingSection.style.visibility = 'visible';
+      trendingSection.style.opacity = '1';
+      trendingSection.style.zIndex = '5';
+      trendingSection.style.position = 'relative';
+    }
+    
+    // Force trending grid to be visible
+    const trendingGrid = document.querySelector('.trending-grid');
+    if (trendingGrid) {
+      trendingGrid.style.display = 'grid';
+      trendingGrid.style.visibility = 'visible';
+      trendingGrid.style.opacity = '1';
+      trendingGrid.style.zIndex = '10';
+    }
+    
+    // Force all trending items to be visible with smaller size
+    const trendingItems = document.querySelectorAll('.trending-item');
+    trendingItems.forEach(item => {
+      item.style.display = 'block';
+      item.style.visibility = 'visible';
+      item.style.opacity = '1';
+      item.style.zIndex = '1000';
+      item.style.transform = 'none';
+      
+      // Force product cards to be visible with smaller size
+      const productCard = item.querySelector('.product-card');
+      if (productCard) {
+        productCard.style.display = 'flex';
+        productCard.style.visibility = 'visible';
+        productCard.style.opacity = '1';
+        productCard.style.zIndex = '15';
+        productCard.style.position = 'relative';
+        productCard.style.transform = 'none';
+        productCard.style.height = 'auto'; // Allow height to be determined by content
+      }
+      
+      const productCardInner = item.querySelector('.product-card-inner');
+      if (productCardInner) {
+        productCardInner.style.display = 'flex';
+        productCardInner.style.visibility = 'visible';
+        productCardInner.style.opacity = '1';
+        productCardInner.style.zIndex = '20';
+        productCardInner.style.position = 'relative';
+        productCardInner.style.transform = 'none';
+        productCardInner.style.height = 'auto'; // Allow height to be determined by content
+      }
+      
+      // Force product images to be visible with square aspect ratio
+      const productImageWrapper = item.querySelector('.product-image-wrapper');
+      if (productImageWrapper) {
+        productImageWrapper.style.display = 'block';
+        productImageWrapper.style.visibility = 'visible';
+        productImageWrapper.style.opacity = '1';
+        productImageWrapper.style.position = 'relative';
+        productImageWrapper.style.paddingTop = '100%'; // Square aspect ratio
+      }
+      
+      const productImage = item.querySelector('.product-image');
+      if (productImage) {
+        productImage.style.display = 'block';
+        productImage.style.visibility = 'visible';
+        productImage.style.opacity = '1';
+        productImage.style.position = 'absolute';
+        productImage.style.top = '0';
+        productImage.style.left = '0';
+        productImage.style.width = '100%';
+        productImage.style.height = '100%';
+        productImage.style.objectFit = 'cover';
+        
+        // Force reload image
+        const currentSrc = productImage.getAttribute('src');
+        if (currentSrc) {
+          setTimeout(() => {
+            productImage.setAttribute('src', currentSrc);
+          }, 100);
+        }
+      }
+      
+      // Force product info to be visible with smaller padding
+      const productInfo = item.querySelector('.product-info');
+      if (productInfo) {
+        productInfo.style.display = 'flex';
+        productInfo.style.visibility = 'visible';
+        productInfo.style.opacity = '1';
+        productInfo.style.zIndex = '25';
+        productInfo.style.padding = '1rem'; // Smaller padding
+      }
+      
+      // Make product name smaller
+      const productName = item.querySelector('.product-name');
+      if (productName) {
+        productName.style.fontSize = '0.95rem';
+        productName.style.marginBottom = '0.5rem';
+      }
+      
+      // Make view product button smaller
+      const viewButton = item.querySelector('.btn-view-product');
+      if (viewButton) {
+        viewButton.style.padding = '0.5rem 1rem';
+        viewButton.style.fontSize = '0.9rem';
+      }
+      
+      // Make wishlist icon smaller
+      const wishlistIcon = item.querySelector('.wishlist-icon');
+      if (wishlistIcon) {
+        wishlistIcon.style.width = '32px';
+        wishlistIcon.style.height = '32px';
+        wishlistIcon.style.top = '0.75rem';
+        wishlistIcon.style.right = '0.75rem';
+      }
+    });
+    
+    // Add a fallback for empty trending section with smaller cards
+    setTimeout(() => {
+      const trendingGrid = document.querySelector('.trending-grid');
+      if (trendingGrid && trendingGrid.children.length === 0) {
+        // Create fallback products if none exist
+        const fallbackProducts = [
+          { 
+            name: "Signature Twill Paisley Effect Shirt", 
+            price: 3612.00, 
+            rating: 0, 
+            image: "/placeholder.svg?height=300&width=300&query=pink%20dress%20shirt" 
+          },
+          { 
+            name: "Solid Merino Wool Shirt", 
+            price: 18275.00, 
+            rating: 5, 
+            image: "/placeholder.svg?height=300&width=300&query=brown%20dress%20shirt" 
+          },
+          { 
+            name: "Paisley Pulse Twill Shirt", 
+            price: 3807.00, 
+            rating: 0, 
+            image: "/placeholder.svg?height=300&width=300&query=paisley%20pattern%20shirt" 
+          },
+          { 
+            name: "Solid Signature Twill Shirt", 
+            price: 5727.00, 
+            rating: 0, 
+            image: "/placeholder.svg?height=300&width=300&query=cream%20dress%20shirt" 
+          }
+        ];
+        
+        fallbackProducts.forEach(product => {
+          const trendingItem = document.createElement('div');
+          trendingItem.className = 'trending-item';
+          trendingItem.style.display = 'block';
+          trendingItem.style.visibility = 'visible';
+          trendingItem.style.opacity = '1';
+          trendingItem.style.zIndex = '1000';
+          
+          trendingItem.innerHTML = `
+            <div class="product-card" style="display:flex;visibility:visible;opacity:1;z-index:15;position:relative;height:auto;">
+              <div class="product-card-inner" style="display:flex;visibility:visible;opacity:1;z-index:20;position:relative;height:auto;">
+                <div class="wishlist-icon" style="width:32px;height:32px;top:0.75rem;right:0.75rem;">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart" style="width:20px;height:20px;">
+                    <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                </div>
+                <a href="/allproduct" class="product-image-link1">
+                  <div class="product-image-wrapper" style="display:block;visibility:visible;opacity:1;position:relative;padding-top:100%;overflow:hidden;">
+                    <img 
+                      src="${product.image}" 
+                      alt="${product.name}" 
+                      class="product-image"
+                      style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;visibility:visible;opacity:1;"
+                      onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';"
+                    >
+                  </div>
+                </a>
+                <div class="product-info" style="display:flex;visibility:visible;opacity:1;z-index:25;padding:1rem;">
+                  <div class="product-badge">
+                    <span>Trending</span>
+                  </div>
+                  <h3 class="product-name" style="font-size:0.95rem;margin-bottom:0.5rem;">${product.name}</h3>
+                  <div class="product-price-rating" style="margin-bottom:0.75rem;">
+                    <p class="product-price">₹${product.price.toFixed(2)}</p>
+                    <div class="star-rating" style="font-size:0.8rem;gap:0.15rem;">
+                      ${product.rating === 5 ? `
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                      ` : `
+                        <i class="far fa-star"></i>
+                        <i class="far fa-star"></i>
+                        <i class="far fa-star"></i>
+                        <i class="far fa-star"></i>
+                        <i class="far fa-star"></i>
+                      `}
+                    </div>
+                  </div>
+                  <a href="/allproduct" class="btn-view-product" style="padding:0.5rem 1rem;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+                    View Product <i class="fas fa-arrow-right"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+          
+          trendingGrid.appendChild(trendingItem);
+        });
+      }
+    }, 500);
+  })();
+</script>
+
 </body>
 
 </html>

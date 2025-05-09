@@ -355,6 +355,39 @@
         .toastify.success {
             background: linear-gradient(to right, #00b09b, #96c93d);
         }
+        
+        /* Review helpful button styles */
+        .review-helpful-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            border-radius: 0.25rem;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .review-helpful-btn:hover {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        
+        .review-helpful-btn.active {
+            background-color: #e9ecef;
+            color: #0d6efd;
+            border-color: #0d6efd;
+        }
+        
+        .review-helpful-btn i {
+            margin-right: 0.25rem;
+        }
+        
+        .helpful-count {
+            margin-left: 0.25rem;
+        }
 
         /* Responsive Styles */
         @media (max-width: 768px) {
@@ -634,9 +667,14 @@
                                                                         </button>
                                                                         
                                                                         <!-- Add Review Button - Only for delivered items -->
+                                                                        <% 
+                                                                        const productId = item.productId ? (item.productId._id || item.productId) : '';
+                                                                        const productIdStr = productId.toString();
+                                                                        const hasReview = reviewsMap && reviewsMap[productIdStr] && reviewsMap[productIdStr].hasReview;
+                                                                        %>
                                                                         <button class="btn btn-sm btn-outline-success btn-review" type="button" data-bs-toggle="modal" data-bs-target="#reviewModal<%= item._id %>">
                                                                             <i class="bi bi-star action-icon"></i> 
-                                                                            <%= reviewsMap && reviewsMap[item._id.toString()] && reviewsMap[item._id.toString()].hasReview ? 'Edit Review' : 'Write Review' %>
+                                                                            <%= hasReview ? 'Edit Review' : 'Write Review' %>
                                                                         </button>
                                                                     <% } else if (['Processing', 'Pending'].includes(item.status)) { %>
                                                                         <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#cancelItemModal<%= item._id %>">
@@ -715,16 +753,16 @@
                                 </div>
                             <% } %>
                             
-                          <!-- Payment Failure Alert -->
-<% if (order.paymentMethod === 'Online' && (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending')) { %>
-    <div class="alert alert-<%= order.paymentStatus === 'Failed' ? 'danger' : 'warning' %> mt-4">
-        <i class="bi bi-<%= order.paymentStatus === 'Failed' ? 'exclamation-triangle-fill' : 'hourglass-split' %> me-2"></i>
-        <strong><%= order.paymentStatus === 'Failed' ? 'Payment Failed:' : 'Payment Pending:' %></strong> 
-        <%= order.paymentStatus === 'Failed' ? 
-            'Your payment was not successful. Please use the "Retry Payment" button to complete your order.' : 
-            'Your payment is still being processed. You can wait or use the "Retry Payment" button to attempt payment again.' %>
-    </div>
-<% } %>
+                            <!-- Payment Failure Alert -->
+                            <% if (order.paymentMethod === 'Online' && (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending')) { %>
+                                <div class="alert alert-<%= order.paymentStatus === 'Failed' ? 'danger' : 'warning' %> mt-4">
+                                    <i class="bi bi-<%= order.paymentStatus === 'Failed' ? 'exclamation-triangle-fill' : 'hourglass-split' %> me-2"></i>
+                                    <strong><%= order.paymentStatus === 'Failed' ? 'Payment Failed:' : 'Payment Pending:' %></strong> 
+                                    <%= order.paymentStatus === 'Failed' ? 
+                                        'Your payment was not successful. Please use the "Retry Payment" button to complete your order.' : 
+                                        'Your payment is still being processed. You can wait or use the "Retry Payment" button to attempt payment again.' %>
+                                </div>
+                            <% } %>
                         </div>
                     </div>
                 </div>
@@ -930,12 +968,18 @@
     <!-- Product Review Modals -->
     <% if (orderItems && orderItems.length > 0) { %>
         <% orderItems.forEach(item => { %>
+            <% 
+            const productId = item.productId ? (item.productId._id || item.productId) : '';
+            const productIdStr = productId.toString();
+            const hasReview = reviewsMap && reviewsMap[productIdStr] && reviewsMap[productIdStr].hasReview;
+            const reviewData = hasReview ? reviewsMap[productIdStr].review : null;
+            %>
             <div class="modal fade" id="reviewModal<%= item._id %>" tabindex="-1" aria-labelledby="reviewModalLabel<%= item._id %>" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title" id="reviewModalLabel<%= item._id %>">
-                                <%= reviewsMap && reviewsMap[item._id.toString()] && reviewsMap[item._id.toString()].hasReview ? 'Edit Your Review' : 'Write a Review' %>
+                                <%= hasReview ? 'Edit Your Review' : 'Write a Review' %>
                             </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -957,7 +1001,8 @@
                             </div>
                             
                             <form id="reviewForm<%= item._id %>" class="review-form">
-                                <input type="hidden" name="productId" value="<%= item.productId ? (item.productId._id || item.productId) : '' %>">
+                                <input type="hidden" name="productId" value="<%= productId %>">
+                                <input type="hidden" name="reviewId" value="<%= reviewData ? reviewData._id : '' %>">
                                 
                                 <div class="mb-3">
                                     <label class="form-label">Rating</label>
@@ -965,7 +1010,7 @@
                                         <div class="star-rating">
                                             <% for (let i = 5; i >= 1; i--) { %>
                                                 <input type="radio" id="star<%= i %><%= item._id %>" name="rating" value="<%= i %>" 
-                                                    <%= reviewsMap && reviewsMap[item._id.toString()] && reviewsMap[item._id.toString()].review && reviewsMap[item._id.toString()].review.rating === i ? 'checked' : '' %> required />
+                                                    <%= reviewData && reviewData.rating === i ? 'checked' : '' %> required />
                                                 <label for="star<%= i %><%= item._id %>" title="<%= i %> stars"><i class="bi bi-star-fill"></i></label>
                                             <% } %>
                                         </div>
@@ -976,20 +1021,26 @@
                                     <label for="reviewTitle<%= item._id %>" class="form-label">Review Title</label>
                                     <input type="text" class="form-control" id="reviewTitle<%= item._id %>" name="title" 
                                         placeholder="Summarize your experience" 
-                                        value="<%= reviewsMap && reviewsMap[item._id.toString()] && reviewsMap[item._id.toString()].review ? reviewsMap[item._id.toString()].review.title : '' %>" required>
+                                        value="<%= reviewData ? reviewData.title : '' %>" required>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label for="reviewDescription<%= item._id %>" class="form-label">Review Description</label>
                                     <textarea class="form-control" id="reviewDescription<%= item._id %>" name="review" 
-                                        rows="4" placeholder="Share your thoughts about this product" required><%= reviewsMap && reviewsMap[item._id.toString()] && reviewsMap[item._id.toString()].review ? reviewsMap[item._id.toString()].review.description : '' %></textarea>
+                                        rows="4" placeholder="Share your thoughts about this product" required><%= reviewData ? reviewData.description : '' %></textarea>
                                 </div>
                             </form>
                         </div>
                         <div class="modal-footer">
+                            <% if (hasReview) { %>
+                                <!-- Delete button - only show if review exists -->
+                                <button type="button" class="btn btn-danger delete-review-btn" data-item-id="<%= item._id %>" data-review-id="<%= reviewData._id %>">
+                                    <i class="bi bi-trash"></i> Delete Review
+                                </button>
+                            <% } %>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" class="btn btn-primary submit-review-btn" data-item-id="<%= item._id %>">
-                                <%= reviewsMap && reviewsMap[item._id.toString()] && reviewsMap[item._id.toString()].hasReview ? 'Update Review' : 'Submit Review' %>
+                            <button type="button" class="btn btn-primary submit-review-btn" data-item-id="<%= item._id %>" data-product-id="<%= productId %>">
+                                <%= hasReview ? 'Update Review' : 'Submit Review' %>
                             </button>
                         </div>
                     </div>
@@ -1109,7 +1160,8 @@
                     
                     try {
                         const itemId = this.getAttribute('data-item-id');
-                        console.log(`[DEBUG] Item ID: ${itemId}`);
+                        const productId = this.getAttribute('data-product-id');
+                        console.log(`[DEBUG] Item ID: ${itemId}, Product ID: ${productId}`);
                         
                         const formId = `reviewForm${itemId}`;
                         const form = document.getElementById(formId);
@@ -1128,11 +1180,14 @@
                         const reviewTextarea = form.querySelector('textarea[name="review"]');
                         const reviewText = reviewTextarea ? reviewTextarea.value : '';
                         const productIdInput = form.querySelector('input[name="productId"]');
-                        const productId = productIdInput ? productIdInput.value : '';
+                        const productIdValue = productIdInput ? productIdInput.value : productId;
+                        const reviewIdInput = form.querySelector('input[name="reviewId"]');
+                        const reviewId = reviewIdInput ? reviewIdInput.value : '';
                         
                         console.log(`[DEBUG] Form data collected:`, {
                             itemId,
-                            productId,
+                            productId: productIdValue,
+                            reviewId,
                             rating,
                             title: title.substring(0, 20) + (title.length > 20 ? '...' : ''),
                             reviewLength: reviewText.length
@@ -1157,7 +1212,7 @@
                             return;
                         }
                         
-                        if (!productId) {
+                        if (!productIdValue) {
                             console.error('[ERROR] No product ID found');
                             showToast('Product information missing', 'error');
                             return;
@@ -1173,10 +1228,10 @@
                             }
                         });
                         
-                        console.log(`[DEBUG] Sending review to /review/${productId}/${itemId}`);
+                        console.log(`[DEBUG] Sending review to /review/${productIdValue}/${itemId}`);
                         
                         // Submit review to the server
-                        fetch(`/review/${productId}/${itemId}`, {
+                        fetch(`/review/${productIdValue}/${itemId}`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -1184,7 +1239,8 @@
                             body: JSON.stringify({
                                 rating: parseInt(rating),
                                 title,
-                                review: reviewText
+                                review: reviewText,
+                                reviewId: reviewId // Include reviewId for updates
                             }),
                             credentials: 'same-origin'
                         })
@@ -1247,6 +1303,186 @@
                     }
                 });
             });
+            
+            // Delete Review
+            const deleteReviewBtns = document.querySelectorAll('.delete-review-btn');
+            console.log(`[DEBUG] Found ${deleteReviewBtns.length} delete review buttons`);
+            
+            deleteReviewBtns.forEach(btn => {
+                btn.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    console.log('[DEBUG] Delete review button clicked');
+                    
+                    const reviewId = this.getAttribute('data-review-id');
+                    console.log(`[DEBUG] Review ID: ${reviewId}`);
+                    
+                    if (!reviewId) {
+                        console.error('[ERROR] No review ID found');
+                        showToast('Review information missing', 'error');
+                        return;
+                    }
+                    
+                    // Confirm deletion
+                    Swal.fire({
+                        title: 'Delete Review',
+                        text: 'Are you sure you want to delete this review? This action cannot be undone.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Show loading
+                            Swal.fire({
+                                title: 'Processing',
+                                text: 'Deleting your review...',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+                            
+                            // Send delete request
+                            fetch(`/review/${reviewId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                credentials: 'same-origin'
+                            })
+                            .then(response => {
+                                console.log(`[DEBUG] Delete review response status: ${response.status}`);
+                                if (!response.ok) {
+                                    if (response.status === 401) {
+                                        window.location.href = '/login?message=Please log in to delete a review';
+                                        throw new Error('Please log in to delete a review');
+                                    }
+                                    throw new Error(`HTTP error! Status: ${response.status}`);
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                console.log(`[DEBUG] Delete review response data:`, data);
+                                Swal.close();
+                                
+                                if (data.success) {
+                                    // Close modal
+                                    const modalElement = document.querySelector('.modal.show');
+                                    if (modalElement) {
+                                        const modal = bootstrap.Modal.getInstance(modalElement);
+                                        if (modal) {
+                                            modal.hide();
+                                        } else {
+                                            console.error('[ERROR] Could not get modal instance');
+                                            modalElement.classList.remove('show');
+                                            modalElement.style.display = 'none';
+                                            document.body.classList.remove('modal-open');
+                                            const backdrop = document.querySelector('.modal-backdrop');
+                                            if (backdrop) backdrop.remove();
+                                        }
+                                    }
+                                    
+                                    // Show success toast
+                                    showToast(data.message || 'Review deleted successfully!', 'success');
+                                    
+                                    // Reload page after a short delay to show updated review status
+                                    setTimeout(() => {
+                                        window.location.reload();
+                                    }, 1500);
+                                } else {
+                                    showToast(data.message || 'Failed to delete review', 'error');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('[ERROR] Error deleting review:', error);
+                                Swal.close();
+                                
+                                // Don't show error toast if redirecting to login
+                                if (!error.message.includes('Please log in')) {
+                                    showToast('An error occurred. Please try again.', 'error');
+                                }
+                            });
+                        }
+                    });
+                });
+            });
+            
+            // Mark review as helpful
+            const setupHelpfulButtons = () => {
+                const helpfulButtons = document.querySelectorAll('.review-helpful-btn');
+                console.log(`[DEBUG] Found ${helpfulButtons.length} helpful buttons`);
+                
+                helpfulButtons.forEach(btn => {
+                    btn.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        
+                        const reviewId = this.getAttribute('data-review-id');
+                        console.log(`[DEBUG] Helpful button clicked for review: ${reviewId}`);
+                        
+                        if (!reviewId) {
+                            console.error('[ERROR] No review ID found');
+                            return;
+                        }
+                        
+                        // Send request to mark review as helpful
+                        fetch(`/reviews/helpful/${reviewId}`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'same-origin'
+                        })
+                        .then(response => {
+                            console.log(`[DEBUG] Helpful response status: ${response.status}`);
+                            if (!response.ok) {
+                                if (response.status === 401) {
+                                    window.location.href = '/login?message=Please log in to mark a review as helpful';
+                                    throw new Error('Please log in to mark a review as helpful');
+                                }
+                                throw new Error(`HTTP error! Status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log(`[DEBUG] Helpful response data:`, data);
+                            
+                            if (data.success) {
+                                // Update the helpful count
+                                const countElement = this.querySelector('.helpful-count');
+                                if (countElement) {
+                                    countElement.textContent = data.helpful;
+                                }
+                                
+                                // Update the button appearance
+                                if (data.isHelpful) {
+                                    this.classList.add('active');
+                                    this.setAttribute('title', 'Remove helpful mark');
+                                } else {
+                                    this.classList.remove('active');
+                                    this.setAttribute('title', 'Mark as helpful');
+                                }
+                                
+                                // Show a toast notification
+                                showToast(data.message, 'success');
+                            } else {
+                                showToast(data.message || 'Failed to mark review as helpful', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('[ERROR] Error marking review as helpful:', error);
+                            
+                            // Don't show error toast if redirecting to login
+                            if (!error.message.includes('Please log in')) {
+                                showToast('An error occurred. Please try again.', 'error');
+                            }
+                        });
+                    });
+                });
+            };
+            
+            // Call this function when the DOM is loaded
+            setupHelpfulButtons();
             
             // Download Invoice
             const downloadInvoiceBtn = document.getElementById('downloadInvoice');
@@ -2203,24 +2439,22 @@
                 const ratingInputs = form.querySelectorAll('input[name="rating"]');
                 const titleInput = form.querySelector('input[name="title"]');
                 const reviewInput = form.querySelector('textarea[name="review"]');
-                const productIdInput = form.querySelector('input[name="productId"]');
+                const productI = form.querySelector('input[name="productId"]');
                 
-                if (ratingInputs.length !== 5) {
-                    console.error(`[ERROR] Form ${form.id} has ${ratingInputs.length} rating inputs instead of 5`);
+                if (ratingInputs.length === 0) {
+                    console.error(`[ERROR] Form ${form.id} is missing rating inputs`);
                 }
                 
                 if (!titleInput) {
-                    console.error(`[ERROR] Form ${form.id} missing title input`);
+                    console.error(`[ERROR] Form ${form.id} is missing title input`);
                 }
                 
                 if (!reviewInput) {
-                    console.error(`[ERROR] Form ${form.id} missing review textarea`);
+                    console.error(`[ERROR] Form ${form.id} is missing review textarea`);
                 }
                 
-                if (!productIdInput) {
-                    console.error(`[ERROR] Form ${form.id} missing productId input`);
-                } else if (!productIdInput.value) {
-                    console.error(`[ERROR] Form ${form.id} has empty productId value`);
+                if (!productI) {
+                    console.error(`[ERROR] Form ${form.id} is missing productId input`);
                 }
             });
             

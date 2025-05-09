@@ -10,6 +10,7 @@ const Product = require("../../model/productScheema");
 const Banner = require("../../model/BannerScheema");
 const Wallet = require("../../model/walletScheema");
 const ReferralHistory = require("../../model/refferalHistoryScheema");
+const Review = require("../../model/ReviewScheema");
 const { sendOtpEmail } = require("../../config/mailer");
 const { v4: uuidv4 } = require("uuid");
 const mongoose = require("mongoose");
@@ -148,7 +149,6 @@ const applyReferral = async (newUserId, referralCode) => {
     const newUserTransactionRef = `${baseTransactionRef}-NEW`;
     const referrerTransactionRef = `${baseTransactionRef}-REF`;
 
-
     const newUserWallet = await Wallet.findOneAndUpdate(
       { userId: newUserId },
       {
@@ -251,12 +251,18 @@ const loadHomepage = async (req, res) => {
     const userId = req.session.user;
     const userData = userId ? await User.findById(userId) : null;
     const today = new Date().toISOString();
+
+    // Fetch active banners
     const findBanner = await Banner.find({
       startingDate: { $lt: new Date(today) },
       endingDate: { $gt: new Date(today) },
     });
+
+    // Fetch active categories
     const categories = await Category.find({ isListed: true });
     const categoryIds = categories.map((category) => category._id);
+
+    // Fetch active products
     const productData = await Product.find({
       isActive: true,
       categoryId: { $in: categoryIds },
@@ -266,6 +272,7 @@ const loadHomepage = async (req, res) => {
       .populate("categoryId")
       .exec();
 
+    // Format product data for the template
     const formattedProductData = productData.map((product) => {
       const firstVariant = product.variants?.[0] || {};
       return {
@@ -278,11 +285,26 @@ const loadHomepage = async (req, res) => {
       };
     });
 
+    // Fetch top-rated reviews for the testimonials section
+    // Update the populate paths to match the field names in the Review model
+    const topReviews = await Review.find({
+      rating: { $gte: 4 }, // Only show 4 and 5 star reviews
+    })
+      .sort({
+        helpfulVotes: -1, // Sort by most helpful first
+        createdAt: -1, // Then by newest
+      })
+      .limit(6) // Get 6 reviews to show in the carousel
+      .populate("userId", "fullname profileImage") // Changed from "user" to "userId"
+      .populate("productId", "name") // Changed from "product" to "productId"
+      .lean();
+
     res.render("home", {
       user: userData,
       data: formattedProductData,
       cat: categories,
       Banner: findBanner || [],
+      reviews: topReviews || [], // Pass reviews to the template
       error: formattedProductData.length === 0 ? "No products available" : null,
     });
   } catch (error) {
@@ -292,11 +314,11 @@ const loadHomepage = async (req, res) => {
       data: [],
       cat: [],
       Banner: [],
+      reviews: [], // Empty array if error
       error: "Server error",
     });
   }
 };
-
 const checkBlockedStatus = async (req, res, next) => {
   try {
     const userId = req.session.user;
@@ -443,7 +465,6 @@ const verifyOtp = async (req, res) => {
       });
     }
 
-
     const newUser = new User({
       fullname: registration.userData.fullname,
       email: registration.userData.email,
@@ -454,7 +475,6 @@ const verifyOtp = async (req, res) => {
     });
 
     await newUser.save();
-
 
     const wallet = new Wallet({
       userId: newUser._id,
