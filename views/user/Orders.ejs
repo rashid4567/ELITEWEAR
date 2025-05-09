@@ -1,562 +1,1636 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Orders | Elite Wear</title>
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/userStyle/getOrder.css" />
-    <link rel="stylesheet" href="/userStyle/footer.css">
-    <link rel="stylesheet" href="/userStyle/header.css">
-    <style>
-      .order-progress .progress {
-        height: 10px;
-        background-color: #e9ecef;
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Orders | Elite Wear</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #0f172a;
+      --secondary-color: #f8fafc;
+      --accent-color: #3b82f6;
+      --accent-hover: #2563eb;
+      --accent-secondary: #8b5cf6;
+      --accent-tertiary: #ec4899;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-light: #94a3b8;
+      --border-color: #e2e8f0;
+      --card-bg: #ffffff;
+      --sidebar-bg: #ffffff;
+      --input-bg: #f8fafc;
+      --input-border: #e2e8f0;
+      --input-focus-border: #3b82f6;
+      --input-focus-shadow: rgba(59, 130, 246, 0.1);
+      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      --card-hover-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.1);
+      --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      --gradient-secondary: linear-gradient(135deg, #8b5cf6, #ec4899);
+      --gradient-accent: linear-gradient(135deg, #3b82f6, #10b981);
+      --success-color: #10b981;
+      --error-color: #ef4444;
+      --warning-color: #f59e0b;
+      --info-color: #0ea5e9;
+      --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      --border-radius-sm: 0.375rem;
+      --border-radius: 0.5rem;
+      --border-radius-lg: 0.75rem;
+      --border-radius-xl: 1rem;
+      --border-radius-full: 9999px;
+      --font-primary: 'Outfit', sans-serif;
+      --font-secondary: 'Playfair Display', serif;
+      --menu-item-hover: rgba(59, 130, 246, 0.05);
+      --menu-item-active: rgba(59, 130, 246, 0.1);
+      --menu-item-active-border: var(--gradient-primary);
+      --logout-hover: rgba(239, 68, 68, 0.05);
+      --toggle-bg: #f1f5f9;
+      --toggle-circle: #ffffff;
+      --btn-primary-bg: var(--gradient-primary);
+      --btn-primary-hover-bg: var(--gradient-secondary);
+      --btn-primary-text: #ffffff;
+      --btn-secondary-bg: #f1f5f9;
+      --btn-secondary-text: #1e293b;
+      --btn-secondary-hover-bg: #e2e8f0;
+      --btn-danger-bg: linear-gradient(135deg, #ef4444, #f43f5e);
+      --btn-danger-hover-bg: linear-gradient(135deg, #dc2626, #e11d48);
+      --btn-success-bg: linear-gradient(135deg, #10b981, #059669);
+      --btn-success-hover-bg: linear-gradient(135deg, #059669, #047857);
+      --modal-bg: #ffffff;
+      --modal-border: #e2e8f0;
+      --toast-bg: #ffffff;
+      --toast-border: #e2e8f0;
+      --toast-success-bg: rgba(16, 185, 129, 0.1);
+      --toast-success-border: rgba(16, 185, 129, 0.2);
+      --toast-error-bg: rgba(239, 68, 68, 0.1);
+      --toast-error-border: rgba(239, 68, 68, 0.2);
+      --status-pending-bg: rgba(148, 163, 184, 0.1);
+      --status-pending-color: #64748b;
+      --status-processing-bg: rgba(245, 158, 11, 0.1);
+      --status-processing-color: #f59e0b;
+      --status-confirmed-bg: rgba(14, 165, 233, 0.1);
+      --status-confirmed-color: #0ea5e9;
+      --status-shipped-bg: rgba(59, 130, 246, 0.1);
+      --status-shipped-color: #3b82f6;
+      --status-delivered-bg: rgba(16, 185, 129, 0.1);
+      --status-delivered-color: #10b981;
+      --status-cancelled-bg: rgba(239, 68, 68, 0.1);
+      --status-cancelled-color: #ef4444;
+      --status-return-bg: rgba(245, 158, 11, 0.1);
+      --status-return-color: #f59e0b;
+      --progress-bg: #e2e8f0;
+      --progress-primary: var(--gradient-primary);
+      --progress-success: var(--gradient-accent);
+      --progress-danger: var(--btn-danger-bg);
+      --payment-failed-bg: rgba(239, 68, 68, 0.1);
+      --payment-failed-color: #ef4444;
+      --payment-pending-bg: rgba(245, 158, 11, 0.1);
+      --payment-pending-color: #f59e0b;
+      --payment-success-bg: rgba(16, 185, 129, 0.1);
+      --payment-success-color: #10b981;
+      --pagination-bg: #ffffff;
+      --pagination-border: #e2e8f0;
+      --pagination-active-bg: var(--gradient-primary);
+      --pagination-active-color: #ffffff;
+      --pagination-hover-bg: #f1f5f9;
+      --pagination-hover-color: #3b82f6;
+    }
+
+    /* Dark mode variables */
+    [data-theme="dark"] {
+      --primary-color: #f8fafc;
+      --secondary-color: #0f172a;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-light: #94a3b8;
+      --border-color: #334155;
+      --card-bg: #1e293b;
+      --sidebar-bg: #0f172a;
+      --input-bg: #1e293b;
+      --input-border: #334155;
+      --input-focus-border: #3b82f6;
+      --input-focus-shadow: rgba(59, 130, 246, 0.2);
+      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+      --card-hover-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.3);
+      --menu-item-hover: rgba(59, 130, 246, 0.15);
+      --menu-item-active: rgba(59, 130, 246, 0.2);
+      --logout-hover: rgba(239, 68, 68, 0.15);
+      --toggle-bg: #334155;
+      --toggle-circle: #0f172a;
+      --btn-secondary-bg: #334155;
+      --btn-secondary-text: #f1f5f9;
+      --btn-secondary-hover-bg: #475569;
+      --modal-bg: #1e293b;
+      --modal-border: #334155;
+      --toast-bg: #1e293b;
+      --toast-border: #334155;
+      --toast-success-bg: rgba(16, 185, 129, 0.15);
+      --toast-success-border: rgba(16, 185, 129, 0.3);
+      --toast-error-bg: rgba(239, 68, 68, 0.15);
+      --toast-error-border: rgba(239, 68, 68, 0.3);
+      --status-pending-bg: rgba(148, 163, 184, 0.15);
+      --status-processing-bg: rgba(245, 158, 11, 0.15);
+      --status-confirmed-bg: rgba(14, 165, 233, 0.15);
+      --status-shipped-bg: rgba(59, 130, 246, 0.15);
+      --status-delivered-bg: rgba(16, 185, 129, 0.15);
+      --status-cancelled-bg: rgba(239, 68, 68, 0.15);
+      --status-return-bg: rgba(245, 158, 11, 0.15);
+      --progress-bg: #334155;
+      --payment-failed-bg: rgba(239, 68, 68, 0.15);
+      --payment-pending-bg: rgba(245, 158, 11, 0.15);
+      --payment-success-bg: rgba(16, 185, 129, 0.15);
+      --pagination-bg: #1e293b;
+      --pagination-border: #334155;
+      --pagination-hover-bg: #334155;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      color: var(--text-primary);
+      background-color: var(--secondary-color);
+      overflow-x: hidden;
+      transition: background-color var(--transition-normal), color var(--transition-normal);
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--secondary-color);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--text-light);
+      border-radius: var(--border-radius-full);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-secondary);
+    }
+
+    /* Main Container */
+    .main-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .content-wrapper {
+      flex: 1;
+      display: flex;
+      position: relative;
+    }
+
+    /* Sidebar Toggle Button */
+    .sidebar-toggle {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 1050;
+      width: 40px;
+      height: 40px;
+      border-radius: var(--border-radius-full);
+      background: var(--card-bg);
+      color: var(--text-primary);
+      border: none;
+      box-shadow: var(--card-shadow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition-normal);
+    }
+
+    .sidebar-toggle:hover {
+      background: var(--accent-color);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      transition: all var(--transition-normal);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .main-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%233b82f6' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+      opacity: 0.5;
+      z-index: -1;
+    }
+
+    @media (min-width: 768px) {
+      .main-content {
+        margin-left: 280px;
       }
-      .order-progress .progress-bar {
-        transition: width 0.5s ease-in-out;
+    }
+
+    /* Page Header */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header-content {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .header-title {
+      position: relative;
+    }
+
+    .header-title h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    .header-title p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-bottom: 0;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    /* Theme Toggle */
+    .theme-toggle {
+      position: relative;
+      width: 48px;
+      height: 24px;
+      border-radius: var(--border-radius-full);
+      background-color: var(--toggle-bg);
+      cursor: pointer;
+      transition: background-color var(--transition-normal);
+      display: flex;
+      align-items: center;
+      padding: 0 4px;
+      justify-content: space-between;
+    }
+
+    .theme-toggle .sun,
+    .theme-toggle .moon {
+      font-size: 12px;
+      color: var(--text-primary);
+      z-index: 1;
+    }
+
+    .theme-toggle .toggle-circle {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: var(--toggle-circle);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: transform var(--transition-normal);
+    }
+
+    [data-theme="dark"] .theme-toggle .toggle-circle {
+      transform: translateX(24px);
+    }
+
+    /* Order Cards */
+    .order-card {
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--card-shadow);
+      margin-bottom: 1.5rem;
+      transition: all var(--transition-normal);
+      border: none;
+      overflow: hidden;
+      position: relative;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .order-card.fade-in {
+      animation: fadeInUp 0.5s forwards;
+    }
+
+    .order-card:hover {
+      box-shadow: var(--card-hover-shadow);
+      transform: translateY(-5px);
+    }
+
+    .order-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradient-primary);
+      opacity: 0;
+      transition: opacity var(--transition-normal);
+    }
+
+    .order-card:hover::before {
+      opacity: 1;
+    }
+
+    .product-img {
+      width: 100%;
+      height: auto;
+      max-height: 120px;
+      object-fit: contain;
+      border-radius: var(--border-radius);
+      background-color: var(--input-bg);
+      padding: 0.5rem;
+      transition: transform var(--transition-normal);
+    }
+
+    .order-card:hover .product-img {
+      transform: scale(1.05);
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      transition: color var(--transition-normal);
+    }
+
+    .order-card:hover .card-title {
+      color: var(--accent-color);
+    }
+
+    .card-text {
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    .text-muted {
+      color: var(--text-light) !important;
+    }
+
+    /* Order Progress */
+    .order-progress {
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress {
+      height: 8px;
+      background-color: var(--progress-bg);
+      border-radius: var(--border-radius-full);
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      background-image: var(--progress-primary);
+      transition: width 0.8s ease-in-out;
+    }
+
+    .progress-bar.bg-success {
+      background-image: var(--progress-success);
+    }
+
+    .progress-bar.bg-danger {
+      background-image: var(--progress-danger);
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--border-radius-full);
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .status-pending {
+      background-color: var(--status-pending-bg);
+      color: var(--status-pending-color);
+    }
+
+    .status-processing {
+      background-color: var(--status-processing-bg);
+      color: var(--status-processing-color);
+    }
+
+    .status-confirmed {
+      background-color: var(--status-confirmed-bg);
+      color: var(--status-confirmed-color);
+    }
+
+    .status-shipped {
+      background-color: var(--status-shipped-bg);
+      color: var(--status-shipped-color);
+    }
+
+    .status-delivered {
+      background-color: var(--status-delivered-bg);
+      color: var(--status-delivered-color);
+    }
+
+    .status-cancelled {
+      background-color: var(--status-cancelled-bg);
+      color: var(--status-cancelled-color);
+    }
+
+    .status-return-requested,
+    .status-return-approved,
+    .status-return-rejected,
+    .status-returned {
+      background-color: var(--status-return-bg);
+      color: var(--status-return-color);
+    }
+
+    .status-payment-failed {
+      background-color: var(--payment-failed-bg);
+      color: var(--payment-failed-color);
+    }
+
+    /* Payment Badges */
+    .payment-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--border-radius-full);
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+    }
+
+    .payment-failed-badge {
+      background-color: var(--payment-failed-bg);
+      color: var(--payment-failed-color);
+    }
+
+    .payment-pending-badge {
+      background-color: var(--payment-pending-bg);
+      color: var(--payment-pending-color);
+    }
+
+    .payment-success-badge {
+      background-color: var(--payment-success-bg);
+      color: var(--payment-success-color);
+    }
+
+    /* Payment Alerts */
+    .payment-alert {
+      background-color: var(--payment-failed-bg);
+      border-left: 4px solid var(--payment-failed-color);
+      color: var(--payment-failed-color);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .payment-pending-alert {
+      background-color: var(--payment-pending-bg);
+      border-left: 4px solid var(--payment-pending-color);
+      color: var(--payment-pending-color);
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .alert-icon {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-content strong {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    /* Refund Info */
+    .refund-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background-color: var(--payment-success-bg);
+      color: var(--payment-success-color);
+      border-radius: var(--border-radius);
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-top: 0.75rem;
+    }
+
+    /* Action Buttons */
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: var(--border-radius);
+      transition: all var(--transition-normal);
+      gap: 0.35rem;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .action-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      z-index: -1;
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform var(--transition-normal);
+    }
+
+    .action-btn:hover::before {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-dark {
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+    }
+
+    .btn-dark:hover {
+      background: var(--gradient-secondary);
+      color: white;
+    }
+
+    .btn-outline-dark {
+      background-color: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-outline-dark:hover {
+      background-color: var(--input-bg);
+      color: var(--accent-color);
+      border-color: var(--accent-color);
+    }
+
+    .btn-retry-payment {
+      background: var(--gradient-primary);
+      color: white;
+      border: none;
+    }
+
+    .btn-retry-payment:hover {
+      background: var(--gradient-secondary);
+      transform: translateY(-3px);
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+      text-align: center;
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--card-shadow);
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    .empty-state img {
+      max-width: 200px;
+      margin-bottom: 1.5rem;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+      transition: transform var(--transition-normal);
+    }
+
+    .empty-state:hover img {
+      transform: translateY(-5px);
+    }
+
+    .empty-state p {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+    }
+
+    .empty-state a {
+      color: var(--accent-color);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color var(--transition-fast);
+    }
+
+    .empty-state a:hover {
+      color: var(--accent-hover);
+      text-decoration: underline;
+    }
+
+    /* Pagination */
+    .pagination {
+      margin-top: 2rem;
+    }
+
+    .page-item {
+      margin: 0 0.25rem;
+    }
+
+    .page-link {
+      border: 1px solid var(--pagination-border);
+      background-color: var(--pagination-bg);
+      color: var(--text-secondary);
+      border-radius: var(--border-radius);
+      padding: 0.5rem 0.75rem;
+      transition: all var(--transition-normal);
+    }
+
+    .page-link:hover {
+      background-color: var(--pagination-hover-bg);
+      color: var(--pagination-hover-color);
+      border-color: var(--pagination-hover-color);
+    }
+
+    .page-item.active .page-link {
+      background-image: var(--pagination-active-bg);
+      color: var(--pagination-active-color);
+      border-color: transparent;
+    }
+
+    .page-item.disabled .page-link {
+      color: var(--text-light);
+      background-color: var(--pagination-bg);
+      border-color: var(--pagination-border);
+    }
+
+    /* Modal */
+    .modal-content {
+      background-color: var(--modal-bg);
+      border: 1px solid var(--modal-border);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--card-shadow);
+    }
+
+    .modal-header {
+      border-bottom: 1px solid var(--border-color);
+      padding: 1.25rem 1.5rem;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .btn-close {
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      line-height: 1;
+      padding: 0.25rem;
+      opacity: 0.7;
+      transition: opacity var(--transition-fast);
+    }
+
+    .btn-close:hover {
+      opacity: 1;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      border-top: 1px solid var(--border-color);
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    /* Form Controls */
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--text-primary);
+      background-color: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: var(--border-radius);
+      transition: all var(--transition-normal);
+    }
+
+    .form-control:focus {
+      border-color: var(--input-focus-border);
+      box-shadow: 0 0 0 4px var(--input-focus-shadow);
+      outline: none;
+    }
+
+    .form-control:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .form-check {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .form-check-input {
+      width: 1.25rem;
+      height: 1.25rem;
+      margin-right: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-sm);
+      background-color: var(--input-bg);
+      transition: all var(--transition-normal);
+    }
+
+    .form-check-input:checked {
+      background-color: var(--accent-color);
+      border-color: var(--accent-color);
+    }
+
+    .form-check-label {
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .invalid-feedback {
+      display: none;
+      color: var(--error-color);
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .is-invalid {
+      border-color: var(--error-color);
+    }
+
+    .is-invalid + .invalid-feedback {
+      display: block;
+    }
+
+    /* Toast */
+    .toast-container {
+      z-index: 1060;
+    }
+
+    .toast {
+      background-color: var(--toast-bg);
+      border: 1px solid var(--toast-border);
+      border-radius: var(--border-radius);
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+    }
+
+    .toast-header {
+      background-color: transparent;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1rem;
+    }
+
+    .toast-body {
+      padding: 1rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Ripple Effect */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      background-color: rgba(255, 255, 255, 0.4);
+      pointer-events: none;
+      animation: ripple 0.6s linear;
+    }
+
+    @keyframes ripple {
+      to {
+        transform: scale(2);
+        opacity: 0;
       }
-      .status-pending { color: #6c757d; }
-      .status-processing { color: #ffc107; }
-      .status-confirmed { color: #17a2b8; }
-      .status-shipped { color: #007bff; }
-      .status-delivered { color: #28a745; }
-      .status-cancelled { color: #dc3545; }
-      .status-return-requested { color: #fd7e14; }
-      .status-return-approved { color: #28a745; }
-      .status-returned { color: #28a745; }
-      .status-return-rejected { color: #dc3545; }
-      .status-payment-failed { color: #dc3545; }
-      .action-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Animation Keyframes */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
       }
-      .refund-info {
-        color: #28a745;
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Shine Effect */
+    .shine-effect {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shine-effect::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: rotate(30deg);
+      animation: shine 6s infinite;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .shine-effect:hover::after {
+      opacity: 1;
+    }
+
+    @keyframes shine {
+      0% {
+        transform: translateX(-100%) rotate(30deg);
+      }
+      100% {
+        transform: translateX(100%) rotate(30deg);
+      }
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 991px) {
+      .order-card .row {
+        flex-direction: column;
+      }
+      
+      .order-card .col-lg-2,
+      .order-card .col-lg-7,
+      .order-card .col-lg-3 {
+        width: 100%;
+        text-align: left !important;
+        margin-bottom: 1rem;
+      }
+      
+      .order-card .col-lg-2 {
+        max-width: 150px;
+        margin: 0 auto 1rem;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .main-content {
+        margin-left: 0;
+        padding: 1.5rem;
+        padding-top: 4rem;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .header-actions {
+        width: 100%;
+      }
+
+      .product-img {
+        max-height: 100px;
+      }
+
+      .card-title {
+        font-size: 1rem;
+      }
+
+      .action-btn {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .main-content {
+        padding: 1rem;
+        padding-top: 4rem;
+      }
+
+      .header-title h1 {
+        font-size: 1.5rem;
+      }
+
+      .header-title p {
         font-size: 0.9rem;
       }
-      .payment-failed-badge {
-        background-color: #dc3545;
-        color: white;
-        padding: 3px 8px;
-        border-radius: 4px;
+
+      .order-card {
+        padding: 1rem;
+      }
+
+      .product-img {
+        max-height: 80px;
+      }
+
+      .card-title {
+        font-size: 0.95rem;
+      }
+
+      .card-text {
+        font-size: 0.85rem;
+      }
+
+      .action-btn {
         font-size: 0.8rem;
-        font-weight: 500;
-        display: inline-block;
-        margin-bottom: 8px;
+        padding: 0.4rem 0.75rem;
       }
-      .payment-pending-badge {
-        background-color: #ffc107;
-        color: #212529;
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        display: inline-block;
-        margin-bottom: 8px;
+
+      .pagination .page-link {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.85rem;
       }
-      .btn-retry-payment {
-        background-color: #0d6efd;
-        color: white;
-        border: none;
-        transition: all 0.3s ease;
+    }
+
+    /* Sidebar (included for reference, actual sidebar is in a separate file) */
+    .sidebar {
+      width: 280px;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: var(--sidebar-bg);
+      box-shadow: var(--card-shadow);
+      z-index: 1040;
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal), background-color var(--transition-normal);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      transform: translateX(-100%);
+      border-right: 1px solid var(--border-color);
+    }
+
+    .sidebar.show {
+      transform: translateX(0);
+    }
+
+    @media (min-width: 768px) {
+      .sidebar {
+        transform: translateX(0);
       }
-      .btn-retry-payment:hover {
-        background-color: #0b5ed7;
-        transform: translateY(-2px);
+      
+      .sidebar-toggle {
+        display: none;
       }
-      .payment-alert {
-        border-left: 4px solid #dc3545;
-        background-color: #f8d7da;
-        padding: 10px 15px;
-        margin-bottom: 15px;
-        border-radius: 4px;
-      }
-      .payment-pending-alert {
-        border-left: 4px solid #ffc107;
-        background-color: #fff3cd;
-        padding: 10px 15px;
-        margin-bottom: 15px;
-        border-radius: 4px;
-      }
-      .spinner-border-sm {
-        width: 1rem;
-        height: 1rem;
-        border-width: 0.2em;
-      }
-      .main-cards12{
-        
-      transform: translate(328px, -647px); 
-      }
-    </style>
-  </head>
-  <body>
+    }
+
+    /* Fix for the main-cards12 class */
+    .main-cards12 {
+      transform: none !important;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <!-- Include Header -->
     <%- include("../partials/user/header") %>
 
-    <div class="container my-5 animate__animated animate__fadeIn">
-      <div class="row">
-        <%- include("../partials/user/profileSidebar") %>
-
-        <div class="col-md-9 main-cards12">
-          <div class="card main-content-card animate__animated animate__fadeInUp">
-            <div class="card-body p-4">
-              <h4 class="card-title mb-4 fw-bold animate__animated animate__fadeInLeft">
-                My Orders
-              </h4>
-
-              <div class="toast-container position-fixed top-0 end-0 p-3">
-                <div
-                  id="orderToast"
-                  class="toast"
-                  role="alert"
-                  aria-live="assertive"
-                  aria-atomic="true"
-                  data-bs-delay="3000"
-                >
-                  <div class="toast-header">
-                    <strong class="me-auto">Order Action</strong>
-                    <small>Just now</small>
-                    <button
-                      type="button"
-                      class="btn-close"
-                      data-bs-dismiss="toast"
-                      aria-label="Close"
-                    ></button>
-                  </div>
-                  <div class="toast-body"></div>
-                </div>
-              </div>
-
-              <% if (!hasOrders) { %>
-              <div class="text-center py-5 animate__animated animate__fadeIn">
-                <img
-                  src="/Uploads/empty-orders.png"
-                  alt="No Orders"
-                  class="img-fluid mb-4"
-                  style="max-width: 200px"
-                />
-                <p class="text-muted">
-                  You have no orders yet.
-                  <a href="/" class="fw-bold">Start shopping!</a>
-                </p>
-              </div>
-              <% } else { %>
-                <% orders.forEach((order, index) => { %>
-                  <% if (order.order_items && order.order_items.length > 0) { %>
-                    <% order.order_items.forEach((item, itemIndex) => { %>
-                      <div
-                        class="order-card card mb-4 shine-effect animate__animated animate__fadeInUp"
-                        style="animation-delay: <%= (index + itemIndex) * 0.1 %>s"
-                      >
-                        <div class="card-body p-4">
-                          <!-- Payment Status Alerts - New Addition -->
+    <div class="content-wrapper">
+      <!-- Sidebar Toggle Button (Mobile) -->
+      <button class="sidebar-toggle d-md-none" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      
+      <!-- Include Sidebar -->
+      <%- include("../partials/user/profileSidebar") %>
+      
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Page Header -->
+        <section class="page-header">
+          <div class="header-content">
+            <div class="header-title">
+              <h1>My Orders</h1>
+              <p>Track and manage your purchases</p>
+            </div>
+          </div>
+          
+          <div class="header-actions">
+            <div class="theme-toggle" id="themeToggle">
+              <i class="fas fa-sun sun"></i>
+              <i class="fas fa-moon moon"></i>
+              <span class="toggle-circle"></span>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Toast Notifications -->
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+          <div id="orderToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+            <div class="toast-header">
+              <i class="fas fa-bell me-2"></i>
+              <strong class="me-auto">Order Action</strong>
+              <small>Just now</small>
+              <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="toast-body"></div>
+          </div>
+        </div>
+        
+        <!-- Orders List -->
+        <section class="orders-list">
+          <% if (!hasOrders) { %>
+            <div class="empty-state">
+              <img src="/Uploads/empty-orders.png" alt="No Orders" class="img-fluid">
+              <p>You have no orders yet. <a href="/">Start shopping!</a></p>
+              <a href="/" class="action-btn btn-dark">
+                <i class="fas fa-shopping-bag me-2"></i>
+                Browse Products
+              </a>
+            </div>
+          <% } else { %>
+            <% orders.forEach((order, index) => { %>
+              <% if (order.order_items && order.order_items.length > 0) { %>
+                <% order.order_items.forEach((item, itemIndex) => { %>
+                  <div class="order-card shine-effect" style="animation-delay: <%= (index + itemIndex) * 0.1 %>s">
+                    <div class="card-body p-4">
+                      <!-- Payment Status Alerts -->
+                      <% if (order.paymentMethod === 'Online' && order.paymentStatus === 'Failed') { %>
+                        <div class="payment-alert">
+                          <div class="alert-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                          </div>
+                          <div class="alert-content">
+                            <strong>Payment Failed</strong>
+                            Your payment for this order was not successful. Please retry payment to complete your order.
+                          </div>
+                        </div>
+                      <% } else if (order.paymentMethod === 'Online' && order.paymentStatus === 'Pending') { %>
+                        <div class="payment-pending-alert">
+                          <div class="alert-icon">
+                            <i class="fas fa-hourglass-half"></i>
+                          </div>
+                          <div class="alert-content">
+                            <strong>Payment Pending</strong>
+                            Your payment is being processed. If it doesn't complete soon, please retry payment.
+                          </div>
+                        </div>
+                      <% } %>
+                      
+                      <div class="row g-4 align-items-center">
+                        <div class="col-lg-2 col-md-3 col-sm-3">
+                          <img 
+                            src="<%= item.productId && item.productId.images && item.productId.images.length > 0 ? item.productId.images[0].url : (item.itemImage || '/api/placeholder/300/300') %>" 
+                            alt="<%= item.productId && item.productId.name ? item.productId.name : (item.product_name || 'Unnamed Product') %>" 
+                            class="product-img"
+                          >
+                        </div>
+                        <div class="col-lg-7 col-md-6 col-sm-9">
+                          <h5 class="card-title">
+                            <%= item.productId && item.productId.name ? item.productId.name : (item.product_name || 'Unnamed Product') %>
+                          </h5>
+                          <p class="card-text mb-2 fs-5 fw-semibold">
+                            ₹<%= item.price ? item.price.toFixed(2) : '0.00' %>
+                          </p>
+                          <p class="card-text mb-2">
+                            Quantity: <%= item.quantity || 1 %> | Size: <%= item.size || 'N/A' %>
+                          </p>
+                          <p class="card-text mb-2 text-muted">
+                            Order ID: <%= order.orderNumber || 'N/A' %>
+                          </p>
+                          
                           <% if (order.paymentMethod === 'Online' && order.paymentStatus === 'Failed') { %>
-                            <div class="payment-alert mb-3">
-                              <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                              <strong>Payment Failed:</strong> Your payment for this order was not successful. Please retry payment to complete your order.
-                            </div>
+                            <span class="payment-badge payment-failed-badge">
+                              <i class="fas fa-exclamation-triangle me-1"></i>Payment Failed
+                            </span>
                           <% } else if (order.paymentMethod === 'Online' && order.paymentStatus === 'Pending') { %>
-                            <div class="payment-pending-alert mb-3">
-                              <i class="bi bi-hourglass-split me-2"></i>
-                              <strong>Payment Pending:</strong> Your payment is being processed. If it doesn't complete soon, please retry payment.
+                            <span class="payment-badge payment-pending-badge">
+                              <i class="fas fa-hourglass-half me-1"></i>Payment Pending
+                            </span>
+                          <% } else { %>
+                            <div class="order-progress">
+                              <div class="progress">
+                                <div
+                                  class="progress-bar bg-<%= order.status && (order.status.toLowerCase() === 'delivered' || order.status.toLowerCase() === 'returned') ? 'success' : (order.status.toLowerCase() === 'cancelled' || order.status.toLowerCase() === 'return-rejected') ? 'danger' : 'primary' %>"
+                                  role="progressbar"
+                                  style="width: <%= order.progressWidth || 0 %>%"
+                                  aria-valuenow="<%= order.progressWidth || 0 %>"
+                                  aria-valuemin="0"
+                                  aria-valuemax="100"
+                                ></div>
+                              </div>
+                            </div>
+                            
+                            <div class="status-badges mt-2">
+                              <span class="status-badge status-<%= order.status ? order.status.toLowerCase().replace(/\s+/g, '-') : 'pending' %>">
+                                <i class="fas fa-<%= 
+                                  order.status === 'Pending' ? 'clock' : 
+                                  order.status === 'Processing' ? 'spinner' : 
+                                  order.status === 'Confirmed' ? 'check-circle' : 
+                                  order.status === 'Shipped' ? 'truck' : 
+                                  order.status === 'Delivered' ? 'box-open' : 
+                                  order.status === 'Cancelled' ? 'times-circle' : 
+                                  order.status === 'Return Requested' ? 'undo' : 
+                                  order.status === 'Return Approved' ? 'check' : 
+                                  order.status === 'Returned' ? 'exchange-alt' : 
+                                  order.status === 'Return Rejected' ? 'ban' : 'info-circle' 
+                                %>"></i>
+                                <%= order.status ? order.status.toUpperCase() : 'PENDING' %>
+                              </span>
                             </div>
                           <% } %>
                           
-                          <div class="row g-4 align-items-center">
-                            <div class="col-lg-2 col-md-3 col-sm-3">
-                            <img 
-                            src="<%= item.productId && item.productId.images && item.productId.images.length > 0 ? item.productId.images[0].url : (item.itemImage || '/api/placeholder/300/300') %>" 
-                            alt="<%= item.productId && item.productId.name ? item.productId.name : (item.product_name || 'Unnamed Product') %>" 
-                            class="product-img img-fluid rounded"
-                        >
+                          <% if (order.refunded && order.status === 'Returned') { %>
+                            <div class="refund-info">
+                              <i class="fas fa-wallet"></i>
+                              Refund of ₹<%= order.total ? order.total.toFixed(2) : '0.00' %> credited to wallet
                             </div>
-                            <div class="col-lg-7 col-md-6 col-sm-9">
-                              <h5 class="card-title fw-bold">
-                                <%= item.productId && item.productId.name ? item.productId.name : (item.product_name || 'Unnamed Product') %>
-                              </h5>
-                              <p class="card-text mb-2 fs-5 fw-semibold">
-                                ₹<%= item.price ? item.price.toFixed(2) : '0.00' %>
-                              </p>
-                              <p class="card-text mb-2">
-                                Quantity: <%= item.quantity || 1 %> | Size: <%= item.size || 'N/A' %>
-                              </p>
-                              <p class="card-text mb-0 text-muted">
-                                Order Id: <%= order.orderNumber || 'N/A' %>
-                              </p>
-                              
-                              <% if (order.paymentMethod === 'Online' && order.paymentStatus === 'Failed') { %>
-                                <span class="payment-failed-badge">
-                                  <i class="bi bi-exclamation-triangle-fill me-1"></i>Payment Failed
-                                </span>
-                              <% } else if (order.paymentMethod === 'Online' && order.paymentStatus === 'Pending') { %>
-                                <span class="payment-pending-badge">
-                                  <i class="bi bi-hourglass-split me-1"></i>Payment Pending
-                                </span>
-                              <% } else { %>
-                                <div class="order-progress mt-2">
-                                  <div class="progress">
-                                    <div
-                                      class="progress-bar bg-<%= order.status && (order.status.toLowerCase() === 'delivered' || order.status.toLowerCase() === 'returned') ? 'success' : (order.status.toLowerCase() === 'cancelled' || order.status.toLowerCase() === 'return-rejected') ? 'danger' : 'primary' %>"
-                                      role="progressbar"
-                                      style="width: <%= order.progressWidth || 0 %>%"
-                                      aria-valuenow="<%= order.progressWidth || 0 %>"
-                                      aria-valuemin="0"
-                                      aria-valuemax="100"
-                                    ></div>
-                                  </div>
-                                </div>
-                              <% } %>
-                              
-                              <% if (order.refunded && order.status === 'Returned') { %>
-                                <p class="refund-info mt-2">
-                                  <i class="bi bi-wallet2 me-1"></i>
-                                  Refund of ₹<%= order.total ? order.total.toFixed(2) : '0.00' %> credited to wallet
-                                </p>
-                              <% } %>
-                            </div>
-                            <div class="col-lg-3 col-md-3 col-sm-12 text-lg-end text-md-end text-start mt-sm-3 mt-lg-0">
-                              <% if (order.paymentMethod === 'Online' && (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending')) { %>
-                                <p class="<%= order.paymentStatus === 'Failed' ? 'status-payment-failed' : 'status-pending' %> mb-1 fs-6">
-                                  <i class="bi bi-<%= order.paymentStatus === 'Failed' ? 'exclamation-circle-fill' : 'hourglass-split' %> me-1"></i>
-                                  <%= order.paymentStatus.toUpperCase() %>
-                                </p>
-                                <p class="mb-3">
-                                  <i class="bi bi-calendar me-1"></i>
-                                  <%= new Date(order.orderDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
-                                </p>
-                                <!-- Retry Payment Button - New Addition -->
-                                <button
-                                  class="btn btn-sm btn-retry-payment mb-2"
-                                  onclick="retryPayment('<%= order._id %>')"
-                                  id="retryBtn-<%= order._id %>"
-                                >
-                                  <i class="bi bi-arrow-repeat me-1"></i>Retry Payment
-                                </button>
-                              <% } else { %>
-                                <p class="status-<%= order.status ? order.status.toLowerCase().replace(/\s+/g, '-') : 'pending' %> mb-1 fs-6">
-                                  Status: <%= order.status ? order.status.toUpperCase() : 'PENDING' %>
-                                </p>
-                                <p class="mb-3">
-                                  <% if (order.status === 'Delivered') { %>
-                                    <i class="bi bi-check-circle-fill me-1 text-success"></i>
-                                    Delivered on <%= order.deliveryDate ? new Date(order.deliveryDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) : new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
-                                  <% } else if (order.status === 'Processing' || order.status === 'Confirmed' || order.status === 'Shipped') { %>
-                                    <i class="bi bi-truck me-1 text-primary"></i>
-                                    Expected by <%= new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
-                                  <% } else if (order.status === 'Cancelled') { %>
-                                    <i class="bi bi-x-circle-fill me-1 text-danger"></i>
-                                    Cancelled
-                                  <% } else if (order.status === 'Return Rejected') { %>
-                                    <i class="bi bi-x-circle-fill me-1 text-danger"></i>
-                                    Return Rejected
-                                  <% } else if (order.status === 'Returned') { %>
-                                    <i class="bi bi-check-circle-fill me-1 text-success"></i>
-                                    Returned
-                                  <% } else if (order.status === 'Return Requested' || order.status === 'Return Approved') { %>
-                                    <i class="bi bi-arrow-return-left me-1 text-warning"></i>
-                                    <%= order.status %>
-                                  <% } %>
-                                </p>
-                                <% if (order.status === 'Delivered' && !order.refunded) { %>
-                                  <button
-                                    class="btn btn-sm btn-outline-dark action-btn mb-2"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#returnModal"
-                                    data-order-id="<%= order._id %>"
-                                  >
-                                    <i class="bi bi-arrow-return-left me-1"></i>Return
-                                  </button>
-                                  <% if (order.status !== 'Cancelled') { %>
-                                    <button
-                                      class="btn btn-sm btn-outline-dark action-btn mb-2"
-                                      onclick="downloadInvoice('<%= order._id %>')"
-                                    >
-                                      <i class="bi bi-file-earmark-text me-1"></i>Invoice
-                                    </button>
-                                  <% } %>
-                                <% } else if (order.status === 'Pending' || order.status === 'Processing') { %>
-                                  <button
-                                    class="btn btn-sm btn-outline-dark action-btn mb-2"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#cancelModal"
-                                    data-order-id="<%= order._id %>"
-                                  >
-                                    <i class="bi bi-x-circle me-1"></i>Cancel Order
-                                  </button>
-                                <% } else if (order.status === 'Cancelled' || order.status === 'Return Rejected') { %>
-                                  <button
-                                    class="btn btn-sm btn-outline-dark action-btn mb-2"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#reorderModal"
-                                    data-order-id="<%= order._id %>"
-                                  >
-                                    <i class="bi bi-arrow-repeat me-1"></i>Re Order
-                                  </button>
-                                <% } %>
-                              <% } %>
-                              <button
-                                class="btn btn-sm btn-dark action-btn"
-                                onclick="viewDetails('<%= order._id %>')"
-                              >
-                                <i class="bi bi-eye me-1"></i>View Details
-                              </button>
-                            </div>
-                          </div>
+                          <% } %>
                         </div>
-                      </div>
-                    <% }); %>
-                  <% } else { %>
-                    <div class="order-card card mb-4 shine-effect animate__animated animate__fadeInUp">
-                      <div class="card-body p-4">
-                        <!-- Payment Status Alerts for orders without items - New Addition -->
-                        <% if (order.paymentMethod === 'Online' && order.paymentStatus === 'Failed') { %>
-                          <div class="payment-alert mb-3">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                            <strong>Payment Failed:</strong> Your payment for this order was not successful. Please retry payment to complete your order.
-                          </div>
-                        <% } else if (order.paymentMethod === 'Online' && order.paymentStatus === 'Pending') { %>
-                          <div class="payment-pending-alert mb-3">
-                            <i class="bi bi-hourglass-split me-2"></i>
-                            <strong>Payment Pending:</strong> Your payment is being processed. If it doesn't complete soon, please retry payment.
-                          </div>
-                        <% } %>
-                        
-                        <div class="row g-4 align-items-center">
-                          <div class="col-lg-2 col-md-3 col-sm-3">
-                          <img 
-                          src="/api/placeholder/300/300" 
-                          alt="Order Image" 
-                          class="product-img img-fluid rounded"
-                      >
-                          </div>
-                          <div class="col-lg-7 col-md-6 col-sm-9">
-                            <h5 class="card-title fw-bold">
-                              Order #<%= order.orderNumber || 'N/A' %>
-                            </h5>
-                            <p class="card-text mb-2 fs-5 fw-semibold">
-                              ₹<%= order.total ? order.total.toFixed(2) : '0.00' %>
+                        <div class="col-lg-3 col-md-3 col-sm-12 text-lg-end text-md-end text-start mt-sm-3 mt-lg-0">
+                          <p class="card-text mb-2">
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            <%= new Date(order.orderDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+                          </p>
+                          
+                          <% if (order.status === 'Delivered') { %>
+                            <p class="card-text mb-3">
+                              <i class="fas fa-check-circle text-success me-1"></i>
+                              Delivered on <%= order.deliveryDate ? new Date(order.deliveryDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) : new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
                             </p>
-                            <p class="card-text mb-2">
-                              Date: <%= new Date(order.orderDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+                          <% } else if (order.status === 'Processing' || order.status === 'Confirmed' || order.status === 'Shipped') { %>
+                            <p class="card-text mb-3">
+                              <i class="fas fa-truck text-primary me-1"></i>
+                              Expected by <%= new Date(order.orderDate.getTime() + 7 * 24 * 60 * 60 * 1000).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
                             </p>
-                            
-                            <% if (order.paymentMethod === 'Online' && order.paymentStatus === 'Failed') { %>
-                              <span class="payment-failed-badge">
-                                <i class="bi bi-exclamation-triangle-fill me-1"></i>Payment Failed
-                              </span>
-                            <% } else if (order.paymentMethod === 'Online' && order.paymentStatus === 'Pending') { %>
-                              <span class="payment-pending-badge">
-                                <i class="bi bi-hourglass-split me-1"></i>Payment Pending
-                              </span>
-                            <% } %>
-                          </div>
-                          <div class="col-lg-3 col-md-3 col-sm-12 text-lg-end text-md-end text-start mt-sm-3 mt-lg-0">
+                          <% } %>
+                          
+                          <div class="action-buttons">
                             <% if (order.paymentMethod === 'Online' && (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending')) { %>
-                              <p class="<%= order.paymentStatus === 'Failed' ? 'status-payment-failed' : 'status-pending' %> mb-1 fs-6">
-                                <i class="bi bi-<%= order.paymentStatus === 'Failed' ? 'exclamation-circle-fill' : 'hourglass-split' %> me-1"></i>
-                                <%= order.paymentStatus.toUpperCase() %>
-                              </p>
-                              <!-- Retry Payment Button for orders without items - New Addition -->
                               <button
-                                class="btn btn-sm btn-retry-payment mb-2"
+                                class="action-btn btn-retry-payment"
                                 onclick="retryPayment('<%= order._id %>')"
                                 id="retryBtn-<%= order._id %>"
                               >
-                                <i class="bi bi-arrow-repeat me-1"></i>Retry Payment
+                                <i class="fas fa-sync-alt me-1"></i>Retry Payment
+                              </button>
+                            <% } else if (order.status === 'Delivered' && !order.refunded) { %>
+                              <button
+                                class="action-btn btn-outline-dark"
+                                data-bs-toggle="modal"
+                                data-bs-target="#returnModal"
+                                data-order-id="<%= order._id %>"
+                              >
+                                <i class="fas fa-undo me-1"></i>Return
+                              </button>
+                              <% if (order.status !== 'Cancelled') { %>
+                                <button
+                                  class="action-btn btn-outline-dark"
+                                  onclick="downloadInvoice('<%= order._id %>')"
+                                >
+                                  <i class="fas fa-file-invoice me-1"></i>Invoice
+                                </button>
+                              <% } %>
+                            <% } else if (order.status === 'Pending' || order.status === 'Processing') { %>
+                              <button
+                                class="action-btn btn-outline-dark"
+                                data-bs-toggle="modal"
+                                data-bs-target="#cancelModal"
+                                data-order-id="<%= order._id %>"
+                              >
+                                <i class="fas fa-times-circle me-1"></i>Cancel Order
+                              </button>
+                            <% } else if (order.status === 'Cancelled' || order.status === 'Return Rejected') { %>
+                              <button
+                                class="action-btn btn-outline-dark"
+                                data-bs-toggle="modal"
+                                data-bs-target="#reorderModal"
+                                data-order-id="<%= order._id %>"
+                              >
+                                <i class="fas fa-sync-alt me-1"></i>Re Order
                               </button>
                             <% } %>
+                            
                             <button
-                              class="btn btn-sm btn-dark action-btn"
+                              class="action-btn btn-dark"
                               onclick="viewDetails('<%= order._id %>')"
                             >
-                              <i class="bi bi-eye me-1"></i>View Details
+                              <i class="fas fa-eye me-1"></i>View Details
                             </button>
                           </div>
                         </div>
                       </div>
                     </div>
-                  <% } %>
+                  </div>
                 <% }); %>
+              <% } else { %>
+                <div class="order-card shine-effect">
+                  <div class="card-body p-4">
+                    <!-- Payment Status Alerts for orders without items -->
+                    <% if (order.paymentMethod === 'Online' && order.paymentStatus === 'Failed') { %>
+                      <div class="payment-alert">
+                        <div class="alert-icon">
+                          <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="alert-content">
+                          <strong>Payment Failed</strong>
+                          Your payment for this order was not successful. Please retry payment to complete your order.
+                        </div>
+                      </div>
+                    <% } else if (order.paymentMethod === 'Online' && order.paymentStatus === 'Pending') { %>
+                      <div class="payment-pending-alert">
+                        <div class="alert-icon">
+                          <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <div class="alert-content">
+                          <strong>Payment Pending</strong>
+                          Your payment is being processed. If it doesn't complete soon, please retry payment.
+                        </div>
+                      </div>
+                    <% } %>
+                    
+                    <div class="row g-4 align-items-center">
+                      <div class="col-lg-2 col-md-3 col-sm-3">
+                        <img 
+                          src="/api/placeholder/300/300" 
+                          alt="Order Image" 
+                          class="product-img"
+                        >
+                      </div>
+                      <div class="col-lg-7 col-md-6 col-sm-9">
+                        <h5 class="card-title">
+                          Order #<%= order.orderNumber || 'N/A' %>
+                        </h5>
+                        <p class="card-text mb-2 fs-5 fw-semibold">
+                          ₹<%= order.total ? order.total.toFixed(2) : '0.00' %>
+                        </p>
+                        <p class="card-text mb-2">
+                          Date: <%= new Date(order.orderDate).toLocaleString('en-IN', { month: 'long', day: 'numeric', year: 'numeric' }) %>
+                        </p>
+                        
+                        <% if (order.paymentMethod === 'Online' && order.paymentStatus === 'Failed') { %>
+                          <span class="payment-badge payment-failed-badge">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Payment Failed
+                          </span>
+                        <% } else if (order.paymentMethod === 'Online' && order.paymentStatus === 'Pending') { %>
+                          <span class="payment-badge payment-pending-badge">
+                            <i class="fas fa-hourglass-half me-1"></i>Payment Pending
+                          </span>
+                        <% } %>
+                      </div>
+                      <div class="col-lg-3 col-md-3 col-sm-12 text-lg-end text-md-end text-start mt-sm-3 mt-lg-0">
+                        <div class="action-buttons">
+                          <% if (order.paymentMethod === 'Online' && (order.paymentStatus === 'Failed' || order.paymentStatus === 'Pending')) { %>
+                            <button
+                              class="action-btn btn-retry-payment"
+                              onclick="retryPayment('<%= order._id %>')"
+                              id="retryBtn-<%= order._id %>"
+                            >
+                              <i class="fas fa-sync-alt me-1"></i>Retry Payment
+                            </button>
+                          <% } %>
+                          <button
+                            class="action-btn btn-dark"
+                            onclick="viewDetails('<%= order._id %>')"
+                          >
+                            <i class="fas fa-eye me-1"></i>View Details
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               <% } %>
-
-         
-              <% if (hasOrders && totalPages > 1) { 
-                let startPage = Math.max(1, currentPage - 1);
-                let endPage = Math.min(startPage + 3, totalPages);
+            <% }); %>
             
-                // Adjust startPage if we're near the end
-                if (endPage - startPage < 3) {
-                  startPage = Math.max(1, endPage - 3);
-                }
+            <!-- Pagination -->
+            <% if (hasOrders && totalPages > 1) { 
+              let startPage = Math.max(1, currentPage - 1);
+              let endPage = Math.min(startPage + 3, totalPages);
+          
+              // Adjust startPage if we're near the end
+              if (endPage - startPage < 3) {
+                startPage = Math.max(1, endPage - 3);
+              }
             %>
-              <nav aria-label="Order pagination" class="mt-4 animate__animated animate__fadeInUp">
+              <nav aria-label="Order pagination" class="mt-4">
                 <ul class="pagination justify-content-center">
                   <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
                     <a class="page-link" href="?page=<%= currentPage - 1 %>" aria-label="Previous">
-                      <span aria-hidden="true">«</span>
+                      <span aria-hidden="true"><i class="fas fa-chevron-left"></i></span>
                     </a>
                   </li>
-            
+          
                   <% if (startPage > 1) { %>
                     <li class="page-item"><a class="page-link" href="?page=1">1</a></li>
                     <% if (startPage > 2) { %>
                       <li class="page-item disabled"><span class="page-link">...</span></li>
                     <% } %>
                   <% } %>
-            
+          
                   <% for (let i = startPage; i <= endPage; i++) { %>
                     <li class="page-item <%= currentPage === i ? 'active' : '' %>">
                       <a class="page-link" href="?page=<%= i %>"><%= i %></a>
                     </li>
                   <% } %>
-            
+          
                   <% if (endPage < totalPages) { %>
                     <% if (endPage < totalPages - 1) { %>
                       <li class="page-item disabled"><span class="page-link">...</span></li>
                     <% } %>
                     <li class="page-item"><a class="page-link" href="?page=<%= totalPages %>"><%= totalPages %></a></li>
                   <% } %>
-            
+          
                   <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
                     <a class="page-link" href="?page=<%= currentPage + 1 %>" aria-label="Next">
-                      <span aria-hidden="true">»</span>
+                      <span aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
                     </a>
                   </li>
                 </ul>
               </nav>
             <% } %>
-            
-            </div>
-          </div>
-        </div>
-      </div>
+          <% } %>
+        </section>
+      </main>
     </div>
-
-
-    <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="cancelModalLabel">Cancel Order</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p>Are you sure you want to cancel this order?</p>
-            <div class="mb-3">
-              <label for="cancelReason" class="form-label">Reason for cancellation (optional)</label>
-              <textarea class="form-control" id="cancelReason" rows="3" maxlength="500"></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
-            <button type="button" class="btn btn-dark" id="confirmCancelBtn">Yes, cancel</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-    <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="returnModalLabel">Return Order</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p>Are you sure you want to initiate a return for this order?</p>
-            <div class="mb-3">
-              <label for="returnReason" class="form-label">Reason for return (required)</label>
-              <textarea class="form-control" id="returnReason" rows="3" maxlength="500" required></textarea>
-              <div class="invalid-feedback">Please provide a reason for the return.</div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
-            <button type="button" class="btn btn-dark" id="confirmReturnBtn">Yes, return</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-   
-    <div class="modal fade" id="reorderModal" tabindex="-1" aria-labelledby="reorderModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="reorderModalLabel">Confirm Reorder</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p>Do you want to place this order again?</p>
-            <p class="text-muted">
-              Note: Prices and availability may have changed since your original order.
-            </p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">No</button>
-            <button type="button" class="btn btn-dark" id="confirmReorderBtn">Yes, reorder</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Payment Method Modal - New Addition -->
-    <div class="modal fade" id="paymentMethodModal" tabindex="-1" aria-labelledby="paymentMethodModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="paymentMethodModalLabel">Select Payment Method</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p>Please select a payment method to complete your order:</p>
-            <div class="form-check mb-3">
-              <input class="form-check-input" type="radio" name="paymentMethod" id="walletPayment" value="Wallet" checked>
-              <label class="form-check-label d-flex justify-content-between align-items-center" for="walletPayment">
-                <span><i class="bi bi-wallet2 me-2"></i>Pay with Wallet</span>
-                <span class="badge bg-success">Balance: ₹<%= user.walletBalance ? user.walletBalance.toFixed(2) : '0.00' %></span>
-              </label>
-              <% if (user.walletBalance < 0) { %>
-                <div class="text-danger small mt-1">Insufficient balance. Please add money to your wallet.</div>
-              <% } %>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="radio" name="paymentMethod" id="razorpayPayment" value="Razorpay">
-              <label class="form-check-label" for="razorpayPayment">
-                <i class="bi bi-credit-card me-2"></i>Pay Online (Credit/Debit Card, UPI, NetBanking)
-              </label>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary" id="confirmPaymentMethod">Proceed to Payment</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <%- include("../partials/user/footer") %>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script>
     
+    <!-- Include Footer -->
+    <%- include("../partials/user/footer") %>
+  </div>
+
+  <!-- Cancel Order Modal -->
+  <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cancelModalLabel">Cancel Order</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to cancel this order?</p>
+          <div class="mb-3">
+            <label for="cancelReason" class="form-label">Reason for cancellation (optional)</label>
+            <textarea class="form-control" id="cancelReason" rows="3" maxlength="500"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="action-btn btn-outline-dark" data-bs-dismiss="modal">No, Keep Order</button>
+          <button type="button" class="action-btn btn-dark" id="confirmCancelBtn">Yes, Cancel Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Return Order Modal -->
+  <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="returnModalLabel">Return Order</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to initiate a return for this order?</p>
+          <div class="mb-3">
+            <label for="returnReason" class="form-label">Reason for return (required)</label>
+            <textarea class="form-control" id="returnReason" rows="3" maxlength="500" required></textarea>
+            <div class="invalid-feedback">Please provide a reason for the return.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="action-btn btn-outline-dark" data-bs-dismiss="modal">No, Keep Order</button>
+          <button type="button" class="action-btn btn-dark" id="confirmReturnBtn">Yes, Return Order</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reorder Modal -->
+  <div class="modal fade" id="reorderModal" tabindex="-1" aria-labelledby="reorderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="reorderModalLabel">Confirm Reorder</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Do you want to place this order again?</p>
+          <p class="text-muted">
+            Note: Prices and availability may have changed since your original order.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="action-btn btn-outline-dark" data-bs-dismiss="modal">No, Cancel</button>
+          <button type="button" class="action-btn btn-dark" id="confirmReorderBtn">Yes, Reorder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Method Modal -->
+  <div class="modal fade" id="paymentMethodModal" tabindex="-1" aria-labelledby="paymentMethodModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="paymentMethodModalLabel">Select Payment Method</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Please select a payment method to complete your order:</p>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="radio" name="paymentMethod" id="walletPayment" value="Wallet" checked>
+            <label class="form-check-label d-flex justify-content-between align-items-center" for="walletPayment">
+              <span><i class="fas fa-wallet me-2"></i>Pay with Wallet</span>
+              <span class="payment-badge payment-success-badge">Balance: ₹<%= user.walletBalance ? user.walletBalance.toFixed(2) : '0.00' %></span>
+            </label>
+            <% if (user.walletBalance < 0) { %>
+              <div class="text-danger small mt-1">Insufficient balance. Please add money to your wallet.</div>
+            <% } %>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="paymentMethod" id="razorpayPayment" value="Razorpay">
+            <label class="form-check-label" for="razorpayPayment">
+              <i class="fas fa-credit-card me-2"></i>Pay Online (Credit/Debit Card, UPI, NetBanking)
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="action-btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="action-btn btn-dark" id="confirmPaymentMethod">Proceed to Payment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Check for saved theme preference
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } else {
+        // Check for system preference
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+        if (prefersDarkScheme.matches) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      }
+      
+      // Theme toggle functionality
+      const themeToggle = document.getElementById('themeToggle');
+      if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+          const currentTheme = document.documentElement.getAttribute('data-theme');
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          
+          document.documentElement.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+          
+          // Add transition effect
+          document.body.style.transition = 'background-color 0.5s ease, color 0.5s ease';
+          setTimeout(() => {
+            document.body.style.transition = '';
+          }, 500);
+        });
+      }
+      
+      // Toggle sidebar on mobile
+      const sidebarToggle = document.getElementById('sidebarToggle');
+      if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+          document.querySelector('.sidebar').classList.toggle('show');
+        });
+      }
+      
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener('click', function(event) {
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        
+        if (sidebar && sidebarToggle && 
+            window.innerWidth < 768 && 
+            sidebar.classList.contains('show') && 
+            !sidebar.contains(event.target) && 
+            event.target !== sidebarToggle) {
+          sidebar.classList.remove('show');
+        }
+      });
+      
+      // Add animation classes on page load
+      document.querySelectorAll('.order-card').forEach((item, index) => {
+        item.style.animationDelay = `${index * 0.1}s`;
+        item.classList.add('fade-in');
+      });
+      
+      // Add ripple effect to buttons
+      document.querySelectorAll('.action-btn, .btn').forEach(btn => {
+        btn.addEventListener('click', createRippleEffect);
+      });
+      
+      // Debounce function
       function debounce(func, wait) {
         let timeout;
         return function (...args) {
@@ -565,8 +1639,9 @@
         };
       }
 
-      document.addEventListener("DOMContentLoaded", function () {
-        const cancelModal = document.getElementById("cancelModal");
+      // Modal event listeners
+      const cancelModal = document.getElementById("cancelModal");
+      if (cancelModal) {
         cancelModal.addEventListener("show.bs.modal", function (event) {
           const button = event.relatedTarget;
           const orderId = button.getAttribute("data-order-id");
@@ -574,8 +1649,10 @@
           const reasonInput = cancelModal.querySelector("#cancelReason");
           confirmBtn.onclick = debounce(() => cancelOrder(orderId, reasonInput.value.trim()), 1000);
         });
+      }
 
-        const returnModal = document.getElementById("returnModal");
+      const returnModal = document.getElementById("returnModal");
+      if (returnModal) {
         returnModal.addEventListener("show.bs.modal", function (event) {
           const button = event.relatedTarget;
           const orderId = button.getAttribute("data-order-id");
@@ -592,8 +1669,10 @@
             reasonInput.classList.remove("is-invalid");
           });
         });
+      }
 
-        const reorderModal = document.getElementById("reorderModal");
+      const reorderModal = document.getElementById("reorderModal");
+      if (reorderModal) {
         reorderModal.addEventListener("show.bs.modal", function (event) {
           const button = event.relatedTarget;
           const orderId = button.getAttribute("data-order-id");
@@ -624,239 +1703,264 @@
               });
           }, 1000);
         });
-        
-        // Payment Method Modal - New Addition
-        const paymentMethodModal = document.getElementById("paymentMethodModal");
-        if (paymentMethodModal) {
-          const confirmPaymentMethodBtn = paymentMethodModal.querySelector("#confirmPaymentMethod");
-          confirmPaymentMethodBtn.addEventListener("click", function() {
-            const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-            const orderId = paymentMethodModal.getAttribute("data-order-id");
-            completePayment(orderId, selectedMethod);
-            bootstrap.Modal.getInstance(paymentMethodModal).hide();
-          });
-        }
-      });
-
-      function showToast(message, isSuccess = true) {
-        const toastEl = document.getElementById("orderToast");
-        const toastBody = toastEl.querySelector(".toast-body");
-        toastBody.innerHTML = `<i class="bi ${
-          isSuccess ? "bi-check-circle-fill text-success" : "bi-exclamation-triangle-fill text-danger"
-        } me-2"></i>${message}`;
-        const toast = new bootstrap.Toast(toastEl);
-        toast.show();
-      }
-
-      function initiateReturn(orderId, returnReason) {
-        fetch(`/return-order/${orderId}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ returnReason }),
-        })
-          .then((res) => {
-            if (!res.ok) {
-              throw new Error(`HTTP error! Status: ${res.status}`);
-            }
-            return res.json();
-          })
-          .then((data) => {
-            if (data.success) {
-              showToast("Return initiated successfully. Await admin approval.");
-              setTimeout(() => window.location.reload(), 2000);
-            } else {
-              showToast(data.message, false);
-            }
-          })
-          .catch((err) => {
-            console.error("Error in initiateReturn:", err);
-            showToast(`Failed to initiate return: ${err.message}`, false);
-          });
-      }
-
-      function cancelOrder(orderId, cancelReason) {
-        fetch(`/cancel-order/${orderId}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cancelReason }),
-        })
-          .then((res) => {
-            if (!res.ok) {
-              throw new Error(`HTTP error! Status: ${res.status}`);
-            }
-            return res.json();
-          })
-          .then((data) => {
-            if (data.success) {
-              showToast("Order cancelled successfully");
-              setTimeout(() => window.location.reload(), 2000);
-            } else {
-              showToast(data.message, false);
-            }
-          })
-          .catch((err) => {
-            console.error("Error in cancelOrder:", err);
-            showToast(`Failed to cancel order: ${err.message}`, false);
-          });
-      }
-
-      // Retry Payment Function - New Addition
-      function retryPayment(orderId) {
-        // Show payment method selection modal
-        const paymentMethodModal = document.getElementById("paymentMethodModal");
-        paymentMethodModal.setAttribute("data-order-id", orderId);
-        const modal = new bootstrap.Modal(paymentMethodModal);
-        modal.show();
       }
       
-      // Complete Payment Function - New Addition
-      function completePayment(orderId, paymentMethod) {
-        // Show loading state on button
-        const retryBtn = document.getElementById(`retryBtn-${orderId}`);
-        if (retryBtn) {
-          retryBtn.disabled = true;
-          retryBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
-        }
-        
-        if (paymentMethod === "Wallet") {
-          // Handle wallet payment
-          fetch(`/complete-payment/${orderId}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ paymentMethod: "Wallet" }),
+      // Payment Method Modal
+      const paymentMethodModal = document.getElementById("paymentMethodModal");
+      if (paymentMethodModal) {
+        const confirmPaymentMethodBtn = paymentMethodModal.querySelector("#confirmPaymentMethod");
+        confirmPaymentMethodBtn.addEventListener("click", function() {
+          const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+          const orderId = paymentMethodModal.getAttribute("data-order-id");
+          completePayment(orderId, selectedMethod);
+          bootstrap.Modal.getInstance(paymentMethodModal).hide();
+        });
+      }
+    });
+
+    // Show toast notification
+    function showToast(message, isSuccess = true) {
+      const toastEl = document.getElementById("orderToast");
+      const toastBody = toastEl.querySelector(".toast-body");
+      toastBody.innerHTML = `<i class="fas fa-${isSuccess ? "check-circle text-success" : "exclamation-triangle text-danger"} me-2"></i>${message}`;
+      const toast = new bootstrap.Toast(toastEl);
+      toast.show();
+    }
+
+    // Initiate return
+    function initiateReturn(orderId, returnReason) {
+      fetch(`/return-order/${orderId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ returnReason }),
+      })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! Status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then((data) => {
+          if (data.success) {
+            showToast("Return initiated successfully. Await admin approval.");
+            setTimeout(() => window.location.reload(), 2000);
+          } else {
+            showToast(data.message, false);
+          }
+        })
+        .catch((err) => {
+          console.error("Error in initiateReturn:", err);
+          showToast(`Failed to initiate return: ${err.message}`, false);
+        });
+    }
+
+    // Cancel order
+    function cancelOrder(orderId, cancelReason) {
+      fetch(`/cancel-order/${orderId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cancelReason }),
+      })
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! Status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then((data) => {
+          if (data.success) {
+            showToast("Order cancelled successfully");
+            setTimeout(() => window.location.reload(), 2000);
+          } else {
+            showToast(data.message, false);
+          }
+        })
+        .catch((err) => {
+          console.error("Error in cancelOrder:", err);
+          showToast(`Failed to cancel order: ${err.message}`, false);
+        });
+    }
+
+    // Retry Payment
+    function retryPayment(orderId) {
+      // Show payment method selection modal
+      const paymentMethodModal = document.getElementById("paymentMethodModal");
+      paymentMethodModal.setAttribute("data-order-id", orderId);
+      const modal = new bootstrap.Modal(paymentMethodModal);
+      modal.show();
+    }
+    
+    // Complete Payment
+    function completePayment(orderId, paymentMethod) {
+      // Show loading state on button
+      const retryBtn = document.getElementById(`retryBtn-${orderId}`);
+      if (retryBtn) {
+        retryBtn.disabled = true;
+        retryBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+      }
+      
+      if (paymentMethod === "Wallet") {
+        // Handle wallet payment
+        fetch(`/complete-payment/${orderId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ paymentMethod: "Wallet" }),
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error("Server responded with an error");
+            }
+            return response.json();
           })
-            .then(response => {
-              if (!response.ok) {
-                throw new Error("Server responded with an error");
-              }
-              return response.json();
-            })
-            .then(data => {
-              if (data.success) {
-                showToast("Payment completed successfully");
-                setTimeout(() => window.location.reload(), 1500);
-              } else {
-                showToast(data.message || "Failed to process payment", false);
-                if (retryBtn) {
-                  retryBtn.disabled = false;
-                  retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
-                }
-              }
-            })
-            .catch(error => {
-              console.error("Error processing payment:", error);
-              showToast("An error occurred while processing payment", false);
+          .then(data => {
+            if (data.success) {
+              showToast("Payment completed successfully");
+              setTimeout(() => window.location.reload(), 1500);
+            } else {
+              showToast(data.message || "Failed to process payment", false);
               if (retryBtn) {
                 retryBtn.disabled = false;
-                retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
+                retryBtn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Retry Payment';
               }
-            });
-        } else if (paymentMethod === "Razorpay") {
-          // Handle Razorpay payment
-          fetch(`/create-razorpay-order`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ orderId }),
+            }
           })
-            .then(response => {
-              if (!response.ok) {
-                throw new Error("Server responded with an error");
-              }
-              return response.json();
-            })
-            .then(data => {
-              if (data.success) {
-                // Initialize Razorpay payment
-                const options = {
-                  key: data.key,
-                  amount: data.order.amount,
-                  currency: "INR",
-                  name: "ELITE WEAR",
-                  description: "Order Payment",
-                  order_id: data.order.id,
-                  handler: function (response) {
-                    // Verify payment
-                    fetch("/verify-payment", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        razorpay_order_id: response.razorpay_order_id,
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_signature: response.razorpay_signature,
-                      }),
-                    })
-                      .then(res => res.json())
-                      .then(data => {
-                        if (data.success) {
-                          showToast("Payment successful");
-                          setTimeout(() => window.location.href = data.redirect, 1500);
-                        } else {
-                          showToast(data.message || "Payment verification failed", false);
-                          if (retryBtn) {
-                            retryBtn.disabled = false;
-                            retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
-                          }
-                        }
-                      })
-                      .catch(error => {
-                        console.error("Error verifying payment:", error);
-                        showToast("Failed to verify payment", false);
+          .catch(error => {
+            console.error("Error processing payment:", error);
+            showToast("An error occurred while processing payment", false);
+            if (retryBtn) {
+              retryBtn.disabled = false;
+              retryBtn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Retry Payment';
+            }
+          });
+      } else if (paymentMethod === "Razorpay") {
+        // Handle Razorpay payment
+        fetch(`/create-razorpay-order`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ orderId }),
+        })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error("Server responded with an error");
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (data.success) {
+              // Initialize Razorpay payment
+              const options = {
+                key: data.key,
+                amount: data.order.amount,
+                currency: "INR",
+                name: "ELITE WEAR",
+                description: "Order Payment",
+                order_id: data.order.id,
+                handler: function (response) {
+                  // Verify payment
+                  fetch("/verify-payment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      razorpay_order_id: response.razorpay_order_id,
+                      razorpay_payment_id: response.razorpay_payment_id,
+                      razorpay_signature: response.razorpay_signature,
+                    }),
+                  })
+                    .then(res => res.json())
+                    .then(data => {
+                      if (data.success) {
+                        showToast("Payment successful");
+                        setTimeout(() => window.location.href = data.redirect, 1500);
+                      } else {
+                        showToast(data.message || "Payment verification failed", false);
                         if (retryBtn) {
                           retryBtn.disabled = false;
-                          retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
+                          retryBtn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Retry Payment';
                         }
-                      });
-                  },
-                  prefill: {
-                    name: data.user.name,
-                    email: data.user.email,
-                    contact: data.user.contact,
-                  },
-                  theme: {
-                    color: "#2c3e50",
-                  },
-                  modal: {
-                    ondismiss: function() {
-                      console.log("Payment modal dismissed");
+                      }
+                    })
+                    .catch(error => {
+                      console.error("Error verifying payment:", error);
+                      showToast("Failed to verify payment", false);
                       if (retryBtn) {
                         retryBtn.disabled = false;
-                        retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
+                        retryBtn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Retry Payment';
                       }
+                    });
+                },
+                prefill: {
+                  name: data.user.name,
+                  email: data.user.email,
+                  contact: data.user.contact,
+                },
+                theme: {
+                  color: "#3b82f6",
+                },
+                modal: {
+                  ondismiss: function() {
+                    console.log("Payment modal dismissed");
+                    if (retryBtn) {
+                      retryBtn.disabled = false;
+                      retryBtn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Retry Payment';
                     }
                   }
-                };
-                const rzp = new Razorpay(options);
-                rzp.open();
-              } else {
-                showToast(data.message || "Failed to initiate payment", false);
-                if (retryBtn) {
-                  retryBtn.disabled = false;
-                  retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
                 }
-              }
-            })
-            .catch(error => {
-              console.error("Error initiating payment:", error);
-              showToast("An error occurred while initiating payment", false);
+              };
+              const rzp = new Razorpay(options);
+              rzp.open();
+            } else {
+              showToast(data.message || "Failed to initiate payment", false);
               if (retryBtn) {
                 retryBtn.disabled = false;
-                retryBtn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i>Retry Payment';
+                retryBtn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Retry Payment';
               }
-            });
-        }
+            }
+          })
+          .catch(error => {
+            console.error("Error initiating payment:", error);
+            showToast("An error occurred while initiating payment", false);
+            if (retryBtn) {
+              retryBtn.disabled = false;
+              retryBtn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Retry Payment';
+            }
+          });
       }
+    }
 
-      function viewDetails(orderId) {
-        window.location.href = `/order-details/${orderId}`;
-      }
+    // View order details
+    function viewDetails(orderId) {
+      window.location.href = `/order-details/${orderId}`;
+    }
 
-      function downloadInvoice(orderId) {
-        window.location.href = `/invoice/${orderId}`;
+    // Download invoice
+    function downloadInvoice(orderId) {
+      window.location.href = `/invoice/${orderId}`;
+    }
+    
+    // Ripple effect function
+    function createRippleEffect(event) {
+      const button = event.currentTarget;
+      
+      const circle = document.createElement('span');
+      const diameter = Math.max(button.clientWidth, button.clientHeight);
+      const radius = diameter / 2;
+      
+      circle.style.width = circle.style.height = `${diameter}px`;
+      circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+      circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+      circle.classList.add('ripple');
+      
+      const ripple = button.querySelector('.ripple');
+      if (ripple) {
+        ripple.remove();
       }
-    </script>
-  </body>
+      
+      button.appendChild(circle);
+    }
+  </script>
+</body>
 </html>

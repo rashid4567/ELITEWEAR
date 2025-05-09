@@ -3,241 +3,1997 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Management</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="/adminStyle/userManagement.css">
+    <title>User Management - Elite Wear Admin</title>
     
-</head>
-<body>
-    <%- include("../partials/admin/header") %>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --primary-dark: #4338ca;
+            --secondary: #10b981;
+            --secondary-light: #34d399;
+            --secondary-dark: #059669;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #0ea5e9;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --gray-dark: #475569;
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 70px;
+            --header-height: 70px;
+            --card-border-radius: 12px;
+            --transition-speed: 0.3s;
+        }
 
-    <div class="container py-4">
-       
-        <div class="page-header mb-4">
-            <div>
-                <h1 class="h3 fw-bold">CUSTOMER LIST</h1>
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-                        <li class="breadcrumb-item active">CUSTOMERS</li>
-                    </ol>
-                </nav>
-            </div>
-        </div>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-        <div class="row mb-4">
-            <div class="col-md-6 mb-3 mb-md-0">
-                <form method="GET" action="/admin/customers" class="search-container">
-                    <input type="text" id="searchInput" name="search" class="form-control search-input"
-                           placeholder="Search customer..." value="<%= search || '' %>" oninput="toggleClearButton()">
-                    
-                    <button type="submit" class="search-btn">Search</button>
-                    
-                    <button type="button" id="clearBtn" class="clear-btn" onclick="clearSearch()">❌</button>
-                    
-         
-                    <button type="button" class="btn btn-outline-secondary reset-btn" onclick="resetFilters()">
-                        <i class="bi bi-arrow-clockwise"></i> Reset
-                    </button>
-                </form>
-            </div>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: var(--dark);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #fff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+            transition: all var(--transition-speed) ease;
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .sidebar-header .logo i {
+            font-size: 1.5rem;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+            list-style: none;
+            flex: 1;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: var(--gray-dark);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-radius: 0 30px 30px 0;
+            margin-right: 15px;
+            font-weight: 500;
+        }
+
+        .sidebar-menu a i {
+            min-width: 24px;
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        .sidebar-menu a:hover {
+            background-color: rgba(79, 70, 229, 0.08);
+            color: var(--primary);
+        }
+
+        .sidebar-menu a.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .sidebar-collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-collapsed .sidebar-header .logo span,
+        .sidebar-collapsed .sidebar-menu a span {
+            display: none;
+        }
+
+        .sidebar-collapsed .sidebar-menu a {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .sidebar-collapsed .sidebar-menu a i {
+            margin-right: 0;
+            font-size: 1.25rem;
+        }
+
+        /* Sidebar Footer */
+        .sidebar-footer {
+            padding: 15px 20px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .sidebar-footer .btn {
+            flex: 1;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-footer .btn-logout {
+            background-color: var(--danger);
+            color: white;
+            border: none;
+        }
+
+        .sidebar-footer .btn-logout:hover {
+            background-color: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        /* Sidebar Toggle Button */
+        #sidebar-toggle {
+            position: fixed;
+            top: 20px;
+            left: calc(var(--sidebar-width) - 15px);
+            width: 30px;
+            height: 30px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            transition: left var(--transition-speed) ease;
+            border: none;
+            color: var(--primary);
+        }
+
+        #sidebar-toggle:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .sidebar-collapsed + .main-content #sidebar-toggle {
+            left: calc(var(--sidebar-collapsed-width) - 15px);
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            transition: margin-left var(--transition-speed) ease;
+            min-height: 100vh;
+        }
+
+        .main-content-expanded {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        /* User Management Specific Styles */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-header h1 {
+            color: var(--dark);
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .breadcrumb {
+            margin-bottom: 0;
+        }
+
+        .breadcrumb-item a {
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .breadcrumb-item a:hover {
+            color: var(--primary);
+        }
+
+        .breadcrumb-item.active {
+            color: var(--gray-dark);
+            font-weight: 500;
+        }
+
+        .search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-input {
+            padding-right: 40px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            height: 42px;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 500;
+            height: 42px;
+            transition: all 0.2s ease;
+        }
+
+        .search-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            display: none;
+        }
+
+        .reset-btn {
+            height: 42px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .reset-btn:hover {
+            background-color: var(--gray-light);
+            color: white;
+        }
+
+        .card {
+            border: none;
+            border-radius: var(--card-border-radius);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .customer-table {
+            margin-bottom: 0;
+        }
+
+        .customer-table th {
+            background-color: #f8fafc;
+            color: var(--gray-dark);
+            font-weight: 600;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .customer-table td {
+            padding: 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .customer-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-light);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        .customer-email {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .badge {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+
+        .btn-block, .btn-unblock {
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            padding: 6px 12px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-block:hover {
+            background-color: #dc2626;
+            color: white;
+        }
+
+        .btn-unblock {
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-unblock:hover {
+            background-color: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+
+        .pagination {
+            margin-top: 1.5rem;
+        }
+
+        .pagination .page-link {
+            color: var(--gray-dark);
+            border-color: #e2e8f0;
+            padding: 8px 14px;
+            transition: all 0.2s ease;
+        }
+
+        .pagination .page-link:hover {
+            background-color: #f1f5f9;
+            color: var(--primary);
+            z-index: 1;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* Customer Details Modal Styles */
+        .modal-content {
+            border: none;
+            border-radius: var(--card-border-radius);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background-color: var(--primary);
+            color: white;
+            border-bottom: none;
+            padding: 1rem 1.5rem;
+        }
+
+        .modal-header .btn-close {
+            color: white;
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #e2e8f0;
+            padding: 1rem 1.5rem;
+        }
+
+        .customer-detail-card {
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            height: 100%;
+        }
+
+        .customer-detail-card .card-body {
+            padding: 1.25rem;
+        }
+
+        .customer-detail-card .card-subtitle {
+            color: var(--gray);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .customer-avatar {
+            width: 100px;
+            height: 100px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin: 0 auto 1rem;
+        }
+
+        .customer-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .customer-since {
+            color: var(--gray);
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .customer-contact-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .customer-contact-item i {
+            width: 20px;
+            margin-right: 0.75rem;
+            color: var(--primary);
+        }
+
+        .customer-stats-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .customer-stats-item:last-child {
+            border-bottom: none;
+        }
+
+        .customer-stats-label {
+            color: var(--gray);
+        }
+
+        .customer-stats-value {
+            font-weight: 500;
+        }
+
+        /* Address Card Styles */
+        .address-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .address-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .address-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .address-card-title {
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .address-card-type {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background-color: #f1f5f9;
+        }
+
+        .address-card-body {
+            color: var(--gray-dark);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            :root {
+                --sidebar-width: 240px;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            #sidebar-toggle {
+                left: 20px;
+                top: 20px;
+            }
+
+            .sidebar-collapsed + .main-content #sidebar-toggle {
+                left: 20px;
+            }
             
-            <!-- <div class="col-md-6 text-md-end">
-                <button class="btn btn-light">
-                    <i class="bi bi-filter"></i> Filters
-                </button>
-            </div> -->
-        </div>
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
 
- 
-        <div class="card shadow-sm mb-4">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0 customer-table">
-                    <thead>
-                        <tr>
-                            <th>Customer Name</th>
-                            <th>Phone</th>
-                            <th>Orders</th>
-                            <th>Balance</th>
-                            <th>Status</th>
-                            <th>Block/Unblock</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (users.length === 0) { %>
-                            <tr>
-                                <td colspan="7" class="text-center text-muted">No customers found</td>
-                            </tr>
-                        <% } else { %>
-                            <% users.forEach(user => { %>
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar">
-                                            <%= user.fullname.charAt(0) %>
-                                        </div>
-                                        <div>
-                                            <%= user.fullname %>
-                                            <div class="customer-email"><%= user.email %></div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><%= user.mobile %></td>
-                                <td>0</td>
-                                <td>$0.00</td>
-                                <td>
-                                    <% if (user.isBlocked) { %>
-                                        <span class="badge bg-danger">Blocked</span>
-                                    <% } else { %>
-                                        <span class="badge bg-success">Active</span>
-                                    <% } %>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm <%= user.isBlocked ? 'btn-light btn-unblock' : 'btn-danger btn-block' %> toggle-button"
-                                        data-user-id="<%= user._id %>">
-                                        <%= user.isBlocked ? 'UNBLOCK' : 'BLOCK' %>
-                                    </button>
-                                </td>
-                                <td>
-                                    <button class="btn btn-light btn-sm rounded-circle">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <% }); %>
-                        <% } %>
-                    </tbody>
-                </table>
+        @media (max-width: 768px) {
+            .search-container {
+                flex-wrap: wrap;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .search-btn, .reset-btn {
+                flex: 1;
+            }
+            
+            .customer-table {
+                min-width: 800px;
+            }
+            
+            .customer-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .search-btn, .reset-btn {
+                padding: 8px 12px;
+                font-size: 0.875rem;
+            }
+            
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-shopping-bag"></i>
+                <span>ELITE WEAR</span>
             </div>
         </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/admin/">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/productManagement">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/adminorder">
+                    <i class="fas fa-list"></i>
+                    <span>Order List</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/customers" class="active">
+                    <i class="fas fa-users"></i>
+                    <span>Customers</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/sales">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Sales</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/categories">
+                    <i class="fas fa-tag"></i>
+                    <span>Category</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/coupons">
+                    <i class="fas fa-percent"></i>
+                    <span>Coupons</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/getbannerPage">
+                    <i class="fas fa-image"></i>
+                    <span>Banner</span>
+                </a>
+            </li>
+            <li>
+                <a href="/admin/wallet-transactions">
+                    <i class="fas fa-wallet"></i>
+                    <span>Wallet</span>
+                </a>
+            </li>
+        </ul>
+        <div class="sidebar-footer">
+            <button class="btn btn-outline-primary">Account</button>
+            <a href="/admin/logout" class="btn btn-logout">Logout</a>
+        </div>
+    </nav>
 
-        
-        <nav aria-label="Page navigation">
-            <ul class="pagination justify-content-center">
-                <% if (pagination.hasPrevPage) { %>
-                    <li class="page-item">
-                        <a class="page-link" href="?page=<%= pagination.currentPage - 1 %>&search=<%= search || '' %>" aria-label="Previous">
-                            <span aria-hidden="true">&laquo;</span>
-                        </a>
-                    </li>
-                <% } %>
+    <!-- Sidebar Toggle Button -->
+    <button id="sidebar-toggle">
+        <i class="fas fa-chevron-left"></i>
+    </button>
 
-                <% for (let i = 1; i <= pagination.totalPages; i++) { %>
-                    <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
-                        <a class="page-link" href="?page=<%= i %>&search=<%= search || '' %>"><%= i %></a>
-                    </li>
-                <% } %>
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <div class="container-fluid p-0">
+            <div class="page-header mb-4">
+                <div>
+                    <h1 class="h3">Customer Management</h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/admin/">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Customers</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i> Add New Customer
+                    </button>
+                </div>
+            </div>
 
-                <% if (pagination.hasNextPage) { %>
-                    <li class="page-item">
-                        <a class="page-link" href="?page=<%= pagination.currentPage + 1 %>&search=<%= search || '' %>" aria-label="Next">
-                            <span aria-hidden="true">&raquo;</span>
-                        </a>
-                    </li>
-                <% } %>
-            </ul>
-        </nav>
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <form method="GET" action="/admin/customers" class="search-container">
+                        <input type="text" id="searchInput" name="search" class="form-control search-input"
+                               placeholder="Search customer..." value="<%= search || '' %>" oninput="toggleClearButton()">
+                        
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search me-1"></i> Search
+                        </button>
+                        
+                        <button type="button" id="clearBtn" class="clear-btn" onclick="clearSearch()">❌</button>
+                        
+                        <button type="button" class="btn btn-outline-secondary reset-btn" onclick="resetFilters()">
+                            <i class="fas fa-redo-alt"></i> Reset
+                        </button>
+                    </form>
+                </div>
+                
+                <div class="col-md-6 d-flex justify-content-md-end align-items-center mt-3 mt-md-0">
+                    <div class="dropdown me-2">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-filter me-1"></i> Filter
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+                            <li><a class="dropdown-item" href="?status=active">Active Customers</a></li>
+                            <li><a class="dropdown-item" href="?status=blocked">Blocked Customers</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="?sort=newest">Newest First</a></li>
+                            <li><a class="dropdown-item" href="?sort=oldest">Oldest First</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-light dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-download me-1"></i> Export
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-excel me-2"></i>Excel</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-pdf me-2"></i>PDF</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="far fa-file-csv me-2"></i>CSV</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 customer-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="selectAll">
+                                    </div>
+                                </th>
+                                <th>Customer</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Orders</th>
+                                <th>Wallet Balance</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (users && users.length === 0) { %>
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">
+                                        <i class="fas fa-users fa-3x mb-3"></i>
+                                        <p>No customers found</p>
+                                    </td>
+                                </tr>
+                            <% } else if (users) { %>
+                                <% users.forEach(user => { %>
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" value="<%= user._id %>">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar">
+                                                <%= user.fullname ? user.fullname.charAt(0).toUpperCase() : 'U' %>
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium"><%= user.fullname %></div>
+                                                <div class="text-muted small">Joined: <%= new Date(user.createdAt).toLocaleDateString() %></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><%= user.email %></td>
+                                    <td><%= user.mobile || 'N/A' %></td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">
+                                            <%= user.orderCount || 0 %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-medium">₹<%= user.walletBalance || '0.00' %></span>
+                                    </td>
+                                    <td>
+                                        <% if (user.isBlocked) { %>
+                                            <span class="badge bg-danger">Blocked</span>
+                                        <% } else { %>
+                                            <span class="badge bg-success">Active</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <button class="btn btn-sm btn-light rounded-circle" title="View Details" 
+                                                    onclick="viewCustomerDetails('<%= user._id %>')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            
+                                            <button class="btn btn-sm <%= user.isBlocked ? 'btn-light text-success' : 'btn-danger text-white' %> rounded-circle toggle-button" 
+                                                    title="<%= user.isBlocked ? 'Unblock User' : 'Block User' %>"
+                                                    data-user-id="<%= user._id %>"
+                                                    data-action="<%= user.isBlocked ? 'unblock' : 'block' %>">
+                                                <i class="fas <%= user.isBlocked ? 'fa-unlock' : 'fa-ban' %>"></i>
+                                            </button>
+                                            
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-light rounded-circle" type="button" 
+                                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li><a class="dropdown-item" href="#" onclick="openEditProfileModal('<%= user._id %>')"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-history me-2"></i>Order History</a></li>
+                                                    <li><a class="dropdown-item" href="#"><i class="fas fa-wallet me-2"></i>Wallet History</a></li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash-alt me-2"></i>Delete</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <% if (pagination && pagination.totalPages > 1) { %>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <% if (pagination.hasPrevPage) { %>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<%= pagination.currentPage - 1 %>&search=<%= search || '' %>" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    <% } else { %>
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    <% } %>
+
+                    <% 
+                    let startPage = Math.max(1, pagination.currentPage - 2);
+                    let endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
+                    
+                    if (startPage > 1) { %>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1&search=<%= search || '' %>">1</a>
+                        </li>
+                        <% if (startPage > 2) { %>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#">...</a>
+                            </li>
+                        <% } %>
+                    <% } %>
+
+                    <% for (let i = startPage; i <= endPage; i++) { %>
+                        <li class="page-item <%= i === pagination.currentPage ? 'active' : '' %>">
+                            <a class="page-link" href="?page=<%= i %>&search=<%= search || '' %>"><%= i %></a>
+                        </li>
+                    <% } %>
+
+                    <% if (endPage < pagination.totalPages) { %>
+                        <% if (endPage < pagination.totalPages - 1) { %>
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#">...</a>
+                            </li>
+                        <% } %>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<%= pagination.totalPages %>&search=<%= search || '' %>"><%= pagination.totalPages %></a>
+                        </li>
+                    <% } %>
+
+                    <% if (pagination.hasNextPage) { %>
+                        <li class="page-item">
+                            <a class="page-link" href="?page=<%= pagination.currentPage + 1 %>&search=<%= search || '' %>" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    <% } else { %>
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    <% } %>
+                </ul>
+            </nav>
+            <% } %>
+        </div>
     </div>
 
-  
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Customer Details Modal -->
+    <div class="modal fade" id="customerDetailsModal" tabindex="-1" aria-labelledby="customerDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customerDetailsModalLabel">Customer Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="customerDetailsContent">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading customer details...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-  
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProfileModalLabel">Edit Customer Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editProfileForm" novalidate>
+                        <input type="hidden" id="editUserId" name="userId">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editFullname" class="form-label">Full Name*</label>
+                                <input type="text" class="form-control" id="editFullname" name="fullname" required minlength="2" maxlength="50">
+                                <div class="invalid-feedback">Please enter a valid name (2-50 characters)</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editEmail" class="form-label">Email Address*</label>
+                                <input type="email" class="form-control" id="editEmail" name="email" required>
+                                <div class="invalid-feedback">Please enter a valid email address</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editMobile" class="form-label">Mobile Number*</label>
+                                <input type="tel" class="form-control" id="editMobile" name="mobile" required pattern="[0-9]{10}">
+                                <div class="invalid-feedback">Please enter a valid 10-digit mobile number</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editStatus" class="form-label">Account Status</label>
+                                <select class="form-select" id="editStatus" name="status">
+                                    <option value="active">Active</option>
+                                    <option value="blocked">Blocked</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h6 class="mb-3">Default Address</h6>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="editAddress" class="form-label">Address Line*</label>
+                                <input type="text" class="form-control" id="editAddress" name="address" required>
+                                <div class="invalid-feedback">Please enter an address</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editCity" class="form-label">City*</label>
+                                <input type="text" class="form-control" id="editCity" name="city" required>
+                                <div class="invalid-feedback">Please enter a city</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editDistrict" class="form-label">District*</label>
+                                <input type="text" class="form-control" id="editDistrict" name="district" required>
+                                <div class="invalid-feedback">Please enter a district</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editState" class="form-label">State*</label>
+                                <input type="text" class="form-control" id="editState" name="state" required>
+                                <div class="invalid-feedback">Please enter a state</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editPincode" class="form-label">Pincode*</label>
+                                <input type="text" class="form-control" id="editPincode" name="pincode" required pattern="[0-9]{6}">
+                                <div class="invalid-feedback">Please enter a valid 6-digit pincode</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="editLandmark" class="form-label">Landmark</label>
+                                <input type="text" class="form-control" id="editLandmark" name="landmark">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="editAddressType" class="form-label">Address Type</label>
+                                <select class="form-select" id="editAddressType" name="addressType">
+                                    <option value="Home">Home</option>
+                                    <option value="Office">Office</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="editIsDefault" name="isDefault" checked>
+                            <label class="form-check-label" for="editIsDefault">
+                                Set as default address
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveProfileBtn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Actions Modal -->
+    <div class="modal fade" id="bulkActionsModal" tabindex="-1" aria-labelledby="bulkActionsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkActionsModalLabel">Bulk Actions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Select an action to perform on <span id="selectedCount">0</span> selected customers:</p>
+                    <div class="list-group">
+                        <button type="button" class="list-group-item list-group-item-action" onclick="bulkAction('block')">
+                            <i class="fas fa-ban me-2 text-danger"></i> Block Selected Customers
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action" onclick="bulkAction('unblock')">
+                            <i class="fas fa-unlock me-2 text-success"></i> Unblock Selected Customers
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action" onclick="bulkAction('export')">
+                            <i class="fas fa-download me-2 text-primary"></i> Export Selected Customers
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action" onclick="bulkAction('delete')">
+                            <i class="fas fa-trash-alt me-2 text-danger"></i> Delete Selected Customers
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Custom Script -->
     <script>
-        document.querySelectorAll('.toggle-button').forEach(button => {
-            button.addEventListener('click', function () {
-                const userId = this.getAttribute('data-user-id');
-                const button = this;
-                const isBlocked = button.textContent.trim() === 'UNBLOCK';
-    
-               
-                Swal.fire({
-                    title: `Are you sure?`,
-                    text: `Do you want to ${isBlocked ? 'unblock' : 'block'} this user?`,
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: isBlocked ? "#28a745" : "#d33",
-                    cancelButtonColor: "#6c757d",
-                    confirmButtonText: isBlocked ? "Yes, Unblock" : "Yes, Block",
-                    cancelButtonText: "Cancel"
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                     
-                        const endpoint = isBlocked ? "/admin/unblockCustomer" : "/admin/blockCustomer";
-    
-                        fetch(`${endpoint}?id=${userId}`, { method: "POST" })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    
-                                    button.classList.toggle("btn-danger");
-                                    button.classList.toggle("btn-light");
-                                    button.classList.toggle("btn-block");
-                                    button.classList.toggle("btn-unblock");
-                                    button.textContent = data.isBlocked ? "UNBLOCK" : "BLOCK";
-    
-                                    
-                                    const statusBadge = button.closest("tr").querySelector(".badge");
-                                    statusBadge.textContent = data.isBlocked ? "Blocked" : "Active";
-                                    statusBadge.classList.toggle("bg-danger");
-                                    statusBadge.classList.toggle("bg-success");
-    
-                                   
-                                    Swal.fire({
-                                        title: "Success!",
-                                        text: `User has been ${data.isBlocked ? "blocked" : "unblocked"}.`,
-                                        icon: "success",
-                                        timer: 1500,
-                                        showConfirmButton: false
-                                    });
-                                }
-                            })
-                            .catch(error => {
-                                console.error("Error:", error);
-                                Swal.fire("Error", "Something went wrong. Please try again.", "error");
-                            });
+        document.addEventListener("DOMContentLoaded", () => {
+            // Sidebar Toggle
+            const sidebarToggle = document.getElementById("sidebar-toggle");
+            const sidebar = document.getElementById("sidebar");
+            const mainContent = document.getElementById("main-content");
+
+            if (sidebarToggle && sidebar && mainContent) {
+                sidebarToggle.addEventListener("click", () => {
+                    sidebar.classList.toggle("sidebar-collapsed");
+                    mainContent.classList.toggle("main-content-expanded");
+                    
+                    // Change the icon direction
+                    const icon = sidebarToggle.querySelector("i");
+                    if (icon) {
+                        icon.classList.toggle("fa-chevron-left");
+                        icon.classList.toggle("fa-chevron-right");
                     }
+                });
+            }
+
+            // Check screen size on load and resize
+            function checkScreenSize() {
+                if (window.innerWidth < 992 && sidebar && mainContent) {
+                    sidebar.classList.add("sidebar-collapsed");
+                    mainContent.classList.add("main-content-expanded");
+                    
+                    // Update toggle icon
+                    const icon = sidebarToggle.querySelector("i");
+                    if (icon && icon.classList.contains("fa-chevron-left")) {
+                        icon.classList.remove("fa-chevron-left");
+                        icon.classList.add("fa-chevron-right");
+                    }
+                }
+            }
+
+            checkScreenSize();
+            window.addEventListener("resize", checkScreenSize);
+
+            // Active menu item
+            const currentPath = window.location.pathname;
+            const menuItems = document.querySelectorAll('.sidebar-menu a');
+            
+            menuItems.forEach(item => {
+                if (item.getAttribute('href') === currentPath) {
+                    // Remove active class from all menu items
+                    menuItems.forEach(menuItem => {
+                        menuItem.classList.remove('active');
+                    });
+                    // Add active class to current menu item
+                    item.classList.add('active');
+                }
+            });
+
+            // Select All Checkbox
+            const selectAllCheckbox = document.getElementById('selectAll');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    const checkboxes = document.querySelectorAll('tbody .form-check-input');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = this.checked;
+                    });
+                    updateBulkActionButton();
+                });
+            }
+
+            // Individual checkboxes
+            const checkboxes = document.querySelectorAll('tbody .form-check-input');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateBulkActionButton);
+            });
+
+            // Toggle Block/Unblock
+            document.querySelectorAll('.toggle-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-user-id');
+                    const action = this.getAttribute('data-action');
+                    toggleUserStatus(userId, action);
+                });
+            });
+
+            // Initialize
+            toggleClearButton();
+            updateBulkActionButton();
+            
+            // Save Profile Button Event Listener
+            document.getElementById('saveProfileBtn').addEventListener('click', function() {
+                const form = document.getElementById('editProfileForm');
+                
+                // Form validation
+                if (!form.checkValidity()) {
+                    form.classList.add('was-validated');
+                    return;
+                }
+                
+                const userId = document.getElementById('editUserId').value;
+                const formData = {
+                    fullname: document.getElementById('editFullname').value,
+                    email: document.getElementById('editEmail').value,
+                    mobile: document.getElementById('editMobile').value,
+                    isBlocked: document.getElementById('editStatus').value === 'blocked',
+                    address: {
+                        address: document.getElementById('editAddress').value,
+                        city: document.getElementById('editCity').value,
+                        district: document.getElementById('editDistrict').value,
+                        state: document.getElementById('editState').value,
+                        pincode: document.getElementById('editPincode').value,
+                        landmark: document.getElementById('editLandmark').value,
+                        type: document.getElementById('editAddressType').value,
+                        isDefault: document.getElementById('editIsDefault').checked
+                    }
+                };
+                
+                // Send update request
+                fetch(`/admin/customers/${userId}/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close the modal
+                        const editModal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+                        if (editModal) {
+                            editModal.hide();
+                        }
+                        
+                        // Show success message
+                        Swal.fire({
+                            title: 'Success!',
+                            text: 'Customer profile updated successfully',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Reload the page or refresh the data
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message || 'Failed to update profile',
+                            icon: 'error'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'An error occurred while updating the profile',
+                        icon: 'error'
+                    });
                 });
             });
         });
-    
+
+        // Toggle Clear Button
         function toggleClearButton() {
             const searchInput = document.getElementById("searchInput");
             const clearBtn = document.getElementById("clearBtn");
-    
-            if (searchInput.value.length > 0) {
-                clearBtn.style.display = "inline";
-            } else {
-                clearBtn.style.display = "none";
+            
+            if (searchInput && clearBtn) {
+                if (searchInput.value.length > 0) {
+                    clearBtn.style.display = "inline";
+                } else {
+                    clearBtn.style.display = "none";
+                }
             }
         }
-    
+
+        // Clear Search
         function clearSearch() {
-            document.getElementById("searchInput").value = "";
-            document.getElementById("clearBtn").style.display = "none";
+            const searchInput = document.getElementById("searchInput");
+            const clearBtn = document.getElementById("clearBtn");
+            
+            if (searchInput && clearBtn) {
+                searchInput.value = "";
+                clearBtn.style.display = "none";
+            }
+            
             window.location.href = "/admin/customers";
         }
-        
+
+        // Reset Filters
         function resetFilters() {
-           
-            document.getElementById("searchInput").value = "";
-            
-          
-            document.getElementById("clearBtn").style.display = "none";
-            
-          
             window.location.href = "/admin/customers";
         }
-        
-       
+
+        // Update Bulk Action Button
+        function updateBulkActionButton() {
+            const checkboxes = document.querySelectorAll('tbody .form-check-input:checked');
+            const selectedCount = checkboxes.length;
+            
+            // Update the count in the modal
+            const countElement = document.getElementById('selectedCount');
+            if (countElement) {
+                countElement.textContent = selectedCount;
+            }
+            
+            // Add a bulk action button if it doesn't exist and there are selected items
+            let bulkActionBtn = document.getElementById('bulkActionBtn');
+            
+            if (selectedCount > 0) {
+                if (!bulkActionBtn) {
+                    bulkActionBtn = document.createElement('button');
+                    bulkActionBtn.id = 'bulkActionBtn';
+                    bulkActionBtn.className = 'btn btn-primary position-fixed';
+                    bulkActionBtn.style.bottom = '20px';
+                    bulkActionBtn.style.right = '20px';
+                    bulkActionBtn.style.zIndex = '999';
+                    bulkActionBtn.style.borderRadius = '50%';
+                    bulkActionBtn.style.width = '60px';
+                    bulkActionBtn.style.height = '60px';
+                    bulkActionBtn.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.1)';
+                    bulkActionBtn.innerHTML = '<i class="fas fa-cog"></i>';
+                    bulkActionBtn.setAttribute('data-bs-toggle', 'modal');
+                    bulkActionBtn.setAttribute('data-bs-target', '#bulkActionsModal');
+                    bulkActionBtn.title = 'Bulk Actions';
+                    
+                    document.body.appendChild(bulkActionBtn);
+                }
+                
+                // Update the button text with the count
+                bulkActionBtn.setAttribute('data-count', selectedCount);
+                
+                // Add a badge with the count
+                let badge = bulkActionBtn.querySelector('.badge');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+                    bulkActionBtn.appendChild(badge);
+                }
+                
+                badge.textContent = selectedCount;
+            } else if (bulkActionBtn) {
+                // Remove the button if no items are selected
+                bulkActionBtn.remove();
+            }
+        }
+
+        // Toggle User Status (Block/Unblock)
+        function toggleUserStatus(userId, action) {
+            const title = action === 'block' ? 'Block User' : 'Unblock User';
+            const text = action === 'block' 
+                ? 'Are you sure you want to block this user? They will not be able to access their account.'
+                : 'Are you sure you want to unblock this user? They will regain access to their account.';
+            const confirmButtonText = action === 'block' ? 'Yes, Block User' : 'Yes, Unblock User';
+            const confirmButtonColor = action === 'block' ? '#ef4444' : '#10b981';
+            
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: confirmButtonColor,
+                cancelButtonColor: '#64748b',
+                confirmButtonText: confirmButtonText,
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Send request to server
+                    const endpoint = action === 'block' ? '/admin/blockCustomer' : '/admin/unblockCustomer';
+                    
+                    fetch(`${endpoint}?id=${userId}`, { method: 'POST' })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: `User has been ${action === 'block' ? 'blocked' : 'unblocked'} successfully.`,
+                                    icon: 'success',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    // Reload the page to reflect changes
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: data.message || 'Something went wrong.',
+                                    icon: 'error'
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Something went wrong. Please try again.',
+                                icon: 'error'
+                            });
+                        });
+                }
+            });
+        }
+
+        // Bulk Action
+        function bulkAction(action) {
+            const checkboxes = document.querySelectorAll('tbody .form-check-input:checked');
+            const selectedIds = Array.from(checkboxes).map(checkbox => checkbox.value);
+            
+            if (selectedIds.length === 0) {
+                Swal.fire({
+                    title: 'No Selection',
+                    text: 'Please select at least one customer.',
+                    icon: 'info'
+                });
+                return;
+            }
+            
+            let title, text, confirmButtonText, confirmButtonColor;
+            
+            switch (action) {
+                case 'block':
+                    title = 'Block Selected Customers';
+                    text = `Are you sure you want to block ${selectedIds.length} customer(s)? They will not be able to access their accounts.`;
+                    confirmButtonText = 'Yes, Block Them';
+                    confirmButtonColor = '#ef4444';
+                    break;
+                case 'unblock':
+                    title = 'Unblock Selected Customers';
+                    text = `Are you sure you want to unblock ${selectedIds.length} customer(s)? They will regain access to their accounts.`;
+                    confirmButtonText = 'Yes, Unblock Them';
+                    confirmButtonColor = '#10b981';
+                    break;
+                case 'export':
+                    // Handle export directly without confirmation
+                    console.log('Exporting customers:', selectedIds);
+                    // Implement export functionality
+                    Swal.fire({
+                        title: 'Export Started',
+                        text: `Exporting data for ${selectedIds.length} customer(s).`,
+                        icon: 'info',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    return;
+                case 'delete':
+                    title = 'Delete Selected Customers';
+                    text = `Are you sure you want to delete ${selectedIds.length} customer(s)? This action cannot be undone.`;
+                    confirmButtonText = 'Yes, Delete Them';
+                    confirmButtonColor = '#ef4444';
+                    break;
+                default:
+                    return;
+            }
+            
+            // Close the modal
+            const bulkActionsModal = bootstrap.Modal.getInstance(document.getElementById('bulkActionsModal'));
+            if (bulkActionsModal) {
+                bulkActionsModal.hide();
+            }
+            
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: confirmButtonColor,
+                cancelButtonColor: '#64748b',
+                confirmButtonText: confirmButtonText,
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Send request to server
+                    let endpoint;
+                    switch (action) {
+                        case 'block':
+                            endpoint = '/admin/blockCustomers';
+                            break;
+                        case 'unblock':
+                            endpoint = '/admin/unblockCustomers';
+                            break;
+                        case 'delete':
+                            endpoint = '/admin/deleteCustomers';
+                            break;
+                        default:
+                            return;
+                    }
+                    
+                    fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ ids: selectedIds })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: data.message || `Operation completed successfully.`,
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // Reload the page to reflect changes
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: data.message || 'Something went wrong.',
+                                icon: 'error'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'Something went wrong. Please try again.',
+                            icon: 'error'
+                        });
+                    });
+                }
+            });
+        }
+
+        // View Customer Details with enhanced error handling and address support
+        function viewCustomerDetails(userId) {
+            const modal = new bootstrap.Modal(document.getElementById('customerDetailsModal'));
+            modal.show();
+            
+            // Show loading state
+            document.getElementById('customerDetailsContent').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading customer details...</p>
+                </div>
+            `;
+            
+            console.log(`Fetching details for user ID: ${userId}`);
+            
+            // Fetch customer details from the server
+            fetch(`/admin/customers/${userId}/details`)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json().catch(err => {
+                        console.error('Error parsing JSON:', err);
+                        throw new Error('Failed to parse response as JSON');
+                    });
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+                    if (data.success) {
+                        const user = data.data.user;
+                        const wallet = data.data.wallet;
+                        const orders = data.data.orders;
+                        const reviews = data.data.reviews;
+                        const stats = data.data.stats;
+                        
+                        // Format date
+                        const joinDate = new Date(user.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                        
+                        // Get default address information
+                        let addressHtml = '<p class="text-muted">No address information available</p>';
+                        
+                        // First check for default address in user profile
+                        if (user.defaultAddress) {
+                            const address = user.defaultAddress;
+                            addressHtml = `
+                                <div class="address-card">
+                                    <div class="address-card-header">
+                                        <h6 class="address-card-title">${address.fullname || user.fullname}</h6>
+                                        <span class="address-card-type">${address.type || 'Home'}</span>
+                                    </div>
+                                    <div class="address-card-body">
+                                        <p class="mb-1">${address.address}</p>
+                                        <p class="mb-1">${address.city}, ${address.district}</p>
+                                        <p class="mb-1">${address.state} - ${address.pincode}</p>
+                                        <p class="mb-0">Landmark: ${address.landmark || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            `;
+                        } 
+                        // If no default address in profile, check addresses array
+                        else if (user.addresses && user.addresses.length > 0) {
+                            // Find default address or use first one
+                            const address = user.addresses.find(addr => addr.isDefault) || user.addresses[0];
+                            addressHtml = `
+                                <div class="address-card">
+                                    <div class="address-card-header">
+                                        <h6 class="address-card-title">${address.fullname || user.fullname}</h6>
+                                        <span class="address-card-type">${address.type || 'Home'}</span>
+                                    </div>
+                                    <div class="address-card-body">
+                                        <p class="mb-1">${address.address}</p>
+                                        <p class="mb-1">${address.city}, ${address.district}</p>
+                                        <p class="mb-1">${address.state} - ${address.pincode}</p>
+                                        <p class="mb-0">Landmark: ${address.landmark || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        // If no address in profile, check recent orders
+                        else if (orders.recent && orders.recent.length > 0 && orders.recent[0].address) {
+                            const address = orders.recent[0].address;
+                            addressHtml = `
+                                <div class="address-card">
+                                    <div class="address-card-header">
+                                        <h6 class="address-card-title">${address.fullname || user.fullname}</h6>
+                                        <span class="address-card-type">${address.type || 'Home'}</span>
+                                    </div>
+                                    <div class="address-card-body">
+                                        <p class="mb-1">${address.address}</p>
+                                        <p class="mb-1">${address.city}, ${address.district}</p>
+                                        <p class="mb-1">${address.state} - ${address.pincode}</p>
+                                        <p class="mb-0">Landmark: ${address.landmark || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
+                        // Create HTML for recent orders
+                        let ordersHtml = '';
+                        if (orders.recent && orders.recent.length > 0) {
+                            ordersHtml = `
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Order #</th>
+                                            <th>Date</th>
+                                            <th>Items</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${orders.recent.map(order => `
+                                            <tr>
+                                                <td>${order.orderNumber || '#' + order._id.substring(0, 8)}</td>
+                                                <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                                                <td>${order.totalItems || 0}</td>
+                                                <td>₹${order.total ? order.total.toFixed(2) : '0.00'}</td>
+                                                <td><span class="badge bg-${getStatusColor(order.status)}">${order.status || 'N/A'}</span></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            ordersHtml = '<p class="text-muted text-center">No orders yet</p>';
+                        }
+                        
+                        // Create HTML for recent wallet transactions
+                        let walletHtml = '';
+                        if (wallet.transactions && wallet.transactions.length > 0) {
+                            walletHtml = `
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Amount</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${wallet.transactions.map(transaction => `
+                                            <tr>
+                                                <td>${new Date(transaction.date).toLocaleDateString()}</td>
+                                                <td><span class="badge bg-${transaction.type === 'credit' ? 'success' : 'danger'}">${transaction.type}</span></td>
+                                                <td>₹${transaction.amount.toFixed(2)}</td>
+                                                <td>${transaction.description}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            walletHtml = '<p class="text-muted text-center">No wallet transactions</p>';
+                        }
+                        
+                        // Create HTML for recent reviews
+                        let reviewsHtml = '';
+                        if (reviews && reviews.length > 0) {
+                            reviewsHtml = `
+                                <div class="list-group">
+                                    ${reviews.map(review => `
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="mb-1">${review.productId?.name || 'Product'}</h6>
+                                                <div>
+                                                    ${getStarRating(review.rating)}
+                                                </div>
+                                            </div>
+                                            <p class="mb-1 small">${review.description?.substring(0, 100) || ''}${review.description?.length > 100 ? '...' : ''}</p>
+                                            <small class="text-muted">${new Date(review.createdAt).toLocaleDateString()}</small>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `;
+                        } else {
+                            reviewsHtml = '<p class="text-muted text-center">No reviews yet</p>';
+                        }
+                        
+                        // Update modal content
+                        document.getElementById('customerDetailsContent').innerHTML = `
+                            <div class="row">
+                                <div class="col-md-4 text-center mb-4 mb-md-0">
+                                    <div class="avatar mx-auto mb-3" style="width: 100px; height: 100px; font-size: 2.5rem;">
+                                        ${user.fullname ? user.fullname.charAt(0).toUpperCase() : 'U'}
+                                    </div>
+                                    <h5>${user.fullname || 'User'}</h5>
+                                    <p class="text-muted">Member since ${joinDate}</p>
+                                    
+                                    <!-- Wallet Balance Card - Prominently displayed -->
+                                    <div class="card mb-3 border-primary">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-subtitle mb-2 text-muted">Wallet Balance</h6>
+                                            <h3 class="text-primary">₹${wallet.balance ? wallet.balance.toFixed(2) : '0.00'}</h3>
+                                            <a href="/admin/customers/${user._id}/wallet" class="btn btn-sm btn-outline-primary mt-2">
+                                                <i class="fas fa-wallet me-1"></i> Manage Wallet
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2 mt-3">
+                                        <a href="mailto:${user.email}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-envelope me-1"></i> Send Email
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="openEditProfileModal('${user._id}')">
+                                            <i class="fas fa-edit me-1"></i> Edit Profile
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <h6 class="card-subtitle mb-2 text-muted">Contact Information</h6>
+                                                    <ul class="list-unstyled">
+                                                        <li class="mb-2"><i class="fas fa-envelope me-2 text-primary"></i> ${user.email || 'No email'}</li>
+                                                        <li class="mb-2"><i class="fas fa-phone me-2 text-primary"></i> ${user.mobile || 'Not provided'}</li>
+                                                        <li class="mb-2"><i class="fas fa-user me-2 text-primary"></i> Status: 
+                                                            <span class="badge bg-${user.isBlocked ? 'danger' : 'success'}">
+                                                                ${user.isBlocked ? 'Blocked' : 'Active'}
+                                                            </span>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h6 class="card-subtitle text-muted mb-0">Default Address</h6>
+                                                        <button class="btn btn-sm btn-outline-primary" onclick="openEditProfileModal('${user._id}')">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                    </div>
+                                                    ${addressHtml}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h6 class="card-subtitle mb-2 text-muted">Account Summary</h6>
+                                                    <div class="row">
+                                                        <div class="col-md-4 text-center mb-3">
+                                                            <div class="border rounded p-3">
+                                                                <h3 class="text-primary">${orders.total || 0}</h3>
+                                                                <p class="text-muted mb-0">Total Orders</p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4 text-center mb-3">
+                                                            <div class="border rounded p-3">
+                                                                <h3 class="text-primary">${stats.totalReviews || 0}</h3>
+                                                                <p class="text-muted mb-0">Reviews</p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4 text-center mb-3">
+                                                            <div class="border rounded p-3">
+                                                                <h3 class="text-primary">${stats.totalSpent ? '₹' + stats.totalSpent.toFixed(2) : '₹0.00'}</h3>
+                                                                <p class="text-muted mb-0">Total Spent</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h6 class="card-subtitle text-muted">Recent Orders</h6>
+                                                        <a href="/admin/customers/${user._id}/orders" class="btn btn-sm btn-outline-primary">View All</a>
+                                                    </div>
+                                                    <div class="table-responsive">
+                                                        ${ordersHtml}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h6 class="card-subtitle text-muted">Wallet Transactions</h6>
+                                                        <a href="/admin/customers/${user._id}/wallet" class="btn btn-sm btn-outline-primary">View All</a>
+                                                    </div>
+                                                    <div class="table-responsive">
+                                                        ${walletHtml}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h6 class="card-subtitle text-muted">Recent Reviews</h6>
+                                                        <a href="/admin/customers/${user._id}/reviews" class="btn btn-sm btn-outline-primary">View All</a>
+                                                    </div>
+                                                    ${reviewsHtml}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        document.getElementById('customerDetailsContent').innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle me-2"></i> ${data.message || 'Failed to load customer details'}
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Detailed error:', error);
+                    document.getElementById('customerDetailsContent').innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i> An error occurred while loading customer details: ${error.message}
+                            <button class="btn btn-sm btn-danger ms-3" onclick="viewCustomerDetails('${userId}')">Retry</button>
+                        </div>
+                    `;
+                });
+        }
+
+        // Open Edit Profile Modal
+        function openEditProfileModal(userId) {
+            // Close the details modal
+            const detailsModal = bootstrap.Modal.getInstance(document.getElementById('customerDetailsModal'));
+            if (detailsModal) {
+                detailsModal.hide();
+            }
+            
+            // Show loading state
+            document.getElementById('editUserId').value = userId;
+            
+            // Fetch user data
+            fetch(`/admin/customers/${userId}/details`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const user = data.data.user;
+                        
+                        // Populate form fields
+                        document.getElementById('editFullname').value = user.fullname || '';
+                        document.getElementById('editEmail').value = user.email || '';
+                        document.getElementById('editMobile').value = user.mobile || '';
+                        document.getElementById('editStatus').value = user.isBlocked ? 'blocked' : 'active';
+                        
+                        // Populate address fields if available
+                        let addressData = null;
+                        
+                        // First check for default address in user profile
+                        if (user.defaultAddress) {
+                            addressData = user.defaultAddress;
+                        } 
+                        // If no default address in profile, check addresses array
+                        else if (user.addresses && user.addresses.length > 0) {
+                            // Find default address or use first one
+                            addressData = user.addresses.find(addr => addr.isDefault) || user.addresses[0];
+                        }
+                        // If no address in profile, check recent orders
+                        else if (data.data.orders && data.data.orders.recent && data.data.orders.recent.length > 0 && data.data.orders.recent[0].address) {
+                            addressData = data.data.orders.recent[0].address;
+                        }
+                        
+                        // Populate address fields if we found address data
+                        if (addressData) {
+                            document.getElementById('editAddress').value = addressData.address || '';
+                            document.getElementById('editCity').value = addressData.city || '';
+                            document.getElementById('editDistrict').value = addressData.district || '';
+                            document.getElementById('editState').value = addressData.state || '';
+                            document.getElementById('editPincode').value = addressData.pincode || '';
+                            document.getElementById('editLandmark').value = addressData.landmark || '';
+                            document.getElementById('editAddressType').value = addressData.type || 'Home';
+                            document.getElementById('editIsDefault').checked = addressData.isDefault || true;
+                        }
+                        
+                        // Show the modal
+                        const editModal = new bootstrap.Modal(document.getElementById('editProfileModal'));
+                        editModal.show();
+                    } else {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: data.message || 'Failed to load user data',
+                            icon: 'error'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'An error occurred while loading user data',
+                        icon: 'error'
+                    });
+                });
+        }
+
+        // Helper function to get status color
+        function getStatusColor(status) {
+            if (!status) return 'secondary';
+            
+            switch(status.toLowerCase()) {
+                case 'delivered':
+                    return 'success';
+                case 'shipped':
+                    return 'info';
+                case 'processing':
+                    return 'primary';
+                case 'cancelled':
+                    return 'danger';
+                case 'pending':
+                    return 'warning';
+                default:
+                    return 'secondary';
+            }
+        }
+
+        // Helper function to generate star rating HTML
+        function getStarRating(rating) {
+            if (!rating) return '';
+            
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    stars += '<i class="fas fa-star text-warning"></i>';
+                } else {
+                    stars += '<i class="far fa-star text-warning"></i>';
+                }
+            }
+            return stars;
+        }
+
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             toggleClearButton();
         });
     </script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 </body>
 </html>

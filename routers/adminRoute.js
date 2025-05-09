@@ -30,7 +30,11 @@ router.get("/dashboard/export", adminAuth, adminControll.exportReport)
 router.get("/customers", adminAuth, customerController.customerInfo)
 router.post("/blockCustomer", adminAuth, customerController.customerBlocked)
 router.post("/unblockCustomer", adminAuth, customerController.customerUnblocked)
-
+router.get('/customers/:id/details',adminAuth, customerController.getCustomerDetails);
+router.get('/customers/:id/orders',adminAuth, customerController.getCustomerOrders);
+router.get('/customers/:id/wallet',adminAuth, customerController.getCustomerWallet);
+// Route for updating customer profile
+router.post('/customers/:id/update',adminAuth, customerController.updateCustomerProfile);
 // Category management routes
 router.get("/categories", adminAuth, CategoryController.categoryInfo)
 router.post("/addcategory", adminAuth, CategoryController.addCategory)

@@ -1280,17 +1280,34 @@
                                 <i class="fas fa-star"></i> <%= i %>
                             </div>
                             <div class="rating-progress">
-                                <div class="rating-progress-bar" style="width: <%= Math.round(((product.ratings?.distribution?.[i]?.count || 0) / (product.ratings?.count || 1)) * 100) %>%"></div>
+                                <% 
+                                    // Calculate percentage safely
+                                    let percentage = 0;
+                                    if (product.ratings && product.ratings.distribution && product.ratings.distribution[i]) {
+                                        percentage = product.ratings.distribution[i].percentage || 0;
+                                    } else if (product.ratings && product.ratings.count > 0) {
+                                        // Fallback calculation if distribution is not available
+                                        const count = product.ratings.distribution?.[i]?.count || 0;
+                                        percentage = Math.round((count / product.ratings.count) * 100);
+                                    }
+                                %>
+                                <div class="rating-progress-bar" style="width: <%= percentage %>%"></div>
                             </div>
-                            <div class="rating-percent"><%= Math.round(((product.ratings?.distribution?.[i]?.count || 0) / (product.ratings?.count || 1)) * 100) %>%</div>
+                            <div class="rating-percent"><%= percentage %>%</div>
                         </div>
                     <% } %>
                 </div>
             </div>
             
-            <button class="write-review-btn" onclick="openReviewForm()">
-                <i class="fas fa-pen me-2"></i> Write a Review
-            </button>
+            <% if (user) { %>
+                <button class="write-review-btn" onclick="openReviewForm()">
+                    <i class="fas fa-pen me-2"></i> Write a Review
+                </button>
+            <% } else { %>
+                <a href="/login?redirect=<%= encodeURIComponent('/productdetails/' + product._id) %>" class="write-review-btn">
+                    <i class="fas fa-pen me-2"></i> Login to Write a Review
+                </a>
+            <% } %>
             
             <div id="reviews-container">
                 <!-- Reviews will be loaded here via AJAX -->
@@ -1394,7 +1411,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="review-content" class="form-label">Your Review</label>
-                            <textarea class="form-control" id="review-content" name="review" rows="5" required></textarea>
+                            <textarea class="form-control" id="review-content" name="description" rows="5" required></textarea>
                         </div>
                         <div class="mb-3">
                             <label for="review-images" class="form-label">Add Photos (optional)</label>
@@ -2088,70 +2105,79 @@
             if (!reviewsContainer) return;
             
             try {
-                const response = await fetch(`/product/${productData._id}/reviews?page=${page}&limit=5`);
-                const data = await response.json();
+                console.log(`Fetching reviews for product: ${productData._id}, page: ${page}`);
+                const response = await fetch(`/api/reviews/reload/${productData._id}?page=${page}&limit=5`);
+                console.log('Response status:', response.status);
                 
-                if (data.success) {
-                    // Hide loading indicator
-                    if (loadingElement) {
-                        loadingElement.style.display = 'none';
-                    }
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (!data.success) {
+                    throw new Error(data.message || 'Failed to load reviews');
+                }
+                
+                // Hide loading indicator
+                if (loadingElement) {
+                    loadingElement.style.display = 'none';
+                }
+                
+                // Display reviews or no reviews message
+                if (data.reviews && data.reviews.length > 0) {
+                    const reviewsHtml = data.reviews.map(review => createReviewHtml(review)).join('');
+                    reviewsContainer.innerHTML = reviewsHtml;
                     
-                    // Display reviews or no reviews message
-                    if (data.reviews && data.reviews.length > 0) {
-                        const reviewsHtml = data.reviews.map(review => createReviewHtml(review)).join('');
-                        reviewsContainer.innerHTML = reviewsHtml;
+                    // Add pagination
+                    if (paginationContainer) {
+                        paginationContainer.innerHTML = createPaginationHtml(data.pagination);
                         
-                        // Add pagination
-                        if (paginationContainer) {
-                            paginationContainer.innerHTML = createPaginationHtml(data.pagination);
-                            
-                            // Add event listeners to pagination buttons
-                            const pageLinks = paginationContainer.querySelectorAll('.page-link');
-                            pageLinks.forEach(link => {
-                                link.addEventListener('click', function(e) {
-                                    e.preventDefault();
-                                    const pageNum = parseInt(this.getAttribute('data-page'));
-                                    loadReviews(pageNum);
-                                    
-                                    // Scroll to reviews section
-                                    document.querySelector('.reviews-section').scrollIntoView({ behavior: 'smooth' });
-                                });
+                        // Add event listeners to pagination buttons
+                        const pageLinks = paginationContainer.querySelectorAll('.page-link');
+                        pageLinks.forEach(link => {
+                            link.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                const pageNum = parseInt(this.getAttribute('data-page'));
+                                loadReviews(pageNum);
+                                
+                                // Scroll to reviews section
+                                document.querySelector('.reviews-section').scrollIntoView({ behavior: 'smooth' });
                             });
-                        }
-                    } else {
-                        reviewsContainer.innerHTML = `
-                            <div class="text-center py-5">
-                                <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
-                                <h4>No Reviews Yet</h4>
-                                <p class="text-muted">Be the first to review this product</p>
-                                <button class="btn btn-primary mt-3" onclick="openReviewForm()">
-                                    <i class="fas fa-pen me-2"></i> Write a Review
-                                </button>
-                            </div>
-                        `;
-                        
-                        if (paginationContainer) {
-                            paginationContainer.innerHTML = '';
-                        }
+                        });
                     }
-                    
-                    // Add event listeners to review elements
-                    setupReviewEventListeners();
                 } else {
                     reviewsContainer.innerHTML = `
-                        <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle me-2"></i> ${data.message || 'Failed to load reviews'}
+                        <div class="text-center py-5">
+                            <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
+                            <h4>No Reviews Yet</h4>
+                            <p class="text-muted">Be the first to review this product</p>
+                            <button class="btn btn-primary mt-3" onclick="openReviewForm()">
+                                <i class="fas fa-pen me-2"></i> Write a Review
+                            </button>
                         </div>
                     `;
+                    
+                    if (paginationContainer) {
+                        paginationContainer.innerHTML = '';
+                    }
                 }
+                
+                // Add event listeners to review elements
+                setupReviewEventListeners();
             } catch (error) {
                 console.error('Error loading reviews:', error);
                 reviewsContainer.innerHTML = `
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-circle me-2"></i> An error occurred while loading reviews. Please try again.
+                        <button class="btn btn-sm btn-danger ms-3" onclick="loadReviews(1)">Retry</button>
                     </div>
                 `;
+                
+                if (loadingElement) {
+                    loadingElement.style.display = 'none';
+                }
             }
         }
         
@@ -2178,14 +2204,18 @@
             if (review.images && review.images.length > 0) {
                 imagesHtml = `
                     <div class="review-images">
-                        ${review.images.map(image => `
+                        ${review.images.map((image, index) => `
                             <div class="review-image">
-                                <img src="${image.url}" alt="Review image" onclick="previewImage('${image.url}')">
+                                <img src="${typeof image === 'string' ? image : image.url}" alt="Review image" onclick="previewImage('${typeof image === 'string' ? image : image.url}')">
                             </div>
                         `).join('')}
                     </div>
                 `;
             }
+            
+            // Check if the current user has already marked this review as helpful
+            const isHelpfulDisabled = review.helpfulVotes && Array.isArray(review.helpfulVotes) && 
+                                     review.helpfulVotes.some(id => id === '<%= user?._id %>');
             
             return `
                 <div class="review-card">
@@ -2203,19 +2233,21 @@
                             ${starsHtml}
                         </div>
                     </div>
-                    <h4 class="review-title">${review.title}</h4>
+                    <h4 class="review-title">${review.title || 'Review'}</h4>
                     <div class="review-content">${review.description}</div>
                     ${imagesHtml}
                     <div class="review-footer">
                         <div class="review-helpful">
-                            <button class="btn-helpful" onclick="markHelpful('${review._id}')">
+                            <button class="btn-helpful" onclick="markHelpful('${review._id}')" ${isHelpfulDisabled ? 'disabled' : ''}>
                                 <i class="far fa-thumbs-up"></i> Helpful
                             </button>
                             <span class="helpful-count">(${review.helpfulVotes?.length || 0})</span>
                         </div>
+                        ${review.isVerified ? `
                         <div class="review-verified">
                             <i class="fas fa-check-circle"></i> Verified Purchase
                         </div>
+                        ` : ''}
                     </div>
                 </div>
             `;
@@ -2329,7 +2361,7 @@
             
             const rating = form.querySelector('input[name="rating"]:checked')?.value;
             const title = form.querySelector('#review-title').value;
-            const review = form.querySelector('#review-content').value;
+            const description = form.querySelector('#review-content').value;
             const orderItemId = form.querySelector('#orderItemId').value;
             const imagesInput = form.querySelector('#review-images');
             
@@ -2344,7 +2376,7 @@
                 return;
             }
             
-            if (!review.trim()) {
+            if (!description.trim()) {
                 showToast('Please enter your review', 'warning');
                 return;
             }
@@ -2361,7 +2393,7 @@
                 formData.append('productId', productData._id);
                 formData.append('rating', rating);
                 formData.append('title', title);
-                formData.append('review', review);
+                formData.append('description', description);
                 
                 if (orderItemId) {
                     formData.append('orderItemId', orderItemId);
@@ -2418,9 +2450,10 @@
         // Mark review as helpful
         async function markHelpful(reviewId) {
             try {
-                const response = await fetch(`/review/helpful/${reviewId}`, {
+                const response = await fetch('/api/reviews/helpful', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reviewId }),
                     credentials: 'include',
                 });
                 
@@ -2430,9 +2463,13 @@
                     showToast(result.message || 'Marked as helpful', 'success');
                     
                     // Update helpful count
-                    const helpfulCountEl = document.querySelector(`button[onclick="markHelpful('${reviewId}')"]`).nextElementSibling;
-                    if (helpfulCountEl) {
-                        helpfulCountEl.textContent = `(${result.helpfulCount || 0})`;
+                    const helpfulBtn = document.querySelector(`button[onclick="markHelpful('${reviewId}')"]`);
+                    if (helpfulBtn) {
+                        helpfulBtn.disabled = true;
+                        const helpfulCount = helpfulBtn.nextElementSibling;
+                        if (helpfulCount) {
+                            helpfulCount.textContent = `(${result.helpfulCount || 0})`;
+                        }
                     }
                 } else {
                     showToast(result.message || 'Failed to mark as helpful', 'danger');
