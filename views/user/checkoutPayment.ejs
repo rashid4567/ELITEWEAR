@@ -1,455 +1,1936 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment - Elite Wear</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/userStyle/header.css">
-    <link rel="stylesheet" href="/userStyle/footer.css">
-    <link rel="stylesheet" href="/userStyle/checkout.css">
-    <link rel="stylesheet" href="/userStyle/checkoutPayment.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elite Wear - Payment</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- AOS Animation Library -->
+  <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+  <!-- Swiper CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/userStyle/header.css">
+  <link rel="stylesheet" href="/userStyle/footer.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    :root {
+      --primary-color: #0f172a;
+      --secondary-color: #f8fafc;
+      --accent-color: #3b82f6;
+      --accent-hover: #2563eb;
+      --accent-secondary: #8b5cf6;
+      --accent-tertiary: #ec4899;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --text-light: #94a3b8;
+      --border-color: #e2e8f0;
+      --card-bg: #ffffff;
+      --sidebar-bg: #ffffff;
+      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      --card-hover-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.1);
+      --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      --gradient-secondary: linear-gradient(135deg, #8b5cf6, #ec4899);
+      --gradient-accent: linear-gradient(135deg, #3b82f6, #10b981);
+      --success-color: #10b981;
+      --error-color: #ef4444;
+      --warning-color: #f59e0b;
+      --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      --border-radius-sm: 0.375rem;
+      --border-radius: 0.5rem;
+      --border-radius-lg: 0.75rem;
+      --border-radius-xl: 1rem;
+      --border-radius-full: 9999px;
+      --font-primary: 'Outfit', sans-serif;
+      --font-secondary: 'Playfair Display', serif;
+    }
+
+    /* Dark mode variables */
+    .dark-mode {
+      --primary-color: #f8fafc;
+      --secondary-color: #0f172a;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-light: #94a3b8;
+      --border-color: #334155;
+      --card-bg: #1e293b;
+      --sidebar-bg: #0f172a;
+      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+      --card-hover-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      color: var(--text-primary);
+      background-color: var(--secondary-color);
+      overflow-x: hidden;
+      transition: background-color var(--transition-normal), color var(--transition-normal);
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--secondary-color);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--text-light);
+      border-radius: var(--border-radius-full);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-secondary);
+    }
+
+    /* Scroll Indicator */
+    .scroll-indicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: var(--gradient-primary);
+      z-index: 9999;
+      width: 0%;
+      transition: width 0.1s ease;
+    }
+
+    /* Cursor Glow Effect */
+    .cursor-glow {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      pointer-events: none;
+      mix-blend-mode: difference;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      opacity: 0.5;
+      transition: width 0.3s, height 0.3s, opacity 0.3s;
+    }
+
+    /* Preloader */
+    .preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--primary-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .preloader.fade-out {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .loader {
+      width: 80px;
+      height: 80px;
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      border-top-color: var(--accent-color);
+      animation: spin 1s linear infinite;
+      position: relative;
+    }
+
+    .loader::before {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      border: 4px solid transparent;
+      border-top-color: var(--accent-secondary);
+      border-radius: 50%;
+      animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Dark Mode Toggle */
+    .dark-mode-toggle {
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      width: 50px;
+      height: 50px;
+      background-color: var(--card-bg);
+      color: var(--text-primary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      transition: all var(--transition-normal);
+      border: none;
+    }
+
+    .dark-mode-toggle:hover {
+      transform: translateY(-5px) rotate(45deg);
+      box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Checkout Container */
+    .checkout-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 1rem;
+    }
+
+    /* Checkout Header */
+    .checkout-header-wrapper {
+      position: relative;
+      margin-bottom: 3rem;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .checkout-header {
+      font-family: var(--font-secondary);
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      position: relative;
+      display: inline-block;
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-fill-color: transparent;
+    }
+
+    .checkout-header::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: var(--gradient-primary);
+      border-radius: var(--border-radius-full);
+      transition: width var(--transition-normal);
+    }
+
+    .checkout-header:hover::after {
+      width: 120px;
+    }
+
+    /* Checkout Progress */
+    .checkout-progress-container {
+      margin-bottom: 3rem;
+    }
+
+    .checkout-progress {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 800px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .progress-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .step-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: var(--card-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+      position: relative;
+      transition: all var(--transition-normal);
+      box-shadow: var(--card-shadow);
+    }
+
+    .progress-step.active .step-icon {
+      background: var(--gradient-primary);
+      color: white;
+      transform: scale(1.1);
+      box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .progress-step.completed .step-icon {
+      background: var(--success-color);
+      color: white;
+    }
+
+    .step-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: color var(--transition-normal);
+    }
+
+    .progress-step.active .step-label {
+      color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    .progress-connector {
+      flex: 1;
+      height: 3px;
+      background-color: var(--border-color);
+      position: relative;
+      z-index: 1;
+      transition: background-color var(--transition-normal);
+    }
+
+    .progress-connector.active {
+      background: var(--gradient-primary);
+    }
+
+    /* Payment Methods Card */
+    .payment-methods-card {
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius-lg);
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: all var(--transition-normal);
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .payment-methods-card:hover {
+      transform: translateY(-10px);
+      box-shadow: var(--card-hover-shadow);
+    }
+
+    .payment-methods-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradient-primary);
+      transition: height var(--transition-normal);
+    }
+
+    .payment-methods-card:hover::before {
+      height: 8px;
+    }
+
+    .payment-methods-card .card-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .payment-methods-card .card-header h5 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .payment-methods-card .card-body {
+      padding: 1.5rem;
+    }
+
+    /* Payment Options */
+    .payment-options {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .payment-option {
+      position: relative;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      transition: all var(--transition-normal);
+      overflow: hidden;
+    }
+
+    .payment-option::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 0;
+      background: var(--gradient-primary);
+      transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1;
+    }
+
+    .payment-option:hover::before {
+      height: 100%;
+    }
+
+    .payment-option:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--card-shadow);
+      border-color: var(--accent-color);
+    }
+
+    .payment-option.selected {
+      border-color: var(--accent-color);
+      background-color: rgba(59, 130, 246, 0.05);
+      box-shadow: var(--card-shadow);
+    }
+
+    .payment-option.disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .payment-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .payment-option label {
+      display: flex;
+      align-items: center;
+      padding: 1.25rem;
+      cursor: pointer;
+      width: 100%;
+      margin: 0;
+    }
+
+    .payment-option.disabled label {
+      cursor: not-allowed;
+    }
+
+    .payment-option-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: rgba(59, 130, 246, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-color);
+      font-size: 1.5rem;
+      margin-right: 1rem;
+      transition: all var(--transition-normal);
+    }
+
+    .payment-option.selected .payment-option-icon {
+      background: var(--gradient-primary);
+      color: white;
+      transform: scale(1.1);
+      box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .payment-option-content {
+      flex: 1;
+    }
+
+    .payment-option-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .payment-option-description {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .wallet-balance {
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--border-radius-full);
+    }
+
+    .wallet-balance.sufficient {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--success-color);
+    }
+
+    .wallet-balance.insufficient {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: var(--error-color);
+    }
+
+    .add-money-link {
+      color: var(--accent-color);
+      font-weight: 500;
+      text-decoration: none;
+      transition: all var(--transition-fast);
+    }
+
+    .add-money-link:hover {
+      text-decoration: underline;
+      color: var(--accent-hover);
+    }
+
+    /* Payment Cards */
+    .payment-cards {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+    }
+
+    .payment-cards img {
+      height: 30px;
+      object-fit: contain;
+      opacity: 0.7;
+      transition: all var(--transition-normal);
+    }
+
+    .payment-cards img:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    /* Delivery Address Card */
+    .delivery-address-card {
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius-lg);
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: all var(--transition-normal);
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .delivery-address-card:hover {
+      transform: translateY(-10px);
+      box-shadow: var(--card-hover-shadow);
+    }
+
+    .delivery-address-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradient-secondary);
+      transition: height var(--transition-normal);
+    }
+
+    .delivery-address-card:hover::before {
+      height: 8px;
+    }
+
+    .delivery-address-card .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .delivery-address-card .card-header h5 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .btn-change-address {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: transparent;
+      color: var(--accent-color);
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all var(--transition-normal);
+      text-decoration: none;
+      border: 1px solid var(--accent-color);
+    }
+
+    .btn-change-address:hover {
+      background-color: var(--accent-color);
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+    }
+
+    .delivery-address-card .card-body {
+      padding: 1.5rem;
+    }
+
+    /* Address Details */
+    .address-details {
+      position: relative;
+      padding-left: 1.5rem;
+      border-left: 2px dashed var(--accent-color);
+    }
+
+    .address-name {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+
+    .address-line {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .address-phone {
+      margin-top: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--accent-color);
+      font-weight: 500;
+    }
+
+    /* Order Summary Card */
+    .order-summary-card {
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius-lg);
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+      transition: all var(--transition-normal);
+      margin-bottom: 2rem;
+      position: relative;
+    }
+
+    .order-summary-card:hover {
+      transform: translateY(-10px);
+      box-shadow: var(--card-hover-shadow);
+    }
+
+    .order-summary-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--gradient-primary);
+      transition: height var(--transition-normal);
+    }
+
+    .order-summary-card:hover::before {
+      height: 8px;
+    }
+
+    .order-summary-card .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .order-summary-card .card-header h5 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .order-summary-card .card-header .badge {
+      background: var(--gradient-primary);
+      font-weight: 500;
+      font-size: 0.8rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: var(--border-radius-full);
+    }
+
+    .order-summary-card .card-body {
+      padding: 1.5rem;
+    }
+
+    /* Order Items */
+    .order-items {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 1.5rem;
+      padding-right: 0.5rem;
+    }
+
+    .order-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--border-color);
+      transition: all var(--transition-normal);
+    }
+
+    .order-item:last-child {
+      border-bottom: none;
+    }
+
+    .order-item:hover {
+      transform: translateX(5px);
+    }
+
+    .item-image {
+      width: 70px;
+      height: 70px;
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      margin-right: 1rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: all var(--transition-normal);
+    }
+
+    .order-item:hover .item-image {
+      transform: scale(1.1);
+    }
+
+    .item-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .item-details {
+      flex: 1;
+    }
+
+    .item-name {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      color: var(--text-primary);
+      transition: color var(--transition-fast);
+    }
+
+    .order-item:hover .item-name {
+      color: var(--accent-color);
+    }
+
+    .item-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .item-price {
+      font-weight: 600;
+      color: var(--accent-color);
+    }
+
+    /* Price Summary */
+    .price-summary {
+      padding: 1.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius);
+      margin-bottom: 1.5rem;
+      background-color: rgba(59, 130, 246, 0.03);
+    }
+
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .price-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .price-row.total {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      padding-top: 0.75rem;
+      margin-top: 0.75rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .price-row.discount {
+      color: var(--success-color);
+    }
+
+    /* Place Order Button */
+    .btn-place-order {
+      width: 100%;
+      background: var(--gradient-primary);
+      color: white;
+      padding: 1rem;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      transition: all var(--transition-normal);
+      border: none;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-place-order::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--gradient-secondary);
+      z-index: -1;
+      opacity: 0;
+      transition: opacity var(--transition-normal);
+    }
+
+    .btn-place-order:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-place-order:hover::before {
+      opacity: 1;
+    }
+
+    .btn-place-order:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-place-order .btn-text {
+      font-size: 1.1rem;
+    }
+
+    .btn-place-order .btn-price {
+      background-color: rgba(255, 255, 255, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+    }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s linear infinite;
+      margin-right: 0.5rem;
+    }
+
+    /* Alert Styles */
+    #paymentAlert {
+      margin-bottom: 1.5rem;
+    }
+
+    .alert {
+      border: none;
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      margin-bottom: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .alert-success {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--success-color);
+      border-left: 4px solid var(--success-color);
+    }
+
+    .alert-danger {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: var(--error-color);
+      border-left: 4px solid var(--error-color);
+    }
+
+    .alert-warning {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: var(--warning-color);
+      border-left: 4px solid var(--warning-color);
+    }
+
+    .alert-info {
+      background-color: rgba(59, 130, 246, 0.1);
+      color: var(--accent-color);
+      border-left: 4px solid var(--accent-color);
+    }
+
+    /* Toast Container */
+    #toastContainer {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 1050;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .toast-notification {
+      display: flex;
+      align-items: center;
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      min-width: 300px;
+      max-width: 400px;
+      position: relative;
+      overflow: hidden;
+      animation: slideIn 0.3s forwards;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+    }
+
+    .toast-icon {
+      margin-right: 1rem;
+      font-size: 1.5rem;
+    }
+
+    .toast-notification.success .toast-icon {
+      color: var(--success-color);
+    }
+
+    .toast-notification.error .toast-icon {
+      color: var(--error-color);
+    }
+
+    .toast-notification.info .toast-icon {
+      color: var(--accent-color);
+    }
+
+    .toast-message {
+      flex: 1;
+      color: var(--text-primary);
+    }
+
+    .toast-close {
+      background: transparent;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.25rem;
+      cursor: pointer;
+      margin-left: 1rem;
+      transition: all var(--transition-fast);
+    }
+
+    .toast-close:hover {
+      color: var(--text-primary);
+      transform: rotate(90deg);
+    }
+
+    .toast-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: var(--gradient-primary);
+      width: 100%;
+      animation: progress 3s linear forwards;
+    }
+
+    @keyframes progress {
+      from {
+        width: 100%;
+      }
+      to {
+        width: 0%;
+      }
+    }
+
+    /* Confetti Animation for Successful Payment */
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background-color: var(--accent-color);
+      opacity: 0;
+      z-index: 1060;
+      pointer-events: none;
+      animation: confetti-fall 3s linear forwards;
+    }
+
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Shimmer effect */
+    .shimmer {
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: rotate(30deg);
+      animation: shimmer 6s infinite;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 0;
+    }
+
+    .payment-option:hover .shimmer {
+      opacity: 1;
+    }
+
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%) rotate(30deg);
+      }
+      100% {
+        transform: translateX(100%) rotate(30deg);
+      }
+    }
+
+    /* Pulse animation for place order button */
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+      }
+    }
+
+    .btn-place-order {
+      animation: pulse 2s infinite;
+    }
+
+    /* Fade in animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .payment-methods-card,
+    .delivery-address-card,
+    .order-summary-card {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    /* Staggered animations */
+    .payment-methods-card {
+      animation-delay: 0.1s;
+    }
+
+    .delivery-address-card {
+      animation-delay: 0.2s;
+    }
+
+    .order-summary-card {
+      animation-delay: 0.3s;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 991.98px) {
+      .checkout-header {
+        font-size: 2rem;
+      }
+
+      .progress-step .step-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.25rem;
+      }
+
+      .step-label {
+        font-size: 0.8rem;
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      .checkout-header {
+        font-size: 1.75rem;
+      }
+
+      .progress-step .step-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+      }
+
+      .step-label {
+        font-size: 0.75rem;
+      }
+
+      .dark-mode-toggle {
+        width: 40px;
+        height: 40px;
+        bottom: 1rem;
+        left: 1rem;
+      }
+    }
+
+    @media (max-width: 575.98px) {
+      .checkout-header {
+        font-size: 1.5rem;
+      }
+
+      .checkout-progress {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+      }
+
+      .progress-connector {
+        display: none;
+      }
+
+      .progress-step {
+        width: 45%;
+        margin-bottom: 1rem;
+      }
+
+      .payment-option-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+      }
+
+      .payment-option label {
+        padding: 1rem;
+      }
+
+      .btn-place-order .btn-text {
+        font-size: 1rem;
+      }
+
+      .btn-place-order .btn-price {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
 </head>
 <body>
-    <%- include("../partials/user/header") %>
+  <!-- Preloader -->
+  <div class="preloader">
+    <div class="loader"></div>
+  </div>
 
-    <div class="checkout-container">
-        <!-- Progress Bar -->
-        <div class="checkout-progress-container">
-            <div class="checkout-progress">
-                <div class="progress-step active">
-                    <div class="step-icon">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <div class="step-label">Cart</div>
-                </div>
-                <div class="progress-connector active"></div>
-                <div class="progress-step active">
-                    <div class="step-icon">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </div>
-                    <div class="step-label">Delivery</div>
-                </div>
-                <div class="progress-connector active"></div>
-                <div class="progress-step active">
-                    <div class="step-icon">
-                        <i class="fas fa-credit-card"></i>
-                    </div>
-                    <div class="step-label">Payment</div>
-                </div>
-                <div class="progress-connector"></div>
-                <div class="progress-step">
-                    <div class="step-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="step-label">Confirmation</div>
-                </div>
-            </div>
-        </div>
+  <!-- Scroll Indicator -->
+  <div class="scroll-indicator"></div>
 
-        <div class="row g-4">
-            <!-- Payment Methods Section -->
-            <div class="col-lg-5">
-                <div class="payment-methods-card">
-                    <div class="card-header">
-                        <h5>Payment Methods</h5>
-                    </div>
-                    
-                    <div class="card-body">
-                        <div id="paymentAlert"></div>
-                        
-                        <div class="payment-options">
-                            <div class="payment-option">
-                                <input type="radio" name="payment" id="cod" value="COD" checked>
-                                <label for="cod">
-                                    <div class="payment-option-icon">
-                                        <i class="fas fa-money-bill-wave"></i>
-                                    </div>
-                                    <div class="payment-option-content">
-                                        <div class="payment-option-title">Cash on Delivery</div>
-                                        <div class="payment-option-description">Pay when your order is delivered</div>
-                                    </div>
-                                </label>
-                            </div>
-                            
-                            <div class="payment-option">
-                                <input type="radio" name="payment" id="razorpay" value="Razorpay">
-                                <label for="razorpay">
-                                    <div class="payment-option-icon">
-                                        <i class="fas fa-credit-card"></i>
-                                    </div>
-                                    <div class="payment-option-content">
-                                        <div class="payment-option-title">Pay Online</div>
-                                        <div class="payment-option-description">Credit/Debit Card, UPI, Netbanking via Razorpay</div>
-                                    </div>
-                                </label>
-                            </div>
-                            
-                            <div class="payment-cards">
-                                <img src="/uploads/visaCard.png" alt="Visa">
-                                <img src="/uploads/mastercard.jpeg" alt="Mastercard">
-                                <img src="/uploads/Rupay-Logo.png" alt="RuPay">
-                                <img src="/uploads/upi.jpeg" alt="UPI">
-                            </div>
-                            
-                            <div class="payment-option <%= (user.walletBalance < grandTotal) ? 'disabled' : '' %>">
-                                <input type="radio" name="payment" id="wallet" value="Wallet" 
-                                    <%= (user.walletBalance < grandTotal) ? 'disabled' : '' %>>
-                                <label for="wallet">
-                                    <div class="payment-option-icon">
-                                        <i class="fas fa-wallet"></i>
-                                    </div>
-                                    <div class="payment-option-content">
-                                        <div class="payment-option-title">
-                                            Wallet
-                                            <span class="wallet-balance <%= (user.walletBalance < grandTotal) ? 'insufficient' : 'sufficient' %>">
-                                                ₹<%= user.walletBalance ? user.walletBalance.toFixed(2) : '0.00' %>
-                                            </span>
-                                        </div>
-                                        <div class="payment-option-description">
-                                            <% if (user.walletBalance < grandTotal) { %>
-                                                Insufficient balance. You need ₹<%= (grandTotal - user.walletBalance).toFixed(2) %> more.
-                                                <a href="/wallet" class="add-money-link">Add money</a>
-                                            <% } else { %>
-                                                Pay using your wallet balance
-                                            <% } %>
-                                        </div>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="delivery-address-card">
-                    <div class="card-header">
-                        <h5>Delivery Address</h5>
-                        <a href="/checkOut" class="btn-change-address">
-                            <i class="fas fa-pencil-alt"></i> Change
-                        </a>
-                    </div>
-                    
-                    <div class="card-body">
-                        <div class="address-details">
-                            <div class="address-name"><%= deliveryAddress.fullname %></div>
-                            <div class="address-line"><%= deliveryAddress.address %></div>
-                            <div class="address-line"><%= deliveryAddress.city %>, <%= deliveryAddress.district %></div>
-                            <div class="address-line"><%= deliveryAddress.state %> - <%= deliveryAddress.pincode %></div>
-                            <div class="address-phone">
-                                <i class="fas fa-phone-alt"></i> <%= deliveryAddress.mobile %>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Order Summary Section -->
-            <div class="col-lg-7">
-                <div class="order-summary-card">
-                    <div class="card-header">
-                        <h5>Order Summary</h5>
-                        <span class="badge bg-primary"><%= cartItems.length %> items</span>
-                    </div>
-                    
-                    <div class="card-body">
-                        <div class="order-items">
-                            <% cartItems.forEach(item => { 
-                                const variant = item.productId.variants.find(v => v.size === item.size);
-                                const price = variant ? variant.salePrice : 0;
-                                const totalItemPrice = price * item.quantity;
-                            %>
-                                <div class="order-item">
-                                    <div class="item-image">
-                                        <img src="<%= item.productId.images[0]?.url || '/api/placeholder/70/70' %>" alt="<%= item.productId.name %>">
-                                    </div>
-                                    <div class="item-details">
-                                        <div class="item-name"><%= item.productId.name %></div>
-                                        <div class="item-meta">
-                                            <span>Size: <%= item.size %></span>
-                                            <span>Qty: <%= item.quantity %></span>
-                                        </div>
-                                    </div>
-                                    <div class="item-price">₹<%= totalItemPrice.toFixed(2) %></div>
-                                </div>
-                            <% }); %>
-                        </div>
-                        
-                        <div class="price-summary">
-                            <div class="price-row">
-                                <span>Subtotal</span>
-                                <span>₹<%= totalPrice.toFixed(2) %></span>
-                            </div>
-                            <div class="price-row">
-                                <span>Delivery</span>
-                                <span><%= deliveryCharge === 0 ? 'FREE' : '₹' + deliveryCharge.toFixed(2) %></span>
-                            </div>
-                            
-                            <% if (discount > 0 && appliedCoupon) { %>
-                                <div class="price-row discount">
-                                    <span>Discount (<%= appliedCoupon.code %>)</span>
-                                    <span>-₹<%= discount.toFixed(2) %></span>
-                                </div>
-                            <% } %>
-                            
-                            <div class="price-row total">
-                                <span>Total</span>
-                                <span>₹<%= grandTotal.toFixed(2) %></span>
-                            </div>
-                        </div>
-                        
-                        <button id="placeOrderBtn" class="btn-place-order" onclick="handlePayment()">
-                            <span class="btn-text">Place Order</span>
-                            <span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <!-- Cursor Glow Effect -->
+  <div class="cursor-glow"></div>
+
+  <%- include("../partials/user/header") %>
+
+  <div class="container my-5">
+    <div class="checkout-header-wrapper" data-aos="fade-up">
+      <h2 class="checkout-header">PAYMENT</h2>
     </div>
 
-    <%- include("../partials/user/footer") %>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script>
+    <!-- Progress Bar -->
+    <div class="checkout-progress-container" data-aos="fade-up" data-aos-delay="100">
+      <div class="checkout-progress">
+        <div class="progress-step completed">
+          <div class="step-icon">
+            <i class="fas fa-shopping-cart"></i>
+          </div>
+          <div class="step-label">Cart</div>
+        </div>
+        <div class="progress-connector active"></div>
+        <div class="progress-step completed">
+          <div class="step-icon">
+            <i class="fas fa-map-marker-alt"></i>
+          </div>
+          <div class="step-label">Delivery</div>
+        </div>
+        <div class="progress-connector active"></div>
+        <div class="progress-step active">
+          <div class="step-icon">
+            <i class="fas fa-credit-card"></i>
+          </div>
+          <div class="step-label">Payment</div>
+        </div>
+        <div class="progress-connector"></div>
+        <div class="progress-step">
+          <div class="step-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="step-label">Confirmation</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Payment Methods Section -->
+      <div class="col-lg-5">
+        <div class="payment-methods-card" data-aos="fade-right" data-aos-delay="200">
+          <div class="card-header">
+            <h5>Payment Methods</h5>
+          </div>
+          
+          <div class="card-body">
+            <div id="paymentAlert"></div>
+            
+            <div class="payment-options">
+              <div class="payment-option">
+                <div class="shimmer"></div>
+                <input type="radio" name="payment" id="cod" value="COD" checked>
+                <label for="cod">
+                  <div class="payment-option-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                  </div>
+                  <div class="payment-option-content">
+                    <div class="payment-option-title">Cash on Delivery</div>
+                    <div class="payment-option-description">Pay when your order is delivered</div>
+                  </div>
+                </label>
+              </div>
+              
+              <div class="payment-option">
+                <div class="shimmer"></div>
+                <input type="radio" name="payment" id="razorpay" value="Razorpay">
+                <label for="razorpay">
+                  <div class="payment-option-icon">
+                    <i class="fas fa-credit-card"></i>
+                  </div>
+                  <div class="payment-option-content">
+                    <div class="payment-option-title">Pay Online</div>
+                    <div class="payment-option-description">Credit/Debit Card, UPI, Netbanking via Razorpay</div>
+                  </div>
+                </label>
+              </div>
+              
+              <div class="payment-cards">
+                <img src="/uploads/visaCard.png" alt="Visa" onerror="this.onerror=null; this.src='/placeholder.svg?height=30&width=50&query=visa+card';">
+                <img src="/uploads/mastercard.jpeg" alt="Mastercard" onerror="this.onerror=null; this.src='/placeholder.svg?height=30&width=50&query=mastercard';">
+                <img src="/uploads/Rupay-Logo.png" alt="RuPay" onerror="this.onerror=null; this.src='/placeholder.svg?height=30&width=50&query=rupay+card';">
+                <img src="/uploads/upi.jpeg" alt="UPI" onerror="this.onerror=null; this.src='/placeholder.svg?height=30&width=50&query=upi';">
+              </div>
+              
+              <div class="payment-option <%= (user.walletBalance < grandTotal) ? 'disabled' : '' %>">
+                <div class="shimmer"></div>
+                <input type="radio" name="payment" id="wallet" value="Wallet" 
+                  <%= (user.walletBalance < grandTotal) ? 'disabled' : '' %>>
+                <label for="wallet">
+                  <div class="payment-option-icon">
+                    <i class="fas fa-wallet"></i>
+                  </div>
+                  <div class="payment-option-content">
+                    <div class="payment-option-title">
+                      Wallet
+                      <span class="wallet-balance <%= (user.walletBalance < grandTotal) ? 'insufficient' : 'sufficient' %>">
+                        ₹<%= user.walletBalance ? user.walletBalance.toFixed(2) : '0.00' %>
+                      </span>
+                    </div>
+                    <div class="payment-option-description">
+                      <% if (user.walletBalance < grandTotal) { %>
+                        Insufficient balance. You need ₹<%= (grandTotal - user.walletBalance).toFixed(2) %> more.
+                        <a href="/wallet" class="add-money-link">Add money</a>
+                      <% } else { %>
+                        Pay using your wallet balance
+                      <% } %>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="delivery-address-card" data-aos="fade-right" data-aos-delay="300">
+          <div class="card-header">
+            <h5>Delivery Address</h5>
+            <a href="/checkOut" class="btn-change-address">
+              <i class="fas fa-pencil-alt"></i> Change
+            </a>
+          </div>
+          
+          <div class="card-body">
+            <div class="address-details">
+              <div class="address-name"><%= deliveryAddress.fullname %></div>
+              <div class="address-line"><%= deliveryAddress.address %></div>
+              <div class="address-line"><%= deliveryAddress.city %>, <%= deliveryAddress.district %></div>
+              <div class="address-line"><%= deliveryAddress.state %> - <%= deliveryAddress.pincode %></div>
+              <div class="address-phone">
+                <i class="fas fa-phone-alt"></i> <%= deliveryAddress.mobile %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Order Summary Section -->
+      <div class="col-lg-7">
+        <div class="order-summary-card" data-aos="fade-left" data-aos-delay="200">
+          <div class="card-header">
+            <h5>Order Summary</h5>
+            <span class="badge bg-primary"><%= cartItems.length %> items</span>
+          </div>
+          
+          <div class="card-body">
+            <div class="order-items">
+              <% cartItems.forEach((item, index) => { 
+                const variant = item.productId.variants.find(v => v.size === item.size);
+                const price = variant ? variant.salePrice : 0;
+                const totalItemPrice = price * item.quantity;
+              %>
+                <div class="order-item" data-aos="fade-up" data-aos-delay="<%= 300 + (index * 50) %>">
+                  <div class="item-image">
+                    <img 
+                      src="<%= item.productId.images && item.productId.images[0]?.url || '/placeholder.svg?height=70&width=70&query=fashion+product' %>" 
+                      alt="<%= item.productId.name %>"
+                      onerror="this.onerror=null; this.src='/placeholder.svg?height=70&width=70&query=fashion+product';"
+                    >
+                  </div>
+                  <div class="item-details">
+                    <div class="item-name"><%= item.productId.name %></div>
+                    <div class="item-meta">
+                      <span>Size: <%= item.size %></span>
+                      <span>Qty: <%= item.quantity %></span>
+                    </div>
+                  </div>
+                  <div class="item-price">₹<%= totalItemPrice.toFixed(2) %></div>
+                </div>
+              <% }); %>
+            </div>
+            
+            <div class="price-summary" data-aos="fade-up" data-aos-delay="400">
+              <div class="price-row">
+                <span>Subtotal</span>
+                <span>₹<%= totalPrice.toFixed(2) %></span>
+              </div>
+              <div class="price-row">
+                <span>Delivery</span>
+                <span><%= deliveryCharge === 0 ? 'FREE' : '₹' + deliveryCharge.toFixed(2) %></span>
+              </div>
+              
+              <% if (discount > 0 && appliedCoupon) { %>
+                <div class="price-row discount">
+                  <span>Discount (<%= appliedCoupon.code %>)</span>
+                  <span>-₹<%= discount.toFixed(2) %></span>
+                </div>
+              <% } %>
+              
+              <div class="price-row total">
+                <span>Total</span>
+                <span>₹<%= grandTotal.toFixed(2) %></span>
+              </div>
+            </div>
+            
+            <button id="placeOrderBtn" class="btn-place-order" onclick="handlePayment()" data-aos="fade-up" data-aos-delay="500">
+              <span class="btn-text">Place Order</span>
+              <span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer"></div>
+
+  <%- include("../partials/user/footer") %>
+
+  <!-- Dark Mode Toggle -->
+  <button class="dark-mode-toggle" id="darkModeToggle">
+    <i class="fas fa-moon"></i>
+  </button>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize AOS
+      AOS.init({
+        duration: 800,
+        easing: 'ease-in-out',
+        once: true
+      });
+
+      // Preloader
+      const preloader = document.querySelector('.preloader');
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          preloader.classList.add('fade-out');
+        }, 500);
+      });
+
+      // Scroll Indicator
+      const scrollIndicator = document.querySelector('.scroll-indicator');
+      window.addEventListener('scroll', () => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        scrollIndicator.style.width = scrolled + '%';
+      });
+
+      // Cursor Glow Effect
+      const cursorGlow = document.querySelector('.cursor-glow');
+      document.addEventListener('mousemove', (e) => {
+        cursorGlow.style.left = e.clientX + 'px';
+        cursorGlow.style.top = e.clientY + 'px';
+      });
+
+      document.addEventListener('mousedown', () => {
+        cursorGlow.style.width = '30px';
+        cursorGlow.style.height = '30px';
+        cursorGlow.style.opacity = '0.8';
+      });
+
+      document.addEventListener('mouseup', () => {
+        cursorGlow.style.width = '20px';
+        cursorGlow.style.height = '20px';
+        cursorGlow.style.opacity = '0.5';
+      });
+
+      // Dark mode toggle
+      const darkModeToggle = document.getElementById('darkModeToggle');
+      const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+      
+      // Check for saved theme preference or use the system preference
+      const savedTheme = localStorage.getItem('theme');
+      
+      if (savedTheme === 'dark' || (!savedTheme && prefersDarkScheme.matches)) {
+        document.body.classList.add('dark-mode');
+        darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+      }
+      
+      darkModeToggle.addEventListener('click', () => {
+        if (document.body.classList.contains('dark-mode')) {
+          document.body.classList.remove('dark-mode');
+          localStorage.setItem('theme', 'light');
+          darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        } else {
+          document.body.classList.add('dark-mode');
+          localStorage.setItem('theme', 'dark');
+          darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+      });
+
+      // Navbar scroll effect
+      window.addEventListener('scroll', function () {
+        const navbar = document.querySelector('.navbar');
+        if (navbar) {
+          if (window.scrollY > 50) {
+            navbar.classList.add('navbar-scrolled');
+          } else {
+            navbar.classList.remove('navbar-scrolled');
+          }
+        }
+      });
+
+      // Add shimmer effect to payment options
+      document.querySelectorAll('.payment-option').forEach(option => {
+        option.addEventListener('mouseenter', () => {
+          const shimmer = option.querySelector('.shimmer');
+          if (shimmer) {
+            shimmer.style.opacity = '1';
+          }
+        });
+
+        option.addEventListener('mouseleave', () => {
+          const shimmer = option.querySelector('.shimmer');
+          if (shimmer) {
+            shimmer.style.opacity = '0';
+          }
+        });
+      });
+
+      // Add event listeners to payment options
+      const paymentOptions = document.querySelectorAll('.payment-option input[type="radio"]');
+      paymentOptions.forEach((option) => {
+        option.addEventListener("change", () => {
+          // Remove highlight from all options
+          document.querySelectorAll(".payment-option").forEach((opt) => {
+            opt.classList.remove("selected");
+          });
+
+          // Add highlight to selected option
+          if (!option.closest(".payment-option").classList.contains('disabled')) {
+            option.closest(".payment-option").classList.add("selected");
+          }
+        });
+      });
+
+      // Initial highlight for selected payment method
+      const selectedOption = document.querySelector('input[name="payment"]:checked');
+      if (selectedOption && !selectedOption.closest(".payment-option").classList.contains('disabled')) {
+        selectedOption.closest(".payment-option").classList.add("selected");
+      }
+
+      // Initialize toast system
+      window.toastSystem = {
+        container: document.getElementById("toastContainer"),
+        counter: 0,
+
+        // Show a toast notification
+        show: function (message, type = "success", duration = 3000) {
+          try {
+            // Create toast element
+            const toastId = `toast-${++this.counter}`;
+            const toast = document.createElement("div");
+            toast.id = toastId;
+            toast.className = `toast-notification ${type}`;
+
+            // Set icon based on type
+            let icon = "";
+            if (type === "success") {
+              icon = '<i class="fas fa-check-circle"></i>';
+            } else if (type === "error") {
+              icon = '<i class="fas fa-exclamation-circle"></i>';
+            } else if (type === "info") {
+              icon = '<i class="fas fa-info-circle"></i>';
+            }
+
+            // Create toast content
+            toast.innerHTML = `
+              <div class="toast-icon">${icon}</div>
+              <div class="toast-message">${message}</div>
+              <button class="toast-close" aria-label="Close">×</button>
+              <div class="toast-progress"></div>
+            `;
+
+            // Add to container
+            this.container.appendChild(toast);
+
+            // Add close button functionality
+            const closeBtn = toast.querySelector(".toast-close");
+            closeBtn.addEventListener("click", () => {
+              this.close(toastId);
+            });
+
+            // Auto close after duration
+            setTimeout(() => {
+              this.close(toastId);
+            }, duration);
+
+            return toastId;
+          } catch (error) {
+            console.error("Error showing toast:", error);
+            // Fallback to alert if toast fails
+            alert(message);
+          }
+        },
+
+        // Close a toast notification
+        close: (id) => {
+          try {
+            const toast = document.getElementById(id);
+            if (toast) {
+              toast.style.animation = "slideOut 0.3s forwards";
+              setTimeout(() => {
+                if (toast.parentNode) {
+                  toast.parentNode.removeChild(toast);
+                }
+              }, 300);
+            }
+          } catch (error) {
+            console.error("Error closing toast:", error);
+          }
+        },
+
+        // Helper methods for different toast types
+        success: function (message, duration) {
+          return this.show(message, "success", duration);
+        },
+
+        error: function (message, duration) {
+          return this.show(message, "error", duration);
+        },
+
+        info: function (message, duration) {
+          return this.show(message, "info", duration);
+        },
+      };
+    });
+
     // Show alert message
     function showAlert(type, message) {
-        const alertDiv = document.getElementById("paymentAlert");
-        alertDiv.innerHTML = `
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
+      const alertDiv = document.getElementById("paymentAlert");
+      alertDiv.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
 
-    // Auto dismiss after longer duration - 10 seconds for success, 15 seconds for errors
-    setTimeout(() => {
+      // Auto dismiss after longer duration - 10 seconds for success, 15 seconds for errors
+      setTimeout(() => {
         const alertElement = document.querySelector(".alert");
         if (alertElement) {
-            const bsAlert = new bootstrap.Alert(alertElement);
-            bsAlert.close();
+          const bsAlert = new bootstrap.Alert(alertElement);
+          bsAlert.close();
         }
-    }, type === 'danger' ? 15000 : 10000);
+      }, type === 'danger' ? 15000 : 10000);
 
-        // Scroll to alert
-        alertDiv.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Scroll to alert
+      alertDiv.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    // Create confetti animation
+    function createConfetti() {
+      const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'];
+      const confettiCount = 100;
+      
+      for (let i = 0; i < confettiCount; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.width = Math.random() * 10 + 5 + 'px';
+        confetti.style.height = Math.random() * 10 + 5 + 'px';
+        confetti.style.opacity = Math.random();
+        confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+        document.body.appendChild(confetti);
+        
+        // Remove confetti after animation completes
+        setTimeout(() => {
+          confetti.remove();
+        }, 5000);
+      }
+    }
+
+    // Helper function to show toast
+    function showToast(message, type = "success", duration = 3000) {
+      if (window.toastSystem) {
+        return window.toastSystem.show(message, type, duration);
+      } else {
+        // Create a simple toast if the toast system is not available
+        const toast = document.createElement("div");
+        toast.className = `toast-notification ${type}`;
+        toast.innerHTML = `
+          <div class="toast-message">${message}</div>
+        `;
+
+        const container = document.getElementById("toastContainer");
+        if (container) {
+          container.appendChild(toast);
+          setTimeout(() => {
+            toast.remove();
+          }, duration);
+        } else {
+          alert(message);
+        }
+      }
     }
 
     // Handle payment process
     async function handlePayment() {
-        const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-        const couponCode = "<%= appliedCoupon ? appliedCoupon.code : '' %>";
-        const placeOrderBtn = document.getElementById('placeOrderBtn');
-        
-        // Disable button and show loading state
-        placeOrderBtn.disabled = true;
-        placeOrderBtn.innerHTML = '<span class="spinner"></span> Processing...';
-        
-        try {
-            if (paymentMethod === 'Razorpay') {
-                // Handle Razorpay payment
-                const response = await fetch('/create-razorpay-order', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ couponCode })
+      const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+      const couponCode = "<%= appliedCoupon ? appliedCoupon.code : '' %>";
+      const placeOrderBtn = document.getElementById('placeOrderBtn');
+      
+      // Disable button and show loading state
+      placeOrderBtn.disabled = true;
+      placeOrderBtn.innerHTML = '<span class="spinner"></span> Processing...';
+      
+      try {
+        if (paymentMethod === 'Razorpay') {
+          // Handle Razorpay payment
+          const response = await fetch('/create-razorpay-order', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ couponCode })
+          });
+          
+          const data = await response.json();
+          console.log('Razorpay order response:', data);
+          
+          if (!data.success) {
+            throw new Error(data.message || 'Failed to create Razorpay order');
+          }
+          
+          const options = {
+            key: data.key,
+            amount: data.order.amount,
+            currency: data.order.currency,
+            name: 'Elite Wear',
+            description: 'Purchase from Elite Wear',
+            image: '/Uploads/ChatGPT Image Apr 13, 2025, 06_50_48 PM.png',
+            order_id: data.order.id,
+            prefill: {
+              name: data.user.name,
+              email: data.user.email,
+              contact: data.user.mobile || ''
+            },
+            theme: {
+              color: '#3b82f6'
+            },
+            modal: {
+              ondismiss: function() {
+                placeOrderBtn.disabled = false;
+                placeOrderBtn.innerHTML = `
+                  <span class="btn-text">Place Order</span>
+                  <span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>
+                `;
+              }
+            },
+            handler: async function(response) {
+              try {
+                console.log('Payment successful, verifying...', response);
+                const verifyResponse = await fetch('/verify-payment', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_signature: response.razorpay_signature
+                  })
                 });
                 
-                const data = await response.json();
-                console.log('Razorpay order response:', data);
+                const verifyData = await verifyResponse.json();
                 
-                if (!data.success) {
-                    throw new Error(data.message || 'Failed to create Razorpay order');
-                }
-                
-                const options = {
-                    key: data.key,
-                    amount: data.order.amount,
-                    currency: data.order.currency,
-                    name: 'Elite Wear',
-                    description: 'Purchase from Elite Wear',
-                    image: '/Uploads/ChatGPT Image Apr 13, 2025, 06_50_48 PM.png',
-                    order_id: data.order.id,
-                    prefill: {
-                        name: data.user.name,
-                        email: data.user.email,
-                        contact: data.user.mobile || ''
-                    },
-                    theme: {
-                        color: '#3a86ff'
-                    },
-                    modal: {
-                        ondismiss: function() {
-                            placeOrderBtn.disabled = false;
-                            placeOrderBtn.innerHTML = `
-                                <span class="btn-text">Place Order</span>
-                                <span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>
-                            `;
-                        }
-                    },
-                    handler: async function(response) {
-                        try {
-                            console.log('Payment successful, verifying...', response);
-                            const verifyResponse = await fetch('/verify-payment', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    razorpay_payment_id: response.razorpay_payment_id,
-                                    razorpay_order_id: response.razorpay_order_id,
-                                    razorpay_signature: response.razorpay_signature
-                                })
-                            });
-                            
-                            const verifyData = await verifyResponse.json();
-                            
-                            if (verifyData.success) {
-                                // Show success message before redirect
-                                showAlert("success", "Payment successful! Redirecting to confirmation page...");
-                                
-                                // Redirect after a short delay
-                                setTimeout(() => {
-                                    window.location.href = verifyData.redirect;
-                                }, 1500);
-                            } else {
-                                throw new Error(verifyData.message || 'Payment verification failed');
-                            }
-                        } catch (error) {
-                            console.error('Verification error:', error);
-                            showAlert('danger', error.message || 'Payment verification failed');
-                            
-                            // Reset button state
-                            placeOrderBtn.disabled = false;
-                            placeOrderBtn.innerHTML = `
-                                <span class="btn-text">Place Order</span>
-                                <span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>
-                            `;
-                        }
-                    }
-                };
-                
-                // Initialize Razorpay
-                const rzp = new Razorpay(options);
-                
-                // Handle payment failure with clear message
-                rzp.on('payment.failed', function(response) {
-                    console.error('Payment failed:', response.error);
-                    
-                    // Show detailed error message
-                    let errorMessage = 'Payment failed. ';
-                    
-                    if (response.error) {
-                        if (response.error.description) {
-                            errorMessage += response.error.description;
-                        } else if (response.error.reason) {
-                            errorMessage += response.error.reason;
-                        } else if (response.error.code) {
-                            errorMessage += `Error code: ${response.error.code}`;
-                        }
-                    }
-                    
-                    errorMessage += '. Please try again.';
-                    
-                    // Display error with prominent styling
-                    showAlert('danger', `
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-exclamation-triangle me-2" style="font-size: 1.5rem; color: #dc3545;"></i>
-                            <div>
-                                <strong style="font-size: 1.1rem;">Payment Failed</strong>
-                                <div>${errorMessage}</div>
-                            </div>
-                        </div>
-                    `);
-                    
-                    // Reset button state
-                    placeOrderBtn.disabled = false;
-                    placeOrderBtn.innerHTML = `
-                        <span class="btn-text">Place Order</span>
-                        <span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>
-                    `;
-                });
-                
-                // Open Razorpay checkout
-                rzp.open();
-                
-            } else {
-                // Handle COD or Wallet payment
-                const response = await fetch('/place-order', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        paymentMethod, 
-                        couponCode 
-                    }),
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Show success message before redirect
-                    showAlert("success", `Order placed successfully with ${paymentMethod}! Redirecting...`);
-                    
-                    // Redirect after a short delay
-                    setTimeout(() => {
-                        window.location.href = data.redirect;
-                    }, 1500);
+                if (verifyData.success) {
+                  // Create confetti animation for successful payment
+                  createConfetti();
+                  
+                  // Show success message before redirect
+                  showToast("Payment successful! Redirecting to confirmation page...", "success", 3000);
+                  
+                  // Show success alert
+                  showAlert("success", `
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-check-circle me-2" style="font-size: 1.5rem; color: #10b981;"></i>
+                      <div>
+                        <strong style="font-size: 1.1rem;">Payment Successful!</strong>
+                        <div>Your order has been placed successfully. Redirecting to confirmation page...</div>
+                      </div>
+                    </div>
+                  `);
+                  
+                  // Redirect after a short delay
+                  setTimeout(() => {
+                    window.location.href = verifyData.redirect;
+                  }, 2000);
                 } else {
-                    throw new Error(data.message || 'Failed to place order');
+                  throw new Error(verifyData.message || 'Payment verification failed');
                 }
+              } catch (error) {
+                console.error('Verification error:', error);
+                showToast(error.message || 'Payment verification failed', "error", 5000);
+                
+                // Show error alert
+                showAlert('danger', `
+                  <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle me-2" style="font-size: 1.5rem; color: #ef4444;"></i>
+                    <div>
+                      <strong style="font-size: 1.1rem;">Payment Verification Failed</strong>
+                      <div>${error.message || 'There was an issue verifying your payment. Please try again.'}</div>
+                    </div>
+                  </div>
+                `);
+                
+                // Reset button state
+                placeOrderBtn.disabled = false;
+                placeOrderBtn.innerHTML = `
+                  <span class="btn-text">Place Order</span>
+                  <span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>
+                `;
+              }
             }
-        } catch (error) {
-            console.error('Error:', error);
+          };
+          
+          // Initialize Razorpay
+          const rzp = new Razorpay(options);
+          
+          // Handle payment failure with clear message
+          rzp.on('payment.failed', function(response) {
+            console.error('Payment failed:', response.error);
             
             // Show detailed error message
+            let errorMessage = 'Payment failed. ';
+            
+            if (response.error) {
+              if (response.error.description) {
+                errorMessage += response.error.description;
+              } else if (response.error.reason) {
+                errorMessage += response.error.reason;
+              } else if (response.error.code) {
+                errorMessage += `Error code: ${response.error.code}`;
+              }
+            }
+            
+            errorMessage += '. Please try again.';
+            
+            // Display toast notification
+            showToast(errorMessage, "error", 5000);
+            
+            // Display error with prominent styling
             showAlert('danger', `
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-exclamation-triangle me-2" style="font-size: 1.5rem; color: #dc3545;"></i>
-                    <div>
-                        <strong style="font-size: 1.1rem;">Payment Failed</strong>
-                        <div>${error.message || 'An error occurred while processing your payment. Please try again.'}</div>
-                    </div>
+              <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle me-2" style="font-size: 1.5rem; color: #ef4444;"></i>
+                <div>
+                  <strong style="font-size: 1.1rem;">Payment Failed</strong>
+                  <div>${errorMessage}</div>
                 </div>
+              </div>
             `);
             
             // Reset button state
             placeOrderBtn.disabled = false;
             placeOrderBtn.innerHTML = `
-                <span class="btn-text">Place Order</span>
-                <span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>
+              <span class="btn-text">Place Order</span>
+              <span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>
             `;
+          });
+          
+          // Open Razorpay checkout
+          rzp.open();
+          
+        } else {
+          // Handle COD or Wallet payment
+          const response = await fetch('/place-order', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              paymentMethod, 
+              couponCode 
+            }),
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            // Create confetti animation for successful order
+            createConfetti();
+            
+            // Show success toast
+            showToast(`Order placed successfully with ${paymentMethod}! Redirecting...`, "success", 3000);
+            
+            // Show success alert
+            showAlert("success", `
+              <div class="d-flex align-items-center">
+                <i class="fas fa-check-circle me-2" style="font-size: 1.5rem; color: #10b981;"></i>
+                <div>
+                  <strong style="font-size: 1.1rem;">Order Placed Successfully!</strong>
+                  <div>Your order has been placed with ${paymentMethod}. Redirecting to confirmation page...</div>
+                </div>
+              </div>
+            `);
+            
+            // Redirect after a short delay
+            setTimeout(() => {
+              window.location.href = data.redirect;
+            }, 2000);
+          } else {
+            throw new Error(data.message || 'Failed to place order');
+          }
         }
+      } catch (error) {
+        console.error('Error:', error);
+        
+        // Show error toast
+        showToast(error.message || 'An error occurred while processing your payment', "error", 5000);
+        
+        // Show detailed error message
+        showAlert('danger', `
+          <div class="d-flex align-items-center">
+            <i class="fas fa-exclamation-triangle me-2" style="font-size: 1.5rem; color: #ef4444;"></i>
+            <div>
+              <strong style="font-size: 1.1rem;">Payment Failed</strong>
+              <div>${error.message || 'An error occurred while processing your payment. Please try again.'}</div>
+            </div>
+          </div>
+        `);
+        
+        // Reset button state
+        placeOrderBtn.disabled = false;
+        placeOrderBtn.innerHTML = `
+          <span class="btn-text">Place Order</span>
+          <span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>
+        `;
+      }
     }
-
-    // Add event listeners when DOM is loaded
-    document.addEventListener("DOMContentLoaded", () => {
-        console.log("Checkout payment page loaded");
-
-        // Add event listeners to payment options
-        const paymentOptions = document.querySelectorAll('.payment-option input[type="radio"]');
-        paymentOptions.forEach((option) => {
-            option.addEventListener("change", () => {
-                // Remove highlight from all options
-                document.querySelectorAll(".payment-option").forEach((opt) => {
-                    opt.classList.remove("selected");
-                });
-
-                // Add highlight to selected option
-                option.closest(".payment-option").classList.add("selected");
-            });
-        });
-
-        // Initial highlight for selected payment method
-        const selectedOption = document.querySelector('input[name="payment"]:checked');
-        if (selectedOption) {
-            selectedOption.closest(".payment-option").classList.add("selected");
-        }
-    });
-</script>
+  </script>
 </body>
 </html>
