@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,9 +15,9 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/adminStyle/ordermanagement.css">
     <style>
         :root {
+            /* Light Theme Variables */
             --primary-color: #5D3FD3;
             --secondary-color: #7B68EE;
             --accent-color: #9370DB;
@@ -27,15 +27,112 @@
             --warning-color: #ffc107;
             --danger-color: #dc3545;
             --info-color: #17a2b8;
+            
+            /* Background and Text Colors */
+            --bg-main: #f5f7fa;
+            --bg-card: #ffffff;
+            --bg-header: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #6c757d;
+            --text-muted: #95a5a6;
+            
+            /* Border and Shadow */
+            --border-color: #e9ecef;
             --border-radius: 8px;
             --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             --transition: all 0.3s ease;
+            
+            /* Status Colors */
+            --status-pending-bg: #fff8e1;
+            --status-pending-text: #ff9800;
+            --status-processing-bg: #e3f2fd;
+            --status-processing-text: #2196f3;
+            --status-confirmed-bg: #e8f5e9;
+            --status-confirmed-text: #4caf50;
+            --status-shipped-bg: #e8eaf6;
+            --status-shipped-text: #3f51b5;
+            --status-delivered-bg: #e8f5e9;
+            --status-delivered-text: #4caf50;
+            --status-cancelled-bg: #ffebee;
+            --status-cancelled-text: #f44336;
+            --status-return-bg: #fff3e0;
+            --status-return-text: #ff9800;
+            
+            /* Form Elements */
+            --input-bg: #ffffff;
+            --input-border: #ced4da;
+            --input-focus-border: #5D3FD3;
+            --input-focus-shadow: rgba(93, 63, 211, 0.1);
+            
+            /* Button Colors */
+            --btn-default-bg: #f8f9fa;
+            --btn-default-text: #6c757d;
+            --btn-default-hover: #e9ecef;
+            --btn-primary-bg: #5D3FD3;
+            --btn-primary-text: #ffffff;
+            --btn-primary-hover: #7B68EE;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Variables */
+            --primary-color: #7B68EE;
+            --secondary-color: #9370DB;
+            --accent-color: #B19CD9;
+            --light-color: #2D3748;
+            --dark-color: #F8F9FA;
+            --success-color: #48BB78;
+            --warning-color: #F6AD55;
+            --danger-color: #F56565;
+            --info-color: #4FD1C5;
+            
+            /* Background and Text Colors */
+            --bg-main: #1A202C;
+            --bg-card: #2D3748;
+            --bg-header: #2D3748;
+            --text-primary: #F7FAFC;
+            --text-secondary: #E2E8F0;
+            --text-muted: #A0AEC0;
+            
+            /* Border and Shadow */
+            --border-color: #4A5568;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            
+            /* Status Colors */
+            --status-pending-bg: #4A5568;
+            --status-pending-text: #F6AD55;
+            --status-processing-bg: #2C5282;
+            --status-processing-text: #90CDF4;
+            --status-confirmed-bg: #276749;
+            --status-confirmed-text: #9AE6B4;
+            --status-shipped-bg: #2A4365;
+            --status-shipped-text: #90CDF4;
+            --status-delivered-bg: #276749;
+            --status-delivered-text: #9AE6B4;
+            --status-cancelled-bg: #742A2A;
+            --status-cancelled-text: #FEB2B2;
+            --status-return-bg: #744210;
+            --status-return-text: #F6AD55;
+            
+            /* Form Elements */
+            --input-bg: #2D3748;
+            --input-border: #4A5568;
+            --input-focus-border: #7B68EE;
+            --input-focus-shadow: rgba(123, 104, 238, 0.2);
+            
+            /* Button Colors */
+            --btn-default-bg: #2D3748;
+            --btn-default-text: #E2E8F0;
+            --btn-default-hover: #4A5568;
+            --btn-primary-bg: #7B68EE;
+            --btn-primary-text: #F7FAFC;
+            --btn-primary-hover: #9370DB;
         }
 
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #f5f7fa;
-            color: #333;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .dashboard-container {
@@ -46,16 +143,18 @@
         .main-content {
             flex: 1;
             padding: 0;
-            background-color: #f5f7fa;
+            background-color: var(--bg-main);
             transition: var(--transition);
+                transform: translateX(-250px);
         }
 
         /* Header Styling */
         .content-header {
-            background-color: #fff;
+            background-color: var(--bg-header);
             padding: 20px 30px;
             box-shadow: var(--box-shadow);
             margin-bottom: 25px;
+            transition: background-color 0.3s ease;
         }
 
         .header-container {
@@ -67,7 +166,7 @@
         .page-title {
             font-size: 24px;
             font-weight: 600;
-            color: var(--dark-color);
+            color: var(--text-primary);
             margin-bottom: 5px;
         }
 
@@ -81,7 +180,7 @@
         }
 
         .breadcrumb-item {
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
         .breadcrumb-item a {
@@ -91,7 +190,7 @@
 
         .breadcrumb-separator {
             margin: 0 8px;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
         .user-profile {
@@ -100,13 +199,13 @@
             gap: 15px;
             padding: 8px 15px;
             border-radius: var(--border-radius);
-            background-color: #f8f9fa;
+            background-color: var(--btn-default-bg);
             cursor: pointer;
             transition: var(--transition);
         }
 
         .user-profile:hover {
-            background-color: #e9ecef;
+            background-color: var(--btn-default-hover);
         }
 
         .profile-info {
@@ -117,10 +216,11 @@
             font-weight: 600;
             margin: 0;
             font-size: 14px;
+            color: var(--text-primary);
         }
 
         .user-role {
-            color: #6c757d;
+            color: var(--text-secondary);
             margin: 0;
             font-size: 12px;
         }
@@ -130,13 +230,34 @@
             height: 40px;
             border-radius: 50%;
             overflow: hidden;
-            background-color: #e9ecef;
+            background-color: var(--btn-default-bg);
         }
 
         .profile-image img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--btn-default-bg);
+            color: var(--text-secondary);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-right: 10px;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--btn-default-hover);
+            color: var(--primary-color);
         }
 
         /* Stats Cards */
@@ -149,7 +270,7 @@
         }
 
         .stat-card {
-            background-color: #fff;
+            background-color: var(--bg-card);
             border-radius: var(--border-radius);
             padding: 20px;
             box-shadow: var(--box-shadow);
@@ -184,7 +305,7 @@
         .stat-title {
             font-size: 14px;
             font-weight: 500;
-            color: #6c757d;
+            color: var(--text-secondary);
             margin: 0;
         }
 
@@ -214,7 +335,7 @@
         .stat-value {
             font-size: 28px;
             font-weight: 600;
-            color: var(--dark-color);
+            color: var(--text-primary);
             margin: 0 0 10px 0;
         }
 
@@ -235,11 +356,12 @@
 
         /* Filters */
         .filters-container {
-            background-color: #fff;
+            background-color: var(--bg-card);
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             margin: 0 30px 25px;
             overflow: hidden;
+            transition: background-color 0.3s ease;
         }
 
         .filters-header {
@@ -247,7 +369,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px 20px;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .filters-title {
@@ -257,6 +379,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            color: var(--text-primary);
         }
 
         .filters-actions {
@@ -271,8 +394,8 @@
             padding: 8px 15px;
             border: none;
             border-radius: var(--border-radius);
-            background-color: #f8f9fa;
-            color: #6c757d;
+            background-color: var(--btn-default-bg);
+            color: var(--btn-default-text);
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
@@ -280,17 +403,17 @@
         }
 
         .filter-btn:hover {
-            background-color: #e9ecef;
+            background-color: var(--btn-default-hover);
         }
 
         .export-btn {
-            background-color: var(--primary-color);
-            color: #fff;
+            background-color: var(--btn-primary-bg);
+            color: var(--btn-primary-text);
         }
 
         .export-btn:hover {
-            background-color: var(--secondary-color);
-            color: #fff;
+            background-color: var(--btn-primary-hover);
+            color: var(--btn-primary-text);
         }
 
         .filters-body {
@@ -309,24 +432,24 @@
         .filter-label {
             font-size: 13px;
             font-weight: 500;
-            color: #6c757d;
+            color: var(--text-secondary);
             margin: 0;
         }
 
         .filter-select {
             padding: 10px 15px;
-            border: 1px solid #ced4da;
+            border: 1px solid var(--input-border);
             border-radius: var(--border-radius);
             font-size: 14px;
-            color: #495057;
-            background-color: #fff;
+            color: var(--text-primary);
+            background-color: var(--input-bg);
             transition: var(--transition);
         }
 
         .filter-select:focus {
-            border-color: var(--primary-color);
+            border-color: var(--input-focus-border);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(93, 63, 211, 0.1);
+            box-shadow: 0 0 0 3px var(--input-focus-shadow);
         }
 
         .search-input-container {
@@ -340,22 +463,27 @@
             position: absolute;
             top: 35px;
             left: 15px;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
         .search-input {
             padding: 10px 15px 10px 40px;
-            border: 1px solid #ced4da;
+            border: 1px solid var(--input-border);
             border-radius: var(--border-radius);
             font-size: 14px;
-            color: #495057;
+            color: var(--text-primary);
+            background-color: var(--input-bg);
             transition: var(--transition);
         }
 
         .search-input:focus {
-            border-color: var(--primary-color);
+            border-color: var(--input-focus-border);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(93, 63, 211, 0.1);
+            box-shadow: 0 0 0 3px var(--input-focus-shadow);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
         }
 
         .time-filter {
@@ -367,10 +495,10 @@
 
         .time-filter-btn {
             padding: 8px 15px;
-            border: 1px solid #ced4da;
+            border: 1px solid var(--input-border);
             border-radius: var(--border-radius);
-            background-color: #fff;
-            color: #6c757d;
+            background-color: var(--input-bg);
+            color: var(--text-secondary);
             font-size: 13px;
             font-weight: 500;
             cursor: pointer;
@@ -378,22 +506,23 @@
         }
 
         .time-filter-btn:hover {
-            background-color: #f8f9fa;
+            background-color: var(--btn-default-hover);
         }
 
         .time-filter-btn.active {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            color: #fff;
+            background-color: var(--btn-primary-bg);
+            border-color: var(--btn-primary-bg);
+            color: var(--btn-primary-text);
         }
 
         /* Orders Table */
         .orders-container {
-            background-color: #fff;
+            background-color: var(--bg-card);
             border-radius: var(--border-radius);
             box-shadow: var(--box-shadow);
             margin: 0 30px 25px;
             overflow: hidden;
+            transition: background-color 0.3s ease;
         }
 
         .table-header {
@@ -401,7 +530,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px 20px;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .table-title {
@@ -411,6 +540,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            color: var(--text-primary);
         }
 
         .table-actions {
@@ -422,26 +552,26 @@
             display: flex;
             border-radius: var(--border-radius);
             overflow: hidden;
-            border: 1px solid #ced4da;
+            border: 1px solid var(--input-border);
         }
 
         .view-toggle-btn {
             padding: 8px 15px;
             border: none;
-            background-color: #fff;
-            color: #6c757d;
+            background-color: var(--input-bg);
+            color: var(--text-secondary);
             font-size: 14px;
             cursor: pointer;
             transition: var(--transition);
         }
 
         .view-toggle-btn:hover {
-            background-color: #f8f9fa;
+            background-color: var(--btn-default-hover);
         }
 
         .view-toggle-btn.active {
-            background-color: var(--primary-color);
-            color: #fff;
+            background-color: var(--btn-primary-bg);
+            color: var(--btn-primary-text);
         }
 
         /* Table View */
@@ -459,18 +589,20 @@
             padding: 15px 20px;
             font-size: 13px;
             font-weight: 600;
-            color: #6c757d;
+            color: var(--text-secondary);
             text-align: left;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid var(--border-color);
             position: relative;
+            background-color: var(--bg-card);
         }
 
         .orders-table td {
             padding: 15px 20px;
             font-size: 14px;
-            color: #495057;
-            border-bottom: 1px solid #e9ecef;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
+            background-color: var(--bg-card);
         }
 
         .orders-table tr:last-child td {
@@ -478,7 +610,7 @@
         }
 
         .orders-table tr:hover td {
-            background-color: #f8f9fa;
+            background-color: var(--btn-default-bg);
         }
 
         .sort-icon {
@@ -508,8 +640,8 @@
             height: 50px;
             border-radius: var(--border-radius);
             overflow: hidden;
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
+            background-color: var(--btn-default-bg);
+            border: 1px solid var(--border-color);
         }
 
         .product-image img {
@@ -526,12 +658,12 @@
 
         .product-name {
             font-weight: 500;
-            color: #495057;
+            color: var(--text-primary);
         }
 
         .product-meta {
             font-size: 12px;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
         .customer-cell {
@@ -542,17 +674,17 @@
 
         .customer-name {
             font-weight: 500;
-            color: #495057;
+            color: var(--text-primary);
         }
 
         .customer-email {
             font-size: 12px;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
         .price-cell {
             font-weight: 600;
-            color: #495057;
+            color: var(--text-primary);
         }
 
         .payment-method {
@@ -566,18 +698,18 @@
         }
 
         .payment-method.cod {
-            background-color: #fff8e1;
-            color: #ff9800;
+            background-color: var(--status-pending-bg);
+            color: var(--status-pending-text);
         }
 
         .payment-method.online {
-            background-color: #e3f2fd;
-            color: #2196f3;
+            background-color: var(--status-processing-bg);
+            color: var(--status-processing-text);
         }
 
         .payment-method.wallet {
-            background-color: #e8f5e9;
-            color: #4caf50;
+            background-color: var(--status-confirmed-bg);
+            color: var(--status-confirmed-text);
         }
 
         .status-badge {
@@ -591,61 +723,61 @@
         }
 
         .status-badge.pending {
-            background-color: #fff8e1;
-            color: #ff9800;
+            background-color: var(--status-pending-bg);
+            color: var(--status-pending-text);
         }
 
         .status-badge.processing {
-            background-color: #e3f2fd;
-            color: #2196f3;
+            background-color: var(--status-processing-bg);
+            color: var(--status-processing-text);
         }
 
         .status-badge.confirmed {
-            background-color: #e8f5e9;
-            color: #4caf50;
+            background-color: var(--status-confirmed-bg);
+            color: var(--status-confirmed-text);
         }
 
         .status-badge.shipped {
-            background-color: #e8eaf6;
-            color: #3f51b5;
+            background-color: var(--status-shipped-bg);
+            color: var(--status-shipped-text);
         }
 
         .status-badge.delivered {
-            background-color: #e8f5e9;
-            color: #4caf50;
+            background-color: var(--status-delivered-bg);
+            color: var(--status-delivered-text);
         }
 
         .status-badge.cancelled {
-            background-color: #ffebee;
-            color: #f44336;
+            background-color: var(--status-cancelled-bg);
+            color: var(--status-cancelled-text);
         }
 
         .status-badge.return-requested {
-            background-color: #fff3e0;
-            color: #ff9800;
+            background-color: var(--status-return-bg);
+            color: var(--status-return-text);
         }
 
         .status-badge.return-approved {
-            background-color: #e0f7fa;
-            color: #00bcd4;
+            background-color: var(--status-processing-bg);
+            color: var(--status-processing-text);
         }
 
         .status-badge.returned {
-            background-color: #f3e5f5;
-            color: #9c27b0;
+            background-color: var(--status-shipped-bg);
+            color: var(--status-shipped-text);
         }
 
         .status-badge.return-rejected {
-            background-color: #fce4ec;
-            color: #e91e63;
+            background-color: var(--status-cancelled-bg);
+            color: var(--status-cancelled-text);
         }
 
         .status-badge.partially-cancelled,
         .status-badge.partially-returned,
         .status-badge.partially-delivered,
         .status-badge.partially-shipped {
-            background-color: #f5f5f5;
-            color: #757575;
+            background-color: var(--btn-default-bg);
+            color: var(--text-secondary);
         }
 
         .reason-tag {
@@ -655,8 +787,8 @@
             margin-top: 5px;
             padding: 3px 8px;
             border-radius: 20px;
-            background-color: #f5f5f5;
-            color: #757575;
+            background-color: var(--btn-default-bg);
+            color: var(--text-secondary);
             font-size: 11px;
         }
 
@@ -673,51 +805,55 @@
             align-items: center;
             justify-content: center;
             border: none;
-            background-color: #f8f9fa;
-            color: #6c757d;
+            background-color: var(--btn-default-bg);
+            color: var(--text-secondary);
             font-size: 14px;
             cursor: pointer;
             transition: var(--transition);
         }
 
         .action-btn:hover {
-            background-color: #e9ecef;
+            background-color: var(--btn-default-hover);
         }
 
         .action-btn.view {
-            background-color: #e3f2fd;
-            color: #2196f3;
+            background-color: var(--status-processing-bg);
+            color: var(--status-processing-text);
         }
 
         .action-btn.view:hover {
-            background-color: #bbdefb;
+            background-color: var(--status-processing-text);
+            color: var(--btn-primary-text);
         }
 
         .action-btn.edit {
-            background-color: #e8f5e9;
-            color: #4caf50;
+            background-color: var(--status-confirmed-bg);
+            color: var(--status-confirmed-text);
         }
 
         .action-btn.edit:hover {
-            background-color: #c8e6c9;
+            background-color: var(--status-confirmed-text);
+            color: var(--btn-primary-text);
         }
 
         .action-btn.approve {
-            background-color: #e8f5e9;
-            color: #4caf50;
+            background-color: var(--status-confirmed-bg);
+            color: var(--status-confirmed-text);
         }
 
         .action-btn.approve:hover {
-            background-color: #c8e6c9;
+            background-color: var(--status-confirmed-text);
+            color: var(--btn-primary-text);
         }
 
         .action-btn.reject {
-            background-color: #ffebee;
-            color: #f44336;
+            background-color: var(--status-cancelled-bg);
+            color: var(--status-cancelled-text);
         }
 
         .action-btn.reject:hover {
-            background-color: #ffcdd2;
+            background-color: var(--status-cancelled-text);
+            color: var(--btn-primary-text);
         }
 
         /* Card View */
@@ -729,12 +865,12 @@
         }
 
         .order-card {
-            background-color: #fff;
+            background-color: var(--bg-card);
             border-radius: var(--border-radius);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             overflow: hidden;
             transition: var(--transition);
-            border: 1px solid #e9ecef;
+            border: 1px solid var(--border-color);
         }
 
         .order-card:hover {
@@ -747,7 +883,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .order-card-id {
@@ -757,7 +893,7 @@
 
         .order-card-date {
             font-size: 12px;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
         .order-card-body {
@@ -776,8 +912,8 @@
             height: 80px;
             border-radius: var(--border-radius);
             overflow: hidden;
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
+            background-color: var(--btn-default-bg);
+            border: 1px solid var(--border-color);
         }
 
         .order-card-product-image img {
@@ -794,12 +930,12 @@
 
         .order-card-product-name {
             font-weight: 500;
-            color: #495057;
+            color: var(--text-primary);
         }
 
         .order-card-product-meta {
             font-size: 12px;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
         .order-card-details {
@@ -817,12 +953,12 @@
 
         .order-card-detail-label {
             font-size: 12px;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
         .order-card-detail-value {
             font-weight: 500;
-            color: #495057;
+            color: var(--text-primary);
         }
 
         .order-card-footer {
@@ -830,8 +966,8 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px;
-            border-top: 1px solid #e9ecef;
-            background-color: #f8f9fa;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--btn-default-bg);
         }
 
         /* Pagination */
@@ -840,12 +976,12 @@
             justify-content: space-between;
             align-items: center;
             padding: 15px 20px;
-            border-top: 1px solid #e9ecef;
+            border-top: 1px solid var(--border-color);
         }
 
         .pagination-info {
             font-size: 13px;
-            color: #6c757d;
+            color: var(--text-secondary);
         }
 
         .pagination {
@@ -867,23 +1003,23 @@
             width: 32px;
             height: 32px;
             border-radius: var(--border-radius);
-            background-color: #fff;
-            color: #495057;
+            background-color: var(--input-bg);
+            color: var(--text-primary);
             font-size: 14px;
             font-weight: 500;
             text-decoration: none;
             transition: var(--transition);
-            border: 1px solid #e9ecef;
+            border: 1px solid var(--border-color);
         }
 
         .pagination-link:hover {
-            background-color: #f8f9fa;
+            background-color: var(--btn-default-hover);
         }
 
         .pagination-link.active {
-            background-color: var(--primary-color);
-            color: #fff;
-            border-color: var(--primary-color);
+            background-color: var(--btn-primary-bg);
+            color: var(--btn-primary-text);
+            border-color: var(--btn-primary-bg);
         }
 
         .pagination-link.disabled {
@@ -905,25 +1041,25 @@
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background-color: #f8f9fa;
+            background-color: var(--btn-default-bg);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 30px;
-            color: #6c757d;
+            color: var(--text-secondary);
             margin-bottom: 20px;
         }
 
         .empty-state-title {
             font-size: 18px;
             font-weight: 600;
-            color: #495057;
+            color: var(--text-primary);
             margin-bottom: 10px;
         }
 
         .empty-state-description {
             font-size: 14px;
-            color: #6c757d;
+            color: var(--text-secondary);
             margin-bottom: 20px;
             max-width: 400px;
         }
@@ -935,8 +1071,8 @@
             padding: 10px 20px;
             border: none;
             border-radius: var(--border-radius);
-            background-color: var(--primary-color);
-            color: #fff;
+            background-color: var(--btn-primary-bg);
+            color: var(--btn-primary-text);
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
@@ -944,7 +1080,7 @@
         }
 
         .empty-state-action:hover {
-            background-color: var(--secondary-color);
+            background-color: var(--btn-primary-hover);
         }
 
         /* Mobile Toggle */
@@ -955,8 +1091,8 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background-color: var(--primary-color);
-            color: #fff;
+            background-color: var(--btn-primary-bg);
+            color: var(--btn-primary-text);
             border: none;
             display: none;
             align-items: center;
@@ -972,17 +1108,19 @@
             border-radius: var(--border-radius);
             border: none;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background-color: var(--bg-card);
+            color: var(--text-primary);
         }
 
         .modal-header {
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid var(--border-color);
             padding: 15px 20px;
         }
 
         .modal-title {
             font-size: 18px;
             font-weight: 600;
-            color: #495057;
+            color: var(--text-primary);
         }
 
         .modal-body {
@@ -990,44 +1128,46 @@
         }
 
         .modal-footer {
-            border-top: 1px solid #e9ecef;
+            border-top: 1px solid var(--border-color);
             padding: 15px 20px;
         }
 
         .form-label {
             font-size: 14px;
             font-weight: 500;
-            color: #495057;
+            color: var(--text-primary);
         }
 
         .form-control {
             padding: 10px 15px;
-            border: 1px solid #ced4da;
+            border: 1px solid var(--input-border);
             border-radius: var(--border-radius);
             font-size: 14px;
-            color: #495057;
+            color: var(--text-primary);
+            background-color: var(--input-bg);
             transition: var(--transition);
         }
 
         .form-control:focus {
-            border-color: var(--primary-color);
+            border-color: var(--input-focus-border);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(93, 63, 211, 0.1);
+            box-shadow: 0 0 0 3px var(--input-focus-shadow);
         }
 
         .form-select {
             padding: 10px 15px;
-            border: 1px solid #ced4da;
+            border: 1px solid var(--input-border);
             border-radius: var(--border-radius);
             font-size: 14px;
-            color: #495057;
+            color: var(--text-primary);
+            background-color: var(--input-bg);
             transition: var(--transition);
         }
 
         .form-select:focus {
-            border-color: var(--primary-color);
+            border-color: var(--input-focus-border);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(93, 63, 211, 0.1);
+            box-shadow: 0 0 0 3px var(--input-focus-shadow);
         }
 
         .btn {
@@ -1039,23 +1179,37 @@
         }
 
         .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
+            background-color: var(--btn-primary-bg);
+            border-color: var(--btn-primary-bg);
+            color: var(--btn-primary-text);
         }
 
         .btn-primary:hover {
-            background-color: var(--secondary-color);
-            border-color: var(--secondary-color);
+            background-color: var(--btn-primary-hover);
+            border-color: var(--btn-primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--btn-default-bg);
+            border-color: var(--input-border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--btn-default-hover);
+            border-color: var(--input-border);
         }
 
         .btn-success {
             background-color: var(--success-color);
             border-color: var(--success-color);
+            color: var(--btn-primary-text);
         }
 
         .btn-danger {
             background-color: var(--danger-color);
             border-color: var(--danger-color);
+            color: var(--btn-primary-text);
         }
 
         /* Toast */
@@ -1064,19 +1218,41 @@
         }
 
         .toast {
-            background-color: #fff;
+            background-color: var(--bg-card);
             border-radius: var(--border-radius);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             border: none;
+            color: var(--text-primary);
         }
 
         .toast-header {
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid var(--border-color);
             padding: 10px 15px;
+            background-color: var(--bg-card);
+            color: var(--text-primary);
         }
 
         .toast-body {
             padding: 15px;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
         }
 
         /* Responsive */
@@ -1165,16 +1341,21 @@
                         </ul>
                     </div>
                     
-                    <div class="user-profile">
-                        <div class="profile-info">
-                            <p class="user-name">Admin</p>
-                            <p class="user-role">Administrator</p>
-                        </div>
-                        <div class="profile-image">
-                            <img src="/placeholder.svg?height=50&width=50&query=admin" alt="Admin Profile">
-                        </div>
-                        <div class="dropdown-icon">
-                            <i class="fas fa-chevron-down"></i>
+                    <div class="d-flex align-items-center">
+                        <button class="theme-toggle" id="themeToggle">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        <div class="user-profile">
+                            <div class="profile-info">
+                                <p class="user-name">Admin</p>
+                                <p class="user-role">Administrator</p>
+                            </div>
+                            <div class="profile-image">
+                                <img src="/placeholder.svg?height=50&width=50&query=admin" alt="Admin Profile">
+                            </div>
+                            <div class="dropdown-icon">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1751,6 +1932,40 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
     
     <script>
+        // Theme Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            const htmlElement = document.documentElement;
+            
+            // Check for saved theme preference or use preferred color scheme
+            const savedTheme = localStorage.getItem('theme') || 
+                (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            
+            // Apply the saved theme
+            applyTheme(savedTheme);
+            
+            // Toggle theme when button is clicked
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = htmlElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                applyTheme(newTheme);
+                localStorage.setItem('theme', newTheme);
+            });
+            
+            function applyTheme(theme) {
+                htmlElement.setAttribute('data-theme', theme);
+                
+                // Update the icon
+                const themeIcon = themeToggle.querySelector('i');
+                if (theme === 'dark') {
+                    themeIcon.className = 'fas fa-sun';
+                } else {
+                    themeIcon.className = 'fas fa-moon';
+                }
+            }
+        });
+
         // DOM elements
         const tableViewBtn = document.getElementById('tableViewBtn');
         const cardViewBtn = document.getElementById('cardViewBtn');
@@ -1786,6 +2001,12 @@
             
             // Update stats
             updateStats();
+            
+            // Check for saved view preference
+            const savedView = localStorage.getItem('orderViewMode') || 'table';
+            if (savedView === 'card') {
+                cardViewBtn.click();
+            }
         });
 
         // Set up event listeners
@@ -1796,6 +2017,7 @@
                 cardViewBtn.classList.remove('active');
                 tableView.style.display = 'block';
                 cardView.style.display = 'none';
+                localStorage.setItem('orderViewMode', 'table');
             });
             
             cardViewBtn.addEventListener('click', function() {
@@ -1803,6 +2025,7 @@
                 tableViewBtn.classList.remove('active');
                 cardView.style.display = 'block';
                 tableView.style.display = 'none';
+                localStorage.setItem('orderViewMode', 'card');
             });
             
             // Status filter
@@ -1854,6 +2077,22 @@
             // Rejection reason input
             rejectionReason.addEventListener('input', function() {
                 this.classList.remove('is-invalid');
+            });
+            
+            // Sort icons
+            document.querySelectorAll('.sort-icon').forEach(icon => {
+                icon.addEventListener('click', function() {
+                    const sortField = this.getAttribute('data-sort');
+                    const currentSort = new URLSearchParams(window.location.search).get('sort');
+                    const currentOrder = new URLSearchParams(window.location.search).get('order');
+                    
+                    let newOrder = 'asc';
+                    if (sortField === currentSort && currentOrder === 'asc') {
+                        newOrder = 'desc';
+                    }
+                    
+                    window.location.href = `?sort=${sortField}&order=${newOrder}`;
+                });
             });
         }
 
@@ -2166,166 +2405,6 @@
             const toast = new bootstrap.Toast(toastEl);
             toast.show();
         }
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const statusModal = new bootstrap.Modal(document.getElementById('statusModal'));
-            const approveReturnModal = new bootstrap.Modal(document.getElementById('approveReturnModal'));
-            const rejectReturnModal = new bootstrap.Modal(document.getElementById('rejectReturnModal'));
-
-            const orderIdInput = document.getElementById('orderIdInput');
-            const statusSelect = document.getElementById('statusSelect');
-            const saveStatusBtn = document.getElementById('saveStatusBtn');
-            const confirmApproveReturnBtn = document.getElementById('confirmApproveReturnBtn');
-            const confirmRejectReturnBtn = document.getElementById('confirmRejectReturnBtn');
-
-            const editStatusBtns = document.querySelectorAll('.btn-edit-status');
-            editStatusBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const orderId = this.getAttribute('data-order-id');
-                    const currentStatus = this.getAttribute('data-current-status');
-                    orderIdInput.value = orderId;
-                    statusSelect.value = currentStatus;
-                    statusModal.show();
-                });
-            });
-
-            saveStatusBtn.addEventListener('click', function() {
-                const orderId = orderIdInput.value;
-                const newStatus = statusSelect.value;
-
-                fetch("/admin/orders/update-status", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ orderId, status: newStatus }),
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        const statusBadge = document.querySelector(`button[data-order-id="${orderId}"]`)
-                            .closest('tr')
-                            .querySelector('.status-badge');
-                        statusBadge.classList.forEach(className => {
-                            if (className.startsWith('status-') && className !== 'status-badge') {
-                                statusBadge.classList.remove(className);
-                            }
-                        });
-                        const statusClass = `status-${newStatus.toLowerCase().replace(' ', '-')}`;
-                        statusBadge.classList.add(statusClass);
-                        statusBadge.textContent = newStatus;
-                        document.querySelector(`button[data-order-id="${orderId}"]`)
-                            .setAttribute('data-current-status', newStatus);
-                        showToast("Order status updated successfully");
-                        statusModal.hide();
-                    } else {
-                        showToast(data.message || "Failed to update status", false);
-                    }
-                })
-                .catch(err => {
-                    console.error("Error updating status:", err);
-                    showToast("Error updating status: " + err.message, false);
-                });
-            });
-
-            
-            const approveReturnBtns = document.querySelectorAll('.btn-approve-return');
-            approveReturnBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const orderId = this.getAttribute('data-order-id');
-                    confirmApproveReturnBtn.setAttribute('data-order-id', orderId);
-                    approveReturnModal.show();
-                });
-            });
-
-          
-            confirmApproveReturnBtn.addEventListener('click', function() {
-                const orderId = this.getAttribute('data-order-id');
-                fetch(`/admin/orders/return/${orderId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'approve' })
-                })
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        showToast("Return approved and refund processed successfully");
-                        setTimeout(() => window.location.reload(), 2000);
-                    } else {
-                        showToast(data.message || "Failed to approve return", false);
-                    }
-                })
-                .catch(err => {
-                    console.error("Error approving return:", err);
-                    showToast("Error approving return: " + err.message, false);
-                });
-                approveReturnModal.hide();
-            });
-
-    
-            const rejectReturnBtns = document.querySelectorAll('.btn-reject-return');
-            rejectReturnBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const orderId = this.getAttribute('data-order-id');
-                    confirmRejectReturnBtn.setAttribute('data-order-id', orderId);
-                    rejectReturnModal.show();
-                });
-            });
-
-            confirmRejectReturnBtn.addEventListener('click', function() {
-                const orderId = this.getAttribute('data-order-id');
-                const rejectionReason = document.getElementById('rejectionReason').value.trim();
-                if (!rejectionReason) {
-                    document.getElementById('rejectionReason').classList.add('is-invalid');
-                    return;
-                }
-                fetch(`/admin/orders/return/${orderId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'reject', rejectionReason })
-                })
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
-                    return res.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        showToast("Return rejected successfully");
-                        setTimeout(() => window.location.reload(), 2000);
-                    } else {
-                        showToast(data.message || "Failed to reject return", false);
-                    }
-                })
-                .catch(err => {
-                    console.error("Error rejecting return:", err);
-                    showToast("Error rejecting return: " + err.message, false);
-                });
-                rejectReturnModal.hide();
-                document.getElementById('rejectionReason').value = ''; 
-            });
-
-            
-            document.getElementById('rejectionReason')?.addEventListener('input', function() {
-                this.classList.remove('is-invalid');
-            });
-
-
-            const tableRows = document.querySelectorAll('tbody tr');
-            tableRows.forEach(row => {
-                row.addEventListener('mouseenter', function() {
-                    this.style.backgroundColor = '#f8f9fa';
-                    this.style.transition = 'background-color 0.3s ease';
-                });
-                row.addEventListener('mouseleave', function() {
-                    this.style.backgroundColor = '';
-                });
-            });
-        });
     </script>
 </body>
 </html>

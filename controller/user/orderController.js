@@ -197,19 +197,41 @@ const placeOrder = async (req, res) => {
         .json({ success: false, message: "Delivery address not selected" });
     }
 
+   
     if (paymentMethod === "Wallet") {
-      if (user.walletBalance === undefined) {
-        user.walletBalance = 0;
-        await user.save();
+    
+      let wallet = await Wallet.findOne({ userId });
+      
+      if (!wallet) {
+        wallet = new Wallet({
+          userId,
+          amount: 0,
+          transactions: [],
+        });
+        await wallet.save();
       }
+      
 
-      if (user.walletBalance < grandTotal) {
+      console.log("Wallet Amount:", wallet.amount, typeof wallet.amount);
+      console.log("Grand Total:", grandTotal, typeof grandTotal);
+      
+ 
+      const walletAmount = parseFloat(parseFloat(wallet.amount).toFixed(2));
+      const grandTotalAmount = parseFloat(parseFloat(grandTotal).toFixed(2));
+      
+      if (walletAmount < grandTotalAmount) {
         return res.status(400).json({
           success: false,
-          message: "Insufficient wallet balance",
+          message: `Insufficient wallet balance. Available: ₹${walletAmount}, Required: ₹${grandTotalAmount}`,
         });
       }
     }
+
+    if (paymentMethod === "COD" && grandTotal > 1000){
+      return res.status(400).json({success:false, message : "COD is not allowed for Order ablove ₹1000. please choose another payment method. "})
+    }
+
+
 
     const orderNumber = generateOrderNumber();
     const newOrder = new Order({
@@ -219,7 +241,7 @@ const placeOrder = async (req, res) => {
       address: addressId,
       total: grandTotal,
       discount: discount,
-      paymentStatus: paymentMethod === "COD" ? "Pending" : "Paid",
+      paymentStatus: paymentMethod === "COD" ? "Pending" : "Completed",
       orderDate: new Date(),
       status: "Processing",
       statusHistory: [
@@ -290,9 +312,7 @@ const placeOrder = async (req, res) => {
     }
 
     if (paymentMethod === "Wallet") {
-      user.walletBalance -= grandTotal;
-      await user.save();
-
+      // Fetch the wallet document again to ensure we have the latest data
       let wallet = await Wallet.findOne({ userId });
       if (!wallet) {
         wallet = new Wallet({
@@ -302,13 +322,20 @@ const placeOrder = async (req, res) => {
         });
       }
 
+      // Deduct the amount from wallet
+      wallet.amount -= grandTotal;
+
+      // Add the transaction
       wallet.transactions.push({
-        amount: grandTotal,
         type: "debit",
+        amount: grandTotal,
         description: `Payment for order #${orderNumber}`,
         transactionRef: generateTransactionId(),
         date: new Date(),
+        orderReference: orderNumber,
+        status: "completed"
       });
+      
       await wallet.save();
     }
 

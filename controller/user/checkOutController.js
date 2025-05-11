@@ -4,6 +4,7 @@ const User = require("../../model/userSchema");
 const Address = require("../../model/AddressScheema");
 const Category = require("../../model/categoryScheema");
 const Coupon = require("../../model/couponScheema");
+const Wallet = require("../../model/walletScheema");
 
 const loadcheckOut = async (req, res) => {
   try {
@@ -57,6 +58,7 @@ const loadcheckOut = async (req, res) => {
       req.session.checkout = {};
     }
     req.session.checkout.totalPrice = totalPrice;
+    req.session.checkout.grandTotal = grandTotal; // Store the grand total for later use
 
     const today = new Date();
     const coupons = await Coupon.find({}).lean();
@@ -140,6 +142,25 @@ const selectDeliveryAddress = async (req, res) => {
   }
 };
 
+// New function to check wallet balance
+const checkWalletBalance = async (userId) => {
+  try {
+    const user = await User.findById(userId).select("+walletBalance");
+    if (!user) {
+      return { success: false, message: "User not found", balance: 0 };
+    }
+
+    return {
+      success: true,
+      balance: user.walletBalance || 0,
+      hasWallet: true
+    };
+  } catch (error) {
+    console.error("Error checking wallet balance:", error);
+    return { success: false, message: "Failed to retrieve wallet balance", balance: 0 };
+  }
+};
+
 const loadCheckoutPayment = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -189,6 +210,10 @@ const loadCheckoutPayment = async (req, res) => {
     const discount = req.session.checkout?.coupon?.discount || 0;
     const grandTotal = totalPrice - discount + deliveryCharge;
 
+    // Store in session for order placement
+    req.session.checkout = req.session.checkout || {};
+    req.session.checkout.grandTotal = grandTotal;
+
     let deliveryAddress = null;
     if (req.session.checkout?.addressId) {
       deliveryAddress = await Address.findOne({
@@ -202,6 +227,13 @@ const loadCheckoutPayment = async (req, res) => {
       return res.redirect("/checkOut");
     }
 
+    // Get wallet balance from Wallet collection
+    let walletBalance = 0;
+    const wallet = await Wallet.findOne({ userId });
+    if (wallet) {
+      walletBalance = wallet.amount;
+    }
+
     res.render("checkoutPayment", {
       cartItems,
       totalPrice,
@@ -211,9 +243,123 @@ const loadCheckoutPayment = async (req, res) => {
       user: req.user,
       appliedCoupon: req.session.checkout?.coupon || null,
       deliveryAddress,
+      walletBalance, // Pass the wallet balance from Wallet collection
+      hasWalletBalance: walletBalance >= grandTotal,
+      showWalletOption: true // Always show wallet option, will be disabled if insufficient funds
     });
   } catch (error) {
     console.error("Error loading checkout payment page:", error);
+    res.status(500).send("Server issue");
+  }
+};
+
+// New function to validate payment method
+const validatePaymentMethod = async (req, res) => {
+  try {
+    const { paymentMethod } = req.body;
+    const userId = req.user._id;
+    
+    if (!["COD", "Wallet"].includes(paymentMethod)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Invalid payment method" 
+      });
+    }
+
+    if (paymentMethod === "Wallet") {
+      const grandTotal = req.session.checkout?.grandTotal || 0;
+      
+      // Fetch the wallet document
+      const wallet = await Wallet.findOne({ userId });
+      
+      if (!wallet) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Wallet not found" 
+        });
+      }
+      
+      // Convert both to numbers with 2 decimal places for accurate comparison
+      const walletAmount = parseFloat(parseFloat(wallet.amount).toFixed(2));
+      const grandTotalAmount = parseFloat(parseFloat(grandTotal).toFixed(2));
+      
+      if (walletAmount < grandTotalAmount) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Insufficient wallet balance",
+          currentBalance: walletAmount,
+          required: grandTotalAmount 
+        });
+      }
+    }
+    
+    // Store the validated payment method in session
+    req.session.checkout = req.session.checkout || {};
+    req.session.checkout.paymentMethod = paymentMethod;
+    
+    return res.status(200).json({ 
+      success: true, 
+      message: `${paymentMethod} payment method selected`,
+      redirect: "/confirm-order" // Optional: redirect to order confirmation
+    });
+  } catch (error) {
+    console.error("Error validating payment method:", error);
+    return res.status(500).json({ success: false, message: "Server issue" });
+  }
+};
+
+// New function to show a summary/confirmation before placing order
+const loadOrderConfirmation = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    
+    if (!req.session.checkout?.addressId || !req.session.checkout?.paymentMethod) {
+      req.flash("warning", "Please complete your checkout process");
+      return res.redirect("/checkout");
+    }
+    
+    const userCart = await Cart.findOne({ userId }).populate("items.productId");
+    if (!userCart || !userCart.items.length) {
+      req.flash("warning", "Your cart is empty");
+      return res.redirect("/");
+    }
+    
+    const deliveryAddress = await Address.findOne({
+      _id: req.session.checkout.addressId,
+      userId,
+    });
+    
+    if (!deliveryAddress) {
+      req.flash("warning", "Please select a delivery address");
+      return res.redirect("/checkout");
+    }
+    
+    const paymentMethod = req.session.checkout.paymentMethod;
+    const totalPrice = req.session.checkout.totalPrice || 0;
+    const discount = req.session.checkout.coupon?.discount || 0;
+    const deliveryCharge = totalPrice > 8000 ? 0 : 200;
+    const grandTotal = totalPrice - discount + deliveryCharge;
+    
+    // Get wallet info if wallet payment
+    let walletInfo = null;
+    if (paymentMethod === "Wallet") {
+      walletInfo = await checkWalletBalance(userId);
+    }
+    
+    res.render("orderConfirmation", {
+      cartItems: userCart.items,
+      totalPrice,
+      discount,
+      deliveryCharge,
+      grandTotal,
+      deliveryAddress,
+      paymentMethod,
+      walletInfo: paymentMethod === "Wallet" ? walletInfo : null,
+      appliedCoupon: req.session.checkout?.coupon || null,
+      user: req.user
+    });
+  } catch (error) {
+    console.error("Error loading order confirmation:", error);
     res.status(500).send("Server issue");
   }
 };
@@ -222,4 +368,7 @@ module.exports = {
   loadcheckOut,
   selectDeliveryAddress,
   loadCheckoutPayment,
+  validatePaymentMethod,
+  loadOrderConfirmation,
+  checkWalletBalance // Export so it can be used in other controllers
 };

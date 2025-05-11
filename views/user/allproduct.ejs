@@ -77,6 +77,7 @@
       background-color: var(--secondary-color);
       overflow-x: hidden;
       transition: background-color var(--transition-normal), color var(--transition-normal);
+      cursor: none; /* Hide default cursor for custom cursor effect */
     }
 
     /* Scrollbar styling */
@@ -98,6 +99,74 @@
       background: var(--text-secondary);
     }
 
+    /* Custom Cursor Effects */
+    .cursor {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: var(--accent-color);
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.6;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s, height 0.2s, opacity 0.2s, background-color 0.3s;
+      mix-blend-mode: difference;
+    }
+
+    .cursor-follower {
+      position: fixed;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid var(--accent-color);
+      pointer-events: none;
+      z-index: 9998;
+      opacity: 0.3;
+      transform: translate(-50%, -50%);
+      transition: width 0.5s, height 0.5s, opacity 0.5s, transform 0.1s;
+    }
+
+    /* Cursor states */
+    .cursor.active {
+      opacity: 0.8;
+      width: 30px;
+      height: 30px;
+      background-color: var(--accent-secondary);
+    }
+
+    .cursor-follower.active {
+      width: 60px;
+      height: 60px;
+      opacity: 0.15;
+      border-color: var(--accent-secondary);
+    }
+
+    /* Cursor hover states for interactive elements */
+    a:hover ~ .cursor,
+    button:hover ~ .cursor,
+    .product-card:hover ~ .cursor,
+    .size-btn:hover ~ .cursor,
+    .wishlist-icon:hover ~ .cursor,
+    .filter-toggle-btn:hover ~ .cursor {
+      opacity: 0.8;
+      width: 30px;
+      height: 30px;
+      background-color: var(--accent-secondary);
+    }
+
+    a:hover ~ .cursor-follower,
+    button:hover ~ .cursor-follower,
+    .product-card:hover ~ .cursor-follower,
+    .size-btn:hover ~ .cursor-follower,
+    .wishlist-icon:hover ~ .cursor-follower,
+    .filter-toggle-btn:hover ~ .cursor-follower {
+      width: 60px;
+      height: 60px;
+      opacity: 0.15;
+      border-color: var(--accent-secondary);
+    }
+
     /* Scroll Indicator */
     .scroll-indicator {
       position: fixed;
@@ -108,21 +177,6 @@
       z-index: 9999;
       width: 0%;
       transition: width 0.1s ease;
-    }
-
-    /* Cursor Glow Effect */
-    .cursor-glow {
-      position: fixed;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      background: var(--accent-color);
-      pointer-events: none;
-      mix-blend-mode: difference;
-      z-index: 9999;
-      transform: translate(-50%, -50%);
-      opacity: 0.5;
-      transition: width 0.3s, height 0.3s, opacity 0.3s;
     }
 
     /* Preloader */
@@ -415,7 +469,7 @@
       color: var(--text-primary);
       font-weight: 500;
       transition: all var(--transition-normal);
-      cursor: pointer;
+      cursor: none;
     }
 
     .size-btn:hover {
@@ -479,6 +533,7 @@
       position: relative;
       overflow: hidden;
       z-index: 1;
+      cursor: none;
     }
 
     .btn-shop-now::before {
@@ -511,6 +566,7 @@
       padding: 0.75rem 1.5rem;
       font-weight: 500;
       transition: all var(--transition-normal);
+      cursor: none;
     }
 
     .btn-reset:hover {
@@ -611,7 +667,7 @@
       font-size: 1rem;
       padding: 0.5rem;
       transition: all var(--transition-normal);
-      cursor: pointer;
+      cursor: none;
     }
 
     .search-button:hover {
@@ -630,6 +686,7 @@
       height: 100%;
       display: flex;
       flex-direction: column;
+      cursor: none;
     }
 
     .product-card:hover {
@@ -700,7 +757,7 @@
       transform: translateY(20px);
       transition: all var(--transition-normal);
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      cursor: pointer;
+      cursor: none;
     }
 
     .product-card:hover .quick-view {
@@ -727,7 +784,7 @@
       align-items: center;
       justify-content: center;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      cursor: pointer;
+      cursor: none;
       transition: all var(--transition-normal);
     }
 
@@ -830,6 +887,7 @@
       font-weight: 500;
       transition: all var(--transition-normal);
       text-decoration: none;
+      cursor: none;
     }
 
     .btn-view-product:hover {
@@ -910,6 +968,7 @@
       transition: all var(--transition-normal);
       box-shadow: var(--card-shadow);
       text-decoration: none;
+      cursor: none;
     }
 
     .page-link:hover {
@@ -1087,7 +1146,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
+      cursor: none;
       opacity: 0;
       visibility: hidden;
       transform: translateY(20px);
@@ -1120,7 +1179,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
+      cursor: none;
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
       z-index: 1000;
       transition: all var(--transition-normal);
@@ -1179,6 +1238,57 @@
       }
       100% {
         transform: translateX(100%) rotate(30deg);
+      }
+    }
+
+    /* Image Magnifier Styles */
+    .img-magnifier-container {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--border-radius-lg);
+    }
+
+    .img-magnifier-glass {
+      position: absolute;
+      border: 3px solid var(--accent-color);
+      border-radius: 50%;
+      cursor: none;
+      width: 150px;
+      height: 150px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      background-repeat: no-repeat;
+      z-index: 100;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .img-magnifier-container:hover .img-magnifier-glass {
+      opacity: 1;
+    }
+
+    /* Floating Heart Animation */
+    .floating-heart {
+      position: absolute;
+      color: var(--accent-color);
+      font-size: 1.5rem;
+      pointer-events: none;
+      animation: float-heart 1s ease-out forwards;
+      z-index: 10;
+    }
+    
+    @keyframes float-heart {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+      50% {
+        opacity: 0.8;
+        transform: translate(-50%, -100%) scale(1.2);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -150%) scale(1);
       }
     }
 
@@ -1303,8 +1413,9 @@
   <!-- Scroll Indicator -->
   <div class="scroll-indicator"></div>
 
-  <!-- Cursor Glow Effect -->
-  <div class="cursor-glow"></div>
+  <!-- Custom Cursor -->
+  <div class="cursor"></div>
+  <div class="cursor-follower"></div>
   
   <script>
     // Set the header background type for the shop page
@@ -1432,9 +1543,9 @@
                       <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                     </svg>
                   </div>
-                  <a href="/productdetails/<%= product._id %>" class="product-image-link">
+                  <a href="/productdetails/<%= product._id %>" class="product-image-link img-magnifier-container">
                     <% const mainImage = product.images && product.images.find(img => img.isMain) || (product.images && product.images[0]) || { url: '/placeholder.svg?height=300&width=300&query=fashion+product' }; %>
-                    <img src="<%= mainImage.url %>" class="product-image" alt="<%= product.name %>" onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';">
+                    <img src="<%= mainImage.url %>" class="product-image" alt="<%= product.name %>" onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';" data-magnify="true">
                     <% if (product.offer && product.offer > 0) { %>
                       <span class="product-badge"><%= product.offer %>% OFF</span>
                     <% } %>
@@ -1579,7 +1690,9 @@
         <div class="modal-body">
           <div class="row">
             <div class="col-md-6">
-              <img id="quickViewImage" src="/placeholder.svg?height=300&width=300&query=fashion+product" alt="Product Image" class="img-fluid rounded">
+              <div class="img-magnifier-container">
+                <img id="quickViewImage" src="/placeholder.svg?height=300&width=300&query=fashion+product" alt="Product Image" class="img-fluid rounded" data-magnify="true">
+              </div>
             </div>
             <div class="col-md-6">
               <h3 id="quickViewName" class="mb-3"></h3>
@@ -1635,24 +1748,127 @@
         scrollIndicator.style.width = scrolled + '%';
       });
 
-      // Cursor Glow Effect
-      const cursorGlow = document.querySelector('.cursor-glow');
+      // Custom Cursor
+      const cursor = document.querySelector('.cursor');
+      const cursorFollower = document.querySelector('.cursor-follower');
+      
       document.addEventListener('mousemove', (e) => {
-        cursorGlow.style.left = e.clientX + 'px';
-        cursorGlow.style.top = e.clientY + 'px';
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+        
+        // Add a slight delay to the follower for a smooth effect
+        setTimeout(() => {
+          cursorFollower.style.left = e.clientX + 'px';
+          cursorFollower.style.top = e.clientY + 'px';
+        }, 50);
       });
-
+      
       document.addEventListener('mousedown', () => {
-        cursorGlow.style.width = '30px';
-        cursorGlow.style.height = '30px';
-        cursorGlow.style.opacity = '0.8';
+        cursor.classList.add('active');
+        cursorFollower.classList.add('active');
       });
-
+      
       document.addEventListener('mouseup', () => {
-        cursorGlow.style.width = '20px';
-        cursorGlow.style.height = '20px';
-        cursorGlow.style.opacity = '0.5';
+        cursor.classList.remove('active');
+        cursorFollower.classList.remove('active');
       });
+      
+      // Add hover effect for interactive elements
+      const interactiveElements = document.querySelectorAll('a, button, .product-card, .size-btn, .wishlist-icon, .filter-toggle-btn');
+      interactiveElements.forEach(el => {
+        el.addEventListener('mouseenter', () => {
+          cursor.classList.add('active');
+          cursorFollower.classList.add('active');
+        });
+        
+        el.addEventListener('mouseleave', () => {
+          cursor.classList.remove('active');
+          cursorFollower.classList.remove('active');
+        });
+      });
+      
+      // Image Magnifier Function
+      function magnify(imgID, zoom) {
+        var img, glass, w, h, bw;
+        img = document.getElementById(imgID);
+        
+        if (!img) return;
+        
+        // Create magnifier glass
+        glass = document.createElement("DIV");
+        glass.setAttribute("class", "img-magnifier-glass");
+        
+        // Insert magnifier glass
+        img.parentElement.insertBefore(glass, img);
+        
+        // Set background properties for the magnifier glass
+        glass.style.backgroundImage = "url('" + img.src + "')";
+        glass.style.backgroundRepeat = "no-repeat";
+        glass.style.backgroundSize = (img.width * zoom) + "px " + (img.height * zoom) + "px";
+        bw = 3; // Border width
+        w = glass.offsetWidth / 2;
+        h = glass.offsetHeight / 2;
+        
+        // Execute function when someone moves the magnifier glass over the image
+        glass.addEventListener("mousemove", moveMagnifier);
+        img.addEventListener("mousemove", moveMagnifier);
+        
+        // Hide glass when mouse leaves the image
+        img.addEventListener("mouseleave", function() {
+          glass.style.opacity = "0";
+        });
+        
+        // Show glass when mouse enters the image
+        img.addEventListener("mouseenter", function() {
+          glass.style.opacity = "1";
+        });
+        
+        function moveMagnifier(e) {
+          var pos, x, y;
+          // Prevent any other actions that may occur when moving over the image
+          e.preventDefault();
+          // Get the cursor's x and y positions
+          pos = getCursorPos(e);
+          x = pos.x;
+          y = pos.y;
+          
+          // Prevent the magnifier glass from being positioned outside the image
+          if (x > img.width - (w / zoom)) {x = img.width - (w / zoom);}
+          if (x < w / zoom) {x = w / zoom;}
+          if (y > img.height - (h / zoom)) {y = img.height - (h / zoom);}
+          if (y < h / zoom) {y = h / zoom;}
+          
+          // Set the position of the magnifier glass
+          glass.style.left = (x - w) + "px";
+          glass.style.top = (y - h) + "px";
+          
+          // Display what the magnifier glass "sees"
+          glass.style.backgroundPosition = "-" + ((x * zoom) - w + bw) + "px -" + ((y * zoom) - h + bw) + "px";
+        }
+        
+        function getCursorPos(e) {
+          var a, x = 0, y = 0;
+          e = e || window.event;
+          // Get the x and y positions of the image
+          a = img.getBoundingClientRect();
+          // Calculate the cursor's x and y coordinates, relative to the image
+          x = e.pageX - a.left - window.pageXOffset;
+          y = e.pageY - a.top - window.pageYOffset;
+          return {x : x, y : y};
+        }
+      }
+      
+      // Apply magnifier to all product images
+      function initMagnifiers() {
+        const productImages = document.querySelectorAll('img[data-magnify="true"]');
+        productImages.forEach((img, index) => {
+          img.id = 'magnifyImg' + index;
+          magnify('magnifyImg' + index, 2); // Zoom level of 2x
+        });
+      }
+      
+      // Initialize magnifiers after a short delay to ensure images are loaded
+      setTimeout(initMagnifiers, 500);
       
       const filters = <%- JSON.stringify(filters || { category: 'all', size: '', color: '', minPrice: '', maxPrice: '', sort: 'latest' }) %>;
       let currentPage = <%= currentPage || 1 %>;
@@ -1744,6 +1960,19 @@
             
             if (data.success) {
               heartPath.classList.toggle('active');
+              
+              // Add floating heart animation if adding to wishlist
+              if (!isActive) {
+                const icon = this.closest('.wishlist-icon');
+                const floatingHeart = document.createElement('div');
+                floatingHeart.className = 'floating-heart';
+                floatingHeart.innerHTML = '<i class="fas fa-heart"></i>';
+                icon.appendChild(floatingHeart);
+                
+                setTimeout(() => {
+                  floatingHeart.remove();
+                }, 1000);
+              }
             }
             
             wishlistToast.show();
@@ -1779,6 +2008,11 @@
           document.getElementById('quickViewLink').setAttribute('href', productLink);
           
           quickViewModal.show();
+          
+          // Reinitialize magnifier for the quick view image
+          setTimeout(() => {
+            magnify('quickViewImage', 2);
+          }, 300);
         });
       });
       
@@ -1837,6 +2071,9 @@
           
           // Update wishlist state
           loadWishlistState();
+          
+          // Initialize magnifiers for new product images
+          setTimeout(initMagnifiers, 500);
         })
         .catch(error => {
           console.error('Error fetching products:', error);
@@ -1935,8 +2172,8 @@
                       <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                     </svg>
                   </div>
-                  <a href="/productdetails/${product._id}" class="product-image-link">
-                    <img src="${mainImage.url}" class="product-image" alt="${product.name}" onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';">
+                  <a href="/productdetails/${product._id}" class="product-image-link img-magnifier-container">
+                    <img src="${mainImage.url}" class="product-image" alt="${product.name}" onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';" data-magnify="true">
                     ${badgeHtml}
                     <div class="product-overlay">
                       <span class="quick-view">Quick View</span>
@@ -1989,6 +2226,19 @@
                 
                 if (data.success) {
                   heartPath.classList.toggle('active');
+                  
+                  // Add floating heart animation if adding to wishlist
+                  if (!isActive) {
+                    const icon = this.closest('.wishlist-icon');
+                    const floatingHeart = document.createElement('div');
+                    floatingHeart.className = 'floating-heart';
+                    floatingHeart.innerHTML = '<i class="fas fa-heart"></i>';
+                    icon.appendChild(floatingHeart);
+                    
+                    setTimeout(() => {
+                      floatingHeart.remove();
+                    }, 1000);
+                  }
                 }
                 
                 wishlistToast.show();
@@ -2022,6 +2272,11 @@
               document.getElementById('quickViewLink').setAttribute('href', productLink);
               
               quickViewModal.show();
+              
+              // Reinitialize magnifier for the quick view image
+              setTimeout(() => {
+                magnify('quickViewImage', 2);
+              }, 300);
             });
           });
 

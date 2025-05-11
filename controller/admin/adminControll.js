@@ -9,14 +9,14 @@ const ExcelJS = require("exceljs")
 const cloudinary = require("cloudinary").v2
 const bcrypt = require("bcrypt")
 
-// Configure Cloudinary
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
-// Admin login page
+
 exports.loadLogin = async (req, res) => {
   try {
     if (req.session.admin) {
@@ -33,7 +33,7 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body
 
-    // Validate input
+
     if (!email || !password) {
       return res.render("adminlogin", { message: "Email and password are required" })
     }
@@ -63,19 +63,19 @@ exports.logout = (req, res) => {
   res.redirect("/admin/login")
 }
 
-// Dashboard data helper functions
+
 async function getRevenueData() {
   try {
-    // Get current date and date 30 days ago
+    
     const currentDate = new Date()
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(currentDate.getDate() - 30)
 
-    // Get previous 30 days for comparison
+    
     const sixtyDaysAgo = new Date()
     sixtyDaysAgo.setDate(currentDate.getDate() - 60)
 
-    // Calculate total revenue for current period
+
     const currentPeriodOrders = await Order.find({
       orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
       status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
@@ -84,7 +84,7 @@ async function getRevenueData() {
 
     const totalRevenue = currentPeriodOrders.reduce((sum, order) => sum + order.total, 0)
 
-    // Calculate total revenue for previous period
+
     const previousPeriodOrders = await Order.find({
       orderDate: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
       status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
@@ -93,7 +93,7 @@ async function getRevenueData() {
 
     const previousTotalRevenue = previousPeriodOrders.reduce((sum, order) => sum + order.total, 0)
 
-    // Calculate revenue change percentage
+
     let revenueChange = 0
     if (previousTotalRevenue > 0) {
       revenueChange = ((totalRevenue - previousTotalRevenue) / previousTotalRevenue) * 100
@@ -454,7 +454,7 @@ async function getPaymentMethodDistribution(dateFilter = {}) {
 
     console.log("Raw payment method data:", paymentMethodDistribution);
 
-    // Ensure we have entries for the three required payment methods
+
     const requiredPaymentMethods = ["Online", "COD", "Wallet"]
     const result = []
 

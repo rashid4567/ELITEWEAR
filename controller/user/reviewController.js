@@ -223,7 +223,7 @@ const submitOrderItemReview = async (req, res) => {
                             newReview.orderItem = orderItemId;
                         }
                         
-                        // Check again after fixes
+                        
                         if (!newReview.productId || !newReview.userId || !newReview.orderItem) {
                             return res.status(400).json({
                                 success: false,
@@ -234,7 +234,7 @@ const submitOrderItemReview = async (req, res) => {
                     
                     result = await newReview.save();
                     
-                    // Update product rating
+                   
                     const newRating = await updateProductRating(productId);
                     
                     return res.json({
@@ -261,12 +261,11 @@ const submitOrderItemReview = async (req, res) => {
     }
 };
 
-// 2. Delete Review Function
+
 const deleteReview = async (req, res) => {
     try {
         const { reviewId } = req.params;
-        
-        // Get user ID from session
+
         const userId = req.session.user;
         
         console.log(`[DEBUG] Delete review - reviewId: ${reviewId}, userId: ${userId}`);
@@ -284,8 +283,7 @@ const deleteReview = async (req, res) => {
                 message: "Invalid review ID"
             });
         }
-        
-        // Find the review
+ 
         const review = await Review.findById(reviewId);
         
         if (!review) {
@@ -295,7 +293,7 @@ const deleteReview = async (req, res) => {
             });
         }
         
-        // Safely compare user IDs with toString() and null checks
+       
         const reviewUserId = review.userId ? review.userId.toString() : null;
         const currentUserId = userId ? userId.toString() : null;
         
@@ -308,13 +306,13 @@ const deleteReview = async (req, res) => {
             });
         }
         
-        // Get product ID for rating update
+     
         const productId = review.productId ? review.productId.toString() : null;
         
-        // Delete the review
+  x
         await Review.findByIdAndDelete(reviewId);
         
-        // Update product rating if we have a product ID
+ 
         if (productId) {
             await updateProductRating(productId);
         }
@@ -332,7 +330,7 @@ const deleteReview = async (req, res) => {
     }
 };
 
-// 3. Get Product Reviews Function
+
 const getProductReviews = async (req, res) => {
     try {
         const productId = req.params.productId;
@@ -340,7 +338,7 @@ const getProductReviews = async (req, res) => {
         const limit = parseInt(req.query.limit) || 5;
         const skip = (page - 1) * limit;
         
-        // Validate product ID
+     
         if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
             return res.status(400).json({
                 success: false,
@@ -348,10 +346,10 @@ const getProductReviews = async (req, res) => {
             });
         }
         
-        // Make sure to use 'new' with ObjectId
+
         const productObjId = new mongoose.Types.ObjectId(productId);
         
-        // Use the correct field name from your schema
+
         const reviews = await Review.find({ productId: productObjId })
             .populate('userId', 'fullname')
             .sort({ createdAt: -1 })
@@ -359,7 +357,7 @@ const getProductReviews = async (req, res) => {
             .limit(limit)
             .lean();
             
-        // Get total count for pagination
+
         const totalReviews = await Review.countDocuments({ productId: productObjId });
         
         return res.json({
@@ -380,7 +378,7 @@ const getProductReviews = async (req, res) => {
     }
 };
 
-// 4. Helper function to update product rating
+
 const updateProductRating = async (productId) => {
     try {
         if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
@@ -404,7 +402,7 @@ const updateProductRating = async (productId) => {
             reviewCount = result[0].count;
         }
         
-        // Update product with new rating - using the ratings object structure from your schema
+
         await Product.findByIdAndUpdate(productId, {
             'ratings.average': averageRating,
             'ratings.count': reviewCount
