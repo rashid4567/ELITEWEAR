@@ -14,6 +14,7 @@
   const CouponController = require("../controller/user/userCouponCoontroller");
   const razorpayController = require("../controller/user/razzerpayController");
   const reviewController = require('../controller/user/reviewController');
+  const contactController = require("../controller/user/contactController")
   const addCountsMiddleware = require("../middleware/addCountsMiddleware")
   const { UserAuth } = require("../middleware/auth");
 
@@ -266,6 +267,10 @@ router.use(addCountsMiddleware)
   router.post("/review/:productId/:orderItemId", UserAuth, reviewController.submitOrderItemReview);
   router.post("/review/order-item/:productId/:orderItemId", UserAuth, reviewController.submitOrderItemReview);
   router.post("/review/submit", UserAuth, reviewController.submitReview);
+
+
+  router.get("/contact",UserAuth, contactController.getContactPage)
+router.post("/send",UserAuth, contactController.sendContactMessage)
 
   // Enhanced review functionality
   router.post("/api/reviews/helpful", UserAuth, productController.markReviewHelpful);
