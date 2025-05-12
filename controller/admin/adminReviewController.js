@@ -5,7 +5,7 @@ const Order = require("../../model/orderSchema");
 const OrderItem = require("../../model/orderItemSchema");
 const mongoose = require("mongoose");
 
-// Get all reviews with filtering and pagination
+
 const getAllReviews = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -17,7 +17,7 @@ const getAllReviews = async (req, res) => {
     const sortOrder = req.query.sortOrder || "desc";
     const search = req.query.search || "";
 
-    // Build query based on filters
+  
     const query = {};
     if (status === "pending") {
       query.status = "Pending";
@@ -32,19 +32,19 @@ const getAllReviews = async (req, res) => {
       query.hidden = true;
     }
 
-    // Search by product name or user name if provided
+   
     if (search) {
       const searchRegex = new RegExp(search, "i");
 
-      // Find products and users that match the search term
+
       const products = await Product.find({ name: searchRegex }).select("_id");
       const productIds = products.map((product) => product._id);
 
-      // Find users by name
+
       const users = await User.find({ fullname: searchRegex }).select("_id");
       const userIds = users.map((user) => user._id);
 
-      // Add to query
+
       query.$or = [
         { productId: { $in: productIds } },
         { userId: { $in: userIds } },
@@ -53,15 +53,15 @@ const getAllReviews = async (req, res) => {
       ];
     }
 
-    // Count total reviews matching the query
+
     const totalReviews = await Review.countDocuments(query);
     const totalPages = Math.ceil(totalReviews / limit);
 
-    // Sort options
+ 
     const sortOptions = {};
     sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
 
-    // Fetch reviews with pagination and sorting
+
     const reviews = await Review.find(query)
       .populate("userId", "fullname email mobile")
       .populate({
@@ -78,14 +78,14 @@ const getAllReviews = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    // Get counts for dashboard
+
     const pendingCount = await Review.countDocuments({ status: "Pending", hidden: false });
     const approvedCount = await Review.countDocuments({ status: "Approved", hidden: false });
     const rejectedCount = await Review.countDocuments({ status: "Rejected", hidden: false });
     const hiddenCount = await Review.countDocuments({ hidden: true });
     const totalCount = await Review.countDocuments();
 
-    // Calculate average rating
+   
     const ratingStats = await Review.aggregate([
       { $match: { status: "Approved", hidden: false } },
       { $group: { _id: null, avgRating: { $avg: "$rating" }, count: { $sum: 1 } } }
@@ -93,15 +93,15 @@ const getAllReviews = async (req, res) => {
 
     const avgRating = ratingStats.length > 0 ? ratingStats[0].avgRating.toFixed(1) : 0;
 
-    // Get rating distribution
+
     const ratingDistribution = await Review.aggregate([
       { $match: { status: "Approved", hidden: false } },
       { $group: { _id: "$rating", count: { $sum: 1 } } },
       { $sort: { _id: -1 } }
     ]);
 
-    // Format rating distribution for easier use in frontend
-    const formattedDistribution = [0, 0, 0, 0, 0]; // Initialize with zeros for 1-5 stars
+
+    const formattedDistribution = [0, 0, 0, 0, 0]; 
     ratingDistribution.forEach(item => {
       formattedDistribution[item._id - 1] = item.count;
     });
@@ -145,7 +145,6 @@ const getAllReviews = async (req, res) => {
   }
 };
 
-// Get a single review by ID
 const getReviewById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -183,7 +182,7 @@ const getReviewById = async (req, res) => {
   }
 };
 
-// Approve a review
+
 const approveReview = async (req, res) => {
   try {
     const { id } = req.params;
@@ -196,7 +195,7 @@ const approveReview = async (req, res) => {
       });
     }
 
-    // Update review status
+   
     review.status = "Approved";
     review.hidden = false;
     review.rejectionReason = "";
@@ -204,7 +203,7 @@ const approveReview = async (req, res) => {
 
     await review.save();
 
-    // Update product ratings
+
     await updateProductRatings(review.productId);
 
     return res.status(200).json({
@@ -220,7 +219,7 @@ const approveReview = async (req, res) => {
   }
 };
 
-// Reject a review
+
 const rejectReview = async (req, res) => {
   try {
     const { id } = req.params;
@@ -241,14 +240,14 @@ const rejectReview = async (req, res) => {
       });
     }
 
-    // Update review status
+   
     review.status = "Rejected";
     review.rejectionReason = reason;
     review.isVerified = false;
 
     await review.save();
 
-    // Update product ratings if the review was previously approved
+
     if (review.status === "Approved") {
       await updateProductRatings(review.productId);
     }
@@ -266,7 +265,6 @@ const rejectReview = async (req, res) => {
   }
 };
 
-// Hide a review
 const hideReview = async (req, res) => {
   try {
     const { id } = req.params;
@@ -279,12 +277,12 @@ const hideReview = async (req, res) => {
       });
     }
 
-    // Update review visibility
+
     review.hidden = true;
 
     await review.save();
 
-    // Update product ratings if the review was previously approved
+
     if (review.status === "Approved") {
       await updateProductRatings(review.productId);
     }
@@ -302,7 +300,7 @@ const hideReview = async (req, res) => {
   }
 };
 
-// Show a hidden review
+
 const showReview = async (req, res) => {
   try {
     const { id } = req.params;
@@ -315,12 +313,12 @@ const showReview = async (req, res) => {
       });
     }
 
-    // Update review visibility
+   
     review.hidden = false;
 
     await review.save();
 
-    // Update product ratings if the review is approved
+ 
     if (review.status === "Approved") {
       await updateProductRatings(review.productId);
     }
@@ -338,7 +336,7 @@ const showReview = async (req, res) => {
   }
 };
 
-// Delete a review
+
 const deleteReview = async (req, res) => {
   try {
     const { id } = req.params;
@@ -354,7 +352,7 @@ const deleteReview = async (req, res) => {
     const productId = review.productId;
     await Review.findByIdAndDelete(id);
 
-    // Update product ratings if the review was approved and visible
+
     if (review.status === "Approved" && !review.hidden) {
       await updateProductRatings(productId);
     }
@@ -372,24 +370,22 @@ const deleteReview = async (req, res) => {
   }
 };
 
-// Helper function to update product ratings
+
 async function updateProductRatings(productId) {
   try {
     const product = await Product.findById(productId);
     if (!product) return;
 
-    // Get all approved and visible reviews for this product
+
     const approvedReviews = await Review.find({
       productId: productId,
       status: "Approved",
       hidden: false
     });
 
-    // Calculate average rating
     const totalRating = approvedReviews.reduce((sum, review) => sum + review.rating, 0);
     const averageRating = approvedReviews.length > 0 ? totalRating / approvedReviews.length : 0;
 
-    // Update product ratings
     product.ratings = {
       average: parseFloat(averageRating.toFixed(1)),
       count: approvedReviews.length
@@ -401,37 +397,37 @@ async function updateProductRatings(productId) {
   }
 }
 
-// Get review statistics for admin dashboard
+
 const getReviewStatistics = async (req, res) => {
   try {
-    // Get counts
+
     const totalReviews = await Review.countDocuments();
     const pendingReviews = await Review.countDocuments({ status: "Pending", hidden: false });
     const approvedReviews = await Review.countDocuments({ status: "Approved", hidden: false });
     const rejectedReviews = await Review.countDocuments({ status: "Rejected", hidden: false });
     const hiddenReviews = await Review.countDocuments({ hidden: true });
 
-    // Get average rating
+
     const averageRating = await Review.aggregate([
       { $match: { status: "Approved", hidden: false } },
       { $group: { _id: null, average: { $avg: "$rating" } } }
     ]);
 
-    // Get rating distribution
+
     const ratingDistribution = await Review.aggregate([
       { $match: { status: "Approved", hidden: false } },
       { $group: { _id: "$rating", count: { $sum: 1 } } },
       { $sort: { _id: -1 } }
     ]);
 
-    // Get recent reviews
+
     const recentReviews = await Review.find({ hidden: false })
       .populate("userId", "fullname")
       .populate("productId", "name")
       .sort({ createdAt: -1 })
       .limit(5);
 
-    // Get reviews per day for the last 30 days
+  
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -446,7 +442,7 @@ const getReviewStatistics = async (req, res) => {
       { $sort: { _id: 1 } }
     ]);
 
-    // Get most reviewed products
+ 
     const mostReviewedProducts = await Review.aggregate([
       { $match: { status: "Approved", hidden: false } },
       { $group: { _id: "$productId", count: { $sum: 1 }, avgRating: { $avg: "$rating" } } },
@@ -454,11 +450,11 @@ const getReviewStatistics = async (req, res) => {
       { $limit: 5 }
     ]);
 
-    // Populate product details
+  
     const productIds = mostReviewedProducts.map(item => item._id);
     const products = await Product.find({ _id: { $in: productIds } }).select("name images");
 
-    // Map product details to results
+ 
     const productsWithDetails = mostReviewedProducts.map(item => {
       const product = products.find(p => p._id.toString() === item._id.toString());
       return {
@@ -494,12 +490,12 @@ const getReviewStatistics = async (req, res) => {
   }
 };
 
-// Export reviews as CSV
+
 const exportReviewsCSV = async (req, res) => {
   try {
     const { status, search } = req.query;
     
-    // Build query based on filters
+   
     const query = {};
     if (status === "pending") {
       query.status = "Pending";
@@ -514,19 +510,19 @@ const exportReviewsCSV = async (req, res) => {
       query.hidden = true;
     }
     
-    // Search by product name or user name if provided
+
     if (search) {
       const searchRegex = new RegExp(search, "i");
       
-      // Find products and users that match the search term
+   
       const products = await Product.find({ name: searchRegex }).select("_id");
       const productIds = products.map((product) => product._id);
       
-      // Find users by name
+     
       const users = await User.find({ fullname: searchRegex }).select("_id");
       const userIds = users.map((user) => user._id);
       
-      // Add to query
+ 
       query.$or = [
         { productId: { $in: productIds } },
         { userId: { $in: userIds } },
@@ -535,14 +531,14 @@ const exportReviewsCSV = async (req, res) => {
       ];
     }
     
-    // Fetch reviews
+
     const reviews = await Review.find(query)
       .populate("userId", "fullname email")
       .populate("productId", "name")
       .populate("orderId", "orderNumber")
       .sort({ createdAt: -1 });
     
-    // Create CSV content
+
     let csvContent = "Product,Customer,Email,Rating,Title,Review,Date,Status\n";
     
     reviews.forEach(review => {
@@ -550,7 +546,7 @@ const exportReviewsCSV = async (req, res) => {
       const customerName = review.userId?.fullname || 'Unknown User';
       const customerEmail = review.userId?.email || 'N/A';
       const rating = review.rating;
-      // Escape quotes in text
+
       const title = review.title ? `"${review.title.replace(/"/g, '""')}"` : '';
       const reviewText = review.description ? `"${review.description.replace(/"/g, '""')}"` : '';
       const date = new Date(review.createdAt).toLocaleDateString();
@@ -563,7 +559,7 @@ const exportReviewsCSV = async (req, res) => {
       csvContent += `${productName},${customerName},${customerEmail},${rating},${title},${reviewText},${date},${status}\n`;
     });
     
-    // Set headers for CSV download
+ 
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename=reviews-${new Date().toISOString().slice(0,10)}.csv`);
     
@@ -575,12 +571,12 @@ const exportReviewsCSV = async (req, res) => {
   }
 };
 
-// Export reviews as Excel
+
 const exportReviewsExcel = async (req, res) => {
   try {
     const { status, search } = req.query;
     
-    // Build query based on filters
+
     const query = {};
     if (status === "pending") {
       query.status = "Pending";
@@ -595,19 +591,19 @@ const exportReviewsExcel = async (req, res) => {
       query.hidden = true;
     }
     
-    // Search by product name or user name if provided
+ 
     if (search) {
       const searchRegex = new RegExp(search, "i");
       
-      // Find products and users that match the search term
+    
       const products = await Product.find({ name: searchRegex }).select("_id");
       const productIds = products.map((product) => product._id);
       
-      // Find users by name
+     
       const users = await User.find({ fullname: searchRegex }).select("_id");
       const userIds = users.map((user) => user._id);
       
-      // Add to query
+     
       query.$or = [
         { productId: { $in: productIds } },
         { userId: { $in: userIds } },
@@ -616,19 +612,19 @@ const exportReviewsExcel = async (req, res) => {
       ];
     }
     
-    // Fetch reviews
+  
     const reviews = await Review.find(query)
       .populate("userId", "fullname email")
       .populate("productId", "name")
       .populate("orderId", "orderNumber")
       .sort({ createdAt: -1 });
     
-    // Create Excel workbook
+
     const excel = require('exceljs');
     const workbook = new excel.Workbook();
     const worksheet = workbook.addWorksheet('Reviews');
     
-    // Add headers
+    
     worksheet.columns = [
       { header: 'Product', key: 'product', width: 30 },
       { header: 'Customer', key: 'customer', width: 20 },
@@ -641,7 +637,7 @@ const exportReviewsExcel = async (req, res) => {
       { header: 'Status', key: 'status', width: 15 }
     ];
     
-    // Add data
+
     reviews.forEach(review => {
       let status = review.status;
       if (review.hidden) {
@@ -661,7 +657,7 @@ const exportReviewsExcel = async (req, res) => {
       });
     });
     
-    // Style headers
+
     worksheet.getRow(1).font = { bold: true };
     worksheet.getRow(1).fill = {
       type: 'pattern',
@@ -673,11 +669,11 @@ const exportReviewsExcel = async (req, res) => {
       bold: true
     };
     
-    // Set response headers
+ 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename=reviews-${new Date().toISOString().slice(0,10)}.xlsx`);
     
-    // Write to response
+
     await workbook.xlsx.write(res);
     res.end();
   } catch (error) {
@@ -686,7 +682,7 @@ const exportReviewsExcel = async (req, res) => {
   }
 };
 
-// Verify a review
+
 const verifyReview = async (req, res) => {
   try {
     const { id } = req.params;
@@ -715,7 +711,6 @@ const verifyReview = async (req, res) => {
   }
 };
 
-// Bulk approve reviews
 const bulkApproveReviews = async (req, res) => {
   try {
     const { ids } = req.body;
@@ -727,7 +722,6 @@ const bulkApproveReviews = async (req, res) => {
       });
     }
 
-    // Update all reviews
     const result = await Review.updateMany(
       { _id: { $in: ids } },
       { 
@@ -740,10 +734,10 @@ const bulkApproveReviews = async (req, res) => {
       }
     );
 
-    // Get unique product IDs to update ratings
+
     const reviews = await Review.find({ _id: { $in: ids } }).distinct("productId");
     
-    // Update ratings for each product
+
     for (const productId of reviews) {
       await updateProductRatings(productId);
     }
@@ -761,7 +755,7 @@ const bulkApproveReviews = async (req, res) => {
   }
 };
 
-// Bulk hide reviews
+
 const bulkHideReviews = async (req, res) => {
   try {
     const { ids } = req.body;
@@ -773,16 +767,15 @@ const bulkHideReviews = async (req, res) => {
       });
     }
 
-    // Update all reviews
+
     const result = await Review.updateMany(
       { _id: { $in: ids } },
       { $set: { hidden: true } }
     );
 
-    // Get unique product IDs to update ratings
+
     const reviews = await Review.find({ _id: { $in: ids } }).distinct("productId");
     
-    // Update ratings for each product
     for (const productId of reviews) {
       await updateProductRatings(productId);
     }

@@ -883,50 +883,49 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // Header state management
+
   const header = document.querySelector("header");
 
-  // Set initial header state
   updateHeaderState();
 
-  // Update header state on scroll
+
   function updateHeaderState() {
-    // Check if we're at the top of the page
+   
     const isAtTop = window.scrollY <= 50;
 
-    // Get the background color behind the header
+
     const bgColor = getBackgroundColorBehindHeader();
 
-    // Remove all state classes first
+
     header.classList.remove("transparent", "dark", "light", "scrolled");
 
     if (isAtTop) {
-      // At the top of the page - use transparent with text color based on background
+    
       header.classList.add("transparent");
 
-      // If the background is light, add the light class for dark text
+     
       if (isLightColor(bgColor)) {
         header.classList.add("light");
       } else {
         header.classList.add("dark");
       }
     } else {
-      // Scrolled down - use solid background
+     
       header.classList.add("scrolled");
-      header.classList.add("light"); // Default to light background with dark text
+      header.classList.add("light"); 
     }
   }
 
-  // Function to determine if a color is light or dark
+
   function isLightColor(color) {
-    // Default to dark if we can't determine
+  
     if (!color) return false;
 
-    // Extract RGB components
+ 
     let r, g, b;
 
     if (color.startsWith("rgb")) {
-      // Handle rgb() format
+
       const match = color.match(/rgba?$$(\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?$$/);
       if (match) {
         r = Number.parseInt(match[1]);
@@ -934,16 +933,14 @@ document.addEventListener("DOMContentLoaded", () => {
         b = Number.parseInt(match[3]);
       }
     } else if (color.startsWith("#")) {
-      // Handle hex format
+
       const hex = color.replace("#", "");
       r = Number.parseInt(hex.substr(0, 2), 16);
       g = Number.parseInt(hex.substr(2, 2), 16);
       b = Number.parseInt(hex.substr(4, 2), 16);
     }
 
-    // Calculate perceived brightness using the formula
-    // (299*R + 587*G + 114*B) / 1000
-    // Values > 125 are considered light
+
     if (r !== undefined && g !== undefined && b !== undefined) {
       const brightness = (299 * r + 587 * g + 114 * b) / 1000;
       return brightness > 125;
@@ -952,9 +949,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return false;
   }
 
-  // Function to get the background color behind the header
+
   function getBackgroundColorBehindHeader() {
-    // Check if there's a data attribute specifying the background type
+
     const bgType = document.body.getAttribute("data-header-bg") || "dark";
 
     if (bgType === "light") {
@@ -964,15 +961,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Listen for scroll events
+
   window.addEventListener("scroll", updateHeaderState);
 
-  // Mobile menu toggle
+
   const menuToggle = document.querySelector(".menu-toggle");
   const navMenu = document.querySelector(".nav-menu");
 
   if (menuToggle && navMenu) {
-    // Create overlay element if it doesn't exist
+
     let overlay = document.querySelector(".menu-overlay");
     if (!overlay) {
       overlay = document.createElement("div");
@@ -985,14 +982,14 @@ document.addEventListener("DOMContentLoaded", () => {
       menuToggle.classList.toggle("active");
       overlay.classList.toggle("active");
 
-      // Toggle body scroll
+     
       if (navMenu.classList.contains("active")) {
         document.body.style.overflow = "hidden";
       } else {
         document.body.style.overflow = "";
       }
 
-      // Toggle menu icon
+   
       if (navMenu.classList.contains("active")) {
         menuToggle.innerHTML = '<i class="fas fa-times"></i>';
       } else {
@@ -1000,7 +997,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Close menu when clicking on overlay
+
     overlay.addEventListener("click", () => {
       navMenu.classList.remove("active");
       menuToggle.classList.remove("active");
@@ -1010,7 +1007,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Set active state for nav items
   const navLinks = document.querySelectorAll('.nav-link');
   const currentPath = window.location.pathname;
   
@@ -1020,20 +1016,20 @@ document.addEventListener("DOMContentLoaded", () => {
       link.parentElement.classList.add('active');
     }
     
-    // Add click handler to set active state with single click
+
     link.addEventListener('click', function(e) {
-      // Skip for cart and wishlist links as they'll navigate away
+
       if (this.id === 'cart-link' || this.id === 'wishlist-link') return;
       
-      // Remove active class from all nav items
+  
       document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
       });
       
-      // Add active class to clicked nav item
+  
       this.parentElement.classList.add('active');
       
-      // Add ripple effect on click
+
       if (this.classList.contains('position-relative')) {
         const rect = this.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -1053,27 +1049,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Profile dropdown functionality
+
   const profileIcon = document.querySelector(".nav-buttons .fa-user-circle, .nav-buttons .fa-user");
 
   if (profileIcon) {
-    // Find the parent anchor element
+    
     const profileLink = profileIcon.closest("a");
 
     if (profileLink) {
-      // Find the parent container (likely a div with class nav-buttons)
+
       const parentContainer = profileLink.parentElement;
 
       if (parentContainer) {
-        // Check if dropdown already exists
+   
         let dropdownContent = parentContainer.querySelector(".dropdown-content");
 
-        // Create dropdown if it doesn't exist
         if (!dropdownContent) {
-          // Add dropdown class to parent
+
           parentContainer.classList.add("dropdown");
 
-          // Create dropdown content
           dropdownContent = document.createElement("div");
           dropdownContent.className = "dropdown-content";
           dropdownContent.innerHTML = `
@@ -1083,20 +1077,20 @@ document.addEventListener("DOMContentLoaded", () => {
             <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
           `;
 
-          // Append dropdown to parent
+        
           parentContainer.appendChild(dropdownContent);
         }
 
-        // Toggle dropdown on click
+       
         profileLink.addEventListener("click", (e) => {
           e.preventDefault();
-          e.stopPropagation(); // Prevent event from bubbling up
+          e.stopPropagation(); 
           dropdownContent.classList.toggle("show");
         });
 
-        // Close dropdown when clicking outside
+    
         document.addEventListener("click", (e) => {
-          // Check if click is outside dropdown and profile icon
+         
           if (!dropdownContent.contains(e.target) && !profileLink.contains(e.target)) {
             dropdownContent.classList.remove("show");
           }
@@ -1105,10 +1099,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Close dropdowns when pressing escape key
+
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
-      // Close mobile menu if open
+   
       if (navMenu && navMenu.classList.contains("active")) {
         navMenu.classList.remove("active");
         if (menuToggle) {
@@ -1120,7 +1114,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.style.overflow = "";
       }
 
-      // Close any open dropdowns
+
       const openDropdowns = document.querySelectorAll(".dropdown-content.show");
       openDropdowns.forEach((dropdown) => {
         dropdown.classList.remove("show");
@@ -1128,7 +1122,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Add accessibility support for dropdowns
+
   const dropdownLinks = document.querySelectorAll(".dropdown > a");
   dropdownLinks.forEach((link) => {
     link.setAttribute("aria-haspopup", "true");
@@ -1140,15 +1134,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // ======= LIVE CART & WISHLIST COUNT UPDATES =======
-  
-  // Initialize the cart and wishlist badge system
+
   function initCartWishlistSystem() {
-    // Get the badge elements
+
     const cartBadge = document.getElementById('cart-badge');
     const wishlistBadge = document.getElementById('wishlist-badge');
     
-    // Add initial animation class if badges exist
+    
     if (cartBadge) {
       cartBadge.classList.add('new-item');
       setTimeout(() => cartBadge.classList.remove('new-item'), 600);
@@ -1159,7 +1151,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => wishlistBadge.classList.remove('new-item'), 600);
     }
 
-    // Function to create particles
+
     function createParticles(element, count = 10) {
       if (!element) return;
       
@@ -1171,30 +1163,30 @@ document.addEventListener("DOMContentLoaded", () => {
         const particle = document.createElement('div');
         particle.className = 'particle';
         
-        // Random position around the badge
+
         const angle = Math.random() * Math.PI * 2;
         const distance = 5 + Math.random() * 15;
         const x = centerX + Math.cos(angle) * distance;
         const y = centerY + Math.sin(angle) * distance;
         
-        // Random travel distance
+     
         const tx = (Math.random() - 0.5) * 100;
         const ty = (Math.random() - 0.5) * 100;
         
-        // Set particle styles
+      
         particle.style.left = `${x}px`;
         particle.style.top = `${y}px`;
         particle.style.setProperty('--tx', `${tx}px`);
         particle.style.setProperty('--ty', `${ty}px`);
         
-        // Random color
+      
         const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981'];
         particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
         
-        // Add to body
+
         document.body.appendChild(particle);
         
-        // Remove after animation
+        
         setTimeout(() => {
           if (particle.parentElement) {
             particle.parentElement.removeChild(particle);
@@ -1203,15 +1195,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Function to update badge count with animation
+   
     window.updateBadgeCount = function(badgeId, count) {
-      // Get the badge element
+
       let badge = document.getElementById(badgeId);
       const parent = badgeId === 'cart-badge' 
         ? document.querySelector('.nav-link[title="Cart"]')
         : document.querySelector('.nav-link[title="Wishlist"]');
       
-      // If badge doesn't exist but count > 0, create it
+
       if (!badge && count > 0 && parent) {
         badge = document.createElement('span');
         badge.className = 'count-badge new-item';
@@ -1219,54 +1211,54 @@ document.addEventListener("DOMContentLoaded", () => {
         badge.textContent = count;
         parent.appendChild(badge);
         
-        // Create particles for new badge
+
         createParticles(badge, 15);
         return;
       }
       
-      // If badge doesn't exist and count is 0, nothing to do
+     
       if (!badge) return;
       
       const currentCount = parseInt(badge.textContent || '0');
       
-      // If count increased, add the increased animation
+      
       if (count > currentCount) {
-        // Remove any existing animations
+        
         badge.classList.remove('increased', 'new-item', 'flip');
         
-        // Force reflow to restart animation
+      
         void badge.offsetWidth;
         
-        // Add increased animation
+
         badge.classList.add('increased');
         
-        // Create particles
+   
         createParticles(badge, 15);
         
-        // Create floating notification
+
         const notification = document.createElement('div');
         notification.className = 'floating-notification';
         notification.textContent = '+' + (count - currentCount);
         
-        // Add to the parent of the badge
+    
         parent.appendChild(notification);
         
-        // Remove notification after animation completes
+
         setTimeout(() => {
           if (notification.parentElement) {
             notification.parentElement.removeChild(notification);
           }
         }, 1500);
         
-        // Remove animation class after it completes
+       
         setTimeout(() => {
           badge.classList.remove('increased');
         }, 1000);
       } else if (count < currentCount && count > 0) {
-        // If count decreased but still > 0, add flip animation
+    
         badge.classList.remove('increased', 'new-item', 'flip');
         
-        // Force reflow to restart animation
+   
         void badge.offsetWidth;
         
         badge.classList.add('flip');
@@ -1276,14 +1268,13 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 600);
       }
       
-      // Update the badge text
       badge.textContent = count;
       
-      // If count is 0, hide the badge
+
       if (count <= 0) {
         badge.style.display = 'none';
         
-        // Optional: remove badge after fade out
+    
         setTimeout(() => {
           if (badge.parentElement) {
             badge.parentElement.removeChild(badge);
@@ -1294,9 +1285,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    // Function to show toast notification
+    
     function showToast(message, type = 'success') {
-      // Create toast element if it doesn't exist
+   
       let toast = document.querySelector('.toast-notification');
       if (!toast) {
         toast = document.createElement('div');
@@ -1304,7 +1295,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(toast);
       }
       
-      // Set message and type
+    
       toast.textContent = message;
       toast.className = 'toast-notification';
       if (type === 'error') {
@@ -1313,44 +1304,42 @@ document.addEventListener("DOMContentLoaded", () => {
         toast.style.backgroundColor = 'rgba(16, 185, 129, 0.9)';
       }
       
-      // Show toast
+      
       setTimeout(() => {
         toast.classList.add('show');
       }, 10);
       
-      // Hide toast after 3 seconds
       setTimeout(() => {
         toast.classList.remove('show');
       }, 3000);
     }
 
-    // Function to create flying item animation
+
     function createFlyingItem(fromElement, toElement) {
       if (!fromElement || !toElement) return;
       
-      // Create flying element
+
       const flyingItem = document.createElement('div');
       flyingItem.className = 'flying-item';
       
-      // Position at start element
+    
       const fromRect = fromElement.getBoundingClientRect();
       flyingItem.style.top = `${fromRect.top + fromRect.height/2 - 10}px`;
       flyingItem.style.left = `${fromRect.left + fromRect.width/2 - 10}px`;
       
-      // Add to body
+ 
       document.body.appendChild(flyingItem);
       
-      // Force reflow
+
       void flyingItem.offsetWidth;
       
-      // Animate to destination
+
       const toRect = toElement.getBoundingClientRect();
       flyingItem.style.top = `${toRect.top + toRect.height/2 - 10}px`;
       flyingItem.style.left = `${toRect.left + toRect.width/2 - 10}px`;
       flyingItem.style.opacity = '0';
       flyingItem.style.transform = 'scale(0.3)';
       
-      // Remove after animation
       setTimeout(() => {
         if (flyingItem.parentElement) {
           flyingItem.parentElement.removeChild(flyingItem);
@@ -1358,14 +1347,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 800);
     }
 
-    // ===== INTERCEPT ALL ADD TO CART/WISHLIST BUTTONS =====
     
-    // 1. Intercept all forms that add to cart or wishlist
+    
     function interceptForms() {
       document.addEventListener('submit', function(e) {
         const form = e.target;
         
-        // Check if this is an add-to-cart or add-to-wishlist form
+      
         const formAction = form.getAttribute('action') || '';
         const isCartForm = formAction.includes('/cart/add') || 
                           formAction.includes('/add-to-cart') || 
@@ -1376,9 +1364,8 @@ document.addEventListener("DOMContentLoaded", () => {
                               form.classList.contains('add-to-wishlist-form');
         
         if (isCartForm || isWishlistForm) {
-          e.preventDefault(); // Prevent normal form submission
+          e.preventDefault(); 
           
-          // Show loading state if there's a submit button
           const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
           const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
           
@@ -1387,10 +1374,10 @@ document.addEventListener("DOMContentLoaded", () => {
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
           }
           
-          // Prepare form data
+         
           const formData = new FormData(form);
           
-          // Send AJAX request
+  
           fetch(form.action, {
             method: 'POST',
             body: formData,
@@ -1405,7 +1392,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return response.json();
           })
           .then(data => {
-            // Reset button state
+      
             if (submitBtn) {
               submitBtn.innerHTML = '<i class="fas fa-check"></i> Added!';
               setTimeout(() => {
@@ -1414,33 +1401,33 @@ document.addEventListener("DOMContentLoaded", () => {
               }, 2000);
             }
             
-            // Update the appropriate badge
+   
             if (isCartForm) {
-              // Get current count or default to 0
+             
               const currentCount = parseInt(document.getElementById('cart-badge')?.textContent || '0');
-              // Use data.count if available, otherwise increment by 1
+             
               const newCount = data.count !== undefined ? data.count : currentCount + 1;
               updateBadgeCount('cart-badge', newCount);
               
-              // Show success message
+     
               showToast('Item added to cart', 'success');
               
-              // Create flying animation
+      
               const cartLink = document.getElementById('cart-link');
               if (cartLink) {
                 createFlyingItem(submitBtn || form, cartLink);
               }
             } else {
-              // Get current count or default to 0
+          
               const currentCount = parseInt(document.getElementById('wishlist-badge')?.textContent || '0');
-              // Use data.count if available, otherwise increment by 1
+       
               const newCount = data.count !== undefined ? data.count : currentCount + 1;
               updateBadgeCount('wishlist-badge', newCount);
               
-              // Show success message
+    
               showToast('Item added to wishlist', 'success');
               
-              // Create flying animation
+     
               const wishlistLink = document.getElementById('wishlist-link');
               if (wishlistLink) {
                 createFlyingItem(submitBtn || form, wishlistLink);
@@ -1450,7 +1437,7 @@ document.addEventListener("DOMContentLoaded", () => {
           .catch(error => {
             console.error('Error adding item:', error);
             
-            // Reset button state
+   
             if (submitBtn) {
               submitBtn.innerHTML = '<i class="fas fa-times"></i> Failed';
               setTimeout(() => {
@@ -1459,17 +1446,17 @@ document.addEventListener("DOMContentLoaded", () => {
               }, 2000);
             }
             
-            // Show error message
+         
             showToast('Failed to add item. Please try again.', 'error');
           });
         }
       });
     }
     
-    // 2. Intercept all add-to-cart and add-to-wishlist buttons
+    
     function interceptButtons() {
       document.addEventListener('click', function(e) {
-        // Find closest button or link that might be an add button
+
         const addButton = e.target.closest('button[data-action="add-to-cart"], a[data-action="add-to-cart"], .add-to-cart-btn, button[data-action="add-to-wishlist"], a[data-action="add-to-wishlist"], .add-to-wishlist-btn');
         
         if (!addButton) return;
@@ -1477,11 +1464,11 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         e.stopPropagation();
         
-        // Determine if this is cart or wishlist
+
         const isCart = addButton.getAttribute('data-action') === 'add-to-cart' || 
                       addButton.classList.contains('add-to-cart-btn');
         
-        // Get product ID and quantity
+    
         const productId = addButton.getAttribute('data-id') || 
                          addButton.getAttribute('data-product-id');
         const quantity = addButton.getAttribute('data-quantity') || 1;
@@ -1491,20 +1478,18 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
         
-        // Show loading state
         const originalText = addButton.innerHTML;
         addButton.disabled = true;
         addButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
         
-        // Determine endpoint
+       
         const endpoint = isCart ? '/cart/add' : '/wishlist/add';
         
-        // Prepare data
         const formData = new FormData();
         formData.append('productId', productId);
         formData.append('quantity', quantity);
         
-        // Send AJAX request
+    
         fetch(endpoint, {
           method: 'POST',
           body: formData,
@@ -1519,43 +1504,42 @@ document.addEventListener("DOMContentLoaded", () => {
           return response.json();
         })
         .then(data => {
-          // Show success state
+
           addButton.innerHTML = '<i class="fas fa-check"></i> Added!';
           
-          // Update the appropriate badge
+   
           if (isCart) {
-            // Get current count or default to 0
+           
             const currentCount = parseInt(document.getElementById('cart-badge')?.textContent || '0');
-            // Use data.count if available, otherwise increment by 1
+
             const newCount = data.count !== undefined ? data.count : currentCount + 1;
             updateBadgeCount('cart-badge', newCount);
             
-            // Show success message
+            
             showToast('Item added to cart', 'success');
             
-            // Create flying animation
+      
             const cartLink = document.getElementById('cart-link');
             if (cartLink) {
               createFlyingItem(addButton, cartLink);
             }
           } else {
-            // Get current count or default to 0
+    
             const currentCount = parseInt(document.getElementById('wishlist-badge')?.textContent || '0');
-            // Use data.count if available, otherwise increment by 1
+
             const newCount = data.count !== undefined ? data.count : currentCount + 1;
             updateBadgeCount('wishlist-badge', newCount);
-            
-            // Show success message
+
             showToast('Item added to wishlist', 'success');
             
-            // Create flying animation
+
             const wishlistLink = document.getElementById('wishlist-link');
             if (wishlistLink) {
               createFlyingItem(addButton, wishlistLink);
             }
           }
           
-          // Reset button after delay
+    
           setTimeout(() => {
             addButton.disabled = false;
             addButton.innerHTML = originalText;
@@ -1564,13 +1548,12 @@ document.addEventListener("DOMContentLoaded", () => {
         .catch(error => {
           console.error('Error adding item:', error);
           
-          // Show error state
+  
           addButton.innerHTML = '<i class="fas fa-times"></i> Failed';
           
-          // Show error message
+
           showToast('Failed to add item. Please try again.', 'error');
-          
-          // Reset button after delay
+     
           setTimeout(() => {
             addButton.disabled = false;
             addButton.innerHTML = originalText;
@@ -1579,10 +1562,10 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
     
-    // 3. Intercept all remove buttons
+    
     function interceptRemoveButtons() {
       document.addEventListener('click', function(e) {
-        // Find closest button or link that might be a remove button
+     
         const removeButton = e.target.closest('button[data-action="remove-from-cart"], a[data-action="remove-from-cart"], .remove-from-cart-btn, button[data-action="remove-from-wishlist"], a[data-action="remove-from-wishlist"], .remove-from-wishlist-btn, a[href*="/cart/remove"], a[href*="/wishlist/remove"]');
         
         if (!removeButton) return;
@@ -1590,16 +1573,16 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         e.stopPropagation();
         
-        // Determine if this is cart or wishlist
+
         const isCart = removeButton.getAttribute('data-action') === 'remove-from-cart' || 
                       removeButton.classList.contains('remove-from-cart-btn') ||
                       (removeButton.getAttribute('href') && removeButton.getAttribute('href').includes('/cart/remove'));
         
-        // Get item ID
+
         let itemId = removeButton.getAttribute('data-id') || 
                     removeButton.getAttribute('data-item-id');
                     
-        // If no data-id, try to extract from href
+
         if (!itemId && removeButton.getAttribute('href')) {
           const hrefParts = removeButton.getAttribute('href').split('/');
           itemId = hrefParts[hrefParts.length - 1];
@@ -1610,17 +1593,17 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
         
-        // Show loading state if possible
+
         if (removeButton.tagName === 'BUTTON') {
           const originalText = removeButton.innerHTML;
           removeButton.disabled = true;
           removeButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         }
         
-        // Determine endpoint
+    
         const endpoint = isCart ? `/cart/remove/${itemId}` : `/wishlist/remove/${itemId}`;
         
-        // Send AJAX request
+   
         fetch(endpoint, {
           method: 'POST',
           headers: {
@@ -1635,7 +1618,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return response.json();
         })
         .then(data => {
-          // Update the appropriate badge
+
           if (isCart) {
             updateBadgeCount('cart-badge', data.count || 0);
             showToast('Item removed from cart', 'success');
@@ -1644,7 +1627,7 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast('Item removed from wishlist', 'success');
           }
           
-          // If we're on the cart or wishlist page, remove the item from the DOM
+    
           const itemElement = removeButton.closest('.cart-item, .wishlist-item, tr, .product-item');
           if (itemElement) {
             itemElement.style.opacity = '0';
@@ -1674,28 +1657,26 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .catch(error => {
           console.error('Error removing item:', error);
-          
-          // Reset button if it's a button
+
           if (removeButton.tagName === 'BUTTON') {
             removeButton.disabled = false;
             removeButton.innerHTML = originalText || '<i class="fas fa-times"></i>';
           }
-          
-          // Show error message
+
           showToast('Failed to remove item. Please try again.', 'error');
         });
       });
     }
     
-    // 4. Intercept quantity changes
+   
     function interceptQuantityChanges() {
       document.addEventListener('change', function(e) {
-        // Check if this is a quantity input in cart
+       
         if (e.target.matches('input[type="number"][name="quantity"], .quantity-input')) {
           const quantityInput = e.target;
           const form = quantityInput.closest('form');
           
-          // Get item ID
+      
           let itemId;
           if (form) {
             itemId = form.querySelector('input[name="itemId"]')?.value;
@@ -1713,7 +1694,7 @@ document.addEventListener("DOMContentLoaded", () => {
           
           const quantity = quantityInput.value;
           
-          // Show loading indicator near the input
+
           let loadingIndicator = document.createElement('span');
           loadingIndicator.className = 'quantity-loading';
           loadingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
@@ -1722,7 +1703,6 @@ document.addEventListener("DOMContentLoaded", () => {
           loadingIndicator.style.top = '50%';
           loadingIndicator.style.transform = 'translateY(-50%)';
           
-          // Make parent relative if it's not already
           const parent = quantityInput.parentElement;
           const originalPosition = parent.style.position;
           if (parent.style.position !== 'relative') {
@@ -1730,8 +1710,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           
           parent.appendChild(loadingIndicator);
-          
-          // Send AJAX request to update quantity
+
           fetch('/cart/update', {
             method: 'POST',
             headers: {
@@ -1747,19 +1726,19 @@ document.addEventListener("DOMContentLoaded", () => {
             return response.json();
           })
           .then(data => {
-            // Remove loading indicator
+   
             parent.removeChild(loadingIndicator);
             parent.style.position = originalPosition;
             
-            // Update cart count badge
+          
             updateBadgeCount('cart-badge', data.count || 0);
             
-            // Update item subtotal
+           
             const subtotalElement = quantityInput.closest('tr, .cart-item')?.querySelector('.subtotal, .item-subtotal');
             if (subtotalElement && data.subtotal) {
               subtotalElement.textContent = data.subtotal;
               
-              // Add a brief highlight effect to show the price changed
+     
               subtotalElement.style.transition = 'background-color 0.5s';
               subtotalElement.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
               setTimeout(() => {
@@ -1767,13 +1746,12 @@ document.addEventListener("DOMContentLoaded", () => {
               }, 800);
             }
             
-            // Update cart total if it exists
+     
             if (data.total) {
               const totalElements = document.querySelectorAll('.cart-total, .total-price, .cart-subtotal');
               totalElements.forEach(el => {
                 el.textContent = data.total;
                 
-                // Add highlight effect
                 el.style.transition = 'background-color 0.5s';
                 el.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
                 setTimeout(() => {
@@ -1782,27 +1760,27 @@ document.addEventListener("DOMContentLoaded", () => {
               });
             }
             
-            // Show success message
+            
             showToast('Cart updated', 'success');
           })
           .catch(error => {
             console.error('Error updating quantity:', error);
             
-            // Remove loading indicator
+        
             parent.removeChild(loadingIndicator);
             parent.style.position = originalPosition;
             
-            // Show error message
+      
             showToast('Failed to update cart. Please try again.', 'error');
             
-            // Reset to previous value
+         
             quantityInput.value = quantityInput.defaultValue;
           });
         }
       });
     }
     
-    // 5. Setup direct API for updating counts from anywhere in your code
+
     window.updateCartCount = function(count) {
       updateBadgeCount('cart-badge', count);
     };
@@ -1811,7 +1789,6 @@ document.addEventListener("DOMContentLoaded", () => {
       updateBadgeCount('wishlist-badge', count);
     };
     
-    // 6. Listen for custom events
     document.addEventListener('cartUpdated', function(e) {
       if (e.detail && typeof e.detail.count !== 'undefined') {
         updateBadgeCount('cart-badge', e.detail.count);
@@ -1823,15 +1800,13 @@ document.addEventListener("DOMContentLoaded", () => {
         updateBadgeCount('wishlist-badge', e.detail.count);
       }
     });
-    
-    // Initialize all interceptors
+
     interceptForms();
     interceptButtons();
     interceptRemoveButtons();
     interceptQuantityChanges();
   }
-  
-  // Initialize the cart and wishlist system
+
   initCartWishlistSystem();
 });
 </script>

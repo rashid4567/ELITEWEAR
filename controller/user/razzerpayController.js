@@ -31,49 +31,35 @@ const getRazorpayInstance = () => {
 
 const createRazorpayOrder = async (req, res) => {
   try {
-    const razorpayInstance = getRazorpayInstance();
-    const userId = req.session.user || req.user._id;
-    const { couponCode } = req.body;
+    const razorpayInstance = getRazorpayInstance()
+    const userId = req.session.user || req.user._id
+    const { couponCode } = req.body
 
-    console.log(
-      "Creating Razorpay order for user:",
-      userId,
-      "Coupon:",
-      couponCode
-    );
+    console.log("Creating Razorpay order for user:", userId, "Coupon:", couponCode)
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId)
     if (!user) {
-      console.error("User not found:", userId);
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      console.error("User not found:", userId)
+      return res.status(404).json({ success: false, message: "User not found" })
     }
 
     const cart = await Cart.findOne({ userId }).populate({
       path: "items.productId",
       select: "name images variants",
-    });
+    })
     if (!cart || cart.items.length === 0) {
-      console.error("Cart is empty or not found for user:", userId);
-      return res
-        .status(400)
-        .json({ success: false, message: "Your cart is empty" });
+      console.error("Cart is empty or not found for user:", userId)
+      return res.status(400).json({ success: false, message: "Your cart is empty" })
     }
 
     for (const item of cart.items) {
-      const variant = item.productId.variants.find((v) => v.size === item.size);
+      const variant = item.productId.variants.find((v) => v.size === item.size)
       if (!variant) {
-        console.error(
-          "Invalid variant for product:",
-          item.productId.name,
-          "Size:",
-          item.size
-        );
+        console.error("Invalid variant for product:", item.productId.name, "Size:", item.size)
         return res.status(400).json({
           success: false,
           message: `Invalid variant for product ${item.productId.name}`,
-        });
+        })
       }
       if (variant.varientquatity < item.quantity) {
         console.error(
@@ -84,45 +70,40 @@ const createRazorpayOrder = async (req, res) => {
           "Available:",
           variant.varientquatity,
           "Requested:",
-          item.quantity
-        );
+          item.quantity,
+        )
         return res.status(400).json({
           success: false,
           message: `Only ${variant.varientquatity} units of ${item.productId.name} (${item.size}) are available`,
-        });
+        })
       }
     }
 
-    let totalPrice = 0;
+    let totalPrice = 0
     for (const item of cart.items) {
-      const variant = item.productId.variants.find((v) => v.size === item.size);
-      totalPrice += variant.salePrice * item.quantity;
+      const variant = item.productId.variants.find((v) => v.size === item.size)
+      totalPrice += variant.salePrice * item.quantity
     }
 
-    const deliveryCharge = totalPrice > 8000 ? 0 : 200;
-    let grandTotal = totalPrice + deliveryCharge;
-    let discount = 0;
-    let appliedCoupon = null;
+    const deliveryCharge = totalPrice > 8000 ? 0 : 200
+    let grandTotal = totalPrice + deliveryCharge
+    let discount = 0
+    let appliedCoupon = null
 
     if (couponCode) {
-      const coupon = await Coupon.findOne({ coupencode: couponCode });
+      const coupon = await Coupon.findOne({ coupencode: couponCode })
       if (!coupon) {
-        console.error("Invalid coupon code:", couponCode);
-        return res
-          .status(400)
-          .json({ success: false, message: "Invalid coupon code" });
+        console.error("Invalid coupon code:", couponCode)
+        return res.status(400).json({ success: false, message: "Invalid coupon code" })
       }
 
-      const now = new Date();
-      if (
-        now < new Date(coupon.startingDate) ||
-        now > new Date(coupon.expiryDate)
-      ) {
-        console.error("Coupon expired or not yet valid:", couponCode);
+      const now = new Date()
+      if (now < new Date(coupon.startingDate) || now > new Date(coupon.expiryDate)) {
+        console.error("Coupon expired or not yet valid:", couponCode)
         return res.status(400).json({
           success: false,
           message: "Coupon is not valid at this time",
-        });
+        })
       }
 
       if (totalPrice < coupon.minimumPurchase) {
@@ -132,52 +113,41 @@ const createRazorpayOrder = async (req, res) => {
           "Required:",
           coupon.minimumPurchase,
           "Actual:",
-          totalPrice
-        );
+          totalPrice,
+        )
         return res.status(400).json({
           success: false,
           message: `Minimum purchase of ₹${coupon.minimumPurchase} required for this coupon`,
-        });
+        })
       }
 
-      const userUsage = coupon.usedBy.find(
-        (usage) => usage.userId.toString() === userId.toString()
-      );
+      const userUsage = coupon.usedBy.find((usage) => usage.userId.toString() === userId.toString())
       if (userUsage && userUsage.usageCount >= coupon.limit) {
-        console.error(
-          "Coupon usage limit reached for user:",
-          userId,
-          "Coupon:",
-          couponCode
-        );
+        console.error("Coupon usage limit reached for user:", userId, "Coupon:", couponCode)
         return res.status(400).json({
           success: false,
           message: "You have already used this coupon",
-        });
+        })
       }
 
-      discount = (totalPrice * coupon.couponpercent) / 100;
+      discount = (totalPrice * coupon.couponpercent) / 100
       if (discount > coupon.maxDiscount) {
-        discount = coupon.maxDiscount;
+        discount = coupon.maxDiscount
       }
-      grandTotal -= discount;
-      appliedCoupon = coupon;
+      grandTotal -= discount
+      appliedCoupon = coupon
     }
 
-    const addressId = req.session.checkout?.addressId;
+    const addressId = req.session.checkout?.addressId
     if (!addressId) {
-      console.error("Delivery address not selected for user:", userId);
-      return res
-        .status(400)
-        .json({ success: false, message: "Delivery address not selected" });
+      console.error("Delivery address not selected for user:", userId)
+      return res.status(400).json({ success: false, message: "Delivery address not selected" })
     }
 
-    const amountInPaise = Math.round(grandTotal * 100);
+    const amountInPaise = Math.round(grandTotal * 100)
     if (amountInPaise <= 0) {
-      console.error("Invalid order amount:", grandTotal);
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid order amount" });
+      console.error("Invalid order amount:", grandTotal)
+      return res.status(400).json({ success: false, message: "Invalid order amount" })
     }
 
     const options = {
@@ -185,58 +155,57 @@ const createRazorpayOrder = async (req, res) => {
       currency: "INR",
       receipt: `receipt_${Date.now()}`,
       payment_capture: 1,
-    };
+    }
 
-    console.log("Razorpay order options:", options);
+    console.log("Razorpay order options:", options)
 
-    let razorpayOrder;
-    let retryCount = 0;
-    const maxRetries = 3;
+    let razorpayOrder
+    let retryCount = 0
+    const maxRetries = 3
     while (retryCount < maxRetries) {
       try {
-        razorpayOrder = await razorpayInstance.orders.create(options);
-        console.log("Razorpay order created successfully:", razorpayOrder);
-        break;
+        razorpayOrder = await razorpayInstance.orders.create(options)
+        console.log("Razorpay order created successfully:", razorpayOrder)
+        break
       } catch (razorpayError) {
-        retryCount++;
-        console.error(
-          `Razorpay API error (attempt ${retryCount}):`,
-          JSON.stringify(razorpayError, null, 2)
-        );
+        retryCount++
+        console.error(`Razorpay API error (attempt ${retryCount}):`, JSON.stringify(razorpayError, null, 2))
         if (retryCount === maxRetries) {
           return res.status(500).json({
             success: false,
-            message: `Razorpay error: ${
-              razorpayError.error?.description || "Failed to create order"
-            }`,
+            message: `Razorpay error: ${razorpayError.error?.description || "Failed to create order"}`,
             details: razorpayError.error || razorpayError,
-          });
+          })
         }
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second before retrying
+        await new Promise((resolve) => setTimeout(resolve, 1000)) // Wait 1 second before retrying
       }
     }
 
-    const orderNumber = generateOrderNumber();
+    const orderNumber = generateOrderNumber()
+
+    // FIX: Add the required subtotal field
     const pendingOrder = new Order({
       userId: userId,
       orderNumber,
       paymentMethod: "Online",
       address: addressId,
+      subtotal: totalPrice, // Add the subtotal field
       total: grandTotal,
       discount: discount,
+      deliveryCharge: deliveryCharge, // Optional but good to include
       paymentStatus: "Pending",
       orderDate: new Date(),
       status: "Pending",
       razorpayOrderId: razorpayOrder.id,
-    });
+    })
 
-    await pendingOrder.save();
-    console.log("Pending order created:", pendingOrder._id);
+    await pendingOrder.save()
+    console.log("Pending order created:", pendingOrder._id)
 
     // Create order items
-    const orderItems = [];
+    const orderItems = []
     for (const item of cart.items) {
-      const variant = item.productId.variants.find((v) => v.size === item.size);
+      const variant = item.productId.variants.find((v) => v.size === item.size)
       const orderItem = new OrderItem({
         productId: item.productId._id,
         orderId: pendingOrder._id,
@@ -245,18 +214,15 @@ const createRazorpayOrder = async (req, res) => {
         size: item.size,
         price: variant.salePrice,
         total_amount: variant.salePrice * item.quantity,
-        itemImage:
-          item.productId.images && item.productId.images.length > 0
-            ? item.productId.images[0].url
-            : null,
+        itemImage: item.productId.images && item.productId.images.length > 0 ? item.productId.images[0].url : null,
         status: "Pending",
-      });
-      await orderItem.save();
-      orderItems.push(orderItem._id);
+      })
+      await orderItem.save()
+      orderItems.push(orderItem._id)
     }
 
-    pendingOrder.order_items = orderItems;
-    await pendingOrder.save();
+    pendingOrder.order_items = orderItems
+    await pendingOrder.save()
 
     req.session.razorpayOrder = {
       orderId: razorpayOrder.id,
@@ -265,7 +231,7 @@ const createRazorpayOrder = async (req, res) => {
       discount: discount,
       addressId: addressId,
       pendingOrderId: pendingOrder._id,
-    };
+    }
 
     return res.status(200).json({
       success: true,
@@ -276,16 +242,16 @@ const createRazorpayOrder = async (req, res) => {
         email: user.email,
         contact: user.mobile || "",
       },
-    });
+    })
   } catch (error) {
-    console.error("Error creating Razorpay order:", error);
+    console.error("Error creating Razorpay order:", error)
     return res.status(500).json({
       success: false,
       message: "Failed to create payment order. Please try again.",
       details: error.message,
-    });
+    })
   }
-};
+}
 
 const verifyPayment = async (req, res) => {
   try {

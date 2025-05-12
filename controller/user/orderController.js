@@ -7,7 +7,7 @@ const Coupon = require("../../model/couponScheema");
 const Wallet = require("../../model/walletScheema");
 const Address = require("../../model/AddressScheema");
 const Review = require("../../model/ReviewScheema");
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 const {
   generateOrderNumber,
   generateTransactionId,
@@ -88,276 +88,332 @@ const updateOrderStatusHelper = async (orderId) => {
   }
 };
 
+/**
+ * Place a new order
+ */
 const placeOrder = async (req, res) => {
-  try {
-    const userId = req.session.user || req.user._id;
-    const { paymentMethod, couponCode } = req.body;
+    try {
+        const userId = req.session.user || req.user._id;
+        const { paymentMethod } = req.body;
+        const { calculateProportionalDiscount } = require("../../utils/discountCalculator");
 
-    if (!["COD", "Wallet"].includes(paymentMethod)) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid payment method" });
-    }
+        console.log(`[INFO] Processing order for user ${userId} with payment method ${paymentMethod}`);
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    }
-
-    const cart = await Cart.findOne({ userId }).populate({
-      path: "items.productId",
-      select: "name images variants",
-    });
-
-    if (!cart || cart.items.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Your cart is empty" });
-    }
-
-    for (const item of cart.items) {
-      const variant = item.productId.variants.find((v) => v.size === item.size);
-      if (!variant) {
-        return res.status(400).json({
-          success: false,
-          message: `Invalid variant for product ${item.productId.name}`,
-        });
-      }
-      if (variant.varientquatity < item.quantity) {
-        return res.status(400).json({
-          success: false,
-          message: `Only ${variant.varientquatity} units of ${item.productId.name} (${item.size}) are available`,
-        });
-      }
-    }
-
-    let totalPrice = 0;
-    for (const item of cart.items) {
-      const variant = item.productId.variants.find((v) => v.size === item.size);
-      totalPrice += variant.salePrice * item.quantity;
-    }
-
-    const deliveryCharge = totalPrice > 8000 ? 0 : 200;
-    let grandTotal = totalPrice + deliveryCharge;
-
-    let discount = 0;
-    let appliedCoupon = null;
-
-    if (couponCode) {
-      const coupon = await Coupon.findOne({ coupencode: couponCode });
-      if (!coupon) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Invalid coupon code" });
-      }
-
-      const now = new Date();
-      if (
-        now < new Date(coupon.startingDate) ||
-        now > new Date(coupon.expiryDate)
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: "Coupon is not valid at this time",
-        });
-      }
-
-      if (totalPrice < coupon.minimumPurchase) {
-        return res.status(400).json({
-          success: false,
-          message: `Minimum purchase of ₹${coupon.minimumPurchase} required for this coupon`,
-        });
-      }
-
-      const userUsage = coupon.usedBy.find(
-        (usage) => usage.userId.toString() === userId.toString()
-      );
-      if (userUsage && userUsage.usageCount >= coupon.limit) {
-        return res.status(400).json({
-          success: false,
-          message: "You have already used this coupon",
-        });
-      }
-
-      discount = (totalPrice * coupon.couponpercent) / 100;
-      if (discount > coupon.maxDiscount) {
-        discount = coupon.maxDiscount;
-      }
-
-      grandTotal -= discount;
-      appliedCoupon = coupon;
-    }
-
-    const addressId = req.session.checkout?.addressId;
-    if (!addressId) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Delivery address not selected" });
-    }
-
-   
-    if (paymentMethod === "Wallet") {
-    
-      let wallet = await Wallet.findOne({ userId });
-      
-      if (!wallet) {
-        wallet = new Wallet({
-          userId,
-          amount: 0,
-          transactions: [],
-        });
-        await wallet.save();
-      }
-      
-
-      console.log("Wallet Amount:", wallet.amount, typeof wallet.amount);
-      console.log("Grand Total:", grandTotal, typeof grandTotal);
-      
- 
-      const walletAmount = parseFloat(parseFloat(wallet.amount).toFixed(2));
-      const grandTotalAmount = parseFloat(parseFloat(grandTotal).toFixed(2));
-      
-      if (walletAmount < grandTotalAmount) {
-        return res.status(400).json({
-          success: false,
-          message: `Insufficient wallet balance. Available: ₹${walletAmount}, Required: ₹${grandTotalAmount}`,
-        });
-      }
-    }
-
-    if (paymentMethod === "COD" && grandTotal > 1000){
-      return res.status(400).json({success:false, message : "COD is not allowed for Order ablove ₹1000. please choose another payment method. "})
-    }
-
-
-
-    const orderNumber = generateOrderNumber();
-    const newOrder = new Order({
-      userId: userId,
-      orderNumber,
-      paymentMethod,
-      address: addressId,
-      total: grandTotal,
-      discount: discount,
-      paymentStatus: paymentMethod === "COD" ? "Pending" : "Completed",
-      orderDate: new Date(),
-      status: "Processing",
-      statusHistory: [
-        {
-          status: "Processing",
-          date: new Date(),
-          note: "Order placed successfully",
-        },
-      ],
-    });
-
-    await newOrder.save();
-
-    const orderItems = [];
-    for (const item of cart.items) {
-      const variant = item.productId.variants.find((v) => v.size === item.size);
-      const orderItem = new OrderItem({
-        productId: item.productId._id,
-        orderId: newOrder._id,
-        product_name: item.productId.name,
-        quantity: item.quantity,
-        size: item.size,
-        price: variant.salePrice,
-        total_amount: variant.salePrice * item.quantity,
-        itemImage:
-          item.productId.images && item.productId.images.length > 0
-            ? item.productId.images[0].url
-            : null,
-        status: "Processing",
-        statusHistory: [
-          {
-            status: "Processing",
-            date: new Date(),
-            note: "Order item created",
-          },
-        ],
-      });
-      await orderItem.save();
-      orderItems.push(orderItem._id);
-    }
-
-    newOrder.order_items = orderItems;
-    await newOrder.save();
-
-    for (const item of cart.items) {
-      const product = await Product.findById(item.productId._id);
-      if (product) {
-        const variantIndex = product.variants.findIndex(
-          (v) => v.size === item.size
-        );
-        if (variantIndex !== -1) {
-          product.variants[variantIndex].varientquatity -= item.quantity;
-          await product.save();
+        // Validate payment method
+        if (!["COD", "Wallet", "Online"].includes(paymentMethod)) {
+            return res
+                .status(400)
+                .json({ success: false, message: "Invalid payment method" });
         }
-      }
-    }
 
-    if (appliedCoupon) {
-      const userIndex = appliedCoupon.usedBy.findIndex(
-        (usage) => usage.userId.toString() === userId.toString()
-      );
-      if (userIndex !== -1) {
-        appliedCoupon.usedBy[userIndex].usageCount += 1;
-      } else {
-        appliedCoupon.usedBy.push({ userId, usageCount: 1 });
-      }
-      await appliedCoupon.save();
-    }
+        // Validate user
+        const user = await User.findById(userId);
+        if (!user) {
+            return res
+                .status(404)
+                .json({ success: false, message: "User not found" });
+        }
 
-    if (paymentMethod === "Wallet") {
-      // Fetch the wallet document again to ensure we have the latest data
-      let wallet = await Wallet.findOne({ userId });
-      if (!wallet) {
-        wallet = new Wallet({
-          userId,
-          amount: 0,
-          transactions: [],
+        // Get cart items
+        const cart = await Cart.findOne({ userId }).populate({
+            path: "items.productId",
+            select: "name images variants",
         });
-      }
 
-      // Deduct the amount from wallet
-      wallet.amount -= grandTotal;
+        if (!cart || cart.items.length === 0) {
+            return res
+                .status(400)
+                .json({ success: false, message: "Your cart is empty" });
+        }
 
-      // Add the transaction
-      wallet.transactions.push({
-        type: "debit",
-        amount: grandTotal,
-        description: `Payment for order #${orderNumber}`,
-        transactionRef: generateTransactionId(),
-        date: new Date(),
-        orderReference: orderNumber,
-        status: "completed"
-      });
-      
-      await wallet.save();
+        // Validate stock
+        for (const item of cart.items) {
+            const variant = item.productId.variants.find((v) => v.size === item.size);
+            if (!variant) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Invalid variant for product ${item.productId.name}`,
+                });
+            }
+            if (variant.varientquatity < item.quantity) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Only ${variant.varientquatity} units of ${item.productId.name} (${item.size}) are available`,
+                });
+            }
+        }
+
+        // Prepare cart items for discount calculation
+        const cartItems = cart.items.map((item) => {
+            const variant = item.productId.variants.find((v) => v.size === item.size);
+            return {
+                id: item.productId._id,
+                name: item.productId.name,
+                size: item.size,
+                quantity: item.quantity,
+                price: variant.salePrice,
+                image:
+                    item.productId.images && item.productId.images.length > 0
+                        ? item.productId.images[0].url
+                        : null,
+            };
+        });
+
+        // Initialize discount result with no discount
+        let discountResult = {
+            cartItems: cartItems.map((item) => ({
+                ...item,
+                originalPrice: item.price,
+                discountPerUnit: 0,
+                discountAmount: 0,
+                finalPrice: item.price,
+                finalTotal: item.price * item.quantity,
+            })),
+            cartTotal: cartItems.reduce(
+                (total, item) => total + item.price * item.quantity,
+                0
+            ),
+            totalDiscount: 0,
+            finalTotal: cartItems.reduce(
+                (total, item) => total + item.price * item.quantity,
+                0
+            ),
+            discountApplied: false,
+            message: "No coupon applied",
+        };
+
+        // Calculate subtotal
+        const totalPrice = discountResult.cartTotal;
+        const deliveryCharge = totalPrice > 8000 ? 0 : 200;
+
+        let appliedCoupon = null;
+
+        // Apply coupon if available
+        if (req.session.checkout?.coupon) {
+            const couponId = req.session.checkout.coupon.couponId;
+            const coupon = await Coupon.findById(couponId);
+
+            if (coupon) {
+                const now = new Date();
+                if (
+                    now >= new Date(coupon.startingDate) &&
+                    now <= new Date(coupon.expiryDate) &&
+                    coupon.isActive
+                ) {
+                    // Check user usage
+                    const userUsage = coupon.usedBy.find(
+                        (usage) => usage.userId.toString() === userId.toString()
+                    );
+                    
+                    if (!userUsage || userUsage.usedCount < coupon.limit) {
+                        // Apply coupon discount
+                        discountResult = calculateProportionalDiscount(
+                            cartItems,
+                            coupon.couponpercent,
+                            coupon.minimumPurchase,
+                            coupon.maxRedeemable
+                        );
+
+                        if (discountResult.discountApplied) {
+                            appliedCoupon = coupon;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Calculate grand total
+        let grandTotal = discountResult.finalTotal + deliveryCharge;
+
+        // Get delivery address
+        const addressId = req.session.checkout?.addressId;
+        if (!addressId) {
+            return res
+                .status(400)
+                .json({ success: false, message: "Delivery address not selected" });
+        }
+
+        // Validate wallet payment
+        if (paymentMethod === "Wallet") {
+            let wallet = await Wallet.findOne({ userId });
+            if (!wallet) {
+                wallet = new Wallet({
+                    userId,
+                    amount: 0,
+                    transactions: [],
+                });
+                await wallet.save();
+            }
+
+            const walletAmount = parseFloat(parseFloat(wallet.amount).toFixed(2));
+            const grandTotalAmount = parseFloat(parseFloat(grandTotal).toFixed(2));
+
+            if (walletAmount < grandTotalAmount) {
+                return res.status(400).json({
+                    success: false,
+                    message: `Insufficient wallet balance. Available: ₹${walletAmount}, Required: ₹${grandTotalAmount}`,
+                });
+            }
+        }
+
+        // Validate COD
+        if (paymentMethod === "COD" && grandTotal > 1000) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "COD is not allowed for orders above ₹1000. Please choose another payment method.",
+            });
+        }
+
+        // Create order
+        const orderNumber = generateOrderNumber();
+        const newOrder = new Order({
+            userId: userId,
+            orderNumber,
+            paymentMethod,
+            address: addressId,
+            subtotal: totalPrice,
+            discount: discountResult.totalDiscount,
+            deliveryCharge,
+            total: grandTotal,
+            couponApplied: appliedCoupon ? true : false,
+            couponId: appliedCoupon ? appliedCoupon._id : null,
+            couponCode: appliedCoupon ? appliedCoupon.coupencode : "",
+            couponDiscountPercent: appliedCoupon ? appliedCoupon.couponpercent : 0,
+            paymentStatus: paymentMethod === "COD" ? "Pending" : "Completed",
+            orderDate: new Date(),
+            status: "Processing",
+            statusHistory: [
+                {
+                    status: "Processing",
+                    date: new Date(),
+                    note: "Order placed successfully",
+                },
+            ],
+        });
+
+        await newOrder.save();
+        console.log(`[INFO] Created order ${newOrder._id} with number ${orderNumber}`);
+
+        // Create order items
+        const orderItems = [];
+        for (const item of discountResult.cartItems) {
+            const orderItem = new OrderItem({
+                productId: item.id,
+                orderId: newOrder._id,
+                product_name: item.name,
+                quantity: item.quantity,
+                size: item.size,
+                price: item.originalPrice,
+                discountPerUnit: item.discountPerUnit || 0,
+                discountAmount: item.discountAmount || 0,
+                finalPrice: item.finalPrice || item.originalPrice,
+                total_amount: item.finalTotal || item.originalPrice * item.quantity,
+                itemImage: item.image,
+                status: "Processing",
+                statusHistory: [
+                    {
+                        status: "Processing",
+                        date: new Date(),
+                        note: "Order item created",
+                    },
+                ],
+                couponApplied: appliedCoupon ? true : false,
+                couponId: appliedCoupon ? appliedCoupon._id : null,
+                couponCode: appliedCoupon ? appliedCoupon.coupencode : "",
+                couponDiscountPercent: appliedCoupon ? appliedCoupon.couponpercent : 0,
+            });
+            await orderItem.save();
+            orderItems.push(orderItem._id);
+            console.log(`[INFO] Created order item ${orderItem._id} for product ${item.name}`);
+        }
+
+        // Update order with item references
+        newOrder.order_items = orderItems;
+        await newOrder.save();
+
+        // Update inventory
+        for (const item of cart.items) {
+            const product = await Product.findById(item.productId);
+            if (product) {
+                const variantIndex = product.variants.findIndex(
+                    (v) => v.size === item.size
+                );
+                if (variantIndex !== -1) {
+                    product.variants[variantIndex].varientquatity -= item.quantity;
+                    await product.save();
+                    console.log(`[INFO] Updated inventory for product ${product._id}, variant ${item.size}`);
+                }
+            }
+        }
+
+        // Update coupon usage if applied
+        if (appliedCoupon) {
+            const userUsageIndex = appliedCoupon.usedBy.findIndex(
+                (usage) => usage.userId.toString() === userId.toString()
+            );
+
+            if (userUsageIndex !== -1) {
+                appliedCoupon.usedBy[userUsageIndex].usedCount += 1;
+                appliedCoupon.usedBy[userUsageIndex].orders.push(newOrder._id);
+            } else {
+                appliedCoupon.usedBy.push({
+                    userId,
+                    usedCount: 1,
+                    orders: [newOrder._id],
+                });
+            }
+
+            await appliedCoupon.save();
+            console.log(`[INFO] Updated coupon usage for coupon ${appliedCoupon._id}`);
+        }
+
+        // Process wallet payment
+        if (paymentMethod === "Wallet") {
+            const wallet = await Wallet.findOne({ userId });
+            if (wallet) {
+                wallet.amount -= grandTotal;
+                wallet.transactions.push({
+                    type: "debit",
+                    amount: grandTotal,
+                    description: `Payment for order #${orderNumber}`,
+                    date: new Date(),
+                    orderId: newOrder._id,
+                });
+                await wallet.save();
+                console.log(`[INFO] Processed wallet payment for order ${newOrder._id}`);
+            }
+        }
+
+        // Clear cart
+        cart.items = [];
+        await cart.save();
+        console.log(`[INFO] Cleared cart for user ${userId}`);
+
+        // Clear checkout session
+        delete req.session.checkout;
+        req.session.save();
+
+        // Return success
+        return res.status(200).json({
+            success: true,
+            message: "Order placed successfully",
+            orderId: newOrder._id,
+            orderNumber,
+            redirect: `/order-success/${newOrder._id}`,
+        });
+    } catch (error) {
+        console.error("Error placing order:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to place order. Please try again.",
+        });
     }
-
-    await Cart.findOneAndUpdate({ userId }, { $set: { items: [] } });
-
-    delete req.session.checkout;
-
-    req.session.lastOrderId = newOrder._id;
-
-    return res.status(200).json({
-      success: true,
-      message: "Order placed successfully",
-      redirect: "/order-success",
-    });
-  } catch (error) {
-    console.error("Error placing order:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to place order. Please try again.",
-    });
-  }
 };
+
+
+
+
 
 const loadOrderSuccess = async (req, res) => {
   try {
@@ -498,148 +554,169 @@ const getUserOrders = async (req, res) => {
   }
 };
 
-
-
-
 const getOrderDetails = async (req, res) => {
   try {
-      const orderId = req.params.id;
-      
+    const orderId = req.params.id;
+    const userId = req.user?._id || req.session.user;
 
-      const userId = req.user?._id || req.session.user;
-      
-      console.log(`[DEBUG] Getting order details for order: ${orderId}, user: ${userId}`);
-      
-      if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
-          console.error(`[ERROR] Invalid order ID: ${orderId}`);
-          return res.redirect('/orders?error=Invalid order ID');
+    console.log(
+      `[DEBUG] Getting order details for order: ${orderId}, user: ${userId}`
+    );
+
+    if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
+      console.error(`[ERROR] Invalid order ID: ${orderId}`);
+      return res.redirect("/orders?error=Invalid order ID");
+    }
+
+    const order = await Order.findOne({
+      _id: orderId,
+      userId: userId,
+    }).populate("address");
+
+    if (!order) {
+      console.error(
+        `[ERROR] Order not found or doesn't belong to user: ${orderId}`
+      );
+      return res.redirect("/orders?error=Order not found");
+    }
+
+    const orderItems = await OrderItem.find({ orderId: orderId })
+      .populate("productId", "name images price description")
+      .sort({ createdAt: -1 });
+
+    console.log(
+      `[DEBUG] Found ${orderItems.length} order items for order ${orderId}`
+    );
+
+    // Calculate total discount amount for the order
+    let totalDiscount = 0;
+    orderItems.forEach(item => {
+      if (item.discountAmount) {
+        totalDiscount += item.discountAmount;
+      } else if (item.finalPrice && item.price && item.quantity) {
+        // Calculate discount if not explicitly stored
+        const itemDiscount = (item.price - item.finalPrice) * item.quantity;
+        totalDiscount += itemDiscount;
       }
-      
+    });
 
-      const order = await Order.findOne({ _id: orderId, userId: userId })
-      .populate('address');
-      
-      if (!order) {
-          console.error(`[ERROR] Order not found or doesn't belong to user: ${orderId}`);
-          return res.redirect('/orders?error=Order not found');
-      }
-      
-      
-      const orderItems = await OrderItem.find({ orderId: orderId })
-          .populate('productId', 'name images price description')
-          .sort({ createdAt: -1 });
-          
-      console.log(`[DEBUG] Found ${orderItems.length} order items for order ${orderId}`);
-      
+    // Add discount information to order if not already present
+    if (!order.discount && totalDiscount > 0) {
+      order.discount = totalDiscount;
+    }
 
-      const productIds = orderItems.map(item => {
-      
-          if (item.productId) {
-              if (typeof item.productId === 'object' && item.productId._id) {
-                  return item.productId._id.toString();
-              } else {
-                  return item.productId.toString();
-              }
+    const productIds = orderItems
+      .map((item) => {
+        if (item.productId) {
+          if (typeof item.productId === "object" && item.productId._id) {
+            return item.productId._id.toString();
+          } else {
+            return item.productId.toString();
           }
-          return null;
-      }).filter(id => id !== null); 
-      
-      
-      const orderItemMap = {};
-      orderItems.forEach(item => {
-          orderItemMap[item._id.toString()] = item;
+        }
+        return null;
+      })
+      .filter((id) => id !== null);
+
+    const orderItemMap = {};
+    orderItems.forEach((item) => {
+      orderItemMap[item._id.toString()] = item;
+    });
+
+    let reviews = [];
+    let reviewsMap = {};
+
+    try {
+      reviews = await Review.find({
+        userId: userId,
+        productId: { $in: productIds },
       });
-      
 
-      let reviews = [];
-      let reviewsMap = {};
-      
-      try {
+      console.log(
+        `[DEBUG] Found ${reviews.length} reviews by user for products in this order`
+      );
 
-          reviews = await Review.find({
-              userId: userId,
-              productId: { $in: productIds }
-          });
-          
-          console.log(`[DEBUG] Found ${reviews.length} reviews by user for products in this order`);
-          
-          
-          reviews.forEach(review => {
-              if (review.productId) {
-                  const productId = review.productId.toString();
-                  reviewsMap[productId] = {
-                      hasReview: true,
-                      review: review
-                  };
-                  console.log(`[DEBUG] Review for product ${productId}: Found, Can review: true`);
-                  
-     
-                  if (review.orderItem && orderItemMap[review.orderItem.toString()]) {
-                      const orderItemId = review.orderItem.toString();
-                      console.log(`[DEBUG] Review is for order item ${orderItemId}`);
-                  }
-              }
-          });
-          
+      reviews.forEach((review) => {
+        if (review.productId) {
+          const productId = review.productId.toString();
+          reviewsMap[productId] = {
+            hasReview: true,
+            review: review,
+          };
+          console.log(
+            `[DEBUG] Review for product ${productId}: Found, Can review: true`
+          );
 
-          productIds.forEach(productId => {
-              if (!reviewsMap[productId]) {
-                  reviewsMap[productId] = {
-                      hasReview: false,
-                      review: null
-                  };
-                  console.log(`[DEBUG] Review for product ${productId}: Not found, Can review: false`);
-              }
-          });
-          
-       
-          orderItems.forEach(item => {
-              const itemId = item._id.toString();
-              const productId = item.productId && item.productId._id ? 
-                  item.productId._id.toString() : 
-                  (item.productId ? item.productId.toString() : null);
-                  
-              if (productId) {
-       
-                  if (!reviewsMap[productId]) {
-                      reviewsMap[productId] = {
-                          hasReview: false,
-                          review: null
-                      };
-                  }
-                  
-        
-                  const itemReview = reviews.find(r => r.orderItem && r.orderItem.toString() === itemId);
-                  
-                  if (itemReview) {
-
-                      reviewsMap[productId].hasReview = true;
-                      reviewsMap[productId].review = itemReview;
-                      reviewsMap[productId].orderItemReviewed = itemId;
-                      console.log(`[DEBUG] Order item ${itemId} has a specific review`);
-                  }
-              }
-          });
-      } catch (reviewError) {
-          console.error('Error fetching reviews:', reviewError);
-         
-          reviewsMap = {};
-      }
-      
-
-      console.log(`[DEBUG] Rendering order details page for order ${orderId}`);
-      res.render('orderDetails', {
-          title: 'Order Details',
-          order: order,
-          orderItems: orderItems,
-          reviewsMap: reviewsMap
+          if (review.orderItem && orderItemMap[review.orderItem.toString()]) {
+            const orderItemId = review.orderItem.toString();
+            console.log(`[DEBUG] Review is for order item ${orderItemId}`);
+          }
+        }
       });
+
+      productIds.forEach((productId) => {
+        if (!reviewsMap[productId]) {
+          reviewsMap[productId] = {
+            hasReview: false,
+            review: null,
+          };
+          console.log(
+            `[DEBUG] Review for product ${productId}: Not found, Can review: false`
+          );
+        }
+      });
+
+      orderItems.forEach((item) => {
+        const itemId = item._id.toString();
+        const productId =
+          item.productId && item.productId._id
+            ? item.productId._id.toString()
+            : item.productId
+            ? item.productId.toString()
+            : null;
+
+        if (productId) {
+          if (!reviewsMap[productId]) {
+            reviewsMap[productId] = {
+              hasReview: false,
+              review: null,
+            };
+          }
+
+          const itemReview = reviews.find(
+            (r) => r.orderItem && r.orderItem.toString() === itemId
+          );
+
+          if (itemReview) {
+            reviewsMap[productId].hasReview = true;
+            reviewsMap[productId].review = itemReview;
+            reviewsMap[productId].orderItemReviewed = itemId;
+            console.log(`[DEBUG] Order item ${itemId} has a specific review`);
+          }
+        }
+      });
+    } catch (reviewError) {
+      console.error("Error fetching reviews:", reviewError);
+      reviewsMap = {};
+    }
+
+    console.log(`[DEBUG] Rendering order details page for order ${orderId}`);
+    res.render("orderDetails", {
+      title: "Order Details",
+      order: order,
+      orderItems: orderItems,
+      reviewsMap: reviewsMap,
+      totalDiscount: totalDiscount
+    });
   } catch (error) {
-      console.error('Error getting order details:', error);
-   
-      return res.redirect('/orders?error=An error occurred while loading order details');
+    console.error("Error getting order details:", error);
+    return res.redirect(
+      "/orders?error=An error occurred while loading order details"
+    );
   }
 };
+
+
 const trackOrder = async (req, res) => {
   try {
     const userId = req.session.user || req.user._id;
@@ -1225,6 +1302,113 @@ const returnOrderItem = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to submit return request. Please try again.",
+      error: error.message,
+    });
+  }
+};
+
+// New function to handle return approval and refund
+const approveReturnOrderItem = async (req, res) => {
+  try {
+    const itemId = req.params.itemId;
+    const userId = req.session.user || req.user._id;
+
+    const orderItem = await OrderItem.findById(itemId);
+    if (!orderItem) {
+      return res.status(404).json({
+        success: false,
+        message: "Order item not found",
+      });
+    }
+
+    const order = await Order.findById(orderItem.orderId);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Parent order not found",
+      });
+    }
+
+    if (orderItem.status !== "Return Requested") {
+      return res.status(400).json({
+        success: false,
+        message: `Item cannot be returned in its current status: ${orderItem.status}`,
+      });
+    }
+
+    // Update item status to Returned
+    orderItem.status = "Returned";
+    orderItem.returnApprovedDate = new Date();
+    orderItem.returnCompletedDate = new Date();
+
+    orderItem.statusHistory.push({
+      status: "Returned",
+      date: new Date(),
+      note: "Return approved and completed",
+    });
+
+    // Calculate refund amount based on finalPrice
+    const refundAmount = orderItem.finalPrice * orderItem.quantity;
+
+    // Process refund to wallet
+    if (
+      order.paymentStatus === "Paid" ||
+      order.paymentMethod === "Wallet" ||
+      (order.paymentMethod === "Online" && order.paymentStatus === "Completed")
+    ) {
+      await processRefundToWallet(
+        userId,
+        refundAmount,
+        order.orderNumber,
+        `Refund for returned item: ${orderItem.product_name}`
+      );
+
+      orderItem.refunded = true;
+      orderItem.refundAmount = refundAmount;
+      orderItem.refundDate = new Date();
+      orderItem.refundTransactionRef = generateTransactionId();
+    }
+
+    // Restore inventory
+    const product = await Product.findById(orderItem.productId);
+    if (product) {
+      const variantIndex = product.variants.findIndex(
+        (v) => v.size === orderItem.size
+      );
+      if (variantIndex !== -1) {
+        product.variants[variantIndex].varientquatity += orderItem.quantity;
+        await product.save();
+      }
+    }
+
+    await orderItem.save();
+
+    // Update order status
+    const newOrderStatus = await updateOrderStatusHelper(order._id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Return approved and processed successfully",
+      item: {
+        id: orderItem._id,
+        name: orderItem.product_name,
+        status: orderItem.status,
+        refundAmount: refundAmount.toFixed(2),
+      },
+      order: {
+        id: order._id,
+        orderNumber: order.orderNumber,
+        status: newOrderStatus,
+      },
+    });
+  } catch (error) {
+    console.error(
+      `[ERROR] Error approving return request: ${error.message}`,
+      error
+    );
+    return res.status(500).json({
+      success: false,
+      message: "Failed to approve return request. Please try again.",
       error: error.message,
     });
   }

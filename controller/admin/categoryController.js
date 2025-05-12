@@ -267,10 +267,18 @@ const editCategory = async (req, res) => {
       return res.status(400).json({ error: "Missing category ID" })
     }
 
-    const { name, description, offer } = req.body
+    const { name, description, offer, maxRedeemable } = req.body
     const trimmedName = name.trim()
     const trimmedDescription = description.trim()
     const offerValue = Number(offer)
+    const maxRedeemableValue = Number(maxRedeemable);
+
+    if(isNaN(maxRedeemableValue) || maxRedeemableValue < 0){
+      return res.status(400).json({success:false, message :"Max Redeemable amount can't be a negative number"})
+    }
+    if(maxRedeemableValue > 500000){
+      return res.status(400).json({success:false, message : "Max redeemable can't be more than 5 lakhs "})
+    }
 
     if (offerValue < 0) {
       return res.status(400).json({ error: "Offer cannot be negative" })

@@ -5,17 +5,29 @@ const Address = require("../../model/AddressScheema");
 const Category = require("../../model/categoryScheema");
 const Coupon = require("../../model/couponScheema");
 const Wallet = require("../../model/walletScheema");
+const { calculateProportionalDiscount } = require("../../utils/discountCalculator");
 
+/**
+ * Load checkout page with cart items, addresses, and coupon info
+ */
 const loadcheckOut = async (req, res) => {
   try {
     const userId = req.user._id;
+    console.log("Loading checkout page for user:", userId);
 
-    const userCart = await Cart.findOne({ userId }).populate("items.productId");
+    // Get user cart with populated product details
+    const userCart = await Cart.findOne({ userId }).populate({
+      path: 'items.productId',
+      select: 'name images variants isActive categoryId'
+    });
+    
+    // Check if cart exists and has items
     if (!userCart || !userCart.items.length) {
       delete req.session.checkout;
-      return res.status(400).json({ success: false, message: "Cart is empty" });
+      return res.redirect("/cart?error=Cart is empty");
     }
 
+    // Filter out inactive products or categories
     const validItems = [];
     for (const item of userCart.items) {
       const product = item.productId;
@@ -27,39 +39,146 @@ const loadcheckOut = async (req, res) => {
       validItems.push(item);
     }
 
+    // Update cart with valid items only
     userCart.items = validItems;
     await userCart.save();
 
+    // If no valid items remain, redirect to home
     if (!userCart.items.length) {
       delete req.session.checkout;
-      req.flash(
-        "warning",
-        "Some items were removed from your cart. Please shop again."
-      );
+      req.flash("warning", "Some items were removed from your cart. Please shop again.");
       return res.redirect("/");
     }
 
+    // Get user addresses
     const userAddresses = await Address.find({ userId });
 
-    const cartItems = userCart.items;
-    let totalPrice = 0;
-    for (const item of cartItems) {
-      const productPrice =
-        item.productId.variants.find((v) => v.size === item.size)?.salePrice ||
-        0;
-      totalPrice += productPrice * item.quantity;
+    // Prepare cart items for display and discount calculation
+    const cartItems = userCart.items.map(item => {
+      // Handle case where product might not be properly populated
+      if (!item.productId || typeof item.productId !== 'object') {
+        console.log('Warning: Product not properly populated for item:', item);
+        return {
+          id: item.productId || 'unknown',
+          name: 'Product Unavailable',
+          size: item.size || 'N/A',
+          quantity: item.quantity || 1,
+          price: 0,
+          image: null,
+          originalPrice: 0,
+          discountedPrice: 0,
+          discountAmount: 0
+        };
+      }
+
+      // Get variant price
+      const variant = item.productId.variants.find(v => v.size === item.size);
+      const price = variant ? variant.salePrice : 0;
+      
+      return {
+        id: item.productId._id,
+        name: item.productId.name || 'Unnamed Product',
+        size: item.size || 'N/A',
+        quantity: item.quantity || 1,
+        price: price,
+        image: item.productId.images && item.productId.images.length > 0 
+          ? item.productId.images[0].url 
+          : null,
+        originalPrice: price,
+        discountedPrice: price,
+        discountAmount: 0,
+        productId: item.productId 
+      };
+    });
+
+    // Calculate totals
+    const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const deliveryCharge = totalPrice > 8000 ? 0 : 200;
+    
+    // Initialize discount result with no discount
+    let discountResult = {
+      cartItems: cartItems.map(item => ({
+        ...item,
+        originalPrice: item.price,
+        discountPerUnit: 0,
+        discountAmount: 0,
+        finalPrice: item.price,
+      })),
+      cartTotal: totalPrice,
+      totalDiscount: 0,
+      finalTotal: totalPrice,
+      discountApplied: false,
+      message: "No coupon applied"
+    };
+
+    // Check if a coupon is applied in the session
+    if (req.session.checkout?.coupon) {
+      console.log("Found coupon in session:", req.session.checkout.coupon.code);
+      const storedCoupon = req.session.checkout.coupon;
+      
+      // Validate coupon still exists and is active
+      const coupon = await Coupon.findById(storedCoupon.couponId);
+      if (!coupon || !coupon.isActive || new Date() > new Date(coupon.expiryDate)) {
+        console.log("Coupon is no longer valid, removing from session");
+        delete req.session.checkout.coupon;
+        req.session.save();
+      } else {
+        // If coupon is valid, use the stored discount information
+        if (storedCoupon.items && storedCoupon.items.length > 0) {
+          // Map discount info to cart items
+          discountResult.cartItems = cartItems.map(item => {
+            const itemDiscount = storedCoupon.items.find(i => 
+              i.id && item.id && i.id.toString() === item.id.toString()
+            );
+            
+            if (itemDiscount) {
+              return {
+                ...item,
+                originalPrice: itemDiscount.originalPrice,
+                discountPerUnit: itemDiscount.discountPerUnit,
+                discountAmount: itemDiscount.discountAmount,
+                finalPrice: itemDiscount.finalPrice,
+                discountedPrice: itemDiscount.finalPrice
+              };
+            }
+            
+            return {
+              ...item,
+              originalPrice: item.price,
+              discountPerUnit: 0,
+              discountAmount: 0,
+              finalPrice: item.price,
+              discountedPrice: item.price
+            };
+          });
+          
+          discountResult.totalDiscount = storedCoupon.discount;
+          discountResult.finalTotal = totalPrice - storedCoupon.discount;
+          discountResult.discountApplied = true;
+        }
+      }
     }
 
-    const deliveryCharge = totalPrice > 8000 ? 0 : 200;
-    const discount = req.session.checkout?.coupon?.discount || 0;
-    const grandTotal = totalPrice - discount + deliveryCharge;
+    // Calculate grand total
+    const grandTotal = discountResult.finalTotal + deliveryCharge;
 
+    // Update session with current totals
     if (!req.session.checkout) {
       req.session.checkout = {};
     }
     req.session.checkout.totalPrice = totalPrice;
-    req.session.checkout.grandTotal = grandTotal; // Store the grand total for later use
+    req.session.checkout.grandTotal = grandTotal;
+    req.session.checkout.deliveryCharge = deliveryCharge;
+    req.session.checkout.discount = discountResult.totalDiscount;
 
+    // Save session
+    req.session.save((err) => {
+      if (err) {
+        console.error("Error saving checkout session:", err);
+      }
+    });
+
+    // Get available coupons for the user
     const today = new Date();
     const coupons = await Coupon.find({}).lean();
     const couponsWithStatus = coupons.map((coupon) => {
@@ -70,7 +189,7 @@ const loadcheckOut = async (req, res) => {
 
       const isExpired = new Date(coupon.expiryDate) < today;
       const notStarted = new Date(coupon.startingDate) > today;
-      const isUsed = userUsage && userUsage.usedCount >= coupon.limit;
+      const isUsed = userUsage && userUsage.usageCount >= coupon.limit;
       const isActive =
         coupon.isActive && !isExpired && new Date(coupon.startingDate) <= today;
 
@@ -95,18 +214,30 @@ const loadcheckOut = async (req, res) => {
           ? "Available"
           : "Inactive",
         isEligible: isActive && !isUsed && coupon.minimumPurchase <= totalPrice,
-        userUsageCount: userUsage ? userUsage.usedCount : 0,
+        userUsageCount: userUsage ? userUsage.usageCount : 0,
         remainingUses: userUsage
-          ? Math.max(0, coupon.limit - userUsage.usedCount)
+          ? Math.max(0, coupon.limit - userUsage.usageCount)
           : coupon.limit,
       };
     });
 
+    // Log what we're sending to the template for debugging
+    console.log('Sending to checkout template:', {
+      cartItemsCount: userCart.items.length,
+      discountedItemsCount: discountResult.cartItems.length,
+      totalPrice,
+      discount: discountResult.totalDiscount,
+      grandTotal,
+      appliedCoupon: req.session.checkout?.coupon || null
+    });
+
+    // Render checkout page
     res.render("checkOutpage", {
-      cartItems,
+      cartItems: userCart.items,
+      discountedItems: discountResult.cartItems,
       totalPrice,
       deliveryCharge,
-      discount,
+      discount: discountResult.totalDiscount,
       grandTotal,
       addresses: userAddresses,
       orderNumber: `2406`,
@@ -116,15 +247,21 @@ const loadcheckOut = async (req, res) => {
     });
   } catch (error) {
     console.error("Unable to load the checkout page:", error);
-    res.status(500).json({ success: false, message: "Server issue" });
+    res.status(500).render("error", { 
+      message: "Failed to load checkout page. Please try again later." 
+    });
   }
 };
 
+/**
+ * Select delivery address for checkout
+ */
 const selectDeliveryAddress = async (req, res) => {
   try {
     const { addressId } = req.body;
     const userId = req.user._id;
 
+    // Validate address belongs to user
     const selectedAddress = await Address.findOne({ _id: addressId, userId });
     if (!selectedAddress) {
       return res
@@ -132,17 +269,34 @@ const selectDeliveryAddress = async (req, res) => {
         .json({ success: false, message: "Invalid address" });
     }
 
+    // Store address in session
     req.session.checkout = req.session.checkout || {};
     req.session.checkout.addressId = addressId;
 
-    return res.status(200).json({ success: true, message: "Address selected" });
+    // Save session
+    req.session.save((err) => {
+      if (err) {
+        console.error("Error saving address to session:", err);
+        return res.status(500).json({ 
+          success: false, 
+          message: "Failed to save address selection" 
+        });
+      }
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: "Address selected successfully" 
+      });
+    });
   } catch (error) {
     console.error("Error selecting delivery address:", error);
     return res.status(500).json({ success: false, message: "Server issue" });
   }
 };
 
-// New function to check wallet balance
+/**
+ * Check wallet balance for payment
+ */
 const checkWalletBalance = async (userId) => {
   try {
     const user = await User.findById(userId).select("+walletBalance");
@@ -150,9 +304,13 @@ const checkWalletBalance = async (userId) => {
       return { success: false, message: "User not found", balance: 0 };
     }
 
+    // Get wallet balance
+    const wallet = await Wallet.findOne({ userId });
+    const balance = wallet ? wallet.amount : (user.walletBalance || 0);
+
     return {
       success: true,
-      balance: user.walletBalance || 0,
+      balance: balance,
       hasWallet: true
     };
   } catch (error) {
@@ -161,16 +319,31 @@ const checkWalletBalance = async (userId) => {
   }
 };
 
+/**
+ * Load checkout payment page
+ */
 const loadCheckoutPayment = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const userCart = await Cart.findOne({ userId }).populate("items.productId");
+    // Check if address is selected
+    if (!req.session.checkout?.addressId) {
+      req.flash("warning", "Please select a delivery address first");
+      return res.redirect("/checkOut");
+    }
+
+    // Get user cart
+    const userCart = await Cart.findOne({ userId }).populate({
+      path: "items.productId",
+      select: "name images variants isActive categoryId"
+    });
+    
     if (!userCart || !userCart.items.length) {
       req.flash("warning", "Your cart is empty. Please shop again.");
       return res.redirect("/");
     }
 
+    // Validate cart items
     const validItems = [];
     for (const item of userCart.items) {
       const product = item.productId;
@@ -197,79 +370,177 @@ const loadCheckoutPayment = async (req, res) => {
       return res.redirect("/");
     }
 
-    const cartItems = userCart.items;
-    let totalPrice = 0;
-    for (const item of cartItems) {
-      const productPrice =
-        item.productId.variants.find((v) => v.size === item.size)?.salePrice ||
-        0;
-      totalPrice += productPrice * item.quantity;
-    }
+    // Prepare cart items for display
+    const cartItems = userCart.items.map(item => {
+      // Handle case where product might not be properly populated
+      if (!item.productId || typeof item.productId !== 'object') {
+        console.log('Warning: Product not properly populated for item:', item);
+        return {
+          id: item.productId || 'unknown',
+          name: 'Product Unavailable',
+          size: item.size || 'N/A',
+          quantity: item.quantity || 1,
+          price: 0,
+          image: null,
+          productId: { name: 'Product Unavailable', images: [] }
+        };
+      }
 
+      // Get variant price
+      const variants = item.productId.variants || [];
+      const variant = variants.find(v => v && v.size === item.size);
+      const price = variant ? variant.salePrice : 0;
+      
+      return {
+        id: item.productId._id,
+        name: item.productId.name || 'Unnamed Product',
+        size: item.size || 'N/A',
+        quantity: item.quantity || 1,
+        price: price,
+        image: item.productId.images && item.productId.images.length > 0 
+          ? item.productId.images[0].url 
+          : null,
+        productId: item.productId
+      };
+    });
+
+    // Calculate totals
+    const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
     const deliveryCharge = totalPrice > 8000 ? 0 : 200;
-    const discount = req.session.checkout?.coupon?.discount || 0;
-    const grandTotal = totalPrice - discount + deliveryCharge;
+    
+    // Initialize discount result with no discount
+    let discountResult = {
+      cartItems: cartItems.map(item => ({
+        ...item,
+        originalPrice: item.price,
+        discountPerUnit: 0,
+        discountAmount: 0,
+        finalPrice: item.price,
+      })),
+      cartTotal: totalPrice,
+      totalDiscount: 0,
+      finalTotal: totalPrice,
+      discountApplied: false
+    };
 
-    // Store in session for order placement
-    req.session.checkout = req.session.checkout || {};
-    req.session.checkout.grandTotal = grandTotal;
-
-    let deliveryAddress = null;
-    if (req.session.checkout?.addressId) {
-      deliveryAddress = await Address.findOne({
-        _id: req.session.checkout.addressId,
-        userId,
-      });
+    // Check if a coupon is applied in the session
+    if (req.session.checkout?.coupon) {
+      const storedCoupon = req.session.checkout.coupon;
+      
+      // Validate coupon still exists and is active
+      const coupon = await Coupon.findById(storedCoupon.couponId);
+      if (!coupon || !coupon.isActive || new Date() > new Date(coupon.expiryDate)) {
+        console.log("Coupon is no longer valid, removing from session");
+        delete req.session.checkout.coupon;
+        req.session.save();
+      } else if (storedCoupon.items && storedCoupon.items.length > 0) {
+        // Map discount info to cart items
+        discountResult.cartItems = cartItems.map(item => {
+          const itemDiscount = storedCoupon.items.find(i => 
+            i.id && item.id && i.id.toString() === item.id.toString()
+          );
+          
+          if (itemDiscount) {
+            return {
+              ...item,
+              originalPrice: itemDiscount.originalPrice,
+              discountPerUnit: itemDiscount.discountPerUnit,
+              discountAmount: itemDiscount.discountAmount,
+              finalPrice: itemDiscount.finalPrice
+            };
+          }
+          
+          return {
+            ...item,
+            originalPrice: item.price,
+            discountPerUnit: 0,
+            discountAmount: 0,
+            finalPrice: item.price
+          };
+        });
+        
+        discountResult.totalDiscount = storedCoupon.discount;
+        discountResult.finalTotal = totalPrice - storedCoupon.discount;
+        discountResult.discountApplied = true;
+      }
     }
+
+    // Calculate grand total
+    const grandTotal = discountResult.finalTotal + deliveryCharge;
+
+    // Update session with current totals
+    req.session.checkout = req.session.checkout || {};
+    req.session.checkout.totalPrice = totalPrice;
+    req.session.checkout.grandTotal = grandTotal;
+    req.session.checkout.deliveryCharge = deliveryCharge;
+    req.session.checkout.discount = discountResult.totalDiscount;
+
+    // Save session
+    req.session.save((err) => {
+      if (err) {
+        console.error("Error saving checkout session:", err);
+      }
+    });
+
+    // Get delivery address
+    const deliveryAddress = await Address.findOne({
+      _id: req.session.checkout.addressId,
+      userId,
+    });
 
     if (!deliveryAddress) {
       req.flash("warning", "Please select a delivery address.");
       return res.redirect("/checkOut");
     }
 
-    // Get wallet balance from Wallet collection
+    // Check wallet balance
     let walletBalance = 0;
     const wallet = await Wallet.findOne({ userId });
     if (wallet) {
       walletBalance = wallet.amount;
     }
 
+    // Render payment page
     res.render("checkoutPayment", {
-      cartItems,
+      cartItems: discountResult.cartItems, 
       totalPrice,
       deliveryCharge,
-      discount,
+      discount: discountResult.totalDiscount,
       grandTotal,
       user: req.user,
       appliedCoupon: req.session.checkout?.coupon || null,
       deliveryAddress,
-      walletBalance, // Pass the wallet balance from Wallet collection
+      walletBalance,
       hasWalletBalance: walletBalance >= grandTotal,
-      showWalletOption: true // Always show wallet option, will be disabled if insufficient funds
+      showWalletOption: true
     });
   } catch (error) {
     console.error("Error loading checkout payment page:", error);
-    res.status(500).send("Server issue");
+    res.status(500).render("error", {
+      message: "Failed to load payment page. Please try again later."
+    });
   }
 };
 
-// New function to validate payment method
+/**
+ * Validate payment method selection
+ */
 const validatePaymentMethod = async (req, res) => {
   try {
     const { paymentMethod } = req.body;
     const userId = req.user._id;
     
-    if (!["COD", "Wallet"].includes(paymentMethod)) {
+    if (!["COD", "Wallet", "Online"].includes(paymentMethod)) {
       return res.status(400).json({ 
         success: false, 
         message: "Invalid payment method" 
       });
     }
 
+    // Validate wallet balance if wallet payment
     if (paymentMethod === "Wallet") {
       const grandTotal = req.session.checkout?.grandTotal || 0;
       
-      // Fetch the wallet document
       const wallet = await Wallet.findOne({ userId });
       
       if (!wallet) {
@@ -279,28 +550,49 @@ const validatePaymentMethod = async (req, res) => {
         });
       }
       
-      // Convert both to numbers with 2 decimal places for accurate comparison
       const walletAmount = parseFloat(parseFloat(wallet.amount).toFixed(2));
       const grandTotalAmount = parseFloat(parseFloat(grandTotal).toFixed(2));
       
       if (walletAmount < grandTotalAmount) {
         return res.status(400).json({ 
           success: false, 
-          message: "Insufficient wallet balance",
+          message: `Insufficient wallet balance. Available: ₹${walletAmount.toFixed(2)}, Required: ₹${grandTotalAmount.toFixed(2)}`,
           currentBalance: walletAmount,
           required: grandTotalAmount 
         });
       }
     }
+
+    // Validate COD limit
+    if (paymentMethod === "COD") {
+      const grandTotal = req.session.checkout?.grandTotal || 0;
+      if (grandTotal > 1000) {
+        return res.status(400).json({
+          success: false,
+          message: "COD is not allowed for orders above ₹1000. Please choose another payment method."
+        });
+      }
+    }
     
-    // Store the validated payment method in session
+    // Store payment method in session
     req.session.checkout = req.session.checkout || {};
     req.session.checkout.paymentMethod = paymentMethod;
     
-    return res.status(200).json({ 
-      success: true, 
-      message: `${paymentMethod} payment method selected`,
-      redirect: "/confirm-order" // Optional: redirect to order confirmation
+    // Save session
+    req.session.save((err) => {
+      if (err) {
+        console.error("Error saving payment method to session:", err);
+        return res.status(500).json({ 
+          success: false, 
+          message: "Failed to save payment method" 
+        });
+      }
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: `${paymentMethod} payment method selected`,
+        redirect: "/confirm-order"
+      });
     });
   } catch (error) {
     console.error("Error validating payment method:", error);
@@ -308,22 +600,31 @@ const validatePaymentMethod = async (req, res) => {
   }
 };
 
-// New function to show a summary/confirmation before placing order
+/**
+ * Load order confirmation page
+ */
 const loadOrderConfirmation = async (req, res) => {
   try {
     const userId = req.user._id;
     
+    // Check if checkout process is complete
     if (!req.session.checkout?.addressId || !req.session.checkout?.paymentMethod) {
       req.flash("warning", "Please complete your checkout process");
       return res.redirect("/checkout");
     }
     
-    const userCart = await Cart.findOne({ userId }).populate("items.productId");
+    // Get user cart
+    const userCart = await Cart.findOne({ userId }).populate({
+      path: "items.productId",
+      select: "name images variants"
+    });
+    
     if (!userCart || !userCart.items.length) {
       req.flash("warning", "Your cart is empty");
       return res.redirect("/");
     }
     
+    // Get delivery address
     const deliveryAddress = await Address.findOne({
       _id: req.session.checkout.addressId,
       userId,
@@ -334,22 +635,103 @@ const loadOrderConfirmation = async (req, res) => {
       return res.redirect("/checkout");
     }
     
-    const paymentMethod = req.session.checkout.paymentMethod;
-    const totalPrice = req.session.checkout.totalPrice || 0;
-    const discount = req.session.checkout.coupon?.discount || 0;
-    const deliveryCharge = totalPrice > 8000 ? 0 : 200;
-    const grandTotal = totalPrice - discount + deliveryCharge;
+    // Prepare cart items for display
+    const cartItems = userCart.items.map(item => {
+      const variant = item.productId.variants.find(v => v.size === item.size);
+      return {
+        id: item.productId._id,
+        name: item.productId.name,
+        size: item.size,
+        quantity: item.quantity,
+        price: variant ? variant.salePrice : 0,
+        image: item.productId.images && item.productId.images.length > 0 ? item.productId.images[0].url : null
+      };
+    });
     
-    // Get wallet info if wallet payment
+    // Calculate totals
+    const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    const deliveryCharge = totalPrice > 8000 ? 0 : 200;
+    
+    // Initialize discount result with no discount
+    let discountResult = {
+      cartItems: cartItems.map(item => ({
+        ...item,
+        originalPrice: item.price,
+        discountPerUnit: 0,
+        discountAmount: 0,
+        finalPrice: item.price,
+      })),
+      cartTotal: totalPrice,
+      totalDiscount: 0,
+      finalTotal: totalPrice,
+      discountApplied: false
+    };
+
+    // Check if a coupon is applied in the session
+    if (req.session.checkout?.coupon) {
+      const storedCoupon = req.session.checkout.coupon;
+      
+      // Validate coupon still exists and is active
+      const coupon = await Coupon.findById(storedCoupon.couponId);
+      if (!coupon || !coupon.isActive || new Date() > new Date(coupon.expiryDate)) {
+        console.log("Coupon is no longer valid, removing from session");
+        delete req.session.checkout.coupon;
+        req.session.save();
+      } else if (storedCoupon.items && storedCoupon.items.length > 0) {
+        // Map discount info to cart items
+        discountResult.cartItems = cartItems.map(item => {
+          const itemDiscount = storedCoupon.items.find(i => 
+            i.id && item.id && i.id.toString() === item.id.toString()
+          );
+          
+          if (itemDiscount) {
+            return {
+              ...item,
+              originalPrice: itemDiscount.originalPrice,
+              discountPerUnit: itemDiscount.discountPerUnit,
+              discountAmount: itemDiscount.discountAmount,
+              finalPrice: itemDiscount.finalPrice
+            };
+          }
+          
+          return {
+            ...item,
+            originalPrice: item.price,
+            discountPerUnit: 0,
+            discountAmount: 0,
+            finalPrice: item.price
+          };
+        });
+        
+        discountResult.totalDiscount = storedCoupon.discount;
+        discountResult.finalTotal = totalPrice - storedCoupon.discount;
+        discountResult.discountApplied = true;
+      }
+    }
+
+    // Calculate grand total
+    const grandTotal = discountResult.finalTotal + deliveryCharge;
+    
+    // Get payment method
+    const paymentMethod = req.session.checkout.paymentMethod;
+    
+    // Check wallet balance if using wallet payment
     let walletInfo = null;
     if (paymentMethod === "Wallet") {
       walletInfo = await checkWalletBalance(userId);
+      
+      // Validate wallet balance again
+      if (!walletInfo.success || walletInfo.balance < grandTotal) {
+        req.flash("warning", "Insufficient wallet balance. Please choose another payment method.");
+        return res.redirect("/checkout-payment");
+      }
     }
     
+    // Render confirmation page
     res.render("orderConfirmation", {
-      cartItems: userCart.items,
+      cartItems: discountResult.cartItems,
       totalPrice,
-      discount,
+      discount: discountResult.totalDiscount,
       deliveryCharge,
       grandTotal,
       deliveryAddress,
@@ -360,7 +742,9 @@ const loadOrderConfirmation = async (req, res) => {
     });
   } catch (error) {
     console.error("Error loading order confirmation:", error);
-    res.status(500).send("Server issue");
+    res.status(500).render("error", {
+      message: "Failed to load order confirmation. Please try again later."
+    });
   }
 };
 
@@ -370,5 +754,5 @@ module.exports = {
   loadCheckoutPayment,
   validatePaymentMethod,
   loadOrderConfirmation,
-  checkWalletBalance // Export so it can be used in other controllers
+  checkWalletBalance
 };

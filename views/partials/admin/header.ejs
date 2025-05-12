@@ -357,7 +357,7 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        // Sidebar Toggle
+        
         const sidebarToggle = document.getElementById("sidebar-toggle");
         const sidebar = document.getElementById("sidebar");
         const mainContent = document.getElementById("main-content");
@@ -391,17 +391,17 @@
         checkScreenSize();
         window.addEventListener("resize", checkScreenSize);
 
-        // Active menu item
+ 
         const currentPath = window.location.pathname;
         const menuItems = document.querySelectorAll(".sidebar-menu a");
 
         menuItems.forEach((item) => {
           if (item.getAttribute("href") === currentPath) {
-            // Remove active class from all menu items
+     
             menuItems.forEach((menuItem) => {
               menuItem.classList.remove("active");
             });
-            // Add active class to current menu item
+    
             item.classList.add("active");
           }
         });
