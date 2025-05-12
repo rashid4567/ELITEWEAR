@@ -779,6 +779,15 @@
             color: var(--primary-color);
         }
         
+        .btn-helpful:disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+        
+        .btn-helpful.text-primary {
+            color: var(--primary-color);
+        }
+        
         .btn-helpful i {
             font-size: 1rem;
         }
@@ -833,6 +842,41 @@
             background-color: #000;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        /* Star Rating in Review Form */
+        .rating-input {
+            margin-bottom: 20px;
+        }
+        
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        
+        .star-rating input {
+            display: none;
+        }
+        
+        .star-rating label {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--warning-color);
+            padding: 0 5px;
+        }
+        
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input:checked ~ label {
+            color: var(--warning-color);
+        }
+        
+        .star-rating label:hover i,
+        .star-rating label:hover ~ label i,
+        .star-rating input:checked ~ label i {
+            content: "\f005";
+            font-weight: 900;
         }
         
         /* Similar Products */
@@ -1258,8 +1302,10 @@
             
             <div class="review-summary">
                 <div class="average-rating">
-                    <div class="average-rating-value"><%= (product.ratings?.average || 0).toFixed(1) %></div>
-                    <div class="rating-stars-large">
+                    <div class="average-rating-value" id="average-rating-value">
+                        <%= (product.ratings?.average || 0).toFixed(1) %>
+                    </div>
+                    <div class="rating-stars-large" id="rating-stars-large">
                         <% for (let i = 0; i < 5; i++) { %>
                             <% if (i < Math.floor(product.ratings?.average || 0)) { %>
                                 <i class="fas fa-star"></i>
@@ -1270,7 +1316,9 @@
                             <% } %>
                         <% } %>
                     </div>
-                    <div class="total-reviews">Based on <%= product.ratings?.count || 0 %> reviews</div>
+                    <div class="total-reviews" id="total-reviews">
+                        Based on <%= product.ratings?.count || 0 %> review<%= (product.ratings?.count || 0) !== 1 ? 's' : '' %>
+                    </div>
                 </div>
                 
                 <div class="rating-bars">
@@ -1291,9 +1339,9 @@
                                         percentage = Math.round((count / product.ratings.count) * 100);
                                     }
                                 %>
-                                <div class="rating-progress-bar" style="width: <%= percentage %>%"></div>
+                                <div class="rating-progress-bar" id="rating-bar-<%= i %>" style="width: <%= percentage %>%"></div>
                             </div>
-                            <div class="rating-percent"><%= percentage %>%</div>
+                            <div class="rating-percent" id="rating-percent-<%= i %>"><%= percentage %>%</div>
                         </div>
                     <% } %>
                 </div>
@@ -2105,16 +2153,18 @@
             if (!reviewsContainer) return;
             
             try {
-                console.log(`Fetching reviews for product: ${productData._id}, page: ${page}`);
-                const response = await fetch(`/api/reviews/reload/${productData._id}?page=${page}&limit=5`);
-                console.log('Response status:', response.status);
+                const productId = document.querySelector('[data-product-id]')?.getAttribute('data-product-id');
+                if (!productId) {
+                    throw new Error('Product ID not found');
+                }
+                
+                const response = await fetch(`/api/reviews/reload/${productId}?page=${page}&limit=5`);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log('Response data:', data);
                 
                 if (!data.success) {
                     throw new Error(data.message || 'Failed to load reviews');
@@ -2124,6 +2174,9 @@
                 if (loadingElement) {
                     loadingElement.style.display = 'none';
                 }
+                
+                // Update review summary
+                updateReviewSummary(data.reviewStats);
                 
                 // Display reviews or no reviews message
                 if (data.reviews && data.reviews.length > 0) {
@@ -2181,6 +2234,51 @@
             }
         }
         
+        // Update review summary
+        function updateReviewSummary(reviewStats) {
+            if (!reviewStats) return;
+            
+            // Update average rating
+            const averageRatingEl = document.getElementById('average-rating-value');
+            if (averageRatingEl) {
+                averageRatingEl.textContent = reviewStats.average.toFixed(1);
+            }
+            
+            // Update rating stars
+            const ratingStarsEl = document.getElementById('rating-stars-large');
+            if (ratingStarsEl) {
+                let starsHtml = '';
+                for (let i = 0; i < 5; i++) {
+                    if (i < Math.floor(reviewStats.average)) {
+                        starsHtml += '<i class="fas fa-star"></i>';
+                    } else if (i < reviewStats.average) {
+                        starsHtml += '<i class="fas fa-star-half-alt"></i>';
+                    } else {
+                        starsHtml += '<i class="far fa-star"></i>';
+                    }
+                }
+                ratingStarsEl.innerHTML = starsHtml;
+            }
+            
+            // Update total reviews
+            const totalReviewsEl = document.getElementById('total-reviews');
+            if (totalReviewsEl) {
+                totalReviewsEl.textContent = `Based on ${reviewStats.count} review${reviewStats.count !== 1 ? 's' : ''}`;
+            }
+            
+            // Update rating bars
+            for (let i = 1; i <= 5; i++) {
+                const barEl = document.getElementById(`rating-bar-${i}`);
+                const percentEl = document.getElementById(`rating-percent-${i}`);
+                
+                if (barEl && percentEl) {
+                    const percentage = reviewStats.distribution[i]?.percentage || 0;
+                    barEl.style.width = `${percentage}%`;
+                    percentEl.textContent = `${percentage}%`;
+                }
+            }
+        }
+        
         // Create HTML for a review
         function createReviewHtml(review) {
             const date = new Date(review.createdAt).toLocaleDateString('en-US', {
@@ -2214,11 +2312,10 @@
             }
             
             // Check if the current user has already marked this review as helpful
-            const isHelpfulDisabled = review.helpfulVotes && Array.isArray(review.helpfulVotes) && 
-                                     review.helpfulVotes.some(id => id === '<%= user?._id %>');
+            const isHelpfulDisabled = review.userHasMarkedHelpful;
             
             return `
-                <div class="review-card">
+                <div class="review-card" data-review-id="${review._id}">
                     <div class="review-header">
                         <div class="reviewer-info">
                             <div class="reviewer-avatar">
@@ -2238,10 +2335,14 @@
                     ${imagesHtml}
                     <div class="review-footer">
                         <div class="review-helpful">
-                            <button class="btn-helpful" onclick="markHelpful('${review._id}')" ${isHelpfulDisabled ? 'disabled' : ''}>
-                                <i class="far fa-thumbs-up"></i> Helpful
+                            <button class="btn-helpful ${isHelpfulDisabled ? 'text-primary' : ''}" 
+                                    onclick="markHelpful('${review._id}')" 
+                                    ${isHelpfulDisabled ? 'disabled' : ''}
+                                    id="helpful-btn-${review._id}">
+                                <i class="${isHelpfulDisabled ? 'fas' : 'far'} fa-thumbs-up"></i> 
+                                ${isHelpfulDisabled ? 'Marked Helpful' : 'Helpful'}
                             </button>
-                            <span class="helpful-count">(${review.helpfulVotes?.length || 0})</span>
+                            <span class="helpful-count" id="helpful-count-${review._id}">(${review.helpfulVotes?.length || 0})</span>
                         </div>
                         ${review.isVerified ? `
                         <div class="review-verified">
@@ -2390,7 +2491,9 @@
             try {
                 // Create form data for file upload
                 const formData = new FormData();
-                formData.append('productId', productData._id);
+                const productId = document.querySelector('[data-product-id]')?.getAttribute('data-product-id');
+                
+                formData.append('productId', productId);
                 formData.append('rating', rating);
                 formData.append('title', title);
                 formData.append('description', description);
@@ -2431,7 +2534,7 @@
                     
                     // Update product rating if available
                     if (result.newRating) {
-                        updateProductRating(result.newRating);
+                        updateReviewSummary(result.newRating);
                     }
                 } else {
                     showToast(result.message || 'Failed to submit review', 'danger');
@@ -2462,14 +2565,18 @@
                 if (result.success) {
                     showToast(result.message || 'Marked as helpful', 'success');
                     
-                    // Update helpful count
-                    const helpfulBtn = document.querySelector(`button[onclick="markHelpful('${reviewId}')"]`);
+                    // Update helpful button and count
+                    const helpfulBtn = document.getElementById(`helpful-btn-${reviewId}`);
+                    const helpfulCount = document.getElementById(`helpful-count-${reviewId}`);
+                    
                     if (helpfulBtn) {
                         helpfulBtn.disabled = true;
-                        const helpfulCount = helpfulBtn.nextElementSibling;
-                        if (helpfulCount) {
-                            helpfulCount.textContent = `(${result.helpfulCount || 0})`;
-                        }
+                        helpfulBtn.classList.add('text-primary');
+                        helpfulBtn.innerHTML = '<i class="fas fa-thumbs-up"></i> Marked Helpful';
+                    }
+                    
+                    if (helpfulCount) {
+                        helpfulCount.textContent = `(${result.helpfulCount || 0})`;
                     }
                 } else {
                     showToast(result.message || 'Failed to mark as helpful', 'danger');
@@ -2484,50 +2591,6 @@
             } catch (error) {
                 console.error('Error marking review as helpful:', error);
                 showToast('An error occurred. Please try again.', 'danger');
-            }
-        }
-        
-        // Update product rating display
-        function updateProductRating(newRating) {
-            // Update stars
-            const ratingStars = document.querySelector('.rating-stars');
-            if (ratingStars) {
-                let starsHtml = '';
-                for (let i = 0; i < 5; i++) {
-                    if (i < Math.floor(newRating.average)) {
-                        starsHtml += '<i class="fas fa-star"></i>';
-                    } else if (i < newRating.average) {
-                        starsHtml += '<i class="fas fa-star-half-alt"></i>';
-                    } else {
-                        starsHtml += '<i class="far fa-star"></i>';
-                    }
-                }
-                ratingStars.innerHTML = starsHtml + `<span class="review-count">(${newRating.count} reviews)</span>`;
-            }
-            
-            // Update review summary if it exists
-            const averageRatingValue = document.querySelector('.average-rating-value');
-            if (averageRatingValue) {
-                averageRatingValue.textContent = newRating.average.toFixed(1);
-            }
-            
-            const totalReviews = document.querySelector('.total-reviews');
-            if (totalReviews) {
-                totalReviews.textContent = `Based on ${newRating.count} reviews`;
-            }
-            
-            // Update rating bars if they exist
-            if (newRating.distribution) {
-                for (let i = 5; i >= 1; i--) {
-                    const progressBar = document.querySelector(`.rating-bar:nth-child(${6-i}) .rating-progress-bar`);
-                    const percentEl = document.querySelector(`.rating-bar:nth-child(${6-i}) .rating-percent`);
-                    
-                    if (progressBar && percentEl) {
-                        const percent = Math.round(((newRating.distribution[i]?.count || 0) / newRating.count) * 100);
-                        progressBar.style.width = `${percent}%`;
-                        percentEl.textContent = `${percent}%`;
-                    }
-                }
             }
         }
         

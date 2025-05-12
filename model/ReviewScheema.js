@@ -55,6 +55,10 @@ const ReviewSchema = new Schema({
     enum: ['Pending', 'Approved', 'Rejected'],
     default: 'Approved'
   },
+  hidden: {
+    type: Boolean,
+    default: false
+  },
   rejectionReason: {
     type: String
   }

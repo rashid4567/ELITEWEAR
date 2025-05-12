@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elite Wear - <%= title %></title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- SweetAlert2 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+  
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/select/1.7.0/css/select.bootstrap5.min.css">
+  
+  <!-- Chart.js -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
+  
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --primary-dark: #4338ca;
+      --secondary: #10b981;
+      --secondary-light: #34d399;
+      --secondary-dark: #059669;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #0ea5e9;
+      --dark: #1e293b;
+      --light: #f8fafc;
+      --gray: #64748b;
+      --gray-light: #94a3b8;
+      --gray-dark: #475569;
+      --sidebar-width: 260px;
+      --sidebar-collapsed-width: 70px;
+      --header-height: 70px;
+      --card-border-radius: 12px;
+      --transition-speed: 0.3s;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f1f5f9;
+      color: var(--dark);
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+
+    /* Main Content Styling */
+    .main-content {
+      margin-left: var(--sidebar-width);
+      padding: 20px;
+      transition: margin-left var(--transition-speed) ease;
+      min-height: 100vh;
+      margin-top: -350px;
+    }
+
+    .main-content-expanded {
+      margin-left: var(--sidebar-collapsed-width);
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 0;
+    }
+
+    .card {
+      background: white;
+      border-radius: var(--card-border-radius);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      border: none;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background-color: white;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 0;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    /* Stats Cards */
+    .stats-card {
+      background: white;
+      border-radius: var(--card-border-radius);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 24px;
+      transition: all 0.3s ease;
+      height: 100%;
+    }
+
+    .stats-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 16px;
+      font-size: 1.5rem;
+      color: white;
+    }
+
+    .stats-icon.pending {
+      background-color: var(--warning);
+    }
+
+    .stats-icon.approved {
+      background-color: var(--secondary);
+    }
+
+    .stats-icon.rejected {
+      background-color: var(--danger);
+    }
+
+    .stats-icon.hidden {
+      background-color: var(--gray);
+    }
+
+    .stats-icon.total {
+      background-color: var(--primary);
+    }
+
+    .stats-info h5 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .stats-info p {
+      font-size: 0.875rem;
+      color: var(--gray);
+      margin-bottom: 0;
+    }
+
+    /* Filter Section */
+    .filter-section {
+      background: white;
+      border-radius: var(--card-border-radius);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+
+    /* Table Styling */
+    .table-responsive {
+      border-radius: var(--card-border-radius);
+      overflow: hidden;
+    }
+
+    .table {
+      margin-bottom: 0;
+    }
+
+    .table th {
+      font-weight: 600;
+      color: var(--dark);
+      background-color: #f8fafc;
+      border-bottom-width: 1px;
+      white-space: nowrap;
+    }
+
+    .table td {
+      vertical-align: middle;
+    }
+
+    .table-hover tbody tr:hover {
+      background-color: rgba(79, 70, 229, 0.03);
+    }
+
+    /* Status Badges */
+    .badge {
+      padding: 6px 10px;
+      font-weight: 500;
+      border-radius: 6px;
+    }
+
+    .badge-pending {
+      background-color: #fff8e1;
+      color: #f59e0b;
+    }
+
+    .badge-approved {
+      background-color: #d1fae5;
+      color: #10b981;
+    }
+
+    .badge-rejected {
+      background-color: #fee2e2;
+      color: #ef4444;
+    }
+
+    .badge-hidden {
+      background-color: #f3f4f6;
+      color: #6b7280;
+    }
+
+    .badge-verified {
+      background-color: #e0f2fe;
+      color: #0ea5e9;
+    }
+
+    /* Rating Stars */
+    .rating-stars {
+      color: #f59e0b;
+      font-size: 0.9rem;
+    }
+
+    /* Action Buttons */
+    .btn-action {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 5px;
+      color: white;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-view {
+      background-color: var(--info);
+    }
+
+    .btn-approve {
+      background-color: var(--secondary);
+    }
+
+    .btn-reject {
+      background-color: var(--danger);
+    }
+
+    .btn-hide {
+      background-color: var(--gray);
+    }
+
+    .btn-show {
+      background-color: var(--primary);
+    }
+
+    .btn-delete {
+      background-color: #ef4444;
+    }
+
+    .btn-verify {
+      background-color: var(--info);
+    }
+
+    /* Pagination */
+    .pagination {
+      margin-bottom: 0;
+    }
+
+    .page-link {
+      color: var(--primary);
+      border: none;
+      padding: 8px 12px;
+      margin: 0 3px;
+      border-radius: 6px;
+    }
+
+    .page-link:hover {
+      background-color: rgba(79, 70, 229, 0.1);
+      color: var(--primary);
+    }
+
+    .page-item.active .page-link {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    /* Product Image */
+    .product-image {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    /* Review Text */
+    .review-text {
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Review Modal */
+    .review-modal .modal-header {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .review-modal .modal-footer {
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .review-product {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .review-product img {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      object-fit: cover;
+      margin-right: 12px;
+    }
+
+    .review-product-info h6 {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .review-product-info p {
+      font-size: 0.875rem;
+      color: var(--gray);
+      margin-bottom: 0;
+    }
+
+    .review-user {
+      display: flex;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .review-user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: var(--primary-light);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      margin-right: 12px;
+    }
+
+    .review-user-info h6 {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .review-user-info p {
+      font-size: 0.875rem;
+      color: var(--gray);
+      margin-bottom: 0;
+    }
+
+    .review-content {
+      background-color: #f8fafc;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .review-content h5 {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .review-content p {
+      margin-bottom: 0;
+    }
+
+    .review-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      color: var(--gray);
+    }
+
+    /* Order Details */
+    .order-details {
+      background-color: #f8fafc;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .order-details h6 {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .order-details p {
+      margin-bottom: 4px;
+      font-size: 0.875rem;
+    }
+
+    /* Rating Chart */
+    .rating-chart-container {
+      height: 250px;
+      position: relative;
+    }
+
+    /* Checkbox styling */
+    .form-check-input:checked {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* Bulk actions bar */
+    .bulk-actions-bar {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: var(--sidebar-width);
+      right: 0;
+      background-color: white;
+      padding: 12px 20px;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .bulk-actions-bar.show {
+      display: flex;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .bulk-actions-bar {
+        left: 0;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .stats-card {
+        margin-bottom: 16px;
+      }
+      
+      .review-text {
+        max-width: 150px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .page-header .btn {
+        margin-top: 12px;
+        align-self: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Include Sidebar -->
+  <%- include("../partials/admin/header") %>
+
+  <!-- Main Content -->
+  <div class="main-content" id="main-content">
+    <div class="page-header">
+      <h1 class="page-title">Review Management</h1>
+      <div>
+        <button class="btn btn-outline-primary me-2" id="refreshStats">
+          <i class="fas fa-sync-alt me-2"></i>Refresh Stats
+        </button>
+        <button class="btn btn-primary" id="exportBtn">
+          <i class="fas fa-download me-1"></i> Export
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row">
+      <div class="col-md-4 col-lg-2-4">
+        <div class="stats-card">
+          <div class="stats-icon pending">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stats-info">
+            <h5><%= counts.pending %></h5>
+            <p>Pending Reviews</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-lg-2-4">
+        <div class="stats-card">
+          <div class="stats-icon approved">
+            <i class="fas fa-check"></i>
+          </div>
+          <div class="stats-info">
+            <h5><%= counts.approved %></h5>
+            <p>Approved Reviews</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-lg-2-4">
+        <div class="stats-card">
+          <div class="stats-icon rejected">
+            <i class="fas fa-times"></i>
+          </div>
+          <div class="stats-info">
+            <h5><%= counts.rejected %></h5>
+            <p>Rejected Reviews</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-lg-2-4">
+        <div class="stats-card">
+          <div class="stats-icon hidden">
+            <i class="fas fa-eye-slash"></i>
+          </div>
+          <div class="stats-info">
+            <h5><%= counts.hidden %></h5>
+            <p>Hidden Reviews</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 col-lg-2-4">
+        <div class="stats-card">
+          <div class="stats-icon total">
+            <i class="fas fa-star"></i>
+          </div>
+          <div class="stats-info">
+            <h5><%= counts.total %></h5>
+            <p>Total Reviews</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rating Overview -->
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-header">
+            <h5 class="card-title">Rating Distribution</h5>
+          </div>
+          <div class="card-body">
+            <div class="rating-chart-container">
+              <canvas id="ratingDistributionChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-header">
+            <h5 class="card-title">Average Rating</h5>
+          </div>
+          <div class="card-body">
+            <div class="text-center py-4">
+              <h1 class="display-1 fw-bold text-primary"><%= stats.avgRating %></h1>
+              <div class="rating-stars mb-3" style="font-size: 2rem;">
+                <% for (let i = 1; i <= 5; i++) { %>
+                  <i class="<%= i <= stats.avgRating ? 'fas' : (i - 0.5 <= stats.avgRating ? 'fas fa-star-half-alt' : 'far') %> fa-star"></i>
+                <% } %>
+              </div>
+              <p class="text-muted">Based on <%= counts.approved %> approved reviews</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <form id="filterForm" method="GET" action="/admin/reviews">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-3">
+            <label for="status" class="form-label">Status</label>
+            <select class="form-select" id="status" name="status">
+              <option value="all" <%= filters.status === 'all' ? 'selected' : '' %>>All Reviews</option>
+              <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
+              <option value="approved" <%= filters.status === 'approved' ? 'selected' : '' %>>Approved</option>
+              <option value="rejected" <%= filters.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
+              <option value="hidden" <%= filters.status === 'hidden' ? 'selected' : '' %>>Hidden</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="sortBy" class="form-label">Sort By</label>
+            <select class="form-select" id="sortBy" name="sortBy">
+              <option value="createdAt" <%= filters.sortBy === 'createdAt' ? 'selected' : '' %>>Date</option>
+              <option value="rating" <%= filters.sortBy === 'rating' ? 'selected' : '' %>>Rating</option>
+              <option value="helpful" <%= filters.sortBy === 'helpful' ? 'selected' : '' %>>Helpful Votes</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label for="sortOrder" class="form-label">Order</label>
+            <select class="form-select" id="sortOrder" name="sortOrder">
+              <option value="desc" <%= filters.sortOrder === 'desc' ? 'selected' : '' %>>Descending</option>
+              <option value="asc" <%= filters.sortOrder === 'asc' ? 'selected' : '' %>>Ascending</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="search" class="form-label">Search</label>
+            <input type="text" class="form-control" id="search" name="search" placeholder="Product, customer, or review text" value="<%= filters.search %>">
+          </div>
+          <div class="col-md-1 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Reviews Table -->
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title">
+          <% if (filters.status === 'pending') { %>
+            Pending Reviews
+          <% } else if (filters.status === 'approved') { %>
+            Approved Reviews
+          <% } else if (filters.status === 'rejected') { %>
+            Rejected Reviews
+          <% } else if (filters.status === 'hidden') { %>
+            Hidden Reviews
+          <% } else { %>
+            All Reviews
+          <% } %>
+        </h5>
+        <div>
+          <% if (filters.status === 'pending' && reviews.length > 0) { %>
+            <button class="btn btn-success btn-sm me-2" id="bulkApproveBtn">
+              <i class="fas fa-check me-1"></i> Approve Selected
+            </button>
+          <% } %>
+          <% if (reviews.length > 0 && filters.status !== 'hidden') { %>
+            <button class="btn btn-secondary btn-sm me-2" id="bulkHideBtn">
+              <i class="fas fa-eye-slash me-1"></i> Hide Selected
+            </button>
+          <% } %>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover" id="reviewsTable">
+            <thead>
+              <tr>
+                <th>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAll">
+                  </div>
+                </th>
+                <th>Product</th>
+                <th>Customer</th>
+                <th>Rating</th>
+                <th>Review</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (reviews.length === 0) { %>
+                <tr>
+                  <td colspan="8" class="text-center py-4">No reviews found</td>
+                </tr>
+              <% } else { %>
+                <% reviews.forEach(review => { %>
+                  <tr data-review-id="<%= review._id %>">
+                    <td>
+                      <div class="form-check">
+                        <input class="form-check-input review-checkbox" type="checkbox" value="<%= review._id %>">
+                      </div>
+                    </td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <% 
+                          let productImage = '/placeholder.jpg';
+                          if (review.productId && review.productId.images && review.productId.images.length > 0) {
+                            productImage = review.productId.images.find(img => img.isMain)?.url || review.productId.images[0].url;
+                          }
+                        %>
+                        <img src="<%= productImage %>" alt="<%= review.productId?.name || 'Product' %>" class="product-image me-2">
+                        <span><%= review.productId?.name || 'Unknown Product' %></span>
+                      </div>
+                    </td>
+                    <td><%= review.userId?.fullname || 'Unknown User' %></td>
+                    <td>
+                      <div class="rating-stars">
+                        <% for (let i = 1; i <= 5; i++) { %>
+                          <i class="<%= i <= review.rating ? 'fas' : 'far' %> fa-star"></i>
+                        <% } %>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="review-text" title="<%= review.description %>">
+                        <strong><%= review.title %></strong>: <%= review.description %>
+                      </div>
+                    </td>
+                    <td><%= new Date(review.createdAt).toLocaleDateString() %></td>
+                    <td>
+                      <% if (review.hidden) { %>
+                        <span class="badge badge-hidden">Hidden</span>
+                      <% } else if (review.status === 'Approved') { %>
+                        <span class="badge badge-approved">Approved</span>
+                        <% if (review.isVerified) { %>
+                          <span class="badge badge-verified ms-1">Verified</span>
+                        <% } %>
+                      <% } else if (review.status === 'Rejected') { %>
+                        <span class="badge badge-rejected">Rejected</span>
+                      <% } else { %>
+                        <span class="badge badge-pending">Pending</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <div class="d-flex">
+                        <button class="btn btn-action btn-view view-review-btn" data-review-id="<%= review._id %>" title="View Details">
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        
+                        <% if (review.status === 'Pending' && !review.hidden) { %>
+                          <button class="btn btn-action btn-approve approve-review-btn" data-review-id="<%= review._id %>" title="Approve">
+                            <i class="fas fa-check"></i>
+                          </button>
+                          <button class="btn btn-action btn-reject reject-review-btn" data-review-id="<%= review._id %>" title="Reject">
+                            <i class="fas fa-times"></i>
+                          </button>
+                        <% } %>
+                        
+                        <% if (!review.hidden) { %>
+                          <button class="btn btn-action btn-hide hide-review-btn" data-review-id="<%= review._id %>" title="Hide">
+                            <i class="fas fa-eye-slash"></i>
+                          </button>
+                        <% } else { %>
+                          <button class="btn btn-action btn-show show-review-btn" data-review-id="<%= review._id %>" title="Show">
+                            <i class="fas fa-eye"></i>
+                          </button>
+                        <% } %>
+                        
+                        <% if (review.status === 'Approved' && !review.isVerified && !review.hidden) { %>
+                          <button class="btn btn-action btn-verify verify-review-btn" data-review-id="<%= review._id %>" title="Verify">
+                            <i class="fas fa-check-double"></i>
+                          </button>
+                        <% } %>
+                        
+                        <button class="btn btn-action btn-delete delete-review-btn" data-review-id="<%= review._id %>" title="Delete">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                <% }); %>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            Showing <span class="fw-bold"><%= (pagination.currentPage - 1) * 10 + 1 %></span> to 
+            <span class="fw-bold"><%= Math.min(pagination.currentPage * 10, pagination.totalReviews) %></span> of 
+            <span class="fw-bold"><%= pagination.totalReviews %></span> reviews
+          </div>
+          <nav aria-label="Page navigation">
+            <ul class="pagination">
+              <% if (pagination.hasPrevPage) { %>
+                <li class="page-item">
+                  <a class="page-link" href="?page=<%= pagination.prevPage %>&status=<%= filters.status %>&sortBy=<%= filters.sortBy %>&sortOrder=<%= filters.sortOrder %>&search=<%= filters.search %>" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </a>
+                </li>
+              <% } %>
+              
+              <% 
+                // Calculate page range to display
+                let startPage = Math.max(1, pagination.currentPage - 2);
+                let endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
+                
+                // Ensure we always show 5 pages if possible
+                if (endPage - startPage < 4 && pagination.totalPages > 4) {
+                  if (startPage === 1) {
+                    endPage = Math.min(5, pagination.totalPages);
+                  } else if (endPage === pagination.totalPages) {
+                    startPage = Math.max(1, pagination.totalPages - 4);
+                  }
+                }
+                
+                for (let i = startPage; i <= endPage; i++) { 
+              %>
+                <li class="page-item <%= pagination.currentPage === i ? 'active' : '' %>">
+                  <a class="page-link" href="?page=<%= i %>&status=<%= filters.status %>&sortBy=<%= filters.sortBy %>&sortOrder=<%= filters.sortOrder %>&search=<%= filters.search %>">
+                    <%= i %>
+                  </a>
+                </li>
+              <% } %>
+              
+              <% if (pagination.hasNextPage) { %>
+                <li class="page-item">
+                  <a class="page-link" href="?page=<%= pagination.nextPage %>&status=<%= filters.status %>&sortBy=<%= filters.sortBy %>&sortOrder=<%= filters.sortOrder %>&search=<%= filters.search %>" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                  </a>
+                </li>
+              <% } %>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk Actions Bar -->
+    <div class="bulk-actions-bar" id="bulkActionsBar">
+      <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="fw-bold" id="selectedCount">0</span> reviews selected
+          </div>
+          <div>
+            <button class="btn btn-success btn-sm me-2" id="bulkApproveSelectedBtn">
+              <i class="fas fa-check me-1"></i> Approve Selected
+            </button>
+            <button class="btn btn-secondary btn-sm me-2" id="bulkHideSelectedBtn">
+              <i class="fas fa-eye-slash me-1"></i> Hide Selected
+            </button>
+            <button class="btn btn-outline-secondary btn-sm" id="clearSelectionBtn">
+              <i class="fas fa-times me-1"></i> Clear Selection
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Review Modal -->
+  <div class="modal fade review-modal" id="viewReviewModal" tabindex="-1" aria-labelledby="viewReviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="viewReviewModalLabel">Review Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="review-product">
+                <img src="/placeholder.jpg" alt="Product" id="modalProductImage">
+                <div class="review-product-info">
+                  <h6 id="modalProductName"></h6>
+                  <p>Category: <span id="modalProductCategory"></span></p>
+                </div>
+              </div>
+              <div class="review-user">
+                <div class="review-user-avatar" id="modalUserAvatar"></div>
+                <div class="review-user-info">
+                  <h6 id="modalUserName"></h6>
+                  <p id="modalUserEmail"></p>
+                  <p id="modalUserPhone"></p>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="rating-stars" id="modalRating"></div>
+                <small class="text-muted" id="modalDate"></small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="order-details">
+                <h6>Order Details</h6>
+                <p>Order #: <span id="modalOrderNumber"></span></p>
+                <p>Order Date: <span id="modalOrderDate"></span></p>
+                <p>Size: <span id="modalProductSize"></span></p>
+                <p>Quantity: <span id="modalProductQuantity"></span></p>
+                <p>Price: ₹<span id="modalProductPrice"></span></p>
+              </div>
+            </div>
+          </div>
+          <div class="review-content">
+            <h5 id="modalReviewTitle"></h5>
+            <p id="modalReviewText"></p>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <span class="badge bg-secondary" id="modalHelpfulVotes">
+                <i class="fas fa-thumbs-up me-1"></i> <span id="modalHelpfulCount"></span> found this helpful
+              </span>
+            </div>
+            <div id="modalStatusBadge"></div>
+          </div>
+          <div id="modalRejectionReason" class="alert alert-danger" style="display: none;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <div id="modalActionButtons"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject Review Modal -->
+  <div class="modal fade" id="rejectReviewModal" tabindex="-1" aria-labelledby="rejectReviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rejectReviewModalLabel">Reject Review</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="rejectReviewForm">
+            <input type="hidden" id="rejectReviewId">
+            <div class="mb-3">
+              <label for="rejectionReason" class="form-label">Reason for Rejection</label>
+              <textarea class="form-control" id="rejectionReason" rows="3" required></textarea>
+              <div class="form-text">This reason will be visible to the customer.</div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="confirmRejectBtn">Reject Review</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/select/1.7.0/js/dataTables.select.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize rating distribution chart
+      const ctx = document.getElementById('ratingDistributionChart').getContext('2d');
+      const ratingDistributionChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['5 Stars', '4 Stars', '3 Stars', '2 Stars', '1 Star'],
+          datasets: [{
+            label: 'Number of Reviews',
+            data: <%= JSON.stringify(stats.ratingDistribution.reverse()) %>,
+            backgroundColor: [
+              '#10b981',
+              '#34d399',
+              '#f59e0b',
+              '#fb923c',
+              '#ef4444'
+            ],
+            borderWidth: 0,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+
+      // Initialize DataTable
+      const table = $('#reviewsTable').DataTable({
+        paging: false,
+        searching: false,
+        info: false,
+        columnDefs: [
+          { orderable: false, targets: [0, 7] }
+        ]
+      });
+
+      // Handle select all checkbox
+      $('#selectAll').on('change', function() {
+        const isChecked = $(this).prop('checked');
+        $('.review-checkbox').prop('checked', isChecked);
+        updateBulkActionsBar();
+      });
+
+      // Handle individual checkboxes
+      $(document).on('change', '.review-checkbox', function() {
+        updateBulkActionsBar();
+        
+        // Update select all checkbox
+        const allChecked = $('.review-checkbox:checked').length === $('.review-checkbox').length;
+        $('#selectAll').prop('checked', allChecked);
+      });
+
+      // Update bulk actions bar
+      function updateBulkActionsBar() {
+        const selectedCount = $('.review-checkbox:checked').length;
+        $('#selectedCount').text(selectedCount);
+        
+        if (selectedCount > 0) {
+          $('#bulkActionsBar').addClass('show');
+        } else {
+          $('#bulkActionsBar').removeClass('show');
+        }
+      }
+
+      // Clear selection
+      $('#clearSelectionBtn').on('click', function() {
+        $('.review-checkbox').prop('checked', false);
+        $('#selectAll').prop('checked', false);
+        updateBulkActionsBar();
+      });
+
+      // View Review
+      const viewReviewBtns = document.querySelectorAll('.view-review-btn');
+      viewReviewBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const reviewId = this.getAttribute('data-review-id');
+          
+          // Fetch review details from API
+          fetch(`/admin/reviews/${reviewId}`)
+            .then(response => response.json())
+            .then(data => {
+              if (data.success) {
+                const review = data.review;
+                
+                // Product details
+                let productImage = '/placeholder.jpg';
+                if (review.productId && review.productId.images && review.productId.images.length > 0) {
+                  productImage = review.productId.images.find(img => img.isMain)?.url || review.productId.images[0].url;
+                }
+                document.getElementById('modalProductImage').src = productImage;
+                document.getElementById('modalProductName').textContent = review.productId?.name || 'Unknown Product';
+                document.getElementById('modalProductCategory').textContent = review.productId?.categoryId?.name || 'N/A';
+                
+                // User details
+                document.getElementById('modalUserName').textContent = review.userId?.fullname || 'Unknown User';
+                document.getElementById('modalUserEmail').textContent = review.userId?.email || 'N/A';
+                document.getElementById('modalUserPhone').textContent = review.userId?.mobile || 'N/A';
+                document.getElementById('modalUserAvatar').textContent = (review.userId?.fullname || 'U').charAt(0);
+                
+                // Rating and date
+                let ratingHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                  ratingHtml += `<i class="${i <= review.rating ? 'fas' : 'far'} fa-star"></i>`;
+                }
+                document.getElementById('modalRating').innerHTML = ratingHtml;
+                document.getElementById('modalDate').textContent = `Posted on ${new Date(review.createdAt).toLocaleDateString()}`;
+                
+                // Order details
+                document.getElementById('modalOrderNumber').textContent = review.orderId?.orderNumber || 'N/A';
+                document.getElementById('modalOrderDate').textContent = review.orderId?.orderDate ? new Date(review.orderId.orderDate).toLocaleDateString() : 'N/A';
+                document.getElementById('modalProductSize').textContent = review.orderItem?.size || 'N/A';
+                document.getElementById('modalProductQuantity').textContent = review.orderItem?.quantity || 'N/A';
+                document.getElementById('modalProductPrice').textContent = review.orderItem?.price ? review.orderItem.price.toFixed(2) : 'N/A';
+                
+                // Review content
+                document.getElementById('modalReviewTitle').textContent = review.title || '';
+                document.getElementById('modalReviewText').textContent = review.description || '';
+                document.getElementById('modalHelpfulCount').textContent = review.helpful || 0;
+                
+                // Status badge
+                let statusBadgeHtml = '';
+                if (review.hidden) {
+                  statusBadgeHtml = '<span class="badge badge-hidden">Hidden</span>';
+                } else if (review.status === 'Approved') {
+                  statusBadgeHtml = '<span class="badge badge-approved">Approved</span>';
+                  if (review.isVerified) {
+                    statusBadgeHtml += ' <span class="badge badge-verified">Verified</span>';
+                  }
+                } else if (review.status === 'Rejected') {
+                  statusBadgeHtml = '<span class="badge badge-rejected">Rejected</span>';
+                } else {
+                  statusBadgeHtml = '<span class="badge badge-pending">Pending</span>';
+                }
+                document.getElementById('modalStatusBadge').innerHTML = statusBadgeHtml;
+                
+                // Rejection reason
+                const rejectionReasonEl = document.getElementById('modalRejectionReason');
+                if (review.status === 'Rejected' && review.rejectionReason) {
+                  rejectionReasonEl.textContent = `Rejection Reason: ${review.rejectionReason}`;
+                  rejectionReasonEl.style.display = 'block';
+                } else {
+                  rejectionReasonEl.style.display = 'none';
+                }
+                
+                // Action buttons based on status
+                const actionButtons = document.getElementById('modalActionButtons');
+                actionButtons.innerHTML = '';
+                
+                if (review.status === 'Pending' && !review.hidden) {
+                  actionButtons.innerHTML = `
+                    <button type="button" class="btn btn-success me-2" onclick="approveReview('${reviewId}')">
+                      <i class="fas fa-check me-1"></i> Approve
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="showRejectModal('${reviewId}')">
+                      <i class="fas fa-times me-1"></i> Reject
+                    </button>
+                  `;
+                }
+                
+                if (!review.hidden) {
+                  actionButtons.innerHTML += `
+                    <button type="button" class="btn btn-secondary me-2" onclick="hideReview('${reviewId}')">
+                      <i class="fas fa-eye-slash me-1"></i> Hide
+                    </button>
+                  `;
+                } else {
+                  actionButtons.innerHTML += `
+                    <button type="button" class="btn btn-primary me-2" onclick="showReview('${reviewId}')">
+                      <i class="fas fa-eye me-1"></i> Show
+                    </button>
+                  `;
+                }
+                
+                if (review.status === 'Approved' && !review.isVerified && !review.hidden) {
+                  actionButtons.innerHTML += `
+                    <button type="button" class="btn btn-info me-2" onclick="verifyReview('${reviewId}')">
+                      <i class="fas fa-check-double me-1"></i> Verify
+                    </button>
+                  `;
+                }
+                
+                actionButtons.innerHTML += `
+                  <button type="button" class="btn btn-danger" onclick="deleteReview('${reviewId}')">
+                    <i class="fas fa-trash me-1"></i> Delete
+                  </button>
+                `;
+                
+                // Show modal
+                const viewReviewModal = new bootstrap.Modal(document.getElementById('viewReviewModal'));
+                viewReviewModal.show();
+              } else {
+                Swal.fire({
+                  title: 'Error',
+                  text: data.message || 'Failed to load review details',
+                  icon: 'error',
+                  confirmButtonColor: '#ef4444'
+                });
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while loading review details',
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+              });
+            });
+        });
+      });
+      
+      // Approve Review
+      const approveReviewBtns = document.querySelectorAll('.approve-review-btn');
+      approveReviewBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const reviewId = this.getAttribute('data-review-id');
+          approveReview(reviewId);
+        });
+      });
+      
+      // Reject Review
+      const rejectReviewBtns = document.querySelectorAll('.reject-review-btn');
+      rejectReviewBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const reviewId = this.getAttribute('data-review-id');
+          showRejectModal(reviewId);
+        });
+      });
+      
+      // Hide Review
+      const hideReviewBtns = document.querySelectorAll('.hide-review-btn');
+      hideReviewBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const reviewId = this.getAttribute('data-review-id');
+          hideReview(reviewId);
+        });
+      });
+      
+      // Show Review
+      const showReviewBtns = document.querySelectorAll('.show-review-btn');
+      showReviewBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const reviewId = this.getAttribute('data-review-id');
+          showReview(reviewId);
+        });
+      });
+      
+      // Verify Review
+      const verifyReviewBtns = document.querySelectorAll('.verify-review-btn');
+      verifyReviewBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const reviewId = this.getAttribute('data-review-id');
+          verifyReview(reviewId);
+        });
+      });
+      
+      // Delete Review
+      const deleteReviewBtns = document.querySelectorAll('.delete-review-btn');
+      deleteReviewBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const reviewId = this.getAttribute('data-review-id');
+          deleteReview(reviewId);
+        });
+      });
+      
+      // Confirm Reject
+      const confirmRejectBtn = document.getElementById('confirmRejectBtn');
+      confirmRejectBtn.addEventListener('click', function() {
+        const reviewId = document.getElementById('rejectReviewId').value;
+        const reason = document.getElementById('rejectionReason').value;
+        
+        if (!reason.trim()) {
+          Swal.fire({
+            title: 'Error',
+            text: 'Please provide a reason for rejection',
+            icon: 'error',
+            confirmButtonColor: '#ef4444'
+          });
+          return;
+        }
+        
+        rejectReview(reviewId, reason);
+        
+        // Hide modal
+        const rejectReviewModal = bootstrap.Modal.getInstance(document.getElementById('rejectReviewModal'));
+        rejectReviewModal.hide();
+      });
+      
+      // Bulk Approve Button
+      const bulkApproveBtn = document.getElementById('bulkApproveBtn');
+      if (bulkApproveBtn) {
+        bulkApproveBtn.addEventListener('click', function() {
+          bulkApproveSelected();
+        });
+      }
+      
+      // Bulk Hide Button
+      const bulkHideBtn = document.getElementById('bulkHideBtn');
+      if (bulkHideBtn) {
+        bulkHideBtn.addEventListener('click', function() {
+          bulkHideSelected();
+        });
+      }
+      
+      // Bulk Actions from action bar
+      document.getElementById('bulkApproveSelectedBtn').addEventListener('click', function() {
+        bulkApproveSelected();
+      });
+      
+      document.getElementById('bulkHideSelectedBtn').addEventListener('click', function() {
+        bulkHideSelected();
+      });
+      
+      // Export Button
+      const exportBtn = document.getElementById('exportBtn');
+      exportBtn.addEventListener('click', function() {
+        Swal.fire({
+          title: 'Export Reviews',
+          text: 'Choose export format',
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonColor: '#4f46e5',
+          cancelButtonColor: '#6b7280',
+          confirmButtonText: 'Export as CSV',
+          cancelButtonText: 'Cancel',
+          showDenyButton: true,
+          denyButtonText: 'Export as Excel',
+          denyButtonColor: '#10b981'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Export as CSV
+            window.location.href = `/admin/reviews/export?format=csv&status=${filters.status}&search=${filters.search}`;
+          } else if (result.isDenied) {
+            // Export as Excel
+            window.location.href = `/admin/reviews/export?format=excel&status=${filters.status}&search=${filters.search}`;
+          }
+        });
+      });
+      
+      // Refresh Stats Button
+      const refreshStatsBtn = document.getElementById('refreshStats');
+      refreshStatsBtn.addEventListener('click', function() {
+        window.location.reload();
+      });
+    });
+    
+    // Function to approve review
+    function approveReview(reviewId) {
+      Swal.fire({
+        title: 'Approve Review?',
+        text: 'This review will be visible to all customers.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, approve'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/reviews/${reviewId}/approve`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire({
+                title: 'Success!',
+                text: 'Review has been approved.',
+                icon: 'success',
+                confirmButtonColor: '#10b981'
+              }).then(() => {
+                window.location.reload();
+              });
+            } else {
+              Swal.fire({
+                title: 'Error',
+                text: data.message || 'Failed to approve review',
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+              title: 'Error',
+              text: 'An error occurred while approving the review',
+              icon: 'error',
+              confirmButtonColor: '#ef4444'
+            });
+          });
+        }
+      });
+    }
+    
+    // Function to show reject modal
+    function showRejectModal(reviewId) {
+      document.getElementById('rejectReviewId').value = reviewId;
+      document.getElementById('rejectionReason').value = '';
+      
+      const rejectReviewModal = new bootstrap.Modal(document.getElementById('rejectReviewModal'));
+      rejectReviewModal.show();
+    }
+    
+    // Function to reject review
+    function rejectReview(reviewId, reason) {
+      fetch(`/admin/reviews/${reviewId}/reject`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ reason })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire({
+            title: 'Success!',
+            text: 'Review has been rejected.',
+            icon: 'success',
+            confirmButtonColor: '#10b981'
+          }).then(() => {
+            window.location.reload();
+          });
+        } else {
+          Swal.fire({
+            title: 'Error',
+            text: data.message || 'Failed to reject review',
+            icon: 'error',
+            confirmButtonColor: '#ef4444'
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+          title: 'Error',
+          text: 'An error occurred while rejecting the review',
+          icon: 'error',
+          confirmButtonColor: '#ef4444'
+        });
+      });
+    }
+    
+    // Function to hide review
+    function hideReview(reviewId) {
+      Swal.fire({
+        title: 'Hide Review?',
+        text: 'This review will be hidden from customers but will remain in your database.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#4f46e5',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, hide'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/reviews/${reviewId}/hide`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire({
+                title: 'Success!',
+                text: 'Review has been hidden.',
+                icon: 'success',
+                confirmButtonColor: '#10b981'
+              }).then(() => {
+                window.location.reload();
+              });
+            } else {
+              Swal.fire({
+                title: 'Error',
+                text: data.message || 'Failed to hide review',
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+              title: 'Error',
+              text: 'An error occurred while hiding the review',
+              icon: 'error',
+              confirmButtonColor: '#ef4444'
+            });
+          });
+        }
+      });
+    }
+    
+    // Function to show review
+    function showReview(reviewId) {
+      Swal.fire({
+        title: 'Show Review?',
+        text: 'This review will be visible to customers again.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#4f46e5',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, show'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/reviews/${reviewId}/show`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire({
+                title: 'Success!',
+                text: 'Review is now visible.',
+                icon: 'success',
+                confirmButtonColor: '#10b981'
+              }).then(() => {
+                window.location.reload();
+              });
+            } else {
+              Swal.fire({
+                title: 'Error',
+                text: data.message || 'Failed to show review',
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+              title: 'Error',
+              text: 'An error occurred while showing the review',
+              icon: 'error',
+              confirmButtonColor: '#ef4444'
+            });
+          });
+        }
+      });
+    }
+    
+    // Function to verify review
+    function verifyReview(reviewId) {
+      Swal.fire({
+        title: 'Verify Review?',
+        text: 'This will mark the review as verified.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#0ea5e9',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, verify'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/reviews/${reviewId}/verify`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire({
+                title: 'Success!',
+                text: 'Review has been verified.',
+                icon: 'success',
+                confirmButtonColor: '#10b981'
+              }).then(() => {
+                window.location.reload();
+              });
+            } else {
+              Swal.fire({
+                title: 'Error',
+                text: data.message || 'Failed to verify review',
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+              title: 'Error',
+              text: 'An error occurred while verifying the review',
+              icon: 'error',
+              confirmButtonColor: '#ef4444'
+            });
+          });
+        }
+      });
+    }
+    
+    // Function to delete review
+    function deleteReview(reviewId) {
+      Swal.fire({
+        title: 'Delete Review?',
+        text: 'This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, delete'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch(`/admin/reviews/${reviewId}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire({
+                title: 'Success!',
+                text: 'Review has been deleted.',
+                icon: 'success',
+                confirmButtonColor: '#10b981'
+              }).then(() => {
+                window.location.reload();
+              });
+            } else {
+              Swal.fire({
+                title: 'Error',
+                text: data.message || 'Failed to delete review',
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+              title: 'Error',
+              text: 'An error occurred while deleting the review',
+              icon: 'error',
+              confirmButtonColor: '#ef4444'
+            });
+          });
+        }
+      });
+    }
+    
+    // Function to bulk approve selected reviews
+    function bulkApproveSelected() {
+      const selectedIds = [];
+      $('.review-checkbox:checked').each(function() {
+        selectedIds.push($(this).val());
+      });
+      
+      if (selectedIds.length === 0) {
+        Swal.fire({
+          title: 'No Reviews Selected',
+          text: 'Please select at least one review to approve.',
+          icon: 'warning',
+          confirmButtonColor: '#4f46e5'
+        });
+        return;
+      }
+      
+      Swal.fire({
+        title: 'Approve Selected Reviews?',
+        text: `You are about to approve ${selectedIds.length} reviews. This action cannot be undone.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, approve all'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch('/admin/reviews/bulk/approve', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ids: selectedIds })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire({
+                title: 'Success!',
+                text: data.message || 'Reviews have been approved.',
+                icon: 'success',
+                confirmButtonColor: '#10b981'
+              }).then(() => {
+                window.location.reload();
+              });
+            } else {
+              Swal.fire({
+                title: 'Error',
+                text: data.message || 'Failed to approve reviews',
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+              title: 'Error',
+              text: 'An error occurred while approving the reviews',
+              icon: 'error',
+              confirmButtonColor: '#ef4444'
+            });
+          });
+        }
+      });
+    }
+    
+    // Function to bulk hide selected reviews
+    function bulkHideSelected() {
+      const selectedIds = [];
+      $('.review-checkbox:checked').each(function() {
+        selectedIds.push($(this).val());
+      });
+      
+      if (selectedIds.length === 0) {
+        Swal.fire({
+          title: 'No Reviews Selected',
+          text: 'Please select at least one review to hide.',
+          icon: 'warning',
+          confirmButtonColor: '#4f46e5'
+        });
+        return;
+      }
+      
+      Swal.fire({
+        title: 'Hide Selected Reviews?',
+        text: `You are about to hide ${selectedIds.length} reviews from customers.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#4f46e5',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, hide all'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          fetch('/admin/reviews/bulk/hide', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ids: selectedIds })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire({
+                title: 'Success!',
+                text: data.message || 'Reviews have been hidden.',
+                icon: 'success',
+                confirmButtonColor: '#10b981'
+              }).then(() => {
+                window.location.reload();
+              });
+            } else {
+              Swal.fire({
+                title: 'Error',
+                text: data.message || 'Failed to hide reviews',
+                icon: 'error',
+                confirmButtonColor: '#ef4444'
+              });
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+              title: 'Error',
+              text: 'An error occurred while hiding the reviews',
+              icon: 'error',
+              confirmButtonColor: '#ef4444'
+            });
+          });
+        }
+      });
+    }
+  </script>
+</body>
+</html>

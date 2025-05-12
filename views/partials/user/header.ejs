@@ -418,11 +418,35 @@
         background-color: #333;
         border-color: #333;
     }
+        .position-relative {
+    position: relative;
+}
+
+.count-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: var(--accent-color);
+    color: white;
+    font-size: 0.7rem;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+/* Ensure icons have some space for the badge */
+.nav-buttons .nav-link {
+    margin-right: 6px;
+}
     </style>
 </head>
 
 <body>
-   <header class="transparent dark">
+  <header class="transparent dark">
   <div class="container nav-container">
       <a href="/">
           <div class="logo">ELITE WEAR</div>
@@ -440,11 +464,17 @@
       <div class="auth-buttons">
           <% if (typeof user !== 'undefined' && user) { %>
               <div class="nav-buttons">
-                  <a href="/wishlist" class="nav-link" title="Wishlist">
+                  <a href="/wishlist" class="nav-link position-relative" title="Wishlist">
                       <i class="far fa-heart"></i>
+                      <% if (typeof wishlistCount !== 'undefined' && wishlistCount > 0) { %>
+                          <span class="count-badge"><%= wishlistCount %></span>
+                      <% } %>
                   </a>
-                  <a href="/cart" class="nav-link" title="Cart">
+                  <a href="/cart" class="nav-link position-relative" title="Cart">
                       <i class="fas fa-shopping-cart"></i>
+                      <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
+                          <span class="count-badge"><%= cartCount %></span>
+                      <% } %>
                   </a>
                   <a href="/LoadProfile" class="nav-link" title="My Account">
                       <i class="fas fa-user-circle"></i>
@@ -457,7 +487,6 @@
       </div>
   </div>
 </header>
-
 
     <script>
  document.addEventListener("DOMContentLoaded", () => {

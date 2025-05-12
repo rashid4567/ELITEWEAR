@@ -26,7 +26,6 @@
             top: -8px;
             right: -8px;
             font-size: 9px;
-           
             color: white;
             padding: 1px 4px;
             border-radius: 3px;
@@ -36,6 +35,154 @@
         .tooltip-inner {
             max-width: 250px;
             text-align: left;
+        }
+
+        /* Status badge colors */
+        .status-pending {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .status-processing {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .status-confirmed {
+            background-color: #6f42c1;
+            color: white;
+        }
+        
+        .status-shipped {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .status-delivered {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .status-cancelled {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .status-returned {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .status-return-requested {
+            background-color: #fd7e14;
+            color: white;
+        }
+        
+        .status-return-approved {
+            background-color: #20c997;
+            color: white;
+        }
+
+        /* Timeline styles */
+        .order-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+        
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        
+        .timeline-item:last-child:before {
+            height: 0;
+        }
+        
+        .timeline-badge {
+            position: absolute;
+            left: -29px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+        
+        .timeline-badge i {
+            font-size: 10px;
+            color: white;
+        }
+        
+        .timeline-content {
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            margin-bottom: 10px;
+        }
+        
+        /* Refund styles */
+        .refund-badge {
+            margin-left: 5px;
+            font-size: 0.8em;
+        }
+        
+        .returned-item {
+            background-color: #f8f9fa;
+        }
+        
+        .refund-amount {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .refund-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        /* Direct action button styles */
+        .direct-update-btn, 
+        .direct-approve-return-btn, 
+        .direct-reject-return-btn, 
+        .direct-complete-return-btn {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 4px;
+        }
+
+        .direct-update-btn:disabled,
+        .direct-approve-return-btn:disabled,
+        .direct-reject-return-btn:disabled,
+        .direct-complete-return-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        /* Make buttons more compact */
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        /* Product image styles */
+        .product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -169,71 +316,60 @@
                                                                 <button type="button" class="btn btn-sm btn-link p-0 ms-1" 
                                                                         data-bs-toggle="tooltip" data-placement="top" 
                                                                         title="View Status History"
-                                                                        onclick="showStatusHistory('<%= JSON.stringify(item.statusHistory).replace(/'/g, '\\\'') %>', '<%= item.product_name %>')">
+                                                                        onclick="showStatusHistory('<%= JSON.stringify(item.statusHistory).replace(/'/g, '\\\'').replace(/"/g, '&quot;') %>', '<%= item.product_name.replace(/'/g, '\\\'') %>')">
                                                                     <i class="fas fa-history"></i>
                                                                 </button>
                                                             <% } %>
                                                         </td>
                                                         <td>
-                                                            <div class="dropdown">
-                                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle item-action-btn" 
-                                                                        type="button" 
-                                                                        id="itemActionDropdown<%= item._id %>" 
-                                                                        data-bs-toggle="dropdown" 
-                                                                        aria-expanded="false"
+                                                            <div class="d-flex flex-column gap-1">
+                                                                <!-- Update Status Button - Always visible unless in final state -->
+                                                                <button class="btn btn-sm btn-outline-primary direct-update-btn" 
+                                                                        type="button"
+                                                                        data-item-id="<%= item._id %>" 
+                                                                        data-current-status="<%= item.status %>"
+                                                                        data-product-name="<%= item.product_name.replace(/"/g, '&quot;') %>"
                                                                         <%= ['Cancelled', 'Returned'].includes(item.status) ? 'disabled' : '' %>>
-                                                                    Actions
+                                                                    <i class="fas fa-edit me-1"></i> Update
                                                                 </button>
-                                                                <ul class="dropdown-menu" aria-labelledby="itemActionDropdown<%= item._id %>">
-                                                                    <li>
-                                                                        <button class="dropdown-item btn-update-item-status" 
-                                                                                data-item-id="<%= item._id %>" 
-                                                                                data-current-status="<%= item.status %>"
-                                                                                data-product-name="<%= item.product_name %>"
-                                                                                <%= ['Cancelled', 'Returned'].includes(item.status) ? 'disabled' : '' %>>
-                                                                            <i class="fas fa-edit me-1"></i> Update Status
-                                                                        </button>
-                                                                    </li>
-                                                                    
-                                                                    <% if (item.status === 'Return Requested') { %>
-                                                                    <li>
-                                                                        <button class="dropdown-item btn-approve-item-return" data-item-id="<%= item._id %>">
-                                                                            <i class="fas fa-check me-1"></i> Approve Return
-                                                                        </button>
-                                                                    </li>
-                                                                    <li>
-                                                                        <button class="dropdown-item btn-reject-item-return" data-item-id="<%= item._id %>">
-                                                                            <i class="fas fa-times me-1"></i> Reject Return
-                                                                        </button>
-                                                                    </li>
-                                                                    <% } %>
-                                                                    
-                                                                    <% if (item.status === 'Return Approved') { %>
-                                                                    <li>
-                                                                        <button class="dropdown-item btn-complete-item-return" 
-                                                                               data-item-id="<%= item._id %>"
-                                                                               data-refund-amount="<%= item.total_amount %>">
-                                                                            <i class="fas fa-check-circle me-1"></i> Complete Return
-                                                                        </button>
-                                                                    </li>
-                                                                    <% } %>
-                                                                    
-                                                                    <% if (item.refunded) { %>
-                                                                    <li>
-                                                                        <button class="dropdown-item" disabled>
-                                                                            <i class="fas fa-wallet me-1"></i> Refunded: ₹<%= item.refundAmount.toFixed(2) %>
-                                                                        </button>
-                                                                    </li>
-                                                                    <% } %>
-                                                                    
-                                                                    <% if (['Cancelled', 'Returned'].includes(item.status)) { %>
-                                                                    <li>
-                                                                        <button class="dropdown-item" disabled>
-                                                                            <i class="fas fa-lock me-1"></i> Status Locked
-                                                                        </button>
-                                                                    </li>
-                                                                    <% } %>
-                                                                </ul>
+                                                                
+                                                                <!-- Return Action Buttons - Only visible for specific states -->
+                                                                <% if (item.status === 'Return Requested') { %>
+                                                                <button class="btn btn-sm btn-outline-success direct-approve-return-btn" 
+                                                                        type="button"
+                                                                        data-item-id="<%= item._id %>">
+                                                                    <i class="fas fa-check me-1"></i> Approve
+                                                                </button>
+                                                                
+                                                                <button class="btn btn-sm btn-outline-danger direct-reject-return-btn"
+                                                                        type="button" 
+                                                                        data-item-id="<%= item._id %>">
+                                                                    <i class="fas fa-times me-1"></i> Reject
+                                                                </button>
+                                                                <% } %>
+                                                                
+                                                                <!-- Complete Return Button - Only visible for Return Approved state -->
+                                                                <% if (item.status === 'Return Approved') { %>
+                                                                <button class="btn btn-sm btn-outline-success direct-complete-return-btn"
+                                                                        type="button" 
+                                                                        data-item-id="<%= item._id %>"
+                                                                        data-refund-amount="<%= item.total_amount %>">
+                                                                    <i class="fas fa-check-circle me-1"></i> Complete
+                                                                </button>
+                                                                <% } %>
+                                                                
+                                                                <!-- Status Info - Only visible for final states or refunded items -->
+                                                                <% if (['Cancelled', 'Returned'].includes(item.status)) { %>
+                                                                <span class="badge bg-secondary">
+                                                                    <i class="fas fa-lock me-1"></i> Status Locked
+                                                                </span>
+                                                                <% } %>
+                                                                
+                                                                <% if (item.refunded) { %>
+                                                                <span class="badge bg-success">
+                                                                    <i class="fas fa-wallet me-1"></i> Refunded: ₹<%= item.refundAmount.toFixed(2) %>
+                                                                </span>
+                                                                <% } %>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -391,7 +527,6 @@
                             </div>
                         </div>
                     </div>
-                    <p><strong>This action cannot be undone.</strong></p>
                 </div>
             </div>
         </div>
@@ -420,6 +555,10 @@
                                 <option value="Cancelled">Cancelled</option>
                             </select>
                         </div>
+                        <div class="mb-3">
+                            <label for="statusNote" class="form-label">Note (optional)</label>
+                            <textarea class="form-control" id="statusNote" rows="2" placeholder="Add a note about this status change"></textarea>
+                        </div>
                         <div class="alert alert-warning mt-3" id="statusWarning" style="display: none;">
                             <i class="fas fa-exclamation-triangle me-2"></i>
                             <span>Warning: Setting an item to "Cancelled" or "Returned" status is final and cannot be undone.</span>
@@ -444,6 +583,10 @@
                 </div>
                 <div class="modal-body">
                     <p>Are you sure you want to approve the return for this item? This will change the item status to "Return Approved".</p>
+                    <div class="mb-3">
+                        <label for="approveReturnNote" class="form-label">Note (optional)</label>
+                        <textarea class="form-control" id="approveReturnNote" rows="2" placeholder="Add any notes about this return approval"></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -492,6 +635,10 @@
                         <li>Restore the product stock</li>
                         <li>Process a refund of <span id="refundAmount" class="fw-bold text-success"></span> to the customer's wallet</li>
                     </ul>
+                    <div class="mb-3">
+                        <label for="completeReturnNote" class="form-label">Note (optional)</label>
+                        <textarea class="form-control" id="completeReturnNote" rows="2" placeholder="Add any notes about this return completion"></textarea>
+                    </div>
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
                         <span>Note: The refund amount will be added to the customer's existing wallet balance.</span>
@@ -578,7 +725,8 @@
         // Function to display status history in a modal
         function showStatusHistory(historyJson, productName) {
             try {
-                const history = JSON.parse(historyJson);
+                // Parse the JSON string safely
+                const history = JSON.parse(historyJson.replace(/&quot;/g, '"'));
                 const timelineEl = document.getElementById('statusTimeline');
                 const itemNameEl = document.getElementById('statusHistoryItemName');
                 
@@ -636,17 +784,20 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
-
+            // Initialize all modals
             const itemStatusModal = new bootstrap.Modal(document.getElementById('itemStatusModal'));
             const approveItemReturnModal = new bootstrap.Modal(document.getElementById('approveItemReturnModal'));
             const rejectItemReturnModal = new bootstrap.Modal(document.getElementById('rejectItemReturnModal'));
             const completeItemReturnModal = new bootstrap.Modal(document.getElementById('completeItemReturnModal'));
             const finalStateConfirmModal = new bootstrap.Modal(document.getElementById('finalStateConfirmModal'));
 
-   
+            // Get all form elements
             const itemIdInput = document.getElementById('itemIdInput');
             const productNameInput = document.getElementById('productNameInput');
             const itemStatusSelect = document.getElementById('itemStatusSelect');
+            const statusNote = document.getElementById('statusNote');
+            const approveReturnNote = document.getElementById('approveReturnNote');
+            const completeReturnNote = document.getElementById('completeReturnNote');
             const saveItemStatusBtn = document.getElementById('saveItemStatusBtn');
             const confirmApproveItemReturnBtn = document.getElementById('confirmApproveItemReturnBtn');
             const confirmRejectItemReturnBtn = document.getElementById('confirmRejectItemReturnBtn');
@@ -657,7 +808,7 @@
             const statusWarning = document.getElementById('statusWarning');
             const finalStatusName = document.getElementById('finalStatusName');
 
-            
+            // Show warning for final states
             itemStatusSelect.addEventListener('change', function() {
                 const selectedStatus = this.value;
                 if (['Cancelled', 'Returned'].includes(selectedStatus)) {
@@ -667,7 +818,7 @@
                 }
             });
 
-           
+            // Function to show alert for items in final state
             function showFinalStateAlert(productName, status) {
                 Swal.fire({
                     title: 'Status Cannot Be Changed',
@@ -683,14 +834,14 @@
                 });
             }
 
-           
+            // Update order status
             const updateOrderStatusBtn = document.getElementById('updateOrderStatusBtn');
             updateOrderStatusBtn.addEventListener('click', function() {
                 const orderId = '<%= order._id %>';
                 const status = document.getElementById('orderStatusSelect').value;
                 const currentStatus = '<%= order.status %>';
                 
-             
+                // Check if order is already in a final state
                 if (['Cancelled', 'Returned'].includes(currentStatus)) {
                     Swal.fire({
                         title: 'Cannot Update Order',
@@ -703,11 +854,11 @@
                     return;
                 }
 
-            
+                // Confirm before setting to a final state
                 if (['Cancelled', 'Returned'].includes(status)) {
                     finalStatusName.textContent = status;
                     
-
+                    // Set up the confirmation button action
                     confirmFinalStateBtn.onclick = function() {
                         finalStateConfirmModal.hide();
                         updateOrderStatusRequest(orderId, status);
@@ -757,32 +908,38 @@
                 });
             }
 
-          
-            const updateItemStatusBtns = document.querySelectorAll('.btn-update-item-status');
-            updateItemStatusBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
+            // Direct action buttons for updating item status
+            document.querySelectorAll('.direct-update-btn').forEach(button => {
+                button.addEventListener('click', function() {
                     const itemId = this.getAttribute('data-item-id');
                     const currentStatus = this.getAttribute('data-current-status');
                     const productName = this.getAttribute('data-product-name');
                     
-                
+                    console.log("Update clicked for item:", itemId, "Current status:", currentStatus);
+                    
+                    // Check if item is already in a final state
                     if (['Cancelled', 'Returned'].includes(currentStatus)) {
                         showFinalStateAlert(productName, currentStatus);
                         return;
                     }
                     
-                    
+                    // Check updateability via API
                     checkItemUpdateability(itemId).then(canUpdate => {
                         if (!canUpdate) {
                             showFinalStateAlert(productName, currentStatus);
                             return;
                         }
                         
-                        itemIdInput.value = itemId;
-                        productNameInput.value = productName;
-                        itemStatusSelect.value = currentStatus;
-                        statusWarning.style.display = 'none';
-                        itemStatusModal.show();
+                        // Populate the modal
+                        document.getElementById('itemIdInput').value = itemId;
+                        document.getElementById('productNameInput').value = productName;
+                        document.getElementById('itemStatusSelect').value = currentStatus;
+                        document.getElementById('statusNote').value = ''; // Clear any previous notes
+                        document.getElementById('statusWarning').style.display = 'none';
+                        
+                        // Show the modal
+                        const modal = new bootstrap.Modal(document.getElementById('itemStatusModal'));
+                        modal.show();
                     });
                 });
             });
@@ -790,31 +947,36 @@
             saveItemStatusBtn.addEventListener('click', function() {
                 const itemId = itemIdInput.value;
                 const status = itemStatusSelect.value;
+                const note = statusNote.value.trim();
                 const productName = productNameInput.value;
 
-             
+                // Confirm before setting to a final state
                 if (['Cancelled', 'Returned'].includes(status)) {
                     finalStatusName.textContent = status;
                     
-                  
+                    // Set up the confirmation button action
                     confirmFinalStateBtn.onclick = function() {
                         finalStateConfirmModal.hide();
-                        updateItemStatusRequest(itemId, status, productName);
+                        updateItemStatusRequest(itemId, status, productName, note);
                     };
                     
                     finalStateConfirmModal.show();
                     itemStatusModal.hide();
                 } else {
-                    updateItemStatusRequest(itemId, status, productName);
+                    updateItemStatusRequest(itemId, status, productName, note);
                     itemStatusModal.hide();
                 }
             });
 
-            function updateItemStatusRequest(itemId, status, productName) {
+            function updateItemStatusRequest(itemId, status, productName, note = '') {
                 fetch(`/admin/orders/item/${itemId}/update-status`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ orderItemId: itemId, status }),
+                    body: JSON.stringify({ 
+                        orderItemId: itemId, 
+                        status,
+                        note
+                    }),
                 })
                 .then(res => res.json())
                 .then(data => {
@@ -842,11 +1004,11 @@
                 });
             }
 
-      
-            const approveItemReturnBtns = document.querySelectorAll('.btn-approve-item-return');
-            approveItemReturnBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
+            // Direct action buttons for approving returns
+            document.querySelectorAll('.direct-approve-return-btn').forEach(button => {
+                button.addEventListener('click', function() {
                     const itemId = this.getAttribute('data-item-id');
+                    console.log("Approve return clicked for item:", itemId);
                     
                     // Check updateability via API
                     checkItemUpdateability(itemId).then(canUpdate => {
@@ -855,17 +1017,24 @@
                             return;
                         }
                         
-                        confirmApproveItemReturnBtn.setAttribute('data-item-id', itemId);
-                        approveItemReturnModal.show();
+                        document.getElementById('confirmApproveItemReturnBtn').setAttribute('data-item-id', itemId);
+                        document.getElementById('approveReturnNote').value = ''; // Clear any previous notes
+                        
+                        // Show the modal
+                        const modal = new bootstrap.Modal(document.getElementById('approveItemReturnModal'));
+                        modal.show();
                     });
                 });
             });
 
             confirmApproveItemReturnBtn.addEventListener('click', function() {
                 const itemId = this.getAttribute('data-item-id');
+                const note = approveReturnNote.value.trim();
+                
                 fetch(`/admin/orders/item/${itemId}/approve-return`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" }
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ note })
                 })
                 .then(res => res.json())
                 .then(data => {
@@ -894,21 +1063,26 @@
                 approveItemReturnModal.hide();
             });
 
-            // Reject item return
-            const rejectItemReturnBtns = document.querySelectorAll('.btn-reject-item-return');
-            rejectItemReturnBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
+            // Direct action buttons for rejecting returns
+            document.querySelectorAll('.direct-reject-return-btn').forEach(button => {
+                button.addEventListener('click', function() {
                     const itemId = this.getAttribute('data-item-id');
+                    console.log("Reject return clicked for item:", itemId);
                     
-      
+                    // Check updateability via API
                     checkItemUpdateability(itemId).then(canUpdate => {
                         if (!canUpdate) {
                             showFinalStateAlert("this item", "a final");
                             return;
                         }
                         
-                        confirmRejectItemReturnBtn.setAttribute('data-item-id', itemId);
-                        rejectItemReturnModal.show();
+                        document.getElementById('confirmRejectItemReturnBtn').setAttribute('data-item-id', itemId);
+                        document.getElementById('itemRejectionReason').value = ''; // Clear any previous input
+                        document.getElementById('itemRejectionReason').classList.remove('is-invalid');
+                        
+                        // Show the modal
+                        const modal = new bootstrap.Modal(document.getElementById('rejectItemReturnModal'));
+                        modal.show();
                     });
                 });
             });
@@ -955,35 +1129,41 @@
                 itemRejectionReason.value = '';
             });
 
-            // Complete item return
-            const completeItemReturnBtns = document.querySelectorAll('.btn-complete-item-return');
-            completeItemReturnBtns.forEach(btn => {
-                btn.addEventListener('click', function() {
+            // Direct action buttons for completing returns
+            document.querySelectorAll('.direct-complete-return-btn').forEach(button => {
+                button.addEventListener('click', function() {
                     const itemId = this.getAttribute('data-item-id');
-                    const itemRow = this.closest('tr');
-                    const itemPrice = parseFloat(itemRow.querySelector('td:nth-child(5)').textContent.replace('₹', '').trim());
+                    const refundAmount = this.getAttribute('data-refund-amount');
+                    console.log("Complete return clicked for item:", itemId, "Refund amount:", refundAmount);
                     
-            
+                    // Check updateability via API
                     checkItemUpdateability(itemId).then(canUpdate => {
                         if (!canUpdate) {
                             showFinalStateAlert("this item", "a final");
                             return;
                         }
                         
-                 
-                        refundAmountSpan.textContent = `₹${itemPrice.toFixed(2)}`;
+                        // Set the refund amount in the modal
+                        document.getElementById('refundAmount').textContent = `₹${parseFloat(refundAmount).toFixed(2)}`;
                         
-                        confirmCompleteItemReturnBtn.setAttribute('data-item-id', itemId);
-                        completeItemReturnModal.show();
+                        document.getElementById('confirmCompleteItemReturnBtn').setAttribute('data-item-id', itemId);
+                        document.getElementById('completeReturnNote').value = ''; // Clear any previous notes
+                        
+                        // Show the modal
+                        const modal = new bootstrap.Modal(document.getElementById('completeItemReturnModal'));
+                        modal.show();
                     });
                 });
             });
 
             confirmCompleteItemReturnBtn.addEventListener('click', function() {
                 const itemId = this.getAttribute('data-item-id');
+                const note = completeReturnNote.value.trim();
+                
                 fetch(`/admin/orders/item/${itemId}/complete-return`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" }
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ note })
                 })
                 .then(res => res.json())
                 .then(data => {
@@ -991,60 +1171,74 @@
                         Swal.fire({
                             title: 'Return Completed!',
                             html: `
-                            <div class="text-left">
-                                <p>Return completed successfully.</p>
-                                <div class="alert alert-success mt-3">
-                                    <h6 class="alert-heading">Refund Details:</h6>
-                                    <p class="mb-1">Amount: <strong>₹${data.refundAmount.toFixed(2)}</strong></p>
-                                    <p class="mb-1">Credited to: <strong>${data.userName}'s Wallet</strong></p>
-                                    <p class="mb-0">New Wallet Balance: <strong>₹${data.walletBalance.toFixed(2)}</strong></p>
+                                <div class="text-left">
+                                    <p>Return completed successfully.</p>
+                                    <div class="alert alert-success mt-3">
+                                        <h6 class="alert-heading">Refund Details:</h6>
+                                        <p class="mb-1">Amount: <strong>₹${data.refundAmount.toFixed(2)}</strong></p>
+                                        <p class="mb-1">Credited to: <strong>${data.userName}'s Wallet</strong></p>
+                                        <p class="mb-0">New Wallet Balance: <strong>₹${data.walletBalance.toFixed(2)}</strong></p>
+                                    </div>
                                 </div>
-                            </div>
-                        `,
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                    }).then(() => {
-                        window.location.reload();
-                    });
-                } else {
-                    if (data.isFinalState) {
-                        showFinalStateAlert("this item", data.currentStatus || "a final");
+                            `,
+                            icon: 'success',
+                            confirmButtonText: 'OK'
+                        }).then(() => {
+                            window.location.reload();
+                        });
                     } else {
-                        showToast(data.message || "Failed to complete return", false);
+                        if (data.isFinalState) {
+                            showFinalStateAlert("this item", data.currentStatus || "a final");
+                        } else {
+                            showToast(data.message || "Failed to complete return", false);
+                        }
                     }
-                }
-            })
-            .catch(err => {
-                console.error("Error completing return:", err);
-                showToast("Error completing return: " + err.message, false);
+                })
+                .catch(err => {
+                    console.error("Error completing return:", err);
+                    showToast("Error completing return: " + err.message, false);
+                });
+                completeItemReturnModal.hide();
             });
-            completeItemReturnModal.hide();
-        });
 
-        
-        document.querySelectorAll('tr[data-item-status]').forEach(row => {
-            const status = row.getAttribute('data-item-status');
-            if (['Cancelled', 'Returned'].includes(status)) {
-                const actionBtn = row.querySelector('.item-action-btn');
-                if (actionBtn) {
-                    actionBtn.disabled = true;
-                    actionBtn.setAttribute('title', 'This item is in a final state and cannot be modified');
-                }
-            }
-        });
-
-           
+            // Remove validation error on input
             itemRejectionReason?.addEventListener('input', function() {
                 this.classList.remove('is-invalid');
             });
 
+            // Initialize tooltips
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl, {
                     html: true
                 });
             });
+
+            // Add debug logging for button clicks
+            document.querySelectorAll('.direct-update-btn, .direct-approve-return-btn, .direct-reject-return-btn, .direct-complete-return-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    console.log('Action button clicked:', this.textContent.trim(), 'for item ID:', this.getAttribute('data-item-id'));
+                });
+            });
         });
+
+        // Helper function to check if an element is disabled
+        function isElementDisabled(element) {
+            return element.disabled || element.classList.contains('disabled') || 
+                element.getAttribute('aria-disabled') === 'true';
+        }
+
+        // Debugging function to help troubleshoot
+        function debugElement(selector) {
+            const elements = document.querySelectorAll(selector);
+            console.log(`Found ${elements.length} elements matching selector: ${selector}`);
+            elements.forEach((el, index) => {
+                console.log(`Element ${index}:`, el);
+                console.log(`  - disabled:`, isElementDisabled(el));
+                console.log(`  - visible:`, el.offsetParent !== null);
+                console.log(`  - has click listeners:`, el.onclick !== null || el._events?.click);
+            });
+        }
     </script>
 </body>
 </html>

@@ -12,7 +12,7 @@ const { Server } = require("http")
 const passport = require("./config/passport")
 const flash = require("connect-flash")
 const moment = require("moment") 
-
+const addCountsMiddleware = require("./middleware/addCountsMiddleware")
 connectDB()
 
 
@@ -24,6 +24,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(flash())
+app.use(addCountsMiddleware)
 app.use(
   session({
     secret: process.env.SESSION_SECRET,

@@ -200,6 +200,13 @@ const addToCart = async (req, res) => {
         });
       }
 
+      // Calculate total quantity of this productId across all variations
+      const totalProductQuantity = userCart.items.reduce((total, item) => {
+        return item.productId.toString() === productId 
+          ? total + item.quantity 
+          : total;
+      }, 0);
+
       const itemIndex = userCart.items.findIndex(
         (item) =>
           item.productId.toString() === productId &&
@@ -209,6 +216,16 @@ const addToCart = async (req, res) => {
 
       if (itemIndex > -1) {
         const newQuantity = userCart.items[itemIndex].quantity + parsedQuantity;
+        
+        // Check combined quantity against 10 item limit
+        const otherVariantsQuantity = totalProductQuantity - userCart.items[itemIndex].quantity;
+        if (otherVariantsQuantity + newQuantity > 10) {
+          return res.status(400).json({
+            success: false,
+            message: `You can only have up to 10 items of the same product in your cart`,
+          });
+        }
+        
         if (selectedVariant && newQuantity > selectedVariant.varientquatity) {
           return res.status(400).json({
             success: false,
@@ -223,6 +240,14 @@ const addToCart = async (req, res) => {
         }
         userCart.items[itemIndex].quantity = newQuantity;
       } else {
+        // For new variant, check if adding this quantity would exceed 10 item limit
+        if (totalProductQuantity + parsedQuantity > 10) {
+          return res.status(400).json({
+            success: false,
+            message: `You can only have up to 10 items of the same product in your cart`,
+          });
+        }
+        
         userCart.items.push({
           productId,
           quantity: parsedQuantity,
@@ -345,19 +370,38 @@ const updateCartQuantity = async (req, res) => {
 
     const newQuantity = userCart.items[itemIndex].quantity + parsedChange;
 
-    if (size && product.variants?.length > 0) {
-      const variant = product.variants.find((v) => v.size === size);
-      if (variant && newQuantity > variant.varientquatity) {
+    // If decreasing quantity, we don't need to check product limits
+    if (parsedChange > 0) {
+      // Calculate total quantity of this productId across all variations
+      const totalProductQuantity = userCart.items.reduce((total, item) => {
+        return item.productId.toString() === productId 
+          ? total + (item === userCart.items[itemIndex] ? 0 : item.quantity) 
+          : total;
+      }, 0);
+      
+      // Check if increasing would exceed 10 item limit
+      if (totalProductQuantity + newQuantity > 10) {
         return res.status(400).json({
           success: false,
-          message: `Only ${variant.varientquatity} items available for this size`,
+          message: `You can only have up to 10 items of the same product in your cart`,
         });
       }
-    } else if (newQuantity > product.stock) {
-      return res.status(400).json({
-        success: false,
-        message: `Only ${product.stock} items available`,
-      });
+      
+      // Check against stock limits
+      if (size && product.variants?.length > 0) {
+        const variant = product.variants.find((v) => v.size === size);
+        if (variant && newQuantity > variant.varientquatity) {
+          return res.status(400).json({
+            success: false,
+            message: `Only ${variant.varientquatity} items available for this size`,
+          });
+        }
+      } else if (newQuantity > product.stock) {
+        return res.status(400).json({
+          success: false,
+          message: `Only ${product.stock} items available`,
+        });
+      }
     }
 
     if (newQuantity <= 0) {
@@ -377,6 +421,7 @@ const updateCartQuantity = async (req, res) => {
       .json({ success: false, message: "Failed to update cart" });
   }
 };
+
 
 const removeFromCart = async (req, res) => {
   try {

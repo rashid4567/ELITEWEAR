@@ -48,71 +48,6 @@ const productdetails = async (req, res) => {
       .limit(4)
       .lean();
 
-    // Initialize review variables
-    let reviews = [];
-    let reviewsError = false;
-    let reviewStats = {
-      average: 0,
-      count: 0,
-      distribution: {
-        1: { count: 0, percentage: 0 },
-        2: { count: 0, percentage: 0 },
-        3: { count: 0, percentage: 0 },
-        4: { count: 0, percentage: 0 },
-        5: { count: 0, percentage: 0 }
-      }
-    };
-
-    // Pagination parameters
-    const page = parseInt(req.query.page) || 1;
-    const limit = 5; // Reviews per page
-    const skip = (page - 1) * limit;
-    let totalPages = 0;
-
-    try {
-      // Fetch reviews with pagination
-      reviews = await Review.find({ productId })
-        .populate("userId", "name profileImage")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean();
-
-      // Count total reviews for pagination
-      const totalReviews = await Review.countDocuments({ productId });
-      totalPages = Math.ceil(totalReviews / limit);
-
-      // Calculate review statistics if there are reviews
-      if (totalReviews > 0) {
-        // Get all reviews for statistics (without pagination)
-        const allReviews = await Review.find({ productId }).lean();
-        
-        // Calculate average rating
-        const totalRating = allReviews.reduce((sum, review) => sum + review.rating, 0);
-        reviewStats.average = totalRating / totalReviews;
-        reviewStats.count = totalReviews;
-
-        // Calculate distribution
-        allReviews.forEach(review => {
-          const rating = review.rating;
-          if (reviewStats.distribution[rating]) {
-            reviewStats.distribution[rating].count++;
-          }
-        });
-
-        // Calculate percentages
-        for (let i = 1; i <= 5; i++) {
-          reviewStats.distribution[i].percentage = Math.round(
-            (reviewStats.distribution[i].count / totalReviews) * 100
-          );
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
-      reviewsError = true;
-      // We'll still render the page, but with an error flag for reviews
-    }
-
     // Render the product details page with all data
     res.render("productDetails", {
       user: req.session.user ? await User.findById(req.session.user) : null,
@@ -120,12 +55,7 @@ const productdetails = async (req, res) => {
       quantity: quantity,
       totalOffer: totalOffer,
       category: findCategory,
-      similarProducts: similarProducts,
-      reviews: reviews,
-      reviewStats: reviewStats,
-      reviewsError: reviewsError,
-      currentPage: page,
-      totalPages: totalPages
+      similarProducts: similarProducts
     });
   } catch (error) {
     console.error("Error in productdetails:", error);
@@ -169,20 +99,19 @@ const markReviewHelpful = async (req, res) => {
       });
     }
 
-    // Add user to helpful votes and increment helpful count
+    // Add user to helpful votes
     if (!review.helpfulVotes) {
       review.helpfulVotes = [];
     }
     
     review.helpfulVotes.push(userId);
-    review.helpful = (review.helpful || 0) + 1;
     
     await review.save();
 
     res.json({
       success: true,
       message: "Review marked as helpful",
-      helpfulCount: review.helpful || review.helpfulVotes.length
+      helpfulCount: review.helpfulVotes.length
     });
   } catch (error) {
     console.error("Error marking review as helpful:", error);
@@ -194,7 +123,7 @@ const markReviewHelpful = async (req, res) => {
 };
 
 /**
- * API endpoint to reload reviews (for retry functionality)
+ * API endpoint to reload reviews (for AJAX loading)
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
@@ -204,6 +133,7 @@ const reloadReviews = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
+    const userId = req.session.user;
 
     // Validate productId
     if (!mongoose.Types.ObjectId.isValid(productId)) {
@@ -214,8 +144,11 @@ const reloadReviews = async (req, res) => {
     }
 
     // Fetch reviews with pagination
-    const reviews = await Review.find({ productId })
-      .populate("userId", "name profileImage")
+    const reviews = await Review.find({ 
+      productId,
+      hidden: { $ne: true } // Don't show hidden reviews
+    })
+      .populate("userId", "name email profileImage")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -231,14 +164,20 @@ const reloadReviews = async (req, res) => {
       images: review.images || [],
       helpfulVotes: review.helpfulVotes || [],
       isVerified: review.isVerified || false,
+      // Check if current user has already marked this review as helpful
+      userHasMarkedHelpful: userId ? (review.helpfulVotes || []).includes(userId) : false,
       user: {
         fullname: review.userId?.name || 'Anonymous',
+        email: review.userId?.email || '',
         profileImage: review.userId?.profileImage || '/images/default-avatar.jpg'
       }
     }));
 
     // Count total reviews for pagination
-    const totalReviews = await Review.countDocuments({ productId });
+    const totalReviews = await Review.countDocuments({ 
+      productId,
+      hidden: { $ne: true }
+    });
     const totalPages = Math.ceil(totalReviews / limit);
 
     // Calculate review statistics
@@ -256,7 +195,10 @@ const reloadReviews = async (req, res) => {
 
     if (totalReviews > 0) {
       // Get all reviews for statistics (without pagination)
-      const allReviews = await Review.find({ productId }).lean();
+      const allReviews = await Review.find({ 
+        productId,
+        hidden: { $ne: true }
+      }).lean();
       
       // Calculate average rating
       const totalRating = allReviews.reduce((sum, review) => sum + review.rating, 0);
@@ -304,7 +246,8 @@ const reloadReviews = async (req, res) => {
  */
 const checkAuth = (req, res) => {
   res.json({
-    authenticated: !!req.session.user
+    authenticated: !!req.session.user,
+    userId: req.session.user || null
   });
 };
 
@@ -314,8 +257,12 @@ const checkAuth = (req, res) => {
  */
 const updateProductRatings = async (productId) => {
   try {
-    // Get all reviews for the product
-    const reviews = await Review.find({ productId }).lean();
+    // Get all reviews for the product (excluding hidden reviews)
+    const reviews = await Review.find({ 
+      productId,
+      hidden: { $ne: true }
+    }).lean();
+    
     const totalReviews = reviews.length;
 
     if (totalReviews > 0) {
@@ -351,25 +298,100 @@ const updateProductRatings = async (productId) => {
           distribution: distribution
         }
       });
+
+      return {
+        average: averageRating,
+        count: totalReviews,
+        distribution: distribution
+      };
     } else {
       // No reviews, reset ratings
+      const emptyDistribution = {
+        1: { count: 0, percentage: 0 },
+        2: { count: 0, percentage: 0 },
+        3: { count: 0, percentage: 0 },
+        4: { count: 0, percentage: 0 },
+        5: { count: 0, percentage: 0 }
+      };
+      
       await Product.findByIdAndUpdate(productId, {
         ratings: {
           average: 0,
           count: 0,
-          distribution: {
-            1: { count: 0, percentage: 0 },
-            2: { count: 0, percentage: 0 },
-            3: { count: 0, percentage: 0 },
-            4: { count: 0, percentage: 0 },
-            5: { count: 0, percentage: 0 }
-          }
+          distribution: emptyDistribution
         }
       });
+
+      return {
+        average: 0,
+        count: 0,
+        distribution: emptyDistribution
+      };
     }
   } catch (error) {
     console.error("Error updating product ratings:", error);
     throw error;
+  }
+};
+
+/**
+ * Submit a new review
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const submitReview = async (req, res) => {
+  try {
+    const { productId, rating, title, description } = req.body;
+    const userId = req.session.user;
+
+    // Check if user is logged in
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Please log in to submit a review"
+      });
+    }
+
+    // Check if user has already reviewed this product
+    const existingReview = await Review.findOne({ productId, userId });
+    
+    if (existingReview) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already reviewed this product"
+      });
+    }
+
+    // Create new review
+    const newReview = new Review({
+      productId,
+      userId,
+      rating: parseInt(rating),
+      title,
+      description,
+      status: 'Approved', // Auto-approve for now, can be changed to 'Pending' if moderation is needed
+      helpfulVotes: [],
+      images: [] // Handle image uploads separately
+    });
+
+    // Save review
+    await newReview.save();
+
+    // Update product ratings
+    const newRating = await updateProductRatings(productId);
+
+    res.json({
+      success: true,
+      message: "Review submitted successfully",
+      review: newReview,
+      newRating
+    });
+  } catch (error) {
+    console.error("Error submitting review:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while submitting your review"
+    });
   }
 };
 
@@ -378,5 +400,6 @@ module.exports = {
   markReviewHelpful,
   reloadReviews,
   checkAuth,
-  updateProductRatings
+  updateProductRatings,
+  submitReview
 };

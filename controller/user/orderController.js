@@ -500,13 +500,12 @@ const getUserOrders = async (req, res) => {
 
 
 
-// Then update the getOrderDetails function
+
 const getOrderDetails = async (req, res) => {
   try {
       const orderId = req.params.id;
       
-      // Get user ID from req.session.user or req.user._id
-      // The logs show you have a user ID in the format: 67e1476e096579d2c1aa8968
+
       const userId = req.user?._id || req.session.user;
       
       console.log(`[DEBUG] Getting order details for order: ${orderId}, user: ${userId}`);
@@ -516,24 +515,25 @@ const getOrderDetails = async (req, res) => {
           return res.redirect('/orders?error=Invalid order ID');
       }
       
-      // Find the order and verify it belongs to the user
-      const order = await Order.findOne({ _id: orderId, userId: userId });
+
+      const order = await Order.findOne({ _id: orderId, userId: userId })
+      .populate('address');
       
       if (!order) {
           console.error(`[ERROR] Order not found or doesn't belong to user: ${orderId}`);
           return res.redirect('/orders?error=Order not found');
       }
       
-      // Get order items
+      
       const orderItems = await OrderItem.find({ orderId: orderId })
           .populate('productId', 'name images price description')
           .sort({ createdAt: -1 });
           
       console.log(`[DEBUG] Found ${orderItems.length} order items for order ${orderId}`);
       
-      // Create a map of product IDs to determine if the user has already reviewed them
+
       const productIds = orderItems.map(item => {
-          // Safely extract the product ID
+      
           if (item.productId) {
               if (typeof item.productId === 'object' && item.productId._id) {
                   return item.productId._id.toString();
@@ -542,20 +542,20 @@ const getOrderDetails = async (req, res) => {
               }
           }
           return null;
-      }).filter(id => id !== null); // Filter out null values
+      }).filter(id => id !== null); 
       
-      // Create a map of order item IDs for easier lookup
+      
       const orderItemMap = {};
       orderItems.forEach(item => {
           orderItemMap[item._id.toString()] = item;
       });
       
-      // Find all reviews by this user for these products
+
       let reviews = [];
       let reviewsMap = {};
       
       try {
-          // Use 'productId' field instead of 'product' to match our schema
+
           reviews = await Review.find({
               userId: userId,
               productId: { $in: productIds }
@@ -563,7 +563,7 @@ const getOrderDetails = async (req, res) => {
           
           console.log(`[DEBUG] Found ${reviews.length} reviews by user for products in this order`);
           
-          // Create a map of product IDs to review data
+          
           reviews.forEach(review => {
               if (review.productId) {
                   const productId = review.productId.toString();
@@ -573,7 +573,7 @@ const getOrderDetails = async (req, res) => {
                   };
                   console.log(`[DEBUG] Review for product ${productId}: Found, Can review: true`);
                   
-                  // Also check if this review is for a specific order item
+     
                   if (review.orderItem && orderItemMap[review.orderItem.toString()]) {
                       const orderItemId = review.orderItem.toString();
                       console.log(`[DEBUG] Review is for order item ${orderItemId}`);
@@ -581,7 +581,7 @@ const getOrderDetails = async (req, res) => {
               }
           });
           
-          // For products without reviews, set hasReview to false
+
           productIds.forEach(productId => {
               if (!reviewsMap[productId]) {
                   reviewsMap[productId] = {
@@ -592,7 +592,7 @@ const getOrderDetails = async (req, res) => {
               }
           });
           
-          // Check if any order items have reviews directly associated with them
+       
           orderItems.forEach(item => {
               const itemId = item._id.toString();
               const productId = item.productId && item.productId._id ? 
@@ -600,7 +600,7 @@ const getOrderDetails = async (req, res) => {
                   (item.productId ? item.productId.toString() : null);
                   
               if (productId) {
-                  // Initialize the product in reviewsMap if it doesn't exist
+       
                   if (!reviewsMap[productId]) {
                       reviewsMap[productId] = {
                           hasReview: false,
@@ -608,11 +608,11 @@ const getOrderDetails = async (req, res) => {
                       };
                   }
                   
-                  // Check if there's a review specifically for this order item
+        
                   const itemReview = reviews.find(r => r.orderItem && r.orderItem.toString() === itemId);
                   
                   if (itemReview) {
-                      // Update the reviewsMap to indicate this specific item has been reviewed
+
                       reviewsMap[productId].hasReview = true;
                       reviewsMap[productId].review = itemReview;
                       reviewsMap[productId].orderItemReviewed = itemId;
@@ -622,11 +622,11 @@ const getOrderDetails = async (req, res) => {
           });
       } catch (reviewError) {
           console.error('Error fetching reviews:', reviewError);
-          // Continue with empty reviews if there's an error
+         
           reviewsMap = {};
       }
       
-      // Render the order details page
+
       console.log(`[DEBUG] Rendering order details page for order ${orderId}`);
       res.render('orderDetails', {
           title: 'Order Details',
@@ -636,7 +636,7 @@ const getOrderDetails = async (req, res) => {
       });
   } catch (error) {
       console.error('Error getting order details:', error);
-      // Redirect to orders page with error message
+   
       return res.redirect('/orders?error=An error occurred while loading order details');
   }
 };

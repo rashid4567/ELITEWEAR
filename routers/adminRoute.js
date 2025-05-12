@@ -127,12 +127,32 @@ router.get("/refund-statistics", adminAuth, adminWalletController.getRefundStati
 router.post("/process-manual-refund", adminAuth, adminWalletController.processManualRefund)
 router.get("/refund-details/:transactionRef", adminAuth, adminWalletController.getRefundDetails)
 
+// Review management routes
 router.get("/reviews", adminAuth, reviewController.getAllReviews)
+router.get("/reviews/:id", adminAuth, reviewController.getReviewById)
 router.post("/reviews/:id/approve", adminAuth, reviewController.approveReview)
 router.post("/reviews/:id/reject", adminAuth, reviewController.rejectReview)
+router.post("/reviews/:id/hide", adminAuth, reviewController.hideReview)
+router.post("/reviews/:id/show", adminAuth, reviewController.showReview)
+router.post("/reviews/:id/verify", adminAuth, reviewController.verifyReview)
 router.delete("/reviews/:id", adminAuth, reviewController.deleteReview)
 router.get("/review-statistics", adminAuth, reviewController.getReviewStatistics)
 
+// Bulk review actions
+router.post("/reviews/bulk/approve", adminAuth, reviewController.bulkApproveReviews)
+router.post("/reviews/bulk/hide", adminAuth, reviewController.bulkHideReviews)
+
+// Review export routes
+router.get("/reviews/export", adminAuth, (req, res) => {
+  const format = req.query.format || 'csv';
+  if (format === 'csv') {
+    reviewController.exportReviewsCSV(req, res);
+  } else if (format === 'excel') {
+    reviewController.exportReviewsExcel(req, res);
+  } else {
+    res.status(400).send("Invalid export format");
+  }
+})
 
 // Settings route
 router.get("/settings", adminAuth, (req, res) => {

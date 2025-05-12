@@ -705,15 +705,15 @@ const editProduct = async (req, res) => {
         const variantPrice = Number.parseFloat(variant.varientPrice);
         const variantQuantity = Number.parseInt(variant.varientquatity);
 
-      
-        const salePrice = variantPrice - (variantPrice * effectiveDiscount) / 100;
-
-        const variantObj = {
-          size: variant.size,
-          varientPrice: variantPrice,
-          salePrice: Number.parseFloat(salePrice.toFixed(2)),
-          varientquatity: variantQuantity,
-        };
+        // Use the utility function to apply discount with minimum price constraint
+        const variantObj = applyDiscountToVariant(
+          {
+            size: variant.size,
+            varientPrice: variantPrice,
+            varientquatity: variantQuantity,
+          },
+          effectiveDiscount
+        );
 
         if (variant._id) {
           variantObj._id = variant._id;
@@ -725,17 +725,25 @@ const editProduct = async (req, res) => {
 
     product.variants = variants.length > 0 ? variants : product.variants;
 
+    // If there are existing variants that weren't updated in the form, apply the discount to them
     if (product.variants && product.variants.length > 0) {
       product.variants = product.variants.map((variant) => {
-        const salePrice =
-          variant.varientPrice -
-          (variant.varientPrice * effectiveDiscount) / 100;
-        return {
-          ...variant,
-          salePrice: Number.parseFloat(salePrice.toFixed(2)),
-        };
+        // Use the utility function to apply discount with minimum price constraint
+        return applyDiscountToVariant(
+          {
+            ...variant,
+            varientPrice: variant.varientPrice,
+            varientquatity: variant.varientquatity,
+          },
+          effectiveDiscount
+        );
       });
     }
+
+    // Calculate the sale price for the main product using the utility function
+    const regularPrice = product.variants[0]?.varientPrice || 0;
+    product.regularPrice = regularPrice;
+    product.salePrice = calculateSalePrice(regularPrice, effectiveDiscount);
 
     await product.save();
 
@@ -750,6 +758,10 @@ const editProduct = async (req, res) => {
       message: "Failed to update product: " + error.message,
     });
   }
+};
+
+module.exports = {
+  editProduct,
 };
 
 const ProductManagement = async (req, res) => {
