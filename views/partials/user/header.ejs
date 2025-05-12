@@ -2,447 +2,840 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELITE WEAR - Premium Men's Shirts</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-    /* Elite Wear - Premium Header Styles */
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>ELITE WEAR - Premium Men's Shirts</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+   <style>
+   /* Elite Wear - Premium Header Styles */
 
-    :root {
-        --primary-color: #000;
-        --secondary-color: #fff;
-        --accent-color: #ff4757;
-        --gray-light: #f8f9fa;
-        --gray-medium: #e9ecef;
-        --gray-dark: #6c757d;
-        --border-color: #dee2e6;
-        --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        --transition: all 0.3s ease;
-        --font-primary: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
-          "Open Sans", "Helvetica Neue", sans-serif;
-        --header-height: 70px; /* Define header height variable */
-    }
-      
-    /* Header Styles */
-    header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        z-index: 1050; /* Higher than sidebar */
-        background-color: transparent;
-        transition: var(--transition);
-        padding: 12px 0;
-        height: var(--header-height);
-    }
-      
-    /* Add margin to body to prevent content from being hidden under header */
-    body {
-        padding-top: var(--header-height);
-        margin: 0;
-    }
-      
-    /* Header states */
-    header.transparent {
-        background-color: transparent;
-    }
-      
-    header.dark {
-        background-color: var(--primary-color);
-    }
-      
-    header.light {
-        background-color: var(--secondary-color);
-        box-shadow: var(--box-shadow);
-    }
-      
-    header.scrolled {
-        padding: 8px 0; /* Reduced padding when scrolled */
-    }
-      
-    .nav-container {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-        height: 100%;
-    }
-      
-    .logo {
-        font-family: var(--font-primary);
-        font-size: 1.8rem;
-        font-weight: 700;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        transition: var(--transition);
-    }
-      
-    /* Logo color based on header state */
-    header.transparent .logo,
-    header.dark .logo {
-        color: var(--secondary-color);
-    }
-      
-    header.light .logo {
-        color: var(--primary-color);
-    }
-      
-    .menu-toggle {
-        display: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        transition: var(--transition);
-    }
-      
-    /* Menu toggle color based on header state */
-    header.transparent .menu-toggle,
-    header.dark .menu-toggle {
-        color: var(--secondary-color);
-    }
-      
-    header.light .menu-toggle {
-        color: var(--primary-color);
-    }
-      
-    .nav-menu {
-        display: flex;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-    }
-      
-    .nav-item {
-        margin: 0 15px;
-    }
-      
-    .nav-link {
-        font-family: var(--font-primary);
-        font-size: 1rem;
-        font-weight: 500;
-        text-decoration: none !important; /* Remove underline */
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        padding: 5px 0;
-        position: relative;
-        transition: var(--transition);
-    }
-      
-    /* Nav link color based on header state */
-    header.transparent .nav-link,
-    header.dark .nav-link {
-        color: var(--secondary-color);
-    }
-      
-    header.light .nav-link {
-        color: var(--primary-color);
-    }
-      
-    /* Remove underline effect completely */
-    .nav-link::after {
-        display: none !important; /* Remove the underline effect */
-    }
-      
-    .nav-link:hover {
-        color: var(--accent-color);
-    }
-      
-    /* Auth Buttons */
-    .auth-buttons {
-        display: flex;
-        align-items: center;
-    }
-      
-    .auth-button {
-        font-family: var(--font-primary);
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-decoration: none !important; /* Remove underline */
-        padding: 8px 16px;
-        border-radius: 4px;
-        transition: var(--transition);
-        margin-left: 10px;
-    }
-      
-    /* Login button color based on header state */
-    header.transparent .login-button,
-    header.dark .login-button {
-        color: var(--secondary-color);
-        border: 1px solid var(--secondary-color);
-    }
-      
-    header.light .login-button {
-        color: var(--primary-color);
-        border: 1px solid var(--primary-color);
-    }
-      
-    header.transparent .login-button:hover,
-    header.dark .login-button:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        transform: translateY(-2px);
-    }
-      
-    header.light .login-button:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-        transform: translateY(-2px);
-    }
-      
-    .signup-button {
-        background-color: var(--primary-color); /* Changed to black */
-        color: var(--secondary-color);
-        border: 1px solid var(--primary-color);
-    }
-      
-    .signup-button:hover {
-        background-color: #333; /* Darker black on hover */
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-      
-    /* Nav Buttons (for logged in users) */
-    .nav-buttons {
-        display: flex;
-        align-items: center;
-    }
-      
-    .nav-buttons .nav-link {
-        font-size: 1.2rem;
-        margin-left: 15px;
-        padding: 5px;
-        text-decoration: none !important; /* Ensure no underline */
-    }
-      
-    .nav-buttons .nav-link:hover {
-        color: var(--accent-color);
-        transform: translateY(-2px);
-    }
-      
-    /* Profile Dropdown */
-    .dropdown {
-        position: relative;
-    }
-      
-    .dropdown-content {
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background-color: var(--secondary-color);
-        min-width: 180px;
-        box-shadow: var(--box-shadow);
-        border-radius: 4px;
-        padding: 10px 0;
-        z-index: 1000;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(10px);
-        transition: var(--transition);
-    }
-      
-    .dropdown-content.show {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-      
-    .dropdown-content a {
-        display: block;
-        padding: 10px 20px;
-        color: var(--primary-color);
-        text-decoration: none !important; /* Remove underline */
-        font-family: var(--font-primary);
-        font-size: 0.9rem;
-        transition: var(--transition);
-    }
-      
-    .dropdown-content a:hover {
-        background-color: var(--gray-light);
-        color: var(--accent-color);
-    }
-      
-    .dropdown-content a i {
-        margin-right: 10px;
-        width: 16px;
-        text-align: center;
-    }
-      
-    /* Responsive Styles */
-    @media (max-width: 991px) {
-        .nav-menu {
-            position: fixed;
-            top: 0;
-            left: -100%;
-            width: 80%;
-            max-width: 300px;
-            height: 100vh;
-            background-color: var(--secondary-color);
-            flex-direction: column;
-            padding: 80px 20px 20px;
-            transition: 0.4s;
-            box-shadow: var(--box-shadow);
-            z-index: 1001;
-        }
-      
-        .nav-menu.active {
-            left: 0;
-        }
-      
-        .nav-item {
-            margin: 15px 0;
-        }
-      
-        .nav-menu .nav-link {
-            color: var(--primary-color);
-            font-size: 1.1rem;
-        }
-      
-        .menu-toggle {
-            display: block;
-            z-index: 1002;
-        }
-      
-        .menu-toggle.active {
-            color: var(--primary-color);
-        }
-      
-        .auth-buttons {
-            margin-left: auto;
-        }
-      
-        .auth-button {
-            padding: 6px 12px;
-            font-size: 0.8rem;
-        }
-    }
-      
-    @media (max-width: 768px) {
-        :root {
-            --header-height: 60px; /* Smaller header on mobile */
-        }
-        
-        .logo {
-            font-size: 1.5rem;
-        }
-    }
-      
-    @media (max-width: 576px) {
-        .logo {
-            font-size: 1.3rem;
-        }
-      
-        .auth-button {
-            padding: 5px 10px;
-            font-size: 0.75rem;
-        }
-      
-        .nav-buttons .nav-link {
-            font-size: 1rem;
-            margin-left: 10px;
-        }
-    }
-      
-    /* Animation for menu toggle */
-    @keyframes menuFade {
-        from {
-            opacity: 0;
-            transform: translateX(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
-    }
-      
-    .nav-menu.active .nav-item {
-        animation: menuFade 0.4s ease forwards;
-        opacity: 0;
-    }
-      
-    .nav-menu.active .nav-item:nth-child(1) {
-        animation-delay: 0.1s;
-    }
-      
-    .nav-menu.active .nav-item:nth-child(2) {
-        animation-delay: 0.2s;
-    }
-      
-    .nav-menu.active .nav-item:nth-child(3) {
-        animation-delay: 0.3s;
-    }
-      
-    .nav-menu.active .nav-item:nth-child(4) {
-        animation-delay: 0.4s;
-    }
-      
-    /* Overlay for mobile menu */
-    .menu-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        opacity: 0;
-        visibility: hidden;
-        transition: var(--transition);
-    }
-      
-    .menu-overlay.active {
-        opacity: 1;
-        visibility: visible;
-    }
+   :root {
+       --primary-color: #000;
+       --secondary-color: #fff;
+       --accent-color: #3b82f6;
+       --accent-hover: #2563eb;
+       --accent-secondary: #8b5cf6;
+       --accent-tertiary: #ec4899;
+       --gray-light: #f8f9fa;
+       --gray-medium: #e9ecef;
+       --gray-dark: #6c757d;
+       --border-color: #dee2e6;
+       --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+       --transition: all 0.3s ease;
+       --font-primary: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+         "Open Sans", "Helvetica Neue", sans-serif;
+       --header-height: 70px; /* Define header height variable */
+       --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6);
+       --gradient-secondary: linear-gradient(135deg, #8b5cf6, #ec4899);
+       --gradient-accent: linear-gradient(135deg, #3b82f6, #10b981);
+   }
+     
+   /* Header Styles */
+   header {
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       z-index: 1050; /* Higher than sidebar */
+       background-color: transparent;
+       transition: var(--transition);
+       padding: 12px 0;
+       height: var(--header-height);
+   }
+     
+   /* Add margin to body to prevent content from being hidden under header */
+   body {
+       padding-top: var(--header-height);
+       margin: 0;
+   }
+     
+   /* Header states */
+   header.transparent {
+       background-color: transparent;
+   }
+     
+   header.dark {
+       background-color: var(--primary-color);
+   }
+     
+   header.light {
+       background-color: var(--secondary-color);
+       box-shadow: var(--box-shadow);
+   }
+     
+   header.scrolled {
+       padding: 8px 0; /* Reduced padding when scrolled */
+   }
+     
+   .nav-container {
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+       max-width: 1200px;
+       margin: 0 auto;
+       padding: 0 20px;
+       height: 100%;
+   }
+     
+   .logo {
+       font-family: var(--font-primary);
+       font-size: 1.8rem;
+       font-weight: 700;
+       letter-spacing: 2px;
+       text-transform: uppercase;
+       transition: var(--transition);
+   }
+     
+   /* Logo color based on header state */
+   header.transparent .logo,
+   header.dark .logo {
+       color: var(--secondary-color);
+   }
+     
+   header.light .logo {
+       color: var(--primary-color);
+   }
+     
+   .menu-toggle {
+       display: none;
+       font-size: 1.5rem;
+       cursor: pointer;
+       transition: var(--transition);
+   }
+     
+   /* Menu toggle color based on header state */
+   header.transparent .menu-toggle,
+   header.dark .menu-toggle {
+       color: var(--secondary-color);
+   }
+     
+   header.light .menu-toggle {
+       color: var(--primary-color);
+   }
+     
+   .nav-menu {
+       display: flex;
+       list-style: none;
+       margin: 0;
+       padding: 0;
+   }
+     
+   .nav-item {
+       margin: 0 15px;
+   }
+     
+   .nav-link {
+       font-family: var(--font-primary);
+       font-size: 1rem;
+       font-weight: 500;
+       text-decoration: none !important; /* Remove underline */
+       text-transform: uppercase;
+       letter-spacing: 1px;
+       padding: 5px 0;
+       position: relative;
+       transition: var(--transition);
+   }
+     
+   /* Nav link color based on header state */
+   header.transparent .nav-link,
+   header.dark .nav-link {
+       color: var(--secondary-color);
+   }
+     
+   header.light .nav-link {
+       color: var(--primary-color);
+   }
+     
+   /* Remove underline effect completely */
+   .nav-link::after {
+       display: none !important; /* Remove the underline effect */
+   }
+     
+   .nav-link:hover {
+       color: var(--accent-color);
+   }
+     
+   /* Auth Buttons */
+   .auth-buttons {
+       display: flex;
+       align-items: center;
+   }
+     
+   .auth-button {
+       font-family: var(--font-primary);
+       font-size: 0.9rem;
+       font-weight: 600;
+       text-decoration: none !important; /* Remove underline */
+       padding: 8px 16px;
+       border-radius: 4px;
+       transition: var(--transition);
+       margin-left: 10px;
+   }
+     
+   /* Login button color based on header state */
+   header.transparent .login-button,
+   header.dark .login-button {
+       color: var(--secondary-color);
+       border: 1px solid var(--secondary-color);
+   }
+     
+   header.light .login-button {
+       color: var(--primary-color);
+       border: 1px solid var(--primary-color);
+   }
+     
+   header.transparent .login-button:hover,
+   header.dark .login-button:hover {
+       background-color: rgba(255, 255, 255, 0.1);
+       transform: translateY(-2px);
+   }
+     
+   header.light .login-button:hover {
+       background-color: rgba(0, 0, 0, 0.05);
+       transform: translateY(-2px);
+   }
+     
+   .signup-button {
+       background-color: var(--primary-color); /* Changed to black */
+       color: var(--secondary-color);
+       border: 1px solid var(--primary-color);
+   }
+     
+   .signup-button:hover {
+       background-color: #333; /* Darker black on hover */
+       transform: translateY(-2px);
+       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+   }
+     
+   /* Nav Buttons (for logged in users) */
+   .nav-buttons {
+       display: flex;
+       align-items: center;
+   }
+     
+   .nav-buttons .nav-link {
+       font-size: 1.2rem;
+       margin-left: 15px;
+       padding: 5px;
+       text-decoration: none !important; /* Ensure no underline */
+   }
+     
+   .nav-buttons .nav-link:hover {
+       color: var(--accent-color);
+       transform: translateY(-2px);
+   }
+     
+   /* Profile Dropdown */
+   .dropdown {
+       position: relative;
+   }
+     
+   .dropdown-content {
+       position: absolute;
+       top: 100%;
+       right: 0;
+       background-color: var(--secondary-color);
+       min-width: 180px;
+       box-shadow: var(--box-shadow);
+       border-radius: 4px;
+       padding: 10px 0;
+       z-index: 1000;
+       opacity: 0;
+       visibility: hidden;
+       transform: translateY(10px);
+       transition: var(--transition);
+   }
+     
+   .dropdown-content.show {
+       opacity: 1;
+       visibility: visible;
+       transform: translateY(0);
+   }
+     
+   .dropdown-content a {
+       display: block;
+       padding: 10px 20px;
+       color: var(--primary-color);
+       text-decoration: none !important; /* Remove underline */
+       font-family: var(--font-primary);
+       font-size: 0.9rem;
+       transition: var(--transition);
+   }
+     
+   .dropdown-content a:hover {
+       background-color: var(--gray-light);
+       color: var(--accent-color);
+   }
+     
+   .dropdown-content a i {
+       margin-right: 10px;
+       width: 16px;
+       text-align: center;
+   }
+     
+   /* Responsive Styles */
+   @media (max-width: 991px) {
+       .nav-menu {
+           position: fixed;
+           top: 0;
+           left: -100%;
+           width: 80%;
+           max-width: 300px;
+           height: 100vh;
+           background-color: var(--secondary-color);
+           flex-direction: column;
+           padding: 80px 20px 20px;
+           transition: 0.4s;
+           box-shadow: var(--box-shadow);
+           z-index: 1001;
+       }
+     
+       .nav-menu.active {
+           left: 0;
+       }
+     
+       .nav-item {
+           margin: 15px 0;
+       }
+     
+       .nav-menu .nav-link {
+           color: var(--primary-color);
+           font-size: 1.1rem;
+       }
+     
+       .menu-toggle {
+           display: block;
+           z-index: 1002;
+       }
+     
+       .menu-toggle.active {
+           color: var(--primary-color);
+       }
+     
+       .auth-buttons {
+           margin-left: auto;
+       }
+     
+       .auth-button {
+           padding: 6px 12px;
+           font-size: 0.8rem;
+       }
+   }
+     
+   @media (max-width: 768px) {
+       :root {
+           --header-height: 60px; /* Smaller header on mobile */
+       }
+       
+       .logo {
+           font-size: 1.5rem;
+       }
+   }
+     
+   @media (max-width: 576px) {
+       .logo {
+           font-size: 1.3rem;
+       }
+     
+       .auth-button {
+           padding: 5px 10px;
+           font-size: 0.75rem;
+       }
+     
+       .nav-buttons .nav-link {
+           font-size: 1rem;
+           margin-left: 10px;
+       }
+   }
+     
+   /* Animation for menu toggle */
+   @keyframes menuFade {
+       from {
+           opacity: 0;
+           transform: translateX(-20px);
+       }
+       to {
+           opacity: 1;
+           transform: translateX(0);
+       }
+   }
+     
+   .nav-menu.active .nav-item {
+       animation: menuFade 0.4s ease forwards;
+       opacity: 0;
+   }
+     
+   .nav-menu.active .nav-item:nth-child(1) {
+       animation-delay: 0.1s;
+   }
+     
+   .nav-menu.active .nav-item:nth-child(2) {
+       animation-delay: 0.2s;
+   }
+     
+   .nav-menu.active .nav-item:nth-child(3) {
+       animation-delay: 0.3s;
+   }
+     
+   .nav-menu.active .nav-item:nth-child(4) {
+       animation-delay: 0.4s;
+   }
+     
+   /* Overlay for mobile menu */
+   .menu-overlay {
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background-color: rgba(0, 0, 0, 0.5);
+       z-index: 1000;
+       opacity: 0;
+       visibility: hidden;
+       transition: var(--transition);
+   }
+     
+   .menu-overlay.active {
+       opacity: 1;
+       visibility: visible;
+   }
 
-    /* Fix for links */
-    a {
-        text-decoration: none !important;
-        color: inherit;
-    }
-    
-    /* Active nav item */
-    .nav-item.active .nav-link {
-        color: var(--accent-color);
-        font-weight: 600;
-    }
-    
-    /* Black button styles */
-    .auth-button.signup-button {
-        background-color: #000;
-        color: #fff;
-        border-color: #000;
-    }
-    
-    .auth-button.signup-button:hover {
-        background-color: #333;
-        border-color: #333;
-    }
-        .position-relative {
-    position: relative;
-}
+   /* Fix for links */
+   a {
+       text-decoration: none !important;
+       color: inherit;
+   }
+   
+   /* Active nav item */
+   .nav-item.active .nav-link {
+       color: var(--accent-color);
+       font-weight: 600;
+   }
+   
+   /* Black button styles */
+   .auth-button.signup-button {
+       background-color: #000;
+       color: #fff;
+       border-color: #000;
+   }
+   
+   .auth-button.signup-button:hover {
+       background-color: #333;
+       border-color: #333;
+   }
 
-.count-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background-color: var(--accent-color);
-    color: white;
-    font-size: 0.7rem;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-}
+   /* ======= PREMIUM CART & WISHLIST COUNT BADGE STYLES ======= */
+   .position-relative {
+       position: relative;
+   }
 
-/* Ensure icons have some space for the badge */
-.nav-buttons .nav-link {
-    margin-right: 6px;
-}
-    </style>
+   /* Base count badge style with gradient background */
+   .count-badge {
+       position: absolute;
+       top: -10px;
+       right: -10px;
+       background: var(--gradient-primary);
+       color: white;
+       font-size: 0.7rem;
+       min-width: 20px;
+       height: 20px;
+       border-radius: 10px;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       font-weight: 600;
+       box-shadow: 0 4px 10px rgba(59, 130, 246, 0.5);
+       transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+       transform-origin: center;
+       z-index: 2;
+       padding: 0 6px;
+       backdrop-filter: blur(5px);
+       border: 1px solid rgba(255, 255, 255, 0.2);
+       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+   }
+
+   /* Different gradient for wishlist badge */
+   .nav-link[title="Wishlist"] .count-badge {
+       background: var(--gradient-secondary);
+       box-shadow: 0 4px 10px rgba(139, 92, 246, 0.5);
+   }
+
+   /* Different gradient for cart badge */
+   .nav-link[title="Cart"] .count-badge {
+       background: var(--gradient-accent);
+       box-shadow: 0 4px 10px rgba(59, 130, 246, 0.5);
+   }
+
+   /* 3D Floating Animation */
+   @keyframes float {
+       0% {
+           transform: translateY(0) rotate(0deg);
+           box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+       }
+       25% {
+           transform: translateY(-3px) rotate(2deg);
+           box-shadow: 0 8px 20px rgba(59, 130, 246, 0.6);
+       }
+       50% {
+           transform: translateY(0) rotate(0deg);
+           box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+       }
+       75% {
+           transform: translateY(3px) rotate(-2deg);
+           box-shadow: 0 3px 10px rgba(59, 130, 246, 0.3);
+       }
+       100% {
+           transform: translateY(0) rotate(0deg);
+           box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+       }
+   }
+
+   /* Apply floating animation to wishlist badge */
+   .nav-link[title="Wishlist"] .count-badge {
+       animation: float 5s infinite ease-in-out;
+   }
+
+   /* Apply floating animation to cart badge with delay */
+   .nav-link[title="Cart"] .count-badge {
+       animation: float 5s infinite ease-in-out;
+       animation-delay: 0.5s;
+   }
+
+   /* Magnetic Hover Effect */
+   .nav-buttons .nav-link:hover .count-badge {
+       transform: scale(1.2) translateY(-5px);
+       filter: brightness(1.1);
+   }
+
+   /* Dramatic Pop Animation for new badges */
+   @keyframes badgePop {
+       0% {
+           transform: scale(0);
+           opacity: 0;
+       }
+       50% {
+           transform: scale(1.5);
+           opacity: 1;
+       }
+       75% {
+           transform: scale(0.8);
+           opacity: 1;
+       }
+       90% {
+           transform: scale(1.1);
+           opacity: 1;
+       }
+       100% {
+           transform: scale(1);
+           opacity: 1;
+       }
+   }
+
+   /* Apply pop animation when badge is added */
+   .count-badge.new-item {
+       animation: badgePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+   }
+
+   /* Glowing Pulse Effect */
+   @keyframes glowPulse {
+       0% {
+           box-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.3);
+       }
+       50% {
+           box-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.5);
+       }
+       100% {
+           box-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.3);
+       }
+   }
+
+   /* Different glow for wishlist */
+   @keyframes glowPulseWishlist {
+       0% {
+           box-shadow: 0 0 5px rgba(139, 92, 246, 0.5), 0 0 10px rgba(139, 92, 246, 0.3);
+       }
+       50% {
+           box-shadow: 0 0 20px rgba(139, 92, 246, 0.8), 0 0 30px rgba(139, 92, 246, 0.5);
+       }
+       100% {
+           box-shadow: 0 0 5px rgba(139, 92, 246, 0.5), 0 0 10px rgba(139, 92, 246, 0.3);
+       }
+   }
+
+   /* Apply glow pulse on hover */
+   .nav-link[title="Cart"]:hover .count-badge {
+       animation: glowPulse 1.5s infinite;
+   }
+
+   .nav-link[title="Wishlist"]:hover .count-badge {
+       animation: glowPulseWishlist 1.5s infinite;
+   }
+
+   /* Gradient Rotation Animation */
+   @keyframes gradientRotate {
+       0% {
+           background-position: 0% 50%;
+       }
+       50% {
+           background-position: 100% 50%;
+       }
+       100% {
+           background-position: 0% 50%;
+       }
+   }
+
+   /* Apply gradient rotation on hover */
+   .nav-link:hover .count-badge {
+       background-size: 200% 200%;
+       animation: gradientRotate 2s ease infinite;
+   }
+
+   /* Hover effect for cart badge */
+   .nav-link[title="Cart"]:hover .count-badge {
+       background: linear-gradient(135deg, #3b82f6, #10b981, #3b82f6);
+       background-size: 200% 200%;
+   }
+
+   /* Hover effect for wishlist badge */
+   .nav-link[title="Wishlist"]:hover .count-badge {
+       background: linear-gradient(135deg, #8b5cf6, #ec4899, #8b5cf6);
+       background-size: 200% 200%;
+   }
+
+   /* Special effect for when count increases */
+   @keyframes countIncrease {
+       0% {
+           transform: scale(1);
+           filter: hue-rotate(0deg);
+       }
+       25% {
+           transform: scale(1.5);
+           filter: hue-rotate(90deg) brightness(1.2);
+       }
+       50% {
+           transform: scale(0.9);
+           filter: hue-rotate(180deg) brightness(1.2);
+       }
+       75% {
+           transform: scale(1.2);
+           filter: hue-rotate(270deg) brightness(1.2);
+       }
+       100% {
+           transform: scale(1);
+           filter: hue-rotate(360deg);
+       }
+   }
+
+   .count-badge.increased {
+       animation: countIncrease 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+   }
+
+   /* Icon Animation */
+   @keyframes iconPulse {
+       0% {
+           transform: scale(1);
+           color: inherit;
+       }
+       50% {
+           transform: scale(1.2);
+           color: var(--accent-color);
+       }
+       100% {
+           transform: scale(1);
+           color: inherit;
+       }
+   }
+
+   /* Apply pulse animation to cart icon */
+   .nav-link[title="Cart"] i {
+       transition: all 0.3s ease;
+   }
+
+   .nav-link[title="Cart"]:hover i {
+       animation: iconPulse 1s infinite;
+       color: var(--accent-color);
+   }
+
+   /* Apply pulse animation to wishlist icon */
+   .nav-link[title="Wishlist"] i {
+       transition: all 0.3s ease;
+   }
+
+   .nav-link[title="Wishlist"]:hover i {
+       animation: iconPulse 1s infinite;
+       color: var(--accent-tertiary);
+   }
+
+   /* 3D Flip Animation for Count Change */
+   @keyframes flip3D {
+       0% {
+           transform: perspective(400px) rotateY(0);
+       }
+       50% {
+           transform: perspective(400px) rotateY(180deg);
+           opacity: 0;
+       }
+       51% {
+           transform: perspective(400px) rotateY(180deg);
+           opacity: 0;
+       }
+       100% {
+           transform: perspective(400px) rotateY(360deg);
+           opacity: 1;
+       }
+   }
+
+   .count-badge.flip {
+       animation: flip3D 0.6s cubic-bezier(0.455, 0.03, 0.515, 0.955) forwards;
+       backface-visibility: visible;
+   }
+
+   /* Floating Notification with Particle Effects */
+   @keyframes floatNotification {
+       0% {
+           opacity: 0;
+           transform: translate(-50%, 0);
+       }
+       10% {
+           opacity: 1;
+           transform: translate(-50%, -20px);
+       }
+       80% {
+           opacity: 1;
+           transform: translate(-50%, -40px);
+       }
+       100% {
+           opacity: 0;
+           transform: translate(-50%, -60px);
+       }
+   }
+
+   .floating-notification {
+       position: absolute;
+       top: 0;
+       left: 50%;
+       transform: translateX(-50%);
+       background: rgba(0, 0, 0, 0.7);
+       backdrop-filter: blur(4px);
+       color: white;
+       padding: 4px 10px;
+       border-radius: 20px;
+       font-size: 0.8rem;
+       font-weight: 600;
+       pointer-events: none;
+       white-space: nowrap;
+       z-index: 1000;
+       animation: floatNotification 1.5s forwards cubic-bezier(0.23, 1, 0.32, 1);
+       border: 1px solid rgba(255, 255, 255, 0.2);
+       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+   }
+
+   /* Particle animation for notification */
+   .particle {
+       position: absolute;
+       width: 6px;
+       height: 6px;
+       border-radius: 50%;
+       background: var(--accent-color);
+       pointer-events: none;
+       z-index: 999;
+       opacity: 0.8;
+       animation: particleFloat 1s forwards ease-out;
+   }
+
+   @keyframes particleFloat {
+       0% {
+           transform: translate(0, 0) scale(1);
+           opacity: 0.8;
+       }
+       100% {
+           transform: translate(var(--tx), var(--ty)) scale(0);
+           opacity: 0;
+       }
+   }
+
+   /* Ensure icons have some space for the badge */
+   .nav-buttons .nav-link {
+       margin-right: 8px;
+   }
+
+   /* Ripple effect for icon click */
+   .nav-link .ripple {
+       position: absolute;
+       border-radius: 50%;
+       background-color: rgba(255, 255, 255, 0.4);
+       transform: scale(0);
+       animation: ripple 0.6s linear;
+       pointer-events: none;
+   }
+
+   @keyframes ripple {
+       to {
+           transform: scale(2.5);
+           opacity: 0;
+       }
+   }
+
+   /* Item added animation */
+   @keyframes itemAdded {
+       0% {
+           transform: translateY(20px) scale(0.5);
+           opacity: 0;
+       }
+       70% {
+           transform: translateY(-5px) scale(1.1);
+           opacity: 1;
+       }
+       100% {
+           transform: translateY(0) scale(1);
+           opacity: 1;
+       }
+   }
+
+   .item-added {
+       animation: itemAdded 0.5s forwards;
+   }
+
+   /* Toast notification */
+   .toast-notification {
+       position: fixed;
+       bottom: 20px;
+       right: 20px;
+       background: rgba(0, 0, 0, 0.8);
+       color: white;
+       padding: 12px 20px;
+       border-radius: 8px;
+       font-family: var(--font-primary);
+       font-size: 14px;
+       font-weight: 500;
+       z-index: 9999;
+       opacity: 0;
+       transform: translateY(20px);
+       transition: all 0.3s ease;
+       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+       backdrop-filter: blur(4px);
+       border: 1px solid rgba(255, 255, 255, 0.1);
+   }
+
+   .toast-notification.show {
+       opacity: 1;
+       transform: translateY(0);
+   }
+
+   /* Flying item animation */
+   .flying-item {
+       position: fixed;
+       width: 20px;
+       height: 20px;
+       background-color: var(--accent-color);
+       border-radius: 50%;
+       z-index: 9999;
+       pointer-events: none;
+       box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+       transition: all 0.8s cubic-bezier(0.215, 0.61, 0.355, 1);
+   }
+   </style>
 </head>
 
 <body>
@@ -464,16 +857,16 @@
       <div class="auth-buttons">
           <% if (typeof user !== 'undefined' && user) { %>
               <div class="nav-buttons">
-                  <a href="/wishlist" class="nav-link position-relative" title="Wishlist">
+                  <a href="/wishlist" class="nav-link position-relative" title="Wishlist" id="wishlist-link">
                       <i class="far fa-heart"></i>
                       <% if (typeof wishlistCount !== 'undefined' && wishlistCount > 0) { %>
-                          <span class="count-badge"><%= wishlistCount %></span>
+                          <span class="count-badge" id="wishlist-badge"><%= wishlistCount %></span>
                       <% } %>
                   </a>
-                  <a href="/cart" class="nav-link position-relative" title="Cart">
+                  <a href="/cart" class="nav-link position-relative" title="Cart" id="cart-link">
                       <i class="fas fa-shopping-cart"></i>
                       <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
-                          <span class="count-badge"><%= cartCount %></span>
+                          <span class="count-badge" id="cart-badge"><%= cartCount %></span>
                       <% } %>
                   </a>
                   <a href="/LoadProfile" class="nav-link" title="My Account">
@@ -488,217 +881,226 @@
   </div>
 </header>
 
-    <script>
- document.addEventListener("DOMContentLoaded", () => {
+<script>
+document.addEventListener("DOMContentLoaded", () => {
   // Header state management
-  const header = document.querySelector("header")
+  const header = document.querySelector("header");
 
   // Set initial header state
-  updateHeaderState()
+  updateHeaderState();
 
   // Update header state on scroll
   function updateHeaderState() {
     // Check if we're at the top of the page
-    const isAtTop = window.scrollY <= 50
+    const isAtTop = window.scrollY <= 50;
 
     // Get the background color behind the header
-    const bgColor = getBackgroundColorBehindHeader()
+    const bgColor = getBackgroundColorBehindHeader();
 
     // Remove all state classes first
-    header.classList.remove("transparent", "dark", "light", "scrolled")
+    header.classList.remove("transparent", "dark", "light", "scrolled");
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-                clearButton.addEventListener('click', function () {
-                    searchInput.value = '';
-                    clearButton.style.display = 'none';
-                    searchInput.focus();
-                });
-
-                clearButton.style.display = searchInput.value ? 'block' : 'none';
-            }
-        });
-=======
     if (isAtTop) {
       // At the top of the page - use transparent with text color based on background
-      header.classList.add("transparent")
+      header.classList.add("transparent");
 
       // If the background is light, add the light class for dark text
       if (isLightColor(bgColor)) {
-        header.classList.add("light")
+        header.classList.add("light");
       } else {
-        header.classList.add("dark")
+        header.classList.add("dark");
       }
     } else {
       // Scrolled down - use solid background
-      header.classList.add("scrolled")
-      header.classList.add("light") // Default to light background with dark text
+      header.classList.add("scrolled");
+      header.classList.add("light"); // Default to light background with dark text
     }
   }
 
   // Function to determine if a color is light or dark
   function isLightColor(color) {
     // Default to dark if we can't determine
-    if (!color) return false
+    if (!color) return false;
 
     // Extract RGB components
-    let r, g, b
+    let r, g, b;
 
     if (color.startsWith("rgb")) {
       // Handle rgb() format
-      const match = color.match(/rgba?$$(\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?$$/)
+      const match = color.match(/rgba?$$(\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?$$/);
       if (match) {
-        r = Number.parseInt(match[1])
-        g = Number.parseInt(match[2])
-        b = Number.parseInt(match[3])
+        r = Number.parseInt(match[1]);
+        g = Number.parseInt(match[2]);
+        b = Number.parseInt(match[3]);
       }
     } else if (color.startsWith("#")) {
       // Handle hex format
-      const hex = color.replace("#", "")
-      r = Number.parseInt(hex.substr(0, 2), 16)
-      g = Number.parseInt(hex.substr(2, 2), 16)
-      b = Number.parseInt(hex.substr(4, 2), 16)
+      const hex = color.replace("#", "");
+      r = Number.parseInt(hex.substr(0, 2), 16);
+      g = Number.parseInt(hex.substr(2, 2), 16);
+      b = Number.parseInt(hex.substr(4, 2), 16);
     }
 
     // Calculate perceived brightness using the formula
     // (299*R + 587*G + 114*B) / 1000
     // Values > 125 are considered light
     if (r !== undefined && g !== undefined && b !== undefined) {
-      const brightness = (299 * r + 587 * g + 114 * b) / 1000
-      return brightness > 125
+      const brightness = (299 * r + 587 * g + 114 * b) / 1000;
+      return brightness > 125;
     }
 
-    return false
+    return false;
   }
 
   // Function to get the background color behind the header
   function getBackgroundColorBehindHeader() {
     // Check if there's a data attribute specifying the background type
-    const bgType = document.body.getAttribute("data-header-bg") || "dark"
+    const bgType = document.body.getAttribute("data-header-bg") || "dark";
 
     if (bgType === "light") {
-      return "#ffffff"
+      return "#ffffff";
     } else {
-      return "#000000"
+      return "#000000";
     }
   }
 
   // Listen for scroll events
-  window.addEventListener("scroll", updateHeaderState)
+  window.addEventListener("scroll", updateHeaderState);
 
   // Mobile menu toggle
-  const menuToggle = document.querySelector(".menu-toggle")
-  const navMenu = document.querySelector(".nav-menu")
+  const menuToggle = document.querySelector(".menu-toggle");
+  const navMenu = document.querySelector(".nav-menu");
 
   if (menuToggle && navMenu) {
     // Create overlay element if it doesn't exist
-    let overlay = document.querySelector(".menu-overlay")
+    let overlay = document.querySelector(".menu-overlay");
     if (!overlay) {
-      overlay = document.createElement("div")
-      overlay.className = "menu-overlay"
-      document.body.appendChild(overlay)
+      overlay = document.createElement("div");
+      overlay.className = "menu-overlay";
+      document.body.appendChild(overlay);
     }
 
     menuToggle.addEventListener("click", () => {
-      navMenu.classList.toggle("active")
-      menuToggle.classList.toggle("active")
-      overlay.classList.toggle("active")
+      navMenu.classList.toggle("active");
+      menuToggle.classList.toggle("active");
+      overlay.classList.toggle("active");
 
       // Toggle body scroll
       if (navMenu.classList.contains("active")) {
-        document.body.style.overflow = "hidden"
+        document.body.style.overflow = "hidden";
       } else {
-        document.body.style.overflow = ""
+        document.body.style.overflow = "";
       }
 
       // Toggle menu icon
       if (navMenu.classList.contains("active")) {
-        menuToggle.innerHTML = '<i class="fas fa-times"></i>'
+        menuToggle.innerHTML = '<i class="fas fa-times"></i>';
       } else {
-        menuToggle.innerHTML = '<i class="fas fa-bars"></i>'
+        menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
       }
-    })
+    });
 
     // Close menu when clicking on overlay
     overlay.addEventListener("click", () => {
-      navMenu.classList.remove("active")
-      menuToggle.classList.remove("active")
-      overlay.classList.remove("active")
-      document.body.style.overflow = ""
-      menuToggle.innerHTML = '<i class="fas fa-bars"></i>'
-    })
+      navMenu.classList.remove("active");
+      menuToggle.classList.remove("active");
+      overlay.classList.remove("active");
+      document.body.style.overflow = "";
+      menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+    });
   }
 
   // Set active state for nav items
-  const navLinks = document.querySelectorAll('.nav-link')
-  const currentPath = window.location.pathname
+  const navLinks = document.querySelectorAll('.nav-link');
+  const currentPath = window.location.pathname;
   
   navLinks.forEach(link => {
-    const href = link.getAttribute('href')
+    const href = link.getAttribute('href');
     if (href === currentPath || (href !== '/' && currentPath.includes(href))) {
-      link.parentElement.classList.add('active')
+      link.parentElement.classList.add('active');
     }
     
     // Add click handler to set active state with single click
-    link.addEventListener('click', function() {
+    link.addEventListener('click', function(e) {
+      // Skip for cart and wishlist links as they'll navigate away
+      if (this.id === 'cart-link' || this.id === 'wishlist-link') return;
+      
       // Remove active class from all nav items
       document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active')
-      })
+        item.classList.remove('active');
+      });
       
       // Add active class to clicked nav item
-      this.parentElement.classList.add('active')
-    })
-  })
+      this.parentElement.classList.add('active');
+      
+      // Add ripple effect on click
+      if (this.classList.contains('position-relative')) {
+        const rect = this.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        
+        this.appendChild(ripple);
+        
+        setTimeout(() => {
+          ripple.remove();
+        }, 600);
+      }
+    });
+  });
 
   // Profile dropdown functionality
-  const profileIcon = document.querySelector(".nav-buttons .fa-user-circle, .nav-buttons .fa-user")
+  const profileIcon = document.querySelector(".nav-buttons .fa-user-circle, .nav-buttons .fa-user");
 
   if (profileIcon) {
     // Find the parent anchor element
-    const profileLink = profileIcon.closest("a")
+    const profileLink = profileIcon.closest("a");
 
     if (profileLink) {
       // Find the parent container (likely a div with class nav-buttons)
-      const parentContainer = profileLink.parentElement
+      const parentContainer = profileLink.parentElement;
 
       if (parentContainer) {
         // Check if dropdown already exists
-        let dropdownContent = parentContainer.querySelector(".dropdown-content")
+        let dropdownContent = parentContainer.querySelector(".dropdown-content");
 
         // Create dropdown if it doesn't exist
         if (!dropdownContent) {
           // Add dropdown class to parent
-          parentContainer.classList.add("dropdown")
+          parentContainer.classList.add("dropdown");
 
           // Create dropdown content
-          dropdownContent = document.createElement("div")
-          dropdownContent.className = "dropdown-content"
+          dropdownContent = document.createElement("div");
+          dropdownContent.className = "dropdown-content";
           dropdownContent.innerHTML = `
             <a href="/LoadProfile"><i class="fas fa-user"></i> My Profile</a>
             <a href="/orders"><i class="fas fa-shopping-bag"></i> My Orders</a>
             <a href="/address"><i class="fas fa-map-marker-alt"></i> My Addresses</a>
             <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
-          `
+          `;
 
           // Append dropdown to parent
-          parentContainer.appendChild(dropdownContent)
+          parentContainer.appendChild(dropdownContent);
         }
 
         // Toggle dropdown on click
         profileLink.addEventListener("click", (e) => {
-          e.preventDefault()
-          e.stopPropagation() // Prevent event from bubbling up
-          dropdownContent.classList.toggle("show")
-        })
+          e.preventDefault();
+          e.stopPropagation(); // Prevent event from bubbling up
+          dropdownContent.classList.toggle("show");
+        });
 
         // Close dropdown when clicking outside
         document.addEventListener("click", (e) => {
           // Check if click is outside dropdown and profile icon
           if (!dropdownContent.contains(e.target) && !profileLink.contains(e.target)) {
-            dropdownContent.classList.remove("show")
+            dropdownContent.classList.remove("show");
           }
-        })
+        });
       }
     }
   }
@@ -708,237 +1110,731 @@
     if (e.key === "Escape") {
       // Close mobile menu if open
       if (navMenu && navMenu.classList.contains("active")) {
-        navMenu.classList.remove("active")
+        navMenu.classList.remove("active");
         if (menuToggle) {
-          menuToggle.classList.remove("active")
-          menuToggle.innerHTML = '<i class="fas fa-bars"></i>'
+          menuToggle.classList.remove("active");
+          menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
         }
-        const overlay = document.querySelector(".menu-overlay")
-        if (overlay) overlay.classList.remove("active")
-        document.body.style.overflow = ""
+        const overlay = document.querySelector(".menu-overlay");
+        if (overlay) overlay.classList.remove("active");
+        document.body.style.overflow = "";
       }
 
       // Close any open dropdowns
-      const openDropdowns = document.querySelectorAll(".dropdown-content.show")
+      const openDropdowns = document.querySelectorAll(".dropdown-content.show");
       openDropdowns.forEach((dropdown) => {
-        dropdown.classList.remove("show")
-      })
+        dropdown.classList.remove("show");
+      });
     }
-  })
+  });
 
   // Add accessibility support for dropdowns
-  const dropdownLinks = document.querySelectorAll(".dropdown > a")
+  const dropdownLinks = document.querySelectorAll(".dropdown > a");
   dropdownLinks.forEach((link) => {
-    link.setAttribute("aria-haspopup", "true")
-    link.setAttribute("aria-expanded", "false")
+    link.setAttribute("aria-haspopup", "true");
+    link.setAttribute("aria-expanded", "false");
 
     link.addEventListener("click", () => {
-      const expanded = link.getAttribute("aria-expanded") === "true"
-      link.setAttribute("aria-expanded", !expanded)
-    })
-  })
-})
+      const expanded = link.getAttribute("aria-expanded") === "true";
+      link.setAttribute("aria-expanded", !expanded);
+    });
+  });
 
-    if (isAtTop) {
-      // At the top of the page - use transparent with text color based on background
-      header.classList.add("transparent")
+  // ======= LIVE CART & WISHLIST COUNT UPDATES =======
+  
+  // Initialize the cart and wishlist badge system
+  function initCartWishlistSystem() {
+    // Get the badge elements
+    const cartBadge = document.getElementById('cart-badge');
+    const wishlistBadge = document.getElementById('wishlist-badge');
+    
+    // Add initial animation class if badges exist
+    if (cartBadge) {
+      cartBadge.classList.add('new-item');
+      setTimeout(() => cartBadge.classList.remove('new-item'), 600);
+    }
+    
+    if (wishlistBadge) {
+      wishlistBadge.classList.add('new-item');
+      setTimeout(() => wishlistBadge.classList.remove('new-item'), 600);
+    }
 
-      // If the background is light, add the light class for dark text
-      if (isLightColor(bgColor)) {
-        header.classList.add("light")
+    // Function to create particles
+    function createParticles(element, count = 10) {
+      if (!element) return;
+      
+      const rect = element.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      for (let i = 0; i < count; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Random position around the badge
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 5 + Math.random() * 15;
+        const x = centerX + Math.cos(angle) * distance;
+        const y = centerY + Math.sin(angle) * distance;
+        
+        // Random travel distance
+        const tx = (Math.random() - 0.5) * 100;
+        const ty = (Math.random() - 0.5) * 100;
+        
+        // Set particle styles
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        particle.style.setProperty('--tx', `${tx}px`);
+        particle.style.setProperty('--ty', `${ty}px`);
+        
+        // Random color
+        const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981'];
+        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Add to body
+        document.body.appendChild(particle);
+        
+        // Remove after animation
+        setTimeout(() => {
+          if (particle.parentElement) {
+            particle.parentElement.removeChild(particle);
+          }
+        }, 1000);
+      }
+    }
+
+    // Function to update badge count with animation
+    window.updateBadgeCount = function(badgeId, count) {
+      // Get the badge element
+      let badge = document.getElementById(badgeId);
+      const parent = badgeId === 'cart-badge' 
+        ? document.querySelector('.nav-link[title="Cart"]')
+        : document.querySelector('.nav-link[title="Wishlist"]');
+      
+      // If badge doesn't exist but count > 0, create it
+      if (!badge && count > 0 && parent) {
+        badge = document.createElement('span');
+        badge.className = 'count-badge new-item';
+        badge.id = badgeId;
+        badge.textContent = count;
+        parent.appendChild(badge);
+        
+        // Create particles for new badge
+        createParticles(badge, 15);
+        return;
+      }
+      
+      // If badge doesn't exist and count is 0, nothing to do
+      if (!badge) return;
+      
+      const currentCount = parseInt(badge.textContent || '0');
+      
+      // If count increased, add the increased animation
+      if (count > currentCount) {
+        // Remove any existing animations
+        badge.classList.remove('increased', 'new-item', 'flip');
+        
+        // Force reflow to restart animation
+        void badge.offsetWidth;
+        
+        // Add increased animation
+        badge.classList.add('increased');
+        
+        // Create particles
+        createParticles(badge, 15);
+        
+        // Create floating notification
+        const notification = document.createElement('div');
+        notification.className = 'floating-notification';
+        notification.textContent = '+' + (count - currentCount);
+        
+        // Add to the parent of the badge
+        parent.appendChild(notification);
+        
+        // Remove notification after animation completes
+        setTimeout(() => {
+          if (notification.parentElement) {
+            notification.parentElement.removeChild(notification);
+          }
+        }, 1500);
+        
+        // Remove animation class after it completes
+        setTimeout(() => {
+          badge.classList.remove('increased');
+        }, 1000);
+      } else if (count < currentCount && count > 0) {
+        // If count decreased but still > 0, add flip animation
+        badge.classList.remove('increased', 'new-item', 'flip');
+        
+        // Force reflow to restart animation
+        void badge.offsetWidth;
+        
+        badge.classList.add('flip');
+        
+        setTimeout(() => {
+          badge.classList.remove('flip');
+        }, 600);
+      }
+      
+      // Update the badge text
+      badge.textContent = count;
+      
+      // If count is 0, hide the badge
+      if (count <= 0) {
+        badge.style.display = 'none';
+        
+        // Optional: remove badge after fade out
+        setTimeout(() => {
+          if (badge.parentElement) {
+            badge.parentElement.removeChild(badge);
+          }
+        }, 300);
       } else {
-        header.classList.add("dark")
+        badge.style.display = 'flex';
       }
-    } else {
-      // Scrolled down - use solid background
-      header.classList.add("scrolled")
-      header.classList.add("light") // Default to light background with dark text
-    }
-  }
+    };
 
-  // Function to determine if a color is light or dark
-  function isLightColor(color) {
-    // Default to dark if we can't determine
-    if (!color) return false
-
-    // Extract RGB components
-    let r, g, b
-
-    if (color.startsWith("rgb")) {
-      // Handle rgb() format
-      const match = color.match(/rgba?$$(\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?$$/)
-      if (match) {
-        r = Number.parseInt(match[1])
-        g = Number.parseInt(match[2])
-        b = Number.parseInt(match[3])
+    // Function to show toast notification
+    function showToast(message, type = 'success') {
+      // Create toast element if it doesn't exist
+      let toast = document.querySelector('.toast-notification');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        document.body.appendChild(toast);
       }
-    } else if (color.startsWith("#")) {
-      // Handle hex format
-      const hex = color.replace("#", "")
-      r = Number.parseInt(hex.substr(0, 2), 16)
-      g = Number.parseInt(hex.substr(2, 2), 16)
-      b = Number.parseInt(hex.substr(4, 2), 16)
-    }
-
-    // Calculate perceived brightness using the formula
-    // (299*R + 587*G + 114*B) / 1000
-    // Values > 125 are considered light
-    if (r !== undefined && g !== undefined && b !== undefined) {
-      const brightness = (299 * r + 587 * g + 114 * b) / 1000
-      return brightness > 125
-    }
-
-    return false
-  }
-
-  // Function to get the background color behind the header
-  function getBackgroundColorBehindHeader() {
-    // Check if there's a data attribute specifying the background type
-    const bgType = document.body.getAttribute("data-header-bg") || "dark"
-
-    if (bgType === "light") {
-      return "#ffffff"
-    } else {
-      return "#000000"
-    }
-  }
-
-  // Listen for scroll events
-  window.addEventListener("scroll", updateHeaderState)
-
-  // Mobile menu toggle
-  const menuToggle = document.querySelector(".menu-toggle")
-  const navMenu = document.querySelector(".nav-menu")
-
-  if (menuToggle && navMenu) {
-    // Create overlay element if it doesn't exist
-    let overlay = document.querySelector(".menu-overlay")
-    if (!overlay) {
-      overlay = document.createElement("div")
-      overlay.className = "menu-overlay"
-      document.body.appendChild(overlay)
-    }
-
-    menuToggle.addEventListener("click", () => {
-      navMenu.classList.toggle("active")
-      menuToggle.classList.toggle("active")
-      overlay.classList.toggle("active")
-
-      // Toggle body scroll
-      if (navMenu.classList.contains("active")) {
-        document.body.style.overflow = "hidden"
-      } else {
-        document.body.style.overflow = ""
+      
+      // Set message and type
+      toast.textContent = message;
+      toast.className = 'toast-notification';
+      if (type === 'error') {
+        toast.style.backgroundColor = 'rgba(220, 38, 38, 0.9)';
+      } else if (type === 'success') {
+        toast.style.backgroundColor = 'rgba(16, 185, 129, 0.9)';
       }
+      
+      // Show toast
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 10);
+      
+      // Hide toast after 3 seconds
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
 
-      // Toggle menu icon
-      if (navMenu.classList.contains("active")) {
-        menuToggle.innerHTML = '<i class="fas fa-times"></i>'
-      } else {
-        menuToggle.innerHTML = '<i class="fas fa-bars"></i>'
-      }
-    })
-
-    // Close menu when clicking on overlay
-    overlay.addEventListener("click", () => {
-      navMenu.classList.remove("active")
-      menuToggle.classList.remove("active")
-      overlay.classList.remove("active")
-      document.body.style.overflow = ""
-      menuToggle.innerHTML = '<i class="fas fa-bars"></i>'
-    })
-  }
-
-  // Profile dropdown functionality
-  const profileIcon = document.querySelector(".nav-buttons .fa-user-circle, .nav-buttons .fa-user")
-
-  if (profileIcon) {
-    // Find the parent anchor element
-    const profileLink = profileIcon.closest("a")
-
-    if (profileLink) {
-      // Find the parent container (likely a div with class nav-buttons)
-      const parentContainer = profileLink.parentElement
-
-      if (parentContainer) {
-        // Check if dropdown already exists
-        let dropdownContent = parentContainer.querySelector(".dropdown-content")
-
-        // Create dropdown if it doesn't exist
-        if (!dropdownContent) {
-          // Add dropdown class to parent
-          parentContainer.classList.add("dropdown")
-
-          // Create dropdown content
-        #   dropdownContent = document.createElement("div")
-        #   dropdownContent.className = "dropdown-content"
-        #   dropdownContent.innerHTML = `
-        #     <a href="/LoadProfile"><i class="fas fa-user"></i> My Profile</a>
-        #     # <a href="/orders"><i class="fas fa-shopping-bag"></i> My Orders</a>
-        #     # <a href="/address"><i class="fas fa-map-marker-alt"></i> My Addresses</a>
-        #     # <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        #   `
-
-          // Append dropdown to parent
-          parentContainer.appendChild(dropdownContent)
+    // Function to create flying item animation
+    function createFlyingItem(fromElement, toElement) {
+      if (!fromElement || !toElement) return;
+      
+      // Create flying element
+      const flyingItem = document.createElement('div');
+      flyingItem.className = 'flying-item';
+      
+      // Position at start element
+      const fromRect = fromElement.getBoundingClientRect();
+      flyingItem.style.top = `${fromRect.top + fromRect.height/2 - 10}px`;
+      flyingItem.style.left = `${fromRect.left + fromRect.width/2 - 10}px`;
+      
+      // Add to body
+      document.body.appendChild(flyingItem);
+      
+      // Force reflow
+      void flyingItem.offsetWidth;
+      
+      // Animate to destination
+      const toRect = toElement.getBoundingClientRect();
+      flyingItem.style.top = `${toRect.top + toRect.height/2 - 10}px`;
+      flyingItem.style.left = `${toRect.left + toRect.width/2 - 10}px`;
+      flyingItem.style.opacity = '0';
+      flyingItem.style.transform = 'scale(0.3)';
+      
+      // Remove after animation
+      setTimeout(() => {
+        if (flyingItem.parentElement) {
+          flyingItem.parentElement.removeChild(flyingItem);
         }
+      }, 800);
+    }
 
-        // Toggle dropdown on click
-        profileLink.addEventListener("click", (e) => {
-          e.preventDefault()
-          e.stopPropagation() // Prevent event from bubbling up
-          dropdownContent.classList.toggle("show")
-        })
-
-        // Close dropdown when clicking outside
-        document.addEventListener("click", (e) => {
-          // Check if click is outside dropdown and profile icon
-          if (!dropdownContent.contains(e.target) && !profileLink.contains(e.target)) {
-            dropdownContent.classList.remove("show")
+    // ===== INTERCEPT ALL ADD TO CART/WISHLIST BUTTONS =====
+    
+    // 1. Intercept all forms that add to cart or wishlist
+    function interceptForms() {
+      document.addEventListener('submit', function(e) {
+        const form = e.target;
+        
+        // Check if this is an add-to-cart or add-to-wishlist form
+        const formAction = form.getAttribute('action') || '';
+        const isCartForm = formAction.includes('/cart/add') || 
+                          formAction.includes('/add-to-cart') || 
+                          form.classList.contains('add-to-cart-form');
+                          
+        const isWishlistForm = formAction.includes('/wishlist/add') || 
+                              formAction.includes('/add-to-wishlist') || 
+                              form.classList.contains('add-to-wishlist-form');
+        
+        if (isCartForm || isWishlistForm) {
+          e.preventDefault(); // Prevent normal form submission
+          
+          // Show loading state if there's a submit button
+          const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+          const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+          
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+          }
+          
+          // Prepare form data
+          const formData = new FormData(form);
+          
+          // Send AJAX request
+          fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            // Reset button state
+            if (submitBtn) {
+              submitBtn.innerHTML = '<i class="fas fa-check"></i> Added!';
+              setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+              }, 2000);
+            }
+            
+            // Update the appropriate badge
+            if (isCartForm) {
+              // Get current count or default to 0
+              const currentCount = parseInt(document.getElementById('cart-badge')?.textContent || '0');
+              // Use data.count if available, otherwise increment by 1
+              const newCount = data.count !== undefined ? data.count : currentCount + 1;
+              updateBadgeCount('cart-badge', newCount);
+              
+              // Show success message
+              showToast('Item added to cart', 'success');
+              
+              // Create flying animation
+              const cartLink = document.getElementById('cart-link');
+              if (cartLink) {
+                createFlyingItem(submitBtn || form, cartLink);
+              }
+            } else {
+              // Get current count or default to 0
+              const currentCount = parseInt(document.getElementById('wishlist-badge')?.textContent || '0');
+              // Use data.count if available, otherwise increment by 1
+              const newCount = data.count !== undefined ? data.count : currentCount + 1;
+              updateBadgeCount('wishlist-badge', newCount);
+              
+              // Show success message
+              showToast('Item added to wishlist', 'success');
+              
+              // Create flying animation
+              const wishlistLink = document.getElementById('wishlist-link');
+              if (wishlistLink) {
+                createFlyingItem(submitBtn || form, wishlistLink);
+              }
+            }
+          })
+          .catch(error => {
+            console.error('Error adding item:', error);
+            
+            // Reset button state
+            if (submitBtn) {
+              submitBtn.innerHTML = '<i class="fas fa-times"></i> Failed';
+              setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+              }, 2000);
+            }
+            
+            // Show error message
+            showToast('Failed to add item. Please try again.', 'error');
+          });
+        }
+      });
+    }
+    
+    // 2. Intercept all add-to-cart and add-to-wishlist buttons
+    function interceptButtons() {
+      document.addEventListener('click', function(e) {
+        // Find closest button or link that might be an add button
+        const addButton = e.target.closest('button[data-action="add-to-cart"], a[data-action="add-to-cart"], .add-to-cart-btn, button[data-action="add-to-wishlist"], a[data-action="add-to-wishlist"], .add-to-wishlist-btn');
+        
+        if (!addButton) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Determine if this is cart or wishlist
+        const isCart = addButton.getAttribute('data-action') === 'add-to-cart' || 
+                      addButton.classList.contains('add-to-cart-btn');
+        
+        // Get product ID and quantity
+        const productId = addButton.getAttribute('data-id') || 
+                         addButton.getAttribute('data-product-id');
+        const quantity = addButton.getAttribute('data-quantity') || 1;
+        
+        if (!productId) {
+          console.error('Product ID not found on button');
+          return;
+        }
+        
+        // Show loading state
+        const originalText = addButton.innerHTML;
+        addButton.disabled = true;
+        addButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+        
+        // Determine endpoint
+        const endpoint = isCart ? '/cart/add' : '/wishlist/add';
+        
+        // Prepare data
+        const formData = new FormData();
+        formData.append('productId', productId);
+        formData.append('quantity', quantity);
+        
+        // Send AJAX request
+        fetch(endpoint, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
           }
         })
-      }
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Show success state
+          addButton.innerHTML = '<i class="fas fa-check"></i> Added!';
+          
+          // Update the appropriate badge
+          if (isCart) {
+            // Get current count or default to 0
+            const currentCount = parseInt(document.getElementById('cart-badge')?.textContent || '0');
+            // Use data.count if available, otherwise increment by 1
+            const newCount = data.count !== undefined ? data.count : currentCount + 1;
+            updateBadgeCount('cart-badge', newCount);
+            
+            // Show success message
+            showToast('Item added to cart', 'success');
+            
+            // Create flying animation
+            const cartLink = document.getElementById('cart-link');
+            if (cartLink) {
+              createFlyingItem(addButton, cartLink);
+            }
+          } else {
+            // Get current count or default to 0
+            const currentCount = parseInt(document.getElementById('wishlist-badge')?.textContent || '0');
+            // Use data.count if available, otherwise increment by 1
+            const newCount = data.count !== undefined ? data.count : currentCount + 1;
+            updateBadgeCount('wishlist-badge', newCount);
+            
+            // Show success message
+            showToast('Item added to wishlist', 'success');
+            
+            // Create flying animation
+            const wishlistLink = document.getElementById('wishlist-link');
+            if (wishlistLink) {
+              createFlyingItem(addButton, wishlistLink);
+            }
+          }
+          
+          // Reset button after delay
+          setTimeout(() => {
+            addButton.disabled = false;
+            addButton.innerHTML = originalText;
+          }, 2000);
+        })
+        .catch(error => {
+          console.error('Error adding item:', error);
+          
+          // Show error state
+          addButton.innerHTML = '<i class="fas fa-times"></i> Failed';
+          
+          // Show error message
+          showToast('Failed to add item. Please try again.', 'error');
+          
+          // Reset button after delay
+          setTimeout(() => {
+            addButton.disabled = false;
+            addButton.innerHTML = originalText;
+          }, 2000);
+        });
+      });
     }
-  }
-
-  // Close dropdowns when pressing escape key
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      // Close mobile menu if open
-      if (navMenu && navMenu.classList.contains("active")) {
-        navMenu.classList.remove("active")
-        if (menuToggle) {
-          menuToggle.classList.remove("active")
-          menuToggle.innerHTML = '<i class="fas fa-bars"></i>'
+    
+    // 3. Intercept all remove buttons
+    function interceptRemoveButtons() {
+      document.addEventListener('click', function(e) {
+        // Find closest button or link that might be a remove button
+        const removeButton = e.target.closest('button[data-action="remove-from-cart"], a[data-action="remove-from-cart"], .remove-from-cart-btn, button[data-action="remove-from-wishlist"], a[data-action="remove-from-wishlist"], .remove-from-wishlist-btn, a[href*="/cart/remove"], a[href*="/wishlist/remove"]');
+        
+        if (!removeButton) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Determine if this is cart or wishlist
+        const isCart = removeButton.getAttribute('data-action') === 'remove-from-cart' || 
+                      removeButton.classList.contains('remove-from-cart-btn') ||
+                      (removeButton.getAttribute('href') && removeButton.getAttribute('href').includes('/cart/remove'));
+        
+        // Get item ID
+        let itemId = removeButton.getAttribute('data-id') || 
+                    removeButton.getAttribute('data-item-id');
+                    
+        // If no data-id, try to extract from href
+        if (!itemId && removeButton.getAttribute('href')) {
+          const hrefParts = removeButton.getAttribute('href').split('/');
+          itemId = hrefParts[hrefParts.length - 1];
         }
-        const overlay = document.querySelector(".menu-overlay")
-        if (overlay) overlay.classList.remove("active")
-        document.body.style.overflow = ""
-      }
-
-      // Close any open dropdowns
-      const openDropdowns = document.querySelectorAll(".dropdown-content.show")
-      openDropdowns.forEach((dropdown) => {
-        dropdown.classList.remove("show")
-      })
+        
+        if (!itemId) {
+          console.error('Item ID not found on remove button');
+          return;
+        }
+        
+        // Show loading state if possible
+        if (removeButton.tagName === 'BUTTON') {
+          const originalText = removeButton.innerHTML;
+          removeButton.disabled = true;
+          removeButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        }
+        
+        // Determine endpoint
+        const endpoint = isCart ? `/cart/remove/${itemId}` : `/wishlist/remove/${itemId}`;
+        
+        // Send AJAX request
+        fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Update the appropriate badge
+          if (isCart) {
+            updateBadgeCount('cart-badge', data.count || 0);
+            showToast('Item removed from cart', 'success');
+          } else {
+            updateBadgeCount('wishlist-badge', data.count || 0);
+            showToast('Item removed from wishlist', 'success');
+          }
+          
+          // If we're on the cart or wishlist page, remove the item from the DOM
+          const itemElement = removeButton.closest('.cart-item, .wishlist-item, tr, .product-item');
+          if (itemElement) {
+            itemElement.style.opacity = '0';
+            itemElement.style.height = itemElement.offsetHeight + 'px';
+            itemElement.style.overflow = 'hidden';
+            
+            setTimeout(() => {
+              itemElement.style.height = '0';
+              itemElement.style.padding = '0';
+              itemElement.style.margin = '0';
+              
+              setTimeout(() => {
+                if (itemElement.parentElement) {
+                  itemElement.parentElement.removeChild(itemElement);
+                }
+                
+                // Update totals if they exist
+                if (isCart && data.total) {
+                  const totalElements = document.querySelectorAll('.cart-total, .total-price, .cart-subtotal');
+                  totalElements.forEach(el => {
+                    el.textContent = data.total;
+                  });
+                }
+              }, 300);
+            }, 300);
+          }
+        })
+        .catch(error => {
+          console.error('Error removing item:', error);
+          
+          // Reset button if it's a button
+          if (removeButton.tagName === 'BUTTON') {
+            removeButton.disabled = false;
+            removeButton.innerHTML = originalText || '<i class="fas fa-times"></i>';
+          }
+          
+          // Show error message
+          showToast('Failed to remove item. Please try again.', 'error');
+        });
+      });
     }
-  })
-
-  // Add accessibility support for dropdowns
-  const dropdownLinks = document.querySelectorAll(".dropdown > a")
-  dropdownLinks.forEach((link) => {
-    link.setAttribute("aria-haspopup", "true")
-    link.setAttribute("aria-expanded", "false")
-
-    link.addEventListener("click", () => {
-      const expanded = link.getAttribute("aria-expanded") === "true"
-      link.setAttribute("aria-expanded", !expanded)
-    })
-  })
-})
-
-
-    </script>
+    
+    // 4. Intercept quantity changes
+    function interceptQuantityChanges() {
+      document.addEventListener('change', function(e) {
+        // Check if this is a quantity input in cart
+        if (e.target.matches('input[type="number"][name="quantity"], .quantity-input')) {
+          const quantityInput = e.target;
+          const form = quantityInput.closest('form');
+          
+          // Get item ID
+          let itemId;
+          if (form) {
+            itemId = form.querySelector('input[name="itemId"]')?.value;
+          }
+          
+          if (!itemId) {
+            itemId = quantityInput.getAttribute('data-id') || 
+                    quantityInput.getAttribute('data-item-id');
+          }
+          
+          if (!itemId) {
+            console.error('Item ID not found for quantity input');
+            return;
+          }
+          
+          const quantity = quantityInput.value;
+          
+          // Show loading indicator near the input
+          let loadingIndicator = document.createElement('span');
+          loadingIndicator.className = 'quantity-loading';
+          loadingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+          loadingIndicator.style.position = 'absolute';
+          loadingIndicator.style.right = '-25px';
+          loadingIndicator.style.top = '50%';
+          loadingIndicator.style.transform = 'translateY(-50%)';
+          
+          // Make parent relative if it's not already
+          const parent = quantityInput.parentElement;
+          const originalPosition = parent.style.position;
+          if (parent.style.position !== 'relative') {
+            parent.style.position = 'relative';
+          }
+          
+          parent.appendChild(loadingIndicator);
+          
+          // Send AJAX request to update quantity
+          fetch('/cart/update', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ itemId, quantity }),
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            // Remove loading indicator
+            parent.removeChild(loadingIndicator);
+            parent.style.position = originalPosition;
+            
+            // Update cart count badge
+            updateBadgeCount('cart-badge', data.count || 0);
+            
+            // Update item subtotal
+            const subtotalElement = quantityInput.closest('tr, .cart-item')?.querySelector('.subtotal, .item-subtotal');
+            if (subtotalElement && data.subtotal) {
+              subtotalElement.textContent = data.subtotal;
+              
+              // Add a brief highlight effect to show the price changed
+              subtotalElement.style.transition = 'background-color 0.5s';
+              subtotalElement.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+              setTimeout(() => {
+                subtotalElement.style.backgroundColor = 'transparent';
+              }, 800);
+            }
+            
+            // Update cart total if it exists
+            if (data.total) {
+              const totalElements = document.querySelectorAll('.cart-total, .total-price, .cart-subtotal');
+              totalElements.forEach(el => {
+                el.textContent = data.total;
+                
+                // Add highlight effect
+                el.style.transition = 'background-color 0.5s';
+                el.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+                setTimeout(() => {
+                  el.style.backgroundColor = 'transparent';
+                }, 800);
+              });
+            }
+            
+            // Show success message
+            showToast('Cart updated', 'success');
+          })
+          .catch(error => {
+            console.error('Error updating quantity:', error);
+            
+            // Remove loading indicator
+            parent.removeChild(loadingIndicator);
+            parent.style.position = originalPosition;
+            
+            // Show error message
+            showToast('Failed to update cart. Please try again.', 'error');
+            
+            // Reset to previous value
+            quantityInput.value = quantityInput.defaultValue;
+          });
+        }
+      });
+    }
+    
+    // 5. Setup direct API for updating counts from anywhere in your code
+    window.updateCartCount = function(count) {
+      updateBadgeCount('cart-badge', count);
+    };
+    
+    window.updateWishlistCount = function(count) {
+      updateBadgeCount('wishlist-badge', count);
+    };
+    
+    // 6. Listen for custom events
+    document.addEventListener('cartUpdated', function(e) {
+      if (e.detail && typeof e.detail.count !== 'undefined') {
+        updateBadgeCount('cart-badge', e.detail.count);
+      }
+    });
+    
+    document.addEventListener('wishlistUpdated', function(e) {
+      if (e.detail && typeof e.detail.count !== 'undefined') {
+        updateBadgeCount('wishlist-badge', e.detail.count);
+      }
+    });
+    
+    // Initialize all interceptors
+    interceptForms();
+    interceptButtons();
+    interceptRemoveButtons();
+    interceptQuantityChanges();
+  }
+  
+  // Initialize the cart and wishlist system
+  initCartWishlistSystem();
+});
+</script>
 </body>
 
 </html>

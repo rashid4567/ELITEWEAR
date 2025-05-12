@@ -3,14 +3,13 @@ const Wishlist = require("../model/whislistScheema");
 
 const addCountsMiddleware = async (req, res, next) => {
   try {
-    const userId = req.session.user;
-    
-    // Initialize counts to zero
     res.locals.cartCount = 0;
     res.locals.wishlistCount = 0;
     
-    if (userId) {
-      // Get cart count
+    // Check if req.session exists before trying to access user
+    if (req.session && req.session.user) {
+      const userId = req.session.user;
+      
       try {
         const userCart = await Cart.findOne({ userId }).lean();
         if (userCart && userCart.items) {
@@ -20,7 +19,6 @@ const addCountsMiddleware = async (req, res, next) => {
         console.error("Error fetching cart count:", cartError);
       }
       
-      // Get wishlist count
       try {
         const userWishlist = await Wishlist.findOne({ user: userId }).lean();
         if (userWishlist && userWishlist.products) {
