@@ -19,7 +19,10 @@ body {
     color: var(--text-primary);
 }
 
-.page-container {
+/* Container width control */
+.container.page-container {
+    max-width: 1140px;
+    margin: 0 auto;
     padding: 1.5rem;
 }
 
@@ -189,6 +192,12 @@ body {
     color: var(--text-muted);
 }
 
+@media (max-width: 992px) {
+    .container.page-container {
+        max-width: 90%;
+    }
+}
+
 @media (max-width: 768px) {
     .stats-header {
         padding: 1rem;
@@ -227,6 +236,9 @@ body {
 
 .stats-card, .chart-container {
     animation: fadeIn 0.5s ease-out forwards;
+}
+.mains{
+        transform: translateX(100px);
 }
 
 .stats-card:nth-child(1) { animation-delay: 0.1s; }

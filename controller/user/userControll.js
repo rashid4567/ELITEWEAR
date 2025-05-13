@@ -252,17 +252,16 @@ const loadHomepage = async (req, res) => {
     const userData = userId ? await User.findById(userId) : null;
     const today = new Date().toISOString();
 
-    // Fetch active banners
+    
     const findBanner = await Banner.find({
       startingDate: { $lt: new Date(today) },
       endingDate: { $gt: new Date(today) },
     });
 
-    // Fetch active categories
     const categories = await Category.find({ isListed: true });
     const categoryIds = categories.map((category) => category._id);
 
-    // Fetch active products
+    
     const productData = await Product.find({
       isActive: true,
       categoryId: { $in: categoryIds },
@@ -272,7 +271,7 @@ const loadHomepage = async (req, res) => {
       .populate("categoryId")
       .exec();
 
-    // Format product data for the template
+    
     const formattedProductData = productData.map((product) => {
       const firstVariant = product.variants?.[0] || {};
       return {
@@ -285,18 +284,17 @@ const loadHomepage = async (req, res) => {
       };
     });
 
-    // Fetch top-rated reviews for the testimonials section
-    // Update the populate paths to match the field names in the Review model
+
     const topReviews = await Review.find({
-      rating: { $gte: 4 }, // Only show 4 and 5 star reviews
+      rating: { $gte: 4 }, 
     })
       .sort({
-        helpfulVotes: -1, // Sort by most helpful first
-        createdAt: -1, // Then by newest
+        helpfulVotes: -1, 
+        createdAt: -1,
       })
-      .limit(6) // Get 6 reviews to show in the carousel
-      .populate("userId", "fullname profileImage") // Changed from "user" to "userId"
-      .populate("productId", "name") // Changed from "product" to "productId"
+      .limit(6) 
+      .populate("userId", "fullname profileImage") 
+      .populate("productId", "name")
       .lean();
 
     res.render("home", {
@@ -304,7 +302,7 @@ const loadHomepage = async (req, res) => {
       data: formattedProductData,
       cat: categories,
       Banner: findBanner || [],
-      reviews: topReviews || [], // Pass reviews to the template
+      reviews: topReviews || [], 
       error: formattedProductData.length === 0 ? "No products available" : null,
     });
   } catch (error) {
@@ -314,7 +312,7 @@ const loadHomepage = async (req, res) => {
       data: [],
       cat: [],
       Banner: [],
-      reviews: [], // Empty array if error
+      reviews: [], 
       error: "Server error",
     });
   }

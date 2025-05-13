@@ -3,24 +3,24 @@
             background-color: #f8f9fa;
         }
         
-        .success-container {
+        .failure-container {
             max-width: 1200px;
             margin: 40px auto;
             padding: 0 15px;
         }
         
-        .success-header {
+        .failure-header {
             text-align: center;
             margin-bottom: 40px;
         }
         
-        .success-title {
+        .failure-title {
             font-weight: 700;
             margin-top: 20px;
-            color: #212529;
+            color: #dc3545;
         }
         
-        .success-subtitle {
+        .failure-subtitle {
             color: #6c757d;
             max-width: 600px;
             margin: 0 auto;
@@ -137,7 +137,7 @@
         }
         
         .step-active .step-icon {
-            background-color: #28a745;
+            background-color: #dc3545;
             color: #fff;
         }
         
@@ -177,14 +177,14 @@
         }
         
         .btn-primary-action {
-            background-color: #212529;
-            border-color: #212529;
+            background-color: #dc3545;
+            border-color: #dc3545;
             color: #fff;
         }
         
         .btn-primary-action:hover {
-            background-color: #000;
-            border-color: #000;
+            background-color: #c82333;
+            border-color: #bd2130;
             color: #fff;
             transform: translateY(-2px);
         }
@@ -202,7 +202,7 @@
             transform: translateY(-2px);
         }
         
-        .checkmark-circle {
+        .error-circle {
             width: 80px;
             height: 80px;
             position: relative;
@@ -211,61 +211,22 @@
             margin-bottom: 20px;
         }
         
-        .checkmark-circle .background {
+        .error-circle .background {
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background: #28a745;
+            background: #dc3545;
             position: absolute;
         }
         
-        .checkmark-circle .checkmark {
-            border-radius: 5px;
-        }
-        
-        .checkmark-circle .checkmark.draw:after {
-            animation-delay: 100ms;
-            animation-duration: 1s;
-            animation-timing-function: ease;
-            animation-name: checkmark;
-            transform: scaleX(-1) rotate(135deg);
-            animation-fill-mode: forwards;
-        }
-        
-        .checkmark-circle .checkmark:after {
-            opacity: 0;
-            height: 40px;
-            width: 20px;
-            transform-origin: left top;
-            border-right: 5px solid #fff;
-            border-top: 5px solid #fff;
-            content: '';
-            left: 28px;
-            top: 45px;
+        .error-circle .error-x {
             position: absolute;
-        }
-        
-        @keyframes checkmark {
-            0% {
-                height: 0;
-                width: 0;
-                opacity: 1;
-            }
-            20% {
-                height: 0;
-                width: 20px;
-                opacity: 1;
-            }
-            40% {
-                height: 40px;
-                width: 20px;
-                opacity: 1;
-            }
-            100% {
-                height: 40px;
-                width: 20px;
-                opacity: 1;
-            }
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
         }
         
         .shimmer {
@@ -299,31 +260,31 @@
             }
         }
         
-        .success-badge {
+        .failure-badge {
             position: absolute;
             top: -15px;
             right: 20px;
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background-color: #28a745;
+            background-color: #dc3545;
             color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
             animation: pulse 2s infinite;
         }
         
         @keyframes pulse {
             0% {
-                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
             }
             70% {
-                box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+                box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
             }
             100% {
-                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
             }
         }
         
@@ -348,18 +309,28 @@
             transform: scale(1.1);
         }
         
-        .confetti {
+        .lightning {
             position: fixed;
-            top: -10px;
-            animation: fall linear forwards;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
             z-index: 1000;
-            animation: fall 3s linear forwards;
+            opacity: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            animation: lightning 4s ease-in-out infinite;
         }
         
-        @keyframes fall {
-            to {
-                transform: translateY(100vh) rotate(720deg);
+        @keyframes lightning {
+            0%, 100% {
                 opacity: 0;
+            }
+            0.5%, 1.5% {
+                opacity: 0.1;
+            }
+            1% {
+                opacity: 0.3;
             }
         }
         
@@ -372,7 +343,83 @@
         
         .custom-toast {
             background-color: #fff;
-            border-left: 4px solid #28a745;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .retry-payment-container {
+            background-color: #fff3f5;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px dashed #dc3545;
+        }
+        
+        .retry-payment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .retry-payment-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #dc3545;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+        }
+        
+        .retry-payment-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+        
+        .retry-payment-description {
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        
+        .payment-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .payment-option {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-option:hover {
+            border-color: #dc3545;
+            transform: translateY(-2px);
+        }
+        
+        .payment-option.active {
+            border-color: #dc3545;
+            background-color: #fff3f5;
+        }
+        
+        .payment-option-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #212529;
+        }
+        
+        .payment-option-label {
+            font-size: 0.9rem;
+            font-weight: 500;
         }
         
         /* Responsive adjustments */
@@ -412,4 +459,19 @@
                 width: 100%;
                 margin-bottom: 10px;
             }
+            
+            .payment-options {
+                flex-direction: column;
+            }
+        }
+        
+        /* Error animation */
+        @keyframes shake {
+            0%, 100% {transform: translateX(0);}
+            10%, 30%, 50%, 70%, 90% {transform: translateX(-5px);}
+            20%, 40%, 60%, 80% {transform: translateX(5px);}
+        }
+        
+        .shake {
+            animation: shake 0.8s cubic-bezier(.36,.07,.19,.97) both;
         }

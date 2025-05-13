@@ -5,13 +5,14 @@ const Address = require("../../model/AddressScheema");
 const Category = require("../../model/categoryScheema");
 const Coupon = require("../../model/couponScheema");
 const Wallet = require("../../model/walletScheema");
+const logger = require("../../utils/logger");
 const { calculateProportionalDiscount } = require("../../utils/discountCalculator");
 
 
 const loadcheckOut = async (req, res) => {
   try {
     const userId = req.user._id;
-    console.log("Loading checkout page for user:", userId);
+    logger.info("Loading checkout page for user:", userId);
 
     const userCart = await Cart.findOne({ userId }).populate({
       path: 'items.productId',
@@ -54,7 +55,7 @@ const loadcheckOut = async (req, res) => {
     const cartItems = userCart.items.map(item => {
 
       if (!item.productId || typeof item.productId !== 'object') {
-        console.log('Warning: Product not properly populated for item:', item);
+        logger.info('Warning: Product not properly populated for item:', item);
         return {
           id: item.productId || 'unknown',
           name: 'Product Unavailable',
@@ -110,13 +111,13 @@ const loadcheckOut = async (req, res) => {
 
 
     if (req.session.checkout?.coupon) {
-      console.log("Found coupon in session:", req.session.checkout.coupon.code);
+      logger.info("Found coupon in session:", req.session.checkout.coupon.code);
       const storedCoupon = req.session.checkout.coupon;
       
 
       const coupon = await Coupon.findById(storedCoupon.couponId);
       if (!coupon || !coupon.isActive || new Date() > new Date(coupon.expiryDate)) {
-        console.log("Coupon is no longer valid, removing from session");
+        logger.info("Coupon is no longer valid, removing from session");
         delete req.session.checkout.coupon;
         req.session.save();
       } else {
@@ -159,7 +160,7 @@ const loadcheckOut = async (req, res) => {
 
     const grandTotal = discountResult.finalTotal + deliveryCharge;
 
-    // Update session with current totals
+    
     if (!req.session.checkout) {
       req.session.checkout = {};
     }
@@ -168,14 +169,14 @@ const loadcheckOut = async (req, res) => {
     req.session.checkout.deliveryCharge = deliveryCharge;
     req.session.checkout.discount = discountResult.totalDiscount;
 
-    // Save session
+  
     req.session.save((err) => {
       if (err) {
-        console.error("Error saving checkout session:", err);
+        logger.error("Error saving checkout session:", err);
       }
     });
 
-    // Get available coupons for the user
+
     const today = new Date();
     const coupons = await Coupon.find({}).lean();
     const couponsWithStatus = coupons.map((coupon) => {
@@ -218,8 +219,8 @@ const loadcheckOut = async (req, res) => {
       };
     });
 
-    // Log what we're sending to the template for debugging
-    console.log('Sending to checkout template:', {
+
+    logger.warn('Sending to checkout template:', {
       cartItemsCount: userCart.items.length,
       discountedItemsCount: discountResult.cartItems.length,
       totalPrice,
@@ -228,7 +229,7 @@ const loadcheckOut = async (req, res) => {
       appliedCoupon: req.session.checkout?.coupon || null
     });
 
-    // Render checkout page
+
     res.render("checkOutpage", {
       cartItems: userCart.items,
       discountedItems: discountResult.cartItems,
@@ -250,15 +251,12 @@ const loadcheckOut = async (req, res) => {
   }
 };
 
-/**
- * Select delivery address for checkout
- */
+
 const selectDeliveryAddress = async (req, res) => {
   try {
     const { addressId } = req.body;
     const userId = req.user._id;
 
-    // Validate address belongs to user
     const selectedAddress = await Address.findOne({ _id: addressId, userId });
     if (!selectedAddress) {
       return res
@@ -266,11 +264,11 @@ const selectDeliveryAddress = async (req, res) => {
         .json({ success: false, message: "Invalid address" });
     }
 
-    // Store address in session
+
     req.session.checkout = req.session.checkout || {};
     req.session.checkout.addressId = addressId;
 
-    // Save session
+
     req.session.save((err) => {
       if (err) {
         console.error("Error saving address to session:", err);
@@ -291,9 +289,6 @@ const selectDeliveryAddress = async (req, res) => {
   }
 };
 
-/**
- * Check wallet balance for payment
- */
 const checkWalletBalance = async (userId) => {
   try {
     const user = await User.findById(userId).select("+walletBalance");
@@ -301,7 +296,7 @@ const checkWalletBalance = async (userId) => {
       return { success: false, message: "User not found", balance: 0 };
     }
 
-    // Get wallet balance
+
     const wallet = await Wallet.findOne({ userId });
     const balance = wallet ? wallet.amount : (user.walletBalance || 0);
 
@@ -321,13 +316,13 @@ const loadCheckoutPayment = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Check if address is selected
+ 
     if (!req.session.checkout?.addressId) {
       req.flash("warning", "Please select a delivery address first");
       return res.redirect("/checkOut");
     }
 
-    // Get user cart
+   
     const userCart = await Cart.findOne({ userId }).populate({
       path: "items.productId",
       select: "name images variants isActive categoryId"
@@ -338,7 +333,7 @@ const loadCheckoutPayment = async (req, res) => {
       return res.redirect("/");
     }
 
-    // Validate cart items
+
     const validItems = [];
     for (const item of userCart.items) {
       const product = item.productId;
@@ -365,9 +360,9 @@ const loadCheckoutPayment = async (req, res) => {
       return res.redirect("/");
     }
 
-    // Prepare cart items for display
+
     const cartItems = userCart.items.map(item => {
-      // Handle case where product might not be properly populated
+
       if (!item.productId || typeof item.productId !== 'object') {
         console.log('Warning: Product not properly populated for item:', item);
         return {
@@ -381,7 +376,6 @@ const loadCheckoutPayment = async (req, res) => {
         };
       }
 
-      // Get variant price
       const variants = item.productId.variants || [];
       const variant = variants.find(v => v && v.size === item.size);
       const price = variant ? variant.salePrice : 0;
@@ -399,11 +393,11 @@ const loadCheckoutPayment = async (req, res) => {
       };
     });
 
-    // Calculate totals
+
     const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
     const deliveryCharge = totalPrice > 8000 ? 0 : 200;
     
-    // Initialize discount result with no discount
+
     let discountResult = {
       cartItems: cartItems.map(item => ({
         ...item,
@@ -418,18 +412,17 @@ const loadCheckoutPayment = async (req, res) => {
       discountApplied: false
     };
 
-    // Check if a coupon is applied in the session
     if (req.session.checkout?.coupon) {
       const storedCoupon = req.session.checkout.coupon;
       
-      // Validate coupon still exists and is active
+     
       const coupon = await Coupon.findById(storedCoupon.couponId);
       if (!coupon || !coupon.isActive || new Date() > new Date(coupon.expiryDate)) {
         console.log("Coupon is no longer valid, removing from session");
         delete req.session.checkout.coupon;
         req.session.save();
       } else if (storedCoupon.items && storedCoupon.items.length > 0) {
-        // Map discount info to cart items
+    
         discountResult.cartItems = cartItems.map(item => {
           const itemDiscount = storedCoupon.items.find(i => 
             i.id && item.id && i.id.toString() === item.id.toString()
@@ -460,24 +453,24 @@ const loadCheckoutPayment = async (req, res) => {
       }
     }
 
-    // Calculate grand total
+
     const grandTotal = discountResult.finalTotal + deliveryCharge;
 
-    // Update session with current totals
+
     req.session.checkout = req.session.checkout || {};
     req.session.checkout.totalPrice = totalPrice;
     req.session.checkout.grandTotal = grandTotal;
     req.session.checkout.deliveryCharge = deliveryCharge;
     req.session.checkout.discount = discountResult.totalDiscount;
 
-    // Save session
+
     req.session.save((err) => {
       if (err) {
         console.error("Error saving checkout session:", err);
       }
     });
 
-    // Get delivery address
+   
     const deliveryAddress = await Address.findOne({
       _id: req.session.checkout.addressId,
       userId,
@@ -488,14 +481,13 @@ const loadCheckoutPayment = async (req, res) => {
       return res.redirect("/checkOut");
     }
 
-    // Check wallet balance
     let walletBalance = 0;
     const wallet = await Wallet.findOne({ userId });
     if (wallet) {
       walletBalance = wallet.amount;
     }
 
-    // Render payment page
+
     res.render("checkoutPayment", {
       cartItems: discountResult.cartItems, 
       totalPrice,
@@ -530,7 +522,6 @@ const validatePaymentMethod = async (req, res) => {
       });
     }
 
-    // Validate wallet balance if wallet payment
     if (paymentMethod === "Wallet") {
       const grandTotal = req.session.checkout?.grandTotal || 0;
       
@@ -556,7 +547,6 @@ const validatePaymentMethod = async (req, res) => {
       }
     }
 
-    // Validate COD limit
     if (paymentMethod === "COD") {
       const grandTotal = req.session.checkout?.grandTotal || 0;
       if (grandTotal > 1000) {
@@ -567,11 +557,11 @@ const validatePaymentMethod = async (req, res) => {
       }
     }
     
-    // Store payment method in session
+  
     req.session.checkout = req.session.checkout || {};
     req.session.checkout.paymentMethod = paymentMethod;
     
-    // Save session
+   
     req.session.save((err) => {
       if (err) {
         console.error("Error saving payment method to session:", err);
@@ -593,20 +583,15 @@ const validatePaymentMethod = async (req, res) => {
   }
 };
 
-/**
- * Load order confirmation page
- */
 const loadOrderConfirmation = async (req, res) => {
   try {
     const userId = req.user._id;
-    
-    // Check if checkout process is complete
+
     if (!req.session.checkout?.addressId || !req.session.checkout?.paymentMethod) {
       req.flash("warning", "Please complete your checkout process");
       return res.redirect("/checkout");
     }
-    
-    // Get user cart
+
     const userCart = await Cart.findOne({ userId }).populate({
       path: "items.productId",
       select: "name images variants"
@@ -617,7 +602,7 @@ const loadOrderConfirmation = async (req, res) => {
       return res.redirect("/");
     }
     
-    // Get delivery address
+
     const deliveryAddress = await Address.findOne({
       _id: req.session.checkout.addressId,
       userId,
@@ -628,7 +613,7 @@ const loadOrderConfirmation = async (req, res) => {
       return res.redirect("/checkout");
     }
     
-    // Prepare cart items for display
+
     const cartItems = userCart.items.map(item => {
       const variant = item.productId.variants.find(v => v.size === item.size);
       return {
@@ -641,11 +626,11 @@ const loadOrderConfirmation = async (req, res) => {
       };
     });
     
-    // Calculate totals
+
     const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
     const deliveryCharge = totalPrice > 8000 ? 0 : 200;
     
-    // Initialize discount result with no discount
+
     let discountResult = {
       cartItems: cartItems.map(item => ({
         ...item,
@@ -660,18 +645,17 @@ const loadOrderConfirmation = async (req, res) => {
       discountApplied: false
     };
 
-    // Check if a coupon is applied in the session
     if (req.session.checkout?.coupon) {
       const storedCoupon = req.session.checkout.coupon;
       
-      // Validate coupon still exists and is active
+
       const coupon = await Coupon.findById(storedCoupon.couponId);
       if (!coupon || !coupon.isActive || new Date() > new Date(coupon.expiryDate)) {
         console.log("Coupon is no longer valid, removing from session");
         delete req.session.checkout.coupon;
         req.session.save();
       } else if (storedCoupon.items && storedCoupon.items.length > 0) {
-        // Map discount info to cart items
+  
         discountResult.cartItems = cartItems.map(item => {
           const itemDiscount = storedCoupon.items.find(i => 
             i.id && item.id && i.id.toString() === item.id.toString()
@@ -702,25 +686,25 @@ const loadOrderConfirmation = async (req, res) => {
       }
     }
 
-    // Calculate grand total
+
     const grandTotal = discountResult.finalTotal + deliveryCharge;
     
-    // Get payment method
+  
     const paymentMethod = req.session.checkout.paymentMethod;
     
-    // Check wallet balance if using wallet payment
+
     let walletInfo = null;
     if (paymentMethod === "Wallet") {
       walletInfo = await checkWalletBalance(userId);
       
-      // Validate wallet balance again
+    
       if (!walletInfo.success || walletInfo.balance < grandTotal) {
         req.flash("warning", "Insufficient wallet balance. Please choose another payment method.");
         return res.redirect("/checkout-payment");
       }
     }
     
-    // Render confirmation page
+
     res.render("orderConfirmation", {
       cartItems: discountResult.cartItems,
       totalPrice,

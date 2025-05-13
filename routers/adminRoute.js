@@ -46,9 +46,9 @@ router.get("/check-category-name", CategoryController.checkCategoryNameExists)
 
 // Product management routes
 router.get("/productManagement", adminAuth, productController.ProductManagement)
-router.get("/products", adminAuth, productController.ProductManagement) // Alias for consistency
+router.get("/products", adminAuth, productController.ProductManagement) 
 router.get("/products/add", adminAuth, productController.getaddproduct)
-router.get("/add-product", adminAuth, productController.getaddproduct) // Legacy route
+router.get("/add-product", adminAuth, productController.getaddproduct) 
 router.post(
   "/add-product",
   adminAuth,
@@ -115,7 +115,7 @@ router.delete("/deleteCoupon/:id", adminAuth, CouponController.deleteCoupon)
 
 // Sales routes
 router.get("/sales", adminAuth, salesontroller.loadsales)
-router.get("/analytics", adminAuth, salesontroller.loadsales) // Alias for consistency
+router.get("/analytics", adminAuth, salesontroller.loadsales) 
 router.get("/sales/download-pdf", adminAuth, salesontroller.downloadSalesPDF)
 router.get("/sales/download-excel", adminAuth, salesontroller.downloadSalesExcel)
 

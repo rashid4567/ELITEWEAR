@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ReviewSchema = new Schema({
-  // Using 'productId' to match your OrderItem schema
+
   productId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
@@ -64,7 +64,7 @@ const ReviewSchema = new Schema({
   }
 }, { timestamps: true });
 
-// Add indexes for better query performance
+
 ReviewSchema.index({ productId: 1 });
 ReviewSchema.index({ userId: 1 });
 ReviewSchema.index({ orderItem: 1 }, { unique: true });

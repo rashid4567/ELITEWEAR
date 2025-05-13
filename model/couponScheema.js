@@ -80,7 +80,11 @@ couponSchema.pre("findOneAndUpdate", async function (next) {
         }
       }
 
-      if (startDate && expiryDate && new Date(expiryDate) <= new Date(startDate)) {
+      if (
+        startDate &&
+        expiryDate &&
+        new Date(expiryDate) <= new Date(startDate)
+      ) {
         return next(new Error("Expiry date must be after start date"));
       }
     }

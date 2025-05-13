@@ -8,6 +8,7 @@ const Wallet = require("../../model/walletScheema");
 const Address = require("../../model/AddressScheema");
 const Review = require("../../model/ReviewScheema");
 const mongoose = require("mongoose");
+const logger = require("../../utils/logger");
 const { v4: uuidv4 } = require("uuid");
 const {
   generateOrderNumber,
@@ -84,7 +85,7 @@ const updateOrderStatusHelper = async (orderId) => {
 
     return newStatus;
   } catch (error) {
-    console.error("[ERROR] Error updating order status:", error);
+    logger.error("[ERROR] Error updating order status:", error);
     throw error;
   }
 };
@@ -97,7 +98,7 @@ const placeOrder = async (req, res) => {
       calculateProportionalDiscount,
     } = require("../../utils/discountCalculator");
 
-    console.log(
+    logger.info(
       `[INFO] Processing order for user ${userId} with payment method ${paymentMethod}`
     );
 
@@ -280,7 +281,7 @@ const placeOrder = async (req, res) => {
     });
 
     await newOrder.save();
-    console.log(
+    logger.info(
       `[INFO] Created order ${newOrder._id} with number ${orderNumber}`
     );
 
@@ -313,7 +314,7 @@ const placeOrder = async (req, res) => {
       });
       await orderItem.save();
       orderItems.push(orderItem._id);
-      console.log(
+      logger.info(
         `[INFO] Created order item ${orderItem._id} for product ${item.name}`
       );
     }
@@ -330,7 +331,7 @@ const placeOrder = async (req, res) => {
         if (variantIndex !== -1) {
           product.variants[variantIndex].varientquatity -= item.quantity;
           await product.save();
-          console.log(
+          logger.info(
             `[INFO] Updated inventory for product ${product._id}, variant ${item.size}`
           );
         }
@@ -354,7 +355,7 @@ const placeOrder = async (req, res) => {
       }
 
       await appliedCoupon.save();
-      console.log(
+      loger.info(
         `[INFO] Updated coupon usage for coupon ${appliedCoupon._id}`
       );
     }
@@ -369,11 +370,11 @@ const placeOrder = async (req, res) => {
           description: `Payment for order #${orderNumber}`,
           transactionRef: uuidv4(),
           date: new Date(),
-          orderReference: newOrder._id.toString(), // Use orderReference per schema
+          orderReference: newOrder._id.toString(),
           status: "completed",
         });
         await wallet.save();
-        console.log(
+        logger.info(
           `[INFO] Processed wallet payment for order ${newOrder._id}`
         );
       }
@@ -381,16 +382,13 @@ const placeOrder = async (req, res) => {
 
     cart.items = [];
     await cart.save();
-    console.log(`[INFO] Cleared cart for user ${userId}`);
+   logger.info(`[INFO] Cleared cart for user ${userId}`);
 
     delete req.session.checkout;
     req.session.save();
 
-    // Check if payment was successful
     if (paymentMethod === "Online") {
-      // For online payments, you would typically have a payment gateway integration
-      // Here we're simulating a successful payment
-      const paymentSuccess = true; // In a real scenario, this would be determined by the payment gateway response
+      const paymentSuccess = true;
 
       if (paymentSuccess) {
         return res.status(200).json({
@@ -401,7 +399,6 @@ const placeOrder = async (req, res) => {
           redirect: `/order-success/${newOrder._id}`,
         });
       } else {
-      
         newOrder.paymentStatus = "Failed";
         newOrder.status = "Cancelled";
         newOrder.statusHistory.push({
@@ -429,7 +426,7 @@ const placeOrder = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error placing order:", error);
+    logger.error("Error placing order:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to place order. Please try again.",
@@ -445,11 +442,11 @@ const loadOrderSuccess = async (req, res) => {
     const orderId = req.query.id || req.session.lastOrderId;
 
     if (!orderId) {
-      console.log("No order ID found for success page, redirecting to orders");
+     logger.info("No order ID found for success page, redirecting to orders");
       return res.redirect("/orders");
     }
 
-    console.log(`Loading order success page for order: ${orderId}`);
+   logger.info(`Loading order success page for order: ${orderId}`);
 
     const order = await Order.findById(orderId)
       .populate("userId")
@@ -463,12 +460,12 @@ const loadOrderSuccess = async (req, res) => {
       });
 
     if (!order) {
-      console.log(`Order ${orderId} not found, redirecting to orders`);
+ logger.info(`Order ${orderId} not found, redirecting to orders`);
       return res.redirect("/orders");
     }
 
     if (order.userId._id.toString() !== userId.toString()) {
-      console.log(
+     logger.info(
         `Order ${orderId} does not belong to user ${userId}, redirecting to orders`
       );
       return res.redirect("/orders");
@@ -485,7 +482,7 @@ const loadOrderSuccess = async (req, res) => {
 
     delete req.session.lastOrderId;
   } catch (error) {
-    console.error("Error loading order success page:", error);
+  logger.info("Error loading order success page:", error);
     res.redirect("/orders");
   }
 };
@@ -497,11 +494,11 @@ const loadOrderfailure = async (req, res) => {
     const orderId = req.query.id || req.session.lastOrderId;
 
     if (!orderId) {
-      console.log("No order ID found for failure page, redirecting to orders");
+     logger.info("No order ID found for failure page, redirecting to orders");
       return res.redirect("/orders");
     }
 
-    console.log(`Loading order failure page for order: ${orderId}`);
+  logger.info(`Loading order failure page for order: ${orderId}`);
 
     const order = await Order.findById(orderId)
       .populate("userId")
@@ -515,12 +512,12 @@ const loadOrderfailure = async (req, res) => {
       });
 
     if (!order) {
-      console.log(`Order ${orderId} not found, redirecting to orders`);
+   logger.info(`Order ${orderId} not found, redirecting to orders`);
       return res.redirect("/orders");
     }
 
     if (order.userId._id.toString() !== userId.toString()) {
-      console.log(
+     logger.info(
         `Order ${orderId} does not belong to user ${userId}, redirecting to orders`
       );
       return res.redirect("/orders");
@@ -537,7 +534,7 @@ const loadOrderfailure = async (req, res) => {
 
     delete req.session.lastOrderId;
   } catch (error) {
-    console.error("Error loading order failure page:", error);
+    logger.error("Error loading order failure page:", error);
     res.redirect("/orders");
   }
 };
@@ -569,10 +566,10 @@ const getUserOrders = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    console.log(`Found ${orders.length} orders for user ${userId}`);
+  logger.info(`Found ${orders.length} orders for user ${userId}`);
 
     orders.forEach((order) => {
-      console.log(
+    logger.info(
         `Order ${order._id}: Payment Method: ${order.paymentMethod}, Payment Status: ${order.paymentStatus}, Status: ${order.status}`
       );
     });
@@ -582,7 +579,7 @@ const getUserOrders = async (req, res) => {
         order.paymentMethod === "Online" &&
         (order.paymentStatus === "Failed" || order.paymentStatus === "Pending")
       ) {
-        console.log(`Order ${order._id} has failed/pending payment status`);
+       logger.info(`Order ${order._id} has failed/pending payment status`);
         return { ...order.toObject(), progressWidth: 0 };
       }
 
@@ -636,7 +633,7 @@ const getUserOrders = async (req, res) => {
       page: "orders",
     });
   } catch (error) {
-    console.error("Error getting user orders:", error);
+    logger.error("Error getting user orders:", error);
     res.redirect("/");
   }
 };
@@ -646,12 +643,12 @@ const getOrderDetails = async (req, res) => {
     const orderId = req.params.id;
     const userId = req.user?._id || req.session.user;
 
-    console.log(
+   logger.info(
       `[DEBUG] Getting order details for order: ${orderId}, user: ${userId}`
     );
 
     if (!orderId || !mongoose.Types.ObjectId.isValid(orderId)) {
-      console.error(`[ERROR] Invalid order ID: ${orderId}`);
+      logger.error(`[ERROR] Invalid order ID: ${orderId}`);
       return res.redirect("/orders?error=Invalid order ID");
     }
 
@@ -661,7 +658,7 @@ const getOrderDetails = async (req, res) => {
     }).populate("address");
 
     if (!order) {
-      console.error(
+      logger.error(
         `[ERROR] Order not found or doesn't belong to user: ${orderId}`
       );
       return res.redirect("/orders?error=Order not found");
@@ -671,7 +668,7 @@ const getOrderDetails = async (req, res) => {
       .populate("productId", "name images price description")
       .sort({ createdAt: -1 });
 
-    console.log(
+  logger.info(
       `[DEBUG] Found ${orderItems.length} order items for order ${orderId}`
     );
 
@@ -716,7 +713,7 @@ const getOrderDetails = async (req, res) => {
         productId: { $in: productIds },
       });
 
-      console.log(
+   logger.info(
         `[DEBUG] Found ${reviews.length} reviews by user for products in this order`
       );
 
@@ -727,13 +724,13 @@ const getOrderDetails = async (req, res) => {
             hasReview: true,
             review: review,
           };
-          console.log(
+          logger.debug(
             `[DEBUG] Review for product ${productId}: Found, Can review: true`
           );
 
           if (review.orderItem && orderItemMap[review.orderItem.toString()]) {
             const orderItemId = review.orderItem.toString();
-            console.log(`[DEBUG] Review is for order item ${orderItemId}`);
+            logger.debug(`[DEBUG] Review is for order item ${orderItemId}`);
           }
         }
       });
@@ -744,7 +741,7 @@ const getOrderDetails = async (req, res) => {
             hasReview: false,
             review: null,
           };
-          console.log(
+         logger.debug(
             `[DEBUG] Review for product ${productId}: Not found, Can review: false`
           );
         }
@@ -775,7 +772,7 @@ const getOrderDetails = async (req, res) => {
             reviewsMap[productId].hasReview = true;
             reviewsMap[productId].review = itemReview;
             reviewsMap[productId].orderItemReviewed = itemId;
-            console.log(`[DEBUG] Order item ${itemId} has a specific review`);
+           logger.debug(`[DEBUG] Order item ${itemId} has a specific review`);
           }
         }
       });
@@ -784,7 +781,7 @@ const getOrderDetails = async (req, res) => {
       reviewsMap = {};
     }
 
-    console.log(`[DEBUG] Rendering order details page for order ${orderId}`);
+    logger.debug(`[DEBUG] Rendering order details page for order ${orderId}`);
     res.render("orderDetails", {
       title: "Order Details",
       order: order,
@@ -1077,7 +1074,7 @@ const cancelOrderItem = async (req, res) => {
     const userId = req.session.user || req.user._id;
     const { cancelReason } = req.body;
 
-    console.log(
+    logger.info(
       `[INFO] Processing cancellation for item ${itemId} by user ${userId}`
     );
 
@@ -1418,7 +1415,6 @@ const approveReturnOrderItem = async (req, res) => {
       });
     }
 
-    // Update item status to Returned
     orderItem.status = "Returned";
     orderItem.returnApprovedDate = new Date();
     orderItem.returnCompletedDate = new Date();
@@ -1429,10 +1425,8 @@ const approveReturnOrderItem = async (req, res) => {
       note: "Return approved and completed",
     });
 
-    // Calculate refund amount based on finalPrice
     const refundAmount = orderItem.finalPrice * orderItem.quantity;
 
-    // Process refund to wallet
     if (
       order.paymentStatus === "Paid" ||
       order.paymentMethod === "Wallet" ||
@@ -1451,7 +1445,6 @@ const approveReturnOrderItem = async (req, res) => {
       orderItem.refundTransactionRef = generateTransactionId();
     }
 
-    // Restore inventory
     const product = await Product.findById(orderItem.productId);
     if (product) {
       const variantIndex = product.variants.findIndex(
@@ -1465,7 +1458,6 @@ const approveReturnOrderItem = async (req, res) => {
 
     await orderItem.save();
 
-    // Update order status
     const newOrderStatus = await updateOrderStatusHelper(order._id);
 
     return res.status(200).json({

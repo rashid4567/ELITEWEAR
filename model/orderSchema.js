@@ -6,7 +6,7 @@ const orderSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true
+      index: true,
     },
     orderNumber: {
       type: String,
@@ -30,53 +30,53 @@ const orderSchema = new mongoose.Schema(
         ref: "OrderItem",
       },
     ],
-    // Original price before discount
+
     subtotal: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
     },
-    // Added explicit discount fields
+
     discount: {
       type: Number,
       default: 0,
-      min: 0
+      min: 0,
     },
-    // Added delivery charge field
+
     deliveryCharge: {
       type: Number,
       default: 0,
-      min: 0
+      min: 0,
     },
-    // Final price after discount and delivery charge
+
     total: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
     },
-    // Added coupon tracking fields
+
     couponApplied: {
       type: Boolean,
-      default: false
+      default: false,
     },
     couponId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Coupon",
-      default: null
+      default: null,
     },
     couponCode: {
       type: String,
-      default: ""
+      default: "",
     },
     couponDiscountPercent: {
       type: Number,
       default: 0,
-      min: 0
+      min: 0,
     },
     paymentMethod: {
       type: String,
       required: true,
-      enum: ["COD", "Wallet", "Online"]
+      enum: ["COD", "Wallet", "Online"],
     },
     paymentStatus: {
       type: String,
@@ -102,7 +102,7 @@ const orderSchema = new mongoose.Schema(
         "Partially Shipped",
       ],
       default: "Processing",
-      index: true
+      index: true,
     },
     statusHistory: [
       {
@@ -127,7 +127,7 @@ const orderSchema = new mongoose.Schema(
     refundAmount: {
       type: Number,
       default: 0,
-      min: 0
+      min: 0,
     },
     returnRejectionReason: {
       type: String,
@@ -136,17 +136,18 @@ const orderSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 orderSchema.pre("save", async function (next) {
   if (!this.orderNumber) {
     const count = await mongoose.model("Order").countDocuments();
-    this.orderNumber = `ORD${Date.now().toString().slice(-6)}${(count + 1).toString().padStart(4, "0")}`;
+    this.orderNumber = `ORD${Date.now().toString().slice(-6)}${(count + 1)
+      .toString()
+      .padStart(4, "0")}`;
   }
   next();
 });
-
 
 orderSchema.index({ createdAt: -1 });
 orderSchema.index({ paymentStatus: 1 });

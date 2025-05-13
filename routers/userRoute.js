@@ -177,8 +177,6 @@ router.use(addCountsMiddleware)
   );
   router.post('/validate-payment', UserAuth, checkOutController.validatePaymentMethod);
   router.get('/confirm-order', UserAuth, checkOutController.loadOrderConfirmation);
-
-  // Add this route for wallet payment validation
   router.post('/validate-wallet-payment', UserAuth, checkOutController.validatePaymentMethod);
 
   // Order routes

@@ -63,6 +63,7 @@ body {
     margin-left: 250px;
     padding: 20px;
     transition: all 0.3s;
+    transform: translateY(-700px);
 }
 
 .page-header {

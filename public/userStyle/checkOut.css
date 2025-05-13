@@ -1,445 +1,871 @@
 :root {
-    --primary-color: #3a86ff;
-    --primary-dark: #2667cc;
-    --secondary-color: #ff006e;
-    --success-color: #38b000;
-    --warning-color: #ffbe0b;
-    --danger-color: #ff5252;
-    --light-color: #f8f9fa;
-    --dark-color: #212529;
-    --gray-color: #6c757d;
-    --gray-light: #e9ecef;
-    --gray-dark: #343a40;
-    --border-radius: 8px;
-    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --transition: all 0.3s ease;
+    --primary-color: #0f172a;
+    --secondary-color: #f8fafc;
+    --accent-color: #3b82f6;
+    --accent-hover: #2563eb;
+    --accent-secondary: #8b5cf6;
+    --accent-tertiary: #ec4899;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-light: #94a3b8;
+    --border-color: #e2e8f0;
+    --card-bg: #ffffff;
+    --sidebar-bg: #ffffff;
+    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    --card-hover-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.1);
+    --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    --gradient-secondary: linear-gradient(135deg, #8b5cf6, #ec4899);
+    --gradient-accent: linear-gradient(135deg, #3b82f6, #10b981);
+    --success-color: #10b981;
+    --error-color: #ef4444;
+    --warning-color: #f59e0b;
+    --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    --border-radius-sm: 0.375rem;
+    --border-radius: 0.5rem;
+    --border-radius-lg: 0.75rem;
+    --border-radius-xl: 1rem;
+    --border-radius-full: 9999px;
+    --font-primary: 'Outfit', sans-serif;
+    --font-secondary: 'Playfair Display', serif;
   }
-  
+
+  /* Dark mode variables */
+  .dark-mode {
+    --primary-color: #f8fafc;
+    --secondary-color: #0f172a;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-light: #94a3b8;
+    --border-color: #334155;
+    --card-bg: #1e293b;
+    --sidebar-bg: #0f172a;
+    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    --card-hover-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.3);
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
   body {
-    font-family: "Poppins", sans-serif;
-    background-color: #f8f9fa;
-    color: #333;
-    line-height: 1.6;
+    font-family: var(--font-primary);
+    color: var(--text-primary);
+    background-color: var(--secondary-color);
+    overflow-x: hidden;
+    transition: background-color var(--transition-normal), color var(--transition-normal);
   }
-  
-  /* Checkout Container */
-  .checkout-container {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1rem;
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
   }
-  
-  /* Progress Bar */
-  .checkout-progress-container {
-    margin-bottom: 2rem;
+
+  ::-webkit-scrollbar-track {
+    background: var(--secondary-color);
   }
-  
-  .checkout-progress {
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--text-light);
+    border-radius: var(--border-radius-full);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+
+  /* Scroll Indicator */
+  .scroll-indicator {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--gradient-primary);
+    z-index: 9999;
+    width: 0%;
+    transition: width 0.1s ease;
+  }
+
+  /* Cursor Glow Effect */
+  .cursor-glow {
+    position: fixed;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    pointer-events: none;
+    mix-blend-mode: difference;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    opacity: 0.5;
+    transition: width 0.3s, height 0.3s, opacity 0.3s;
+  }
+
+  /* Preloader */
+  .preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--primary-color);
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 1.5rem 0;
+    z-index: 9999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
   }
-  
+
+  .preloader.fade-out {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .loader {
+    width: 80px;
+    height: 80px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--accent-color);
+    animation: spin 1s linear infinite;
+    position: relative;
+  }
+
+  .loader::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border: 4px solid transparent;
+    border-top-color: var(--accent-secondary);
+    border-radius: 50%;
+    animation: spin 2s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Dark Mode Toggle */
+  .dark-mode-toggle {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    width: 50px;
+    height: 50px;
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: all var(--transition-normal);
+    border: none;
+  }
+
+  .dark-mode-toggle:hover {
+    transform: translateY(-5px) rotate(45deg);
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Checkout Container */
+  .checkout-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 1rem;
+  }
+
+  /* Checkout Header */
+  .checkout-header-wrapper {
+    position: relative;
+    margin-bottom: 3rem;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .checkout-header {
+    font-family: var(--font-secondary);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    position: relative;
+    display: inline-block;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-fill-color: transparent;
+  }
+
+  .checkout-header::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: var(--gradient-primary);
+    border-radius: var(--border-radius-full);
+    transition: width var(--transition-normal);
+  }
+
+  .checkout-header:hover::after {
+    width: 120px;
+  }
+
+  /* Checkout Progress */
+  .checkout-progress-container {
+    margin-bottom: 3rem;
+  }
+
+  .checkout-progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+  }
+
   .progress-step {
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
-    z-index: 1;
+    z-index: 2;
   }
-  
+
   .step-icon {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    background-color: var(--gray-light);
+    background-color: var(--card-bg);
     display: flex;
-    justify-content: center;
     align-items: center;
-    color: var(--gray-color);
-    font-size: 1.2rem;
-    margin-bottom: 0.5rem;
-    transition: var(--transition);
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+    transition: all var(--transition-normal);
+    box-shadow: var(--card-shadow);
   }
-  
+
   .progress-step.active .step-icon {
-    background-color: var(--primary-color);
+    background: var(--gradient-primary);
     color: white;
-    box-shadow: 0 0 0 4px rgba(58, 134, 255, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
   }
-  
+
+  .progress-step.completed .step-icon {
+    background: var(--success-color);
+    color: white;
+  }
+
   .step-label {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 500;
-    color: var(--gray-color);
-    transition: var(--transition);
+    color: var(--text-secondary);
+    transition: color var(--transition-normal);
   }
-  
+
   .progress-step.active .step-label {
-    color: var(--primary-color);
+    color: var(--accent-color);
     font-weight: 600;
   }
-  
+
   .progress-connector {
-    flex-grow: 1;
+    flex: 1;
     height: 3px;
-    background-color: var(--gray-light);
-    margin: 0 8px;
+    background-color: var(--border-color);
     position: relative;
-    top: -25px;
-    z-index: 0;
+    z-index: 1;
+    transition: background-color var(--transition-normal);
   }
-  
+
   .progress-connector.active {
-    background-color: var(--primary-color);
+    background: var(--gradient-primary);
   }
-  
-  /* Cards */
-  .order-summary-card,
-  .delivery-card {
-    background-color: white;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    margin-bottom: 1.5rem;
+
+  /* Order Summary Card */
+  .order-summary-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius-lg);
     overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: all var(--transition-normal);
+    margin-bottom: 2rem;
+    position: relative;
   }
-  
-  .card-header {
-    padding: 1.25rem;
-    border-bottom: 1px solid var(--gray-light);
+
+  .order-summary-card:hover {
+    transform: translateY(-10px);
+    box-shadow: var(--card-hover-shadow);
+  }
+
+  .order-summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--gradient-primary);
+    transition: height var(--transition-normal);
+  }
+
+  .order-summary-card:hover::before {
+    height: 8px;
+  }
+
+  .order-summary-card .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
   }
-  
-  .card-header h5 {
-    margin: 0;
+
+  .order-summary-card .card-header h5 {
+    font-size: 1.25rem;
     font-weight: 600;
-    color: var(--dark-color);
+    margin: 0;
+    color: var(--text-primary);
   }
-  
-  /* Order Summary Card */
+
+  .order-summary-card .card-header .badge {
+    background: var(--gradient-primary);
+    font-weight: 500;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--border-radius-full);
+  }
+
+  /* Order Items Preview */
   .order-items-preview {
-    padding: 1rem;
-    border-bottom: 1px solid var(--gray-light);
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    max-height: 300px;
+    overflow-y: auto;
   }
-  
+
   .order-item-preview {
     display: flex;
     align-items: center;
     padding: 0.75rem 0;
-    border-bottom: 1px solid var(--gray-light);
+    border-bottom: 1px solid var(--border-color);
+    transition: all var(--transition-normal);
   }
-  
+
   .order-item-preview:last-child {
     border-bottom: none;
   }
-  
+
+  .order-item-preview:hover {
+    transform: translateX(5px);
+  }
+
   .item-image {
     width: 60px;
     height: 60px;
     border-radius: var(--border-radius);
     overflow: hidden;
-    background-color: var(--gray-light);
     margin-right: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: all var(--transition-normal);
   }
-  
+
+  .order-item-preview:hover .item-image {
+    transform: scale(1.1);
+  }
+
   .item-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  
+
   .item-details {
-    flex-grow: 1;
+    flex: 1;
   }
-  
+
   .item-name {
     font-weight: 500;
     margin-bottom: 0.25rem;
-    color: var(--dark-color);
-    font-size: 0.9rem;
+    color: var(--text-primary);
+    transition: color var(--transition-fast);
   }
-  
+
+  .order-item-preview:hover .item-name {
+    color: var(--accent-color);
+  }
+
   .item-meta {
     display: flex;
     gap: 1rem;
-    font-size: 0.8rem;
-    color: var(--gray-color);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
   }
-  
+
   .item-price {
     font-weight: 600;
-    color: var(--dark-color);
+    color: var(--accent-color);
+  }
+
+  /* Item price with discount styling */
+  .item-price-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
   }
   
+  .item-original-price {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+  }
+  
+  .item-discount-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    background-color: var(--success-color);
+    padding: 0.1rem 0.4rem;
+    border-radius: var(--border-radius-full);
+    margin-top: 0.25rem;
+  }
+
+  /* For the sidebar items */
+  .order-item .item-price-container {
+    margin-top: 0.5rem;
+  }
+
+  /* For the order summary section */
+  .price-row.discount {
+    color: var(--success-color);
+    font-weight: 500;
+  }
+
+  .price-row.discount .discount-percent {
+    background-color: var(--success-color);
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: var(--border-radius-full);
+    margin-left: 0.5rem;
+  }
+
   .more-items {
     text-align: center;
-    padding: 0.5rem 0;
+    padding-top: 1rem;
   }
-  
+
   .btn-view-all {
-    background: none;
-    border: none;
-    color: var(--primary-color);
-    font-weight: 500;
-    font-size: 0.9rem;
-    cursor: pointer;
+    background: transparent;
+    color: var(--accent-color);
+    border: 1px solid var(--accent-color);
     padding: 0.5rem 1rem;
     border-radius: var(--border-radius);
-    transition: var(--transition);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all var(--transition-normal);
+    cursor: pointer;
   }
-  
+
   .btn-view-all:hover {
-    background-color: rgba(58, 134, 255, 0.1);
+    background-color: var(--accent-color);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
   }
-  
+
   .btn-view-all i {
     margin-left: 0.5rem;
-    font-size: 0.8rem;
+    transition: transform var(--transition-fast);
   }
-  
+
+  .btn-view-all:hover i {
+    transform: translateX(3px);
+  }
+
+  /* Price Summary */
   .price-summary {
-    padding: 1.25rem;
-    border-bottom: 1px solid var(--gray-light);
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
   }
-  
+
   .price-row {
     display: flex;
     justify-content: space-between;
     margin-bottom: 0.75rem;
     font-size: 0.95rem;
+    color: var(--text-secondary);
   }
-  
+
   .price-row:last-child {
     margin-bottom: 0;
   }
-  
+
+  .price-row.total {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding-top: 0.75rem;
+    margin-top: 0.75rem;
+    border-top: 1px solid var(--border-color);
+  }
+
   .price-row.discount {
     color: var(--success-color);
   }
-  
-  .price-row.total {
-    font-weight: 700;
-    font-size: 1.1rem;
-    margin-top: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px dashed var(--gray-light);
-  }
-  
+
+  /* Coupon Section */
   .coupon-section {
-    padding: 1.25rem;
-    border-bottom: 1px solid var(--gray-light);
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
   }
-  
+
   .btn-apply-coupon {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: white;
-    border: 1px dashed var(--primary-color);
-    border-radius: var(--border-radius);
-    color: var(--primary-color);
-    font-weight: 500;
-    cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
-    transition: var(--transition);
+    gap: 0.75rem;
+    background: transparent;
+    color: var(--accent-color);
+    border: 1px dashed var(--accent-color);
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius);
+    width: 100%;
+    font-weight: 500;
+    transition: all var(--transition-normal);
+    cursor: pointer;
   }
-  
+
   .btn-apply-coupon:hover {
-    background-color: rgba(58, 134, 255, 0.05);
+    background-color: rgba(59, 130, 246, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.2);
   }
-  
-  .btn-apply-coupon i {
-    margin-right: 0.5rem;
-  }
-  
+
   .applied-coupon {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem;
-    background-color: rgba(58, 134, 255, 0.1);
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+    padding: 0.75rem 1rem;
     border-radius: var(--border-radius);
+    border: 1px dashed var(--success-color);
   }
-  
+
   .coupon-info {
     display: flex;
     align-items: center;
-    color: var(--primary-color);
+    gap: 0.75rem;
     font-weight: 500;
   }
-  
-  .coupon-info i {
-    margin-right: 0.5rem;
-  }
-  
+
   .btn-remove-coupon {
-    background: none;
+    background: transparent;
+    color: var(--success-color);
     border: none;
-    color: var(--danger-color);
-    cursor: pointer;
-    padding: 0.25rem;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-normal);
+    cursor: pointer;
   }
-  
+
   .btn-remove-coupon:hover {
-    background-color: rgba(255, 82, 82, 0.1);
+    background-color: rgba(16, 185, 129, 0.2);
+    transform: rotate(90deg);
   }
-  
+
+  /* Brand Section */
   .brand-section {
-    padding: 1.25rem;
+    padding: 1.5rem;
     text-align: center;
   }
-  
+
   .brand-logo {
-    max-width: 120px;
-    height: auto;
+    max-width: 150px;
+    opacity: 0.8;
+    transition: opacity var(--transition-normal);
   }
-  
+
+  .brand-logo:hover {
+    opacity: 1;
+  }
+
   /* Delivery Card */
+  .delivery-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: all var(--transition-normal);
+    margin-bottom: 2rem;
+    position: relative;
+  }
+
+  .delivery-card:hover {
+    box-shadow: var(--card-hover-shadow);
+  }
+
+  .delivery-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--gradient-primary);
+    transition: height var(--transition-normal);
+  }
+
+  .delivery-card:hover::before {
+    height: 8px;
+  }
+
+  .delivery-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .delivery-card .card-header h5 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+  }
+
   .btn-add-address {
     display: flex;
     align-items: center;
-    padding: 0.5rem 1rem;
-    background-color: var(--primary-color);
+    gap: 0.5rem;
+    background: var(--gradient-primary);
     color: white;
-    border: none;
+    padding: 0.5rem 1rem;
     border-radius: var(--border-radius);
     font-size: 0.9rem;
     font-weight: 500;
+    transition: all var(--transition-normal);
     text-decoration: none;
-    transition: var(--transition);
   }
-  
+
   .btn-add-address:hover {
-    background-color: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
     color: white;
   }
-  
-  .btn-add-address i {
-    margin-right: 0.5rem;
-  }
-  
+
+  /* Addresses Container */
   .addresses-container {
-    padding: 1.25rem;
+    padding: 1.5rem;
   }
-  
+
+  /* No Address */
   .no-address {
     text-align: center;
-    padding: 2rem 0;
+    padding: 3rem 2rem;
   }
-  
+
   .no-address .icon {
-    font-size: 2.5rem;
-    color: var(--gray-color);
-    margin-bottom: 1rem;
+    font-size: 3rem;
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+    animation: float 3s ease-in-out infinite;
   }
-  
+
   .no-address p {
-    color: var(--gray-dark);
+    font-size: 1.1rem;
+    color: var(--text-secondary);
     margin-bottom: 1.5rem;
   }
-  
+
   .btn-primary {
-    padding: 0.75rem 1.5rem;
-    background-color: var(--primary-color);
+    background: var(--gradient-primary);
     color: white;
-    border: none;
+    padding: 0.75rem 1.5rem;
     border-radius: var(--border-radius);
     font-weight: 500;
+    transition: all var(--transition-normal);
+    border: none;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    display: inline-block;
     text-decoration: none;
-    transition: var(--transition);
   }
-  
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-secondary);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+  }
+
   .btn-primary:hover {
-    background-color: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
     color: white;
   }
-  
+
+  .btn-primary:hover::before {
+    opacity: 1;
+  }
+
+  /* Address Card */
   .address-card {
-    border: 1px solid var(--gray-light);
+    background-color: var(--card-bg);
     border-radius: var(--border-radius);
-    padding: 1.25rem;
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
     height: 100%;
+    transition: all var(--transition-normal);
     position: relative;
-    transition: var(--transition);
+    overflow: hidden;
   }
-  
+
   .address-card:hover {
-    border-color: var(--primary-color);
-    box-shadow: 0 4px 12px rgba(58, 134, 255, 0.15);
+    transform: translateY(-5px);
+    box-shadow: var(--card-shadow);
+    border-color: var(--accent-color);
   }
-  
+
+  .address-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 0;
+    background: var(--gradient-primary);
+    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+  }
+
+  .address-card:hover::before {
+    height: 100%;
+  }
+
   .address-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
   }
-  
+
   .address-header h6 {
-    margin: 0;
     font-weight: 600;
-    color: var(--dark-color);
+    margin: 0;
+    color: var(--text-primary);
   }
-  
+
   .btn-edit {
-    color: var(--gray-color);
-    background: none;
-    border: none;
-    padding: 0.25rem;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    transition: var(--transition);
+    background-color: var(--secondary-color);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-normal);
   }
-  
+
   .btn-edit:hover {
-    color: var(--primary-color);
-    background-color: rgba(58, 134, 255, 0.1);
+    background-color: var(--accent-color);
+    color: white;
+    transform: rotate(15deg);
   }
-  
+
   .address-content {
-    margin-bottom: 3rem;
+    margin-bottom: 1.5rem;
   }
-  
+
   .address-content p {
     font-size: 0.9rem;
-    color: var(--gray-dark);
-    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.6;
   }
-  
+
   .address-type {
-    margin-top: 0.5rem;
+    margin-top: 0.75rem;
   }
-  
-  .badge {
-    font-weight: 500;
-    padding: 0.35rem 0.65rem;
+
+  .address-type .badge {
     font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--border-radius-full);
   }
-  
+
   .btn-deliver-here {
-    position: absolute;
-    bottom: 1.25rem;
-    left: 1.25rem;
-    right: 1.25rem;
-    padding: 0.75rem;
-    background-color: var(--primary-color);
+    width: 100%;
+    background: var(--gradient-primary);
     color: white;
-    border: none;
+    padding: 0.75rem;
     border-radius: var(--border-radius);
     font-weight: 500;
-    transition: var(--transition);
+    transition: all var(--transition-normal);
+    border: none;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
   }
-  
+
+  .btn-deliver-here::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-secondary);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+  }
+
   .btn-deliver-here:hover {
-    background-color: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
   }
-  
-  /* Sidebars */
+
+  .btn-deliver-here:hover::before {
+    opacity: 1;
+  }
+
+  /* Sidebar Overlay */
   .sidebar-overlay,
   .coupon-overlay {
     position: fixed;
@@ -448,19 +874,90 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+    z-index: 1040;
     opacity: 0;
     visibility: hidden;
-    transition: var(--transition);
+    transition: opacity var(--transition-normal), visibility var(--transition-normal);
+    backdrop-filter: blur(3px);
   }
-  
+
   .sidebar-overlay.active,
   .coupon-overlay.active {
     opacity: 1;
     visibility: visible;
   }
-  
-  .order-summary-sidebar,
+
+  /* Order Summary Sidebar */
+  .order-summary-sidebar {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 100%;
+    max-width: 400px;
+    height: 100%;
+    background-color: var(--card-bg);
+    z-index: 1050;
+    transition: right var(--transition-normal);
+    display: flex;
+    flex-direction: column;
+    box-shadow: -5px 0 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .order-summary-sidebar.active {
+    right: 0;
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .sidebar-header h5 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+  }
+
+  .btn-close {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .btn-close:hover {
+    color: var(--text-primary);
+    transform: rotate(90deg);
+  }
+
+  .sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .order-items-list {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .order-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .order-item:last-child {
+    border-bottom: none;
+  }
+
+  /* Coupon Sidebar */
   .coupon-sidebar {
     position: fixed;
     top: 0;
@@ -468,251 +965,274 @@
     width: 100%;
     max-width: 400px;
     height: 100%;
-    background-color: white;
-    z-index: 1000;
-    transition: var(--transition);
+    background-color: var(--card-bg);
+    z-index: 1050;
+    transition: right var(--transition-normal);
     display: flex;
     flex-direction: column;
+    box-shadow: -5px 0 30px rgba(0, 0, 0, 0.1);
   }
-  
-  .order-summary-sidebar.active,
+
   .coupon-sidebar.active {
     right: 0;
   }
-  
-  .sidebar-header {
-    padding: 1.25rem;
-    border-bottom: 1px solid var(--gray-light);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .sidebar-header h5 {
-    margin: 0;
-    font-weight: 600;
-    color: var(--dark-color);
-  }
-  
-  .btn-close {
-    background: none;
-    border: none;
-    color: var(--gray-color);
-    font-size: 1.25rem;
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 50%;
-    transition: var(--transition);
-  }
-  
-  .btn-close:hover {
-    color: var(--danger-color);
-    background-color: rgba(255, 82, 82, 0.1);
-  }
-  
-  .sidebar-content {
-    flex-grow: 1;
-    overflow-y: auto;
-  }
-  
-  /* Order Summary Sidebar */
-  .order-items-list {
-    padding: 1.25rem;
-    border-bottom: 1px solid var(--gray-light);
-  }
-  
-  .order-item {
-    display: flex;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--gray-light);
-  }
-  
-  .order-item:last-child {
-    border-bottom: none;
-  }
-  
-  /* Coupon Sidebar */
+
   .coupon-input-group {
     display: flex;
-    padding: 1.25rem;
-    border-bottom: 1px solid var(--gray-light);
+    margin: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
   }
-  
+
   .coupon-input-group input {
-    flex-grow: 1;
+    flex: 1;
     padding: 0.75rem 1rem;
-    border: 1px solid var(--gray-light);
+    border: 1px solid var(--border-color);
+    border-right: none;
     border-radius: var(--border-radius) 0 0 var(--border-radius);
     font-size: 0.95rem;
-    outline: none;
-    transition: var(--transition);
+    color: var(--text-primary);
+    background-color: var(--card-bg);
+    transition: all var(--transition-normal);
   }
-  
+
   .coupon-input-group input:focus {
-    border-color: var(--primary-color);
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
   }
-  
+
   .btn-apply {
-    padding: 0.75rem 1.5rem;
-    background-color: var(--primary-color);
+    background: var(--gradient-primary);
     color: white;
     border: none;
+    padding: 0.75rem 1.5rem;
     border-radius: 0 var(--border-radius) var(--border-radius) 0;
     font-weight: 500;
-    cursor: pointer;
-    transition: var(--transition);
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
   }
-  
-  .btn-apply:hover {
-    background-color: var(--primary-dark);
+
+  .btn-apply::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-secondary);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
   }
-  
+
+  .btn-apply:hover::before {
+    opacity: 1;
+  }
+
   .coupon-error {
-    padding: 0 1.25rem;
-    color: var(--danger-color);
-    font-size: 0.85rem;
-    margin-top: 0.5rem;
+    color: var(--error-color);
+    font-size: 0.9rem;
+    margin: 0 1.5rem 1.5rem;
     display: none;
   }
-  
+
   .coupon-categories {
-    padding: 1.25rem;
+    padding: 0 1.5rem 1.5rem;
   }
-  
+
   .coupon-category {
     margin-bottom: 1.5rem;
   }
-  
+
   .coupon-category h6 {
+    font-size: 1rem;
     font-weight: 600;
     margin-bottom: 1rem;
-    color: var(--dark-color);
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--gray-light);
-  }
-  
-  .coupon-list {
-    margin-bottom: 1rem;
-  }
-  
-  .empty-coupon-message {
-    padding: 1rem;
-    text-align: center;
-    color: var(--gray-color);
-    font-size: 0.9rem;
-    background-color: var(--gray-light);
-    border-radius: var(--border-radius);
-  }
-  
-  .coupon-item {
-    border: 1px solid var(--gray-light);
-    border-radius: var(--border-radius);
-    padding: 1rem;
-    margin-bottom: 1rem;
+    color: var(--text-primary);
     position: relative;
-    transition: var(--transition);
+    display: inline-block;
   }
-  
+
+  .coupon-category h6::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 40px;
+    height: 2px;
+    background: var(--gradient-primary);
+    border-radius: var(--border-radius-full);
+    transition: width var(--transition-normal);
+  }
+
+  .coupon-category h6:hover::after {
+    width: 100%;
+  }
+
+  .coupon-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .coupon-item {
+    background-color: var(--secondary-color);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+    border: 1px dashed var(--border-color);
+  }
+
   .coupon-item:hover {
-    border-color: var(--primary-color);
-    box-shadow: 0 4px 12px rgba(58, 134, 255, 0.15);
+    transform: translateY(-5px);
+    box-shadow: var(--card-shadow);
   }
-  
+
+  .coupon-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 0;
+    background: var(--gradient-primary);
+    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+  }
+
+  .coupon-item:hover::before {
+    height: 100%;
+  }
+
   .coupon-code {
     font-weight: 600;
     font-size: 1.1rem;
     margin-bottom: 0.5rem;
-    color: var(--primary-color);
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
-  
+
   .coupon-status {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: 0.5rem;
+    right: 0.5rem;
     font-size: 0.75rem;
     font-weight: 500;
     padding: 0.25rem 0.5rem;
-    border-radius: 20px;
+    border-radius: var(--border-radius-full);
   }
-  
+
   .status-available {
-    background-color: rgba(56, 176, 0, 0.1);
+    background-color: rgba(16, 185, 129, 0.1);
     color: var(--success-color);
   }
-  
+
   .status-used {
-    background-color: rgba(108, 117, 125, 0.1);
-    color: var(--gray-color);
+    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--accent-color);
   }
-  
+
   .status-expired {
-    background-color: rgba(255, 82, 82, 0.1);
-    color: var(--danger-color);
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--error-color);
   }
-  
+
   .status-upcoming {
-    background-color: rgba(255, 190, 11, 0.1);
+    background-color: rgba(245, 158, 11, 0.1);
     color: var(--warning-color);
   }
-  
+
   .coupon-offer {
-    font-weight: 500;
+    font-weight: 600;
+    color: var(--accent-color);
     margin-bottom: 0.5rem;
   }
-  
+
   .coupon-min-purchase,
   .coupon-expiry,
   .coupon-usage,
   .coupon-description {
     font-size: 0.85rem;
-    color: var(--gray-color);
+    color: var(--text-secondary);
     margin-bottom: 0.5rem;
   }
-  
+
+  .coupon-description {
+    font-style: italic;
+  }
+
   .coupon-apply-btn {
-    width: 100%;
-    padding: 0.6rem;
-    background-color: var(--primary-color);
+    background: var(--gradient-primary);
     color: white;
     border: none;
+    padding: 0.5rem 1rem;
     border-radius: var(--border-radius);
+    font-size: 0.85rem;
     font-weight: 500;
+    width: 100%;
+    margin-top: 0.5rem;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
     cursor: pointer;
-    margin-top: 0.75rem;
-    transition: var(--transition);
   }
-  
+
+  .coupon-apply-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-secondary);
+    z-index: -1;
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+  }
+
+  .coupon-apply-btn:hover::before {
+    opacity: 1;
+  }
+
   .coupon-apply-btn:hover {
-    background-color: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
   }
-  
+
   .coupon-apply-btn:disabled {
-    background-color: var(--gray-light);
-    color: var(--gray-color);
+    background: var(--text-light);
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
-  
+
   .coupon-tooltip {
     position: relative;
     display: inline-block;
-    margin-left: 0.5rem;
   }
-  
+
   .coupon-tooltip i {
-    color: var(--gray-color);
-    font-size: 0.9rem;
+    color: var(--text-light);
+    cursor: help;
   }
-  
+
   .tooltip-text {
     visibility: hidden;
     width: 200px;
-    background-color: var(--dark-color);
+    background-color: var(--primary-color);
     color: white;
     text-align: center;
-    border-radius: 6px;
+    border-radius: var(--border-radius);
     padding: 0.5rem;
     position: absolute;
     z-index: 1;
@@ -720,11 +1240,12 @@
     left: 50%;
     transform: translateX(-50%);
     opacity: 0;
-    transition: opacity 0.3s;
+    transition: opacity var(--transition-normal);
     font-size: 0.8rem;
     font-weight: normal;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   }
-  
+
   .tooltip-text::after {
     content: "";
     position: absolute;
@@ -733,104 +1254,47 @@
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: var(--dark-color) transparent transparent transparent;
+    border-color: var(--primary-color) transparent transparent transparent;
   }
-  
+
   .coupon-tooltip:hover .tooltip-text {
     visibility: visible;
     opacity: 1;
   }
-  
-  /* Toast Notifications */
-  #toastContainer {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 350px;
-  }
-  
-  .toast-notification {
-    background-color: white;
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
+
+  .empty-coupon-message {
+    text-align: center;
     padding: 1rem;
-    display: flex;
-    align-items: center;
-    animation: slideIn 0.3s ease-out forwards;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .toast-notification.success {
-    border-left: 4px solid var(--success-color);
-  }
-  
-  .toast-notification.error {
-    border-left: 4px solid var(--danger-color);
-  }
-  
-  .toast-notification.info {
-    border-left: 4px solid var(--primary-color);
-  }
-  
-  .toast-icon {
-    margin-right: 0.75rem;
-    font-size: 1.25rem;
-  }
-  
-  .toast-notification.success .toast-icon {
-    color: var(--success-color);
-  }
-  
-  .toast-notification.error .toast-icon {
-    color: var(--danger-color);
-  }
-  
-  .toast-notification.info .toast-icon {
-    color: var(--primary-color);
-  }
-  
-  .toast-message {
-    flex-grow: 1;
+    color: var(--text-light);
+    font-style: italic;
     font-size: 0.9rem;
   }
-  
-  .toast-close {
-    background: none;
-    border: none;
-    color: var(--gray-color);
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 0;
+
+  /* Toast Container */
+  #toastContainer {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
-  
-  .toast-progress {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 3px;
-    width: 100%;
+
+  .toast-notification {
+    display: flex;
+    align-items: center;
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    min-width: 300px;
+    max-width: 400px;
+    position: relative;
+    overflow: hidden;
+    animation: slideIn 0.3s forwards;
   }
-  
-  .toast-notification.success .toast-progress {
-    background-color: var(--success-color);
-    animation: progress 3s linear forwards;
-  }
-  
-  .toast-notification.error .toast-progress {
-    background-color: var(--danger-color);
-    animation: progress 3s linear forwards;
-  }
-  
-  .toast-notification.info .toast-progress {
-    background-color: var(--primary-color);
-    animation: progress 3s linear forwards;
-  }
-  
+
   @keyframes slideIn {
     from {
       transform: translateX(100%);
@@ -841,7 +1305,7 @@
       opacity: 1;
     }
   }
-  
+
   @keyframes slideOut {
     from {
       transform: translateX(0);
@@ -852,7 +1316,54 @@
       opacity: 0;
     }
   }
-  
+
+  .toast-icon {
+    margin-right: 1rem;
+    font-size: 1.5rem;
+  }
+
+  .toast-notification.success .toast-icon {
+    color: var(--success-color);
+  }
+
+  .toast-notification.error .toast-icon {
+    color: var(--error-color);
+  }
+
+  .toast-notification.info .toast-icon {
+    color: var(--accent-color);
+  }
+
+  .toast-message {
+    flex: 1;
+    color: var(--text-primary);
+  }
+
+  .toast-close {
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    font-size: 1.25rem;
+    cursor: pointer;
+    margin-left: 1rem;
+    transition: all var(--transition-fast);
+  }
+
+  .toast-close:hover {
+    color: var(--text-primary);
+    transform: rotate(90deg);
+  }
+
+  .toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--gradient-primary);
+    width: 100%;
+    animation: progress 3s linear forwards;
+  }
+
   @keyframes progress {
     from {
       width: 100%;
@@ -861,63 +1372,206 @@
       width: 0%;
     }
   }
-  
+
+  /* Coupon Apply Animation */
+  @keyframes couponApplied {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .coupon-applied-animation {
+    animation: couponApplied 0.5s ease-in-out;
+  }
+
+  /* Confetti Animation for Coupon Apply */
+  .confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background-color: var(--accent-color);
+    opacity: 0;
+    z-index: 1060;
+    pointer-events: none;
+    animation: confetti-fall 3s linear forwards;
+  }
+
+  @keyframes confetti-fall {
+    0% {
+      transform: translateY(-100vh) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(360deg);
+      opacity: 0;
+    }
+  }
+
   /* Responsive Styles */
   @media (max-width: 991.98px) {
-    .checkout-progress {
-      padding: 1rem 0;
+    .checkout-header {
+      font-size: 2rem;
     }
-  
-    .step-icon {
+
+    .progress-step .step-icon {
+      width: 50px;
+      height: 50px;
+      font-size: 1.25rem;
+    }
+
+    .step-label {
+      font-size: 0.8rem;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .checkout-header {
+      font-size: 1.75rem;
+    }
+
+    .progress-step .step-icon {
       width: 40px;
       height: 40px;
       font-size: 1rem;
     }
-  
+
     .step-label {
       font-size: 0.75rem;
     }
-  
-    .progress-connector {
-      top: -20px;
+
+    .dark-mode-toggle {
+      width: 40px;
+      height: 40px;
+      bottom: 1rem;
+      left: 1rem;
+    }
+
+    .order-summary-sidebar,
+    .coupon-sidebar {
+      max-width: 300px;
     }
   }
-  
-  @media (max-width: 767.98px) {
-    .checkout-progress-container {
-      overflow-x: auto;
-      padding-bottom: 1rem;
-    }
-  
-    .checkout-progress {
-      min-width: 600px;
-    }
-  }
-  
+
   @media (max-width: 575.98px) {
-    .card-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.75rem;
+    .checkout-header {
+      font-size: 1.5rem;
     }
-  
-    .btn-add-address {
-      width: 100%;
+
+    .checkout-progress {
+      flex-wrap: wrap;
       justify-content: center;
+      gap: 1rem;
     }
-  
-    .coupon-input-group {
-      flex-direction: column;
+
+    .progress-connector {
+      display: none;
     }
-  
-    .coupon-input-group input {
-      border-radius: var(--border-radius);
-      margin-bottom: 0.5rem;
+
+    .progress-step {
+      width: 45%;
+      margin-bottom: 1rem;
     }
-  
-    .btn-apply {
-      border-radius: var(--border-radius);
-      width: 100%;
+
+    .order-summary-sidebar,
+    .coupon-sidebar {
+      max-width: 100%;
     }
   }
-  
+
+  /* Animations */
+  @keyframes float {
+    0% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Shimmer effect */
+  .shimmer {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: rotate(30deg);
+    animation: shimmer 6s infinite;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 0;
+  }
+
+  .address-card:hover .shimmer {
+    opacity: 1;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%) rotate(30deg);
+    }
+    100% {
+      transform: translateX(100%) rotate(30deg);
+    }
+  }
+
+  /* Fade in animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .address-card {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  /* Staggered animations for address cards */
+  .address-card:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+
+  .address-card:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .address-card:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  .address-card:nth-child(4) {
+    animation-delay: 0.4s;
+  }

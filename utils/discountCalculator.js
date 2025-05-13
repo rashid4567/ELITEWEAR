@@ -1,14 +1,6 @@
-/**
- * Calculates proportional discount for cart items based on coupon percentage
- * 
- * @param {Array} cartItems - Array of cart items with id, price, and quantity
- * @param {Number} couponPercent - Discount percentage from coupon
- * @param {Number} minimumPurchase - Minimum purchase amount required for coupon
- * @param {Number} maxRedeemable - Maximum discount amount (optional)
- * @returns {Object} Discount calculation result with updated cart items
- */
+
 const calculateProportionalDiscount = (cartItems, couponPercent, minimumPurchase, maxRedeemable = 0) => {
-    // Validate inputs
+
     if (!Array.isArray(cartItems) || cartItems.length === 0) {
         return {
             cartItems: [],
@@ -38,13 +30,13 @@ const calculateProportionalDiscount = (cartItems, couponPercent, minimumPurchase
         };
     }
 
-    // Calculate total cart value
+  
     const cartTotal = cartItems.reduce(
         (total, item) => total + item.price * item.quantity,
         0
     );
 
-    // Check minimum purchase requirement
+   
     if (cartTotal < minimumPurchase) {
         return {
             cartItems: cartItems.map((item) => ({
@@ -63,21 +55,21 @@ const calculateProportionalDiscount = (cartItems, couponPercent, minimumPurchase
         };
     }
 
-    // Calculate total discount based on coupon percentage
+   
     let totalDiscount = (cartTotal * couponPercent) / 100;
     
-    // Apply maximum redeemable limit if specified
+
     if (maxRedeemable > 0 && totalDiscount > maxRedeemable) {
         totalDiscount = maxRedeemable;
     }
 
-    // Distribute discount proportionally to each item
+
     const discountedItems = cartItems.map((item) => {
         const itemTotal = item.price * item.quantity;
-        // Proportional discount for this item
+    
         const proportionalDiscount = totalDiscount * (itemTotal / cartTotal);
         const discountPerUnit = proportionalDiscount / item.quantity;
-        const finalPrice = Math.max(0, item.price - discountPerUnit); // Ensure price doesn't go negative
+        const finalPrice = Math.max(0, item.price - discountPerUnit); 
         const finalTotal = finalPrice * item.quantity;
 
         return {

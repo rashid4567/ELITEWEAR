@@ -4,7 +4,7 @@ const Product = require("../../model/productScheema");
 const Cart = require("../../model/cartScheema");
 const Wishlist = require("../../model/whislistScheema");
 const Category = require("../../model/categoryScheema");
-
+const logger = require("../../utils/logger");
 const loadCart = async (req, res) => {
   try {
     let userCart = await Cart.findOne({ userId: req.user._id })
@@ -99,7 +99,7 @@ const loadCart = async (req, res) => {
       message,
     });
   } catch (error) {
-    console.error("loadCart - Error:", error.message, error.stack);
+    logger.error("loadCart - Error:", error.message, error.stack);
     res.redirect("/page-not-found");
   }
 };
@@ -293,7 +293,7 @@ const addToCart = async (req, res) => {
         : null,
     });
   } catch (error) {
-    console.error("addToCart - Error:", error.message, error.stack);
+    logger.error("addToCart - Error:", error.message, error.stack);
     return res
       .status(500)
       .json({ success: false, message: "Failed to add product to cart" });
@@ -370,16 +370,16 @@ const updateCartQuantity = async (req, res) => {
 
     const newQuantity = userCart.items[itemIndex].quantity + parsedChange;
 
-    // If decreasing quantity, we don't need to check product limits
+ 
     if (parsedChange > 0) {
-      // Calculate total quantity of this productId across all variations
+     
       const totalProductQuantity = userCart.items.reduce((total, item) => {
         return item.productId.toString() === productId 
           ? total + (item === userCart.items[itemIndex] ? 0 : item.quantity) 
           : total;
       }, 0);
       
-      // Check if increasing would exceed 10 item limit
+     
       if (totalProductQuantity + newQuantity > 10) {
         return res.status(400).json({
           success: false,
@@ -387,7 +387,7 @@ const updateCartQuantity = async (req, res) => {
         });
       }
       
-      // Check against stock limits
+   
       if (size && product.variants?.length > 0) {
         const variant = product.variants.find((v) => v.size === size);
         if (variant && newQuantity > variant.varientquatity) {
@@ -415,7 +415,7 @@ const updateCartQuantity = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Cart updated successfully" });
   } catch (error) {
-    console.error("updateCartQuantity - Error:", error.message, error.stack);
+    logger.error("updateCartQuantity - Error:", error.message, error.stack);
     return res
       .status(500)
       .json({ success: false, message: "Failed to update cart" });
@@ -464,7 +464,7 @@ const removeFromCart = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Item removed from cart" });
   } catch (error) {
-    console.error("removeFromCart - Error:", error.message, error.stack);
+    logger.error("removeFromCart - Error:", error.message, error.stack);
     return res
       .status(500)
       .json({ success: false, message: "Failed to remove item" });
@@ -487,7 +487,7 @@ const emptyCart = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Cart cleared successfully" });
   } catch (error) {
-    console.error("emptyCart - Error:", error.message, error.stack);
+    logger.error("emptyCart - Error:", error.message, error.stack);
     return res
       .status(500)
       .json({ success: false, message: "Failed to clear cart" });
@@ -658,7 +658,7 @@ const addToCartAndRemoveFromWishlist = async (req, res) => {
         : null,
     });
   } catch (error) {
-    console.error(
+    logger.error(
       "addToCartAndRemoveFromWishlist - Error:",
       error.message,
       error.stack

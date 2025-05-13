@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,369 +8,370 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="/adminStyle/admin-refund.css">
+    <link rel="stylesheet" href="/adminStyle/admin-refund.css">
 </head>
 <body>
     <%- include("../partials/admin/header") %>
 
-    <div class="container-fluid page-container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="/admin/">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="/admin/wallet/transactions">Wallet Transactions</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Refund Statistics</li>
-            </ol>
-        </nav>
+<div class="container mains page-container"> <!-- Changed from container-fluid to container -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/admin/">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="/admin/wallet/transactions">Wallet Transactions</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Refund Statistics</li>
+        </ol>
+    </nav>
 
-        <div class="stats-header d-flex justify-content-between align-items-center">
-            <h1>Refund Statistics</h1>
-            <div>
-                <button class="btn btn-export" id="exportStats">
-                    <i class="fas fa-download me-2"></i> Export Report
-                </button>
-            </div>
+    <div class="stats-header d-flex justify-content-between align-items-center">
+        <h1>Refund Statistics</h1>
+        <div>
+            <button class="btn btn-export" id="exportStats">
+                <i class="fas fa-download me-2"></i> Export Report
+            </button>
         </div>
+    </div>
 
-        <div class="time-filter">
-            <a href="?timeRange=7d" class="btn <%= timeRange === '7d' ? 'btn-primary' : 'btn-outline-primary' %>">Last 7 Days</a>
-            <a href="?timeRange=30d" class="btn <%= timeRange === '30d' ? 'btn-primary' : 'btn-outline-primary' %>">Last 30 Days</a>
-            <a href="?timeRange=90d" class="btn <%= timeRange === '90d' ? 'btn-primary' : 'btn-outline-primary' %>">Last 90 Days</a>
-            <a href="?timeRange=1y" class="btn <%= timeRange === '1y' ? 'btn-primary' : 'btn-outline-primary' %>">Last Year</a>
-        </div>
+    <div class="time-filter">
+        <a href="?timeRange=7d" class="btn <%= timeRange === '7d' ? 'btn-primary' : 'btn-outline-primary' %>">Last 7 Days</a>
+        <a href="?timeRange=30d" class="btn <%= timeRange === '30d' ? 'btn-primary' : 'btn-outline-primary' %>">Last 30 Days</a>
+        <a href="?timeRange=90d" class="btn <%= timeRange === '90d' ? 'btn-primary' : 'btn-outline-primary' %>">Last 90 Days</a>
+        <a href="?timeRange=1y" class="btn <%= timeRange === '1y' ? 'btn-primary' : 'btn-outline-primary' %>">Last Year</a>
+    </div>
 
-        <div class="row mb-4">
-            <div class="col-md-4 mb-4 mb-md-0">
-                <div class="stats-card text-center">
-                    <div class="summary-icon">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                    <div class="stat-value">₹<%= refundStats.totalRefundAmount ? refundStats.totalRefundAmount.toFixed(2) : '0.00' %></div>
-                    <div class="stat-label">Total Refund Amount</div>
-                    <div class="trend-indicator trend-up">
-                        <i class="fas fa-arrow-up me-1"></i> 12% from previous period
-                    </div>
+    <div class="row mb-4">
+        <div class="col-md-4 mb-4 mb-md-0">
+            <div class="stats-card text-center">
+                <div class="summary-icon">
+                    <i class="fas fa-money-bill-wave"></i>
                 </div>
-            </div>
-            <div class="col-md-4 mb-4 mb-md-0">
-                <div class="stats-card text-center">
-                    <div class="summary-icon">
-                        <i class="fas fa-undo-alt"></i>
-                    </div>
-                    <div class="stat-value"><%= refundStats.refundCount || 0 %></div>
-                    <div class="stat-label">Total Refunds</div>
-                    <div class="trend-indicator trend-down">
-                        <i class="fas fa-arrow-down me-1"></i> 5% from previous period
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stats-card text-center">
-                    <div class="summary-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="stat-value">₹<%= refundStats.averageRefundAmount ? refundStats.averageRefundAmount.toFixed(2) : '0.00' %></div>
-                    <div class="stat-label">Average Refund Amount</div>
-                    <div class="trend-indicator trend-neutral">
-                        <i class="fas fa-equals me-1"></i> Same as previous period
-                    </div>
+                <div class="stat-value">₹<%= refundStats.totalRefundAmount ? refundStats.totalRefundAmount.toFixed(2) : '0.00' %></div>
+                <div class="stat-label">Total Refund Amount</div>
+                <div class="trend-indicator trend-up">
+                    <i class="fas fa-arrow-up me-1"></i> 12% from previous period
                 </div>
             </div>
         </div>
-
-        <div class="row mb-4">
-            <div class="col-lg-8 mb-4 mb-lg-0">
-                <div class="chart-container">
-                    <div class="chart-title">Daily Refund Trend</div>
-                    <canvas id="dailyRefundsChart" height="300"></canvas>
+        <div class="col-md-4 mb-4 mb-md-0">
+            <div class="stats-card text-center">
+                <div class="summary-icon">
+                    <i class="fas fa-undo-alt"></i>
                 </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="chart-container">
-                    <div class="chart-title">Refund Types Distribution</div>
-                    <canvas id="refundTypesChart" height="300"></canvas>
+                <div class="stat-value"><%= refundStats.refundCount || 0 %></div>
+                <div class="stat-label">Total Refunds</div>
+                <div class="trend-indicator trend-down">
+                    <i class="fas fa-arrow-down me-1"></i> 5% from previous period
                 </div>
             </div>
         </div>
-
-        <div class="row mb-4">
-            <div class="col-md-6 mb-4 mb-md-0">
-                <div class="chart-container">
-                    <div class="chart-title">Refund Types</div>
-                    <% if (refundTypeStats && refundTypeStats.length > 0) { %>
-                        <% refundTypeStats.forEach(type => { %>
-                            <div class="refund-type-card">
-                                <div class="refund-type-name">
-                                    <%= type._id === 'order_refund' ? 'Order Refund' : 
-                                        type._id === 'item_refund' ? 'Product Refund' : 
-                                        type._id === 'cancellation_refund' ? 'Cancellation Refund' : 
-                                        type._id === 'manual_refund' ? 'Manual Refund' : 
-                                        type._id === null ? 'Other Refunds' : type._id %>
-                                </div>
-                                <div class="refund-type-stats">
-                                    <span><%= type.count %> refunds</span>
-                                    <span>₹<%= type.totalAmount.toFixed(2) %></span>
-                                </div>
-                                <div class="progress">
-                                    <% 
-                                        const totalRefunds = refundStats.refundCount || 1;
-                                        const percentage = (type.count / totalRefunds) * 100;
-                                    %>
-                                    <div class="progress-bar" role="progressbar" style="width: <%= percentage %>%" aria-valuenow="<%= percentage %>" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </div>
-                        <% }) %>
-                    <% } else { %>
-                        <div class="text-center py-4">
-                            <p class="text-muted">No refund type data available for the selected period.</p>
-                        </div>
-                    <% } %>
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <div class="summary-icon">
+                    <i class="fas fa-chart-line"></i>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="chart-container">
-                    <div class="chart-title">Top Refund Reasons</div>
-                    <% if (refundReasons && refundReasons.length > 0) { %>
-                        <% 
-                            const totalReasons = refundReasons.reduce((sum, reason) => sum + reason.count, 0);
-                            refundReasons.forEach(reason => { 
-                        %>
-                            <div class="refund-reason-card">
-                                <div class="refund-reason-name">
-                                    <%= reason._id || 'No Reason Specified' %>
-                                </div>
-                                <div class="refund-reason-count">
-                                    <%= reason.count %> refunds (₹<%= reason.totalAmount.toFixed(2) %>)
-                                </div>
-                                <div class="progress">
-                                    <% const reasonPercentage = (reason.count / totalReasons) * 100; %>
-                                    <div class="progress-bar" role="progressbar" style="width: <%= reasonPercentage %>%" aria-valuenow="<%= reasonPercentage %>" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </div>
-                        <% }) %>
-                    <% } else { %>
-                        <div class="text-center py-4">
-                            <p class="text-muted">No refund reason data available for the selected period.</p>
-                        </div>
-                    <% } %>
-                </div>
-            </div>
-        </div>
-
-        <div class="chart-container">
-            <div class="chart-title">Refund Analysis</div>
-            <div class="row">
-                <div class="col-md-6">
-                    <h5 class="mb-3">Key Insights</h5>
-                    <ul class="list-group">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Average processing time
-                            <span class="badge bg-primary rounded-pill">2.3 days</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Refund to order ratio
-                            <span class="badge bg-primary rounded-pill">8.4%</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Most common product category
-                            <span class="badge bg-primary rounded-pill">Clothing</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Highest refund day
-                            <span class="badge bg-primary rounded-pill">Monday</span>
-                        </li>
-                    </ul>
-                </div>
-                <div class="col-md-6">
-                    <h5 class="mb-3">Recommendations</h5>
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h6 class="card-title"><i class="fas fa-lightbulb text-warning me-2"></i> Improve Product Descriptions</h6>
-                            <p class="card-text text-muted">Detailed product descriptions can reduce "not as described" refunds.</p>
-                        </div>
-                    </div>
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h6 class="card-title"><i class="fas fa-lightbulb text-warning me-2"></i> Review Size Charts</h6>
-                            <p class="card-text text-muted">Size-related returns are high. Consider reviewing size charts for accuracy.</p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <div class="card-body">
-                            <h6 class="card-title"><i class="fas fa-lightbulb text-warning me-2"></i> Quality Control</h6>
-                            <p class="card-text text-muted">Implement additional quality checks for products with high defect returns.</p>
-                        </div>
-                    </div>
+                <div class="stat-value">₹<%= refundStats.averageRefundAmount ? refundStats.averageRefundAmount.toFixed(2) : '0.00' %></div>
+                <div class="stat-label">Average Refund Amount</div>
+                <div class="trend-indicator trend-neutral">
+                    <i class="fas fa-equals me-1"></i> Same as previous period
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-          
-            const dailyRefundsCtx = document.getElementById('dailyRefundsChart').getContext('2d');
-            const dailyRefundsData = {
-                labels: [
-                    <% if (dailyRefunds && dailyRefunds.length > 0) { %>
-                        <% dailyRefunds.forEach((day, index) => { %>
-                            '<%= day._id %>'<%= index < dailyRefunds.length - 1 ? ',' : '' %>
-                        <% }) %>
-                    <% } %>
-                ],
-                datasets: [
-                    {
-                        label: 'Refund Amount',
-                        data: [
-                            <% if (dailyRefunds && dailyRefunds.length > 0) { %>
-                                <% dailyRefunds.forEach((day, index) => { %>
-                                    <%= day.totalAmount %><%= index < dailyRefunds.length - 1 ? ',' : '' %>
-                                <% }) %>
-                            <% } %>
-                        ],
-                        backgroundColor: 'rgba(245, 158, 11, 0.2)',
-                        borderColor: 'rgba(245, 158, 11, 1)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true
-                    },
-                    {
-                        label: 'Refund Count',
-                        data: [
-                            <% if (dailyRefunds && dailyRefunds.length > 0) { %>
-                                <% dailyRefunds.forEach((day, index) => { %>
-                                    <%= day.count %><%= index < dailyRefunds.length - 1 ? ',' : '' %>
-                                <% }) %>
-                            <% } %>
-                        ],
-                        backgroundColor: 'rgba(79, 70, 229, 0.2)',
-                        borderColor: 'rgba(79, 70, 229, 1)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        fill: true,
-                        yAxisID: 'y1'
-                    }
-                ]
-            };
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4 mb-lg-0">
+            <div class="chart-container">
+                <div class="chart-title">Daily Refund Trend</div>
+                <canvas id="dailyRefundsChart" height="300"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="chart-container">
+                <div class="chart-title">Refund Types Distribution</div>
+                <canvas id="refundTypesChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
 
-            new Chart(dailyRefundsCtx, {
-                type: 'line',
-                data: dailyRefundsData,
-                options: {
-                    responsive: true,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Amount (₹)'
-                            }
-                        },
-                        y1: {
-                            beginAtZero: true,
-                            position: 'right',
-                            grid: {
-                                drawOnChartArea: false,
-                            },
-                            title: {
-                                display: true,
-                                text: 'Count'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Date'
-                            }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.datasetIndex === 0) {
-                                        label += '₹' + context.raw.toFixed(2);
-                                    } else {
-                                        label += context.raw;
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+    <div class="row mb-4">
+        <div class="col-md-6 mb-4 mb-md-0">
+            <div class="chart-container">
+                <div class="chart-title">Refund Types</div>
+                <% if (refundTypeStats && refundTypeStats.length > 0) { %>
+                    <% refundTypeStats.forEach(type => { %>
+                        <div class="refund-type-card">
+                            <div class="refund-type-name">
+                                <%= type._id === 'order_refund' ? 'Order Refund' : 
+                                    type._id === 'item_refund' ? 'Product Refund' : 
+                                    type._id === 'cancellation_refund' ? 'Cancellation Refund' : 
+                                    type._id === 'manual_refund' ? 'Manual Refund' : 
+                                    type._id === null ? 'Other Refunds' : type._id %>
+                            </div>
+                            <div class="refund-type-stats">
+                                <span><%= type.count %> refunds</span>
+                                <span>₹<%= type.totalAmount.toFixed(2) %></span>
+                            </div>
+                            <div class="progress">
+                                <% 
+                                    const totalRefunds = refundStats.refundCount || 1;
+                                    const percentage = (type.count / totalRefunds) * 100;
+                                %>
+                                <div class="progress-bar" role="progressbar" style="width: <%= percentage %>%" aria-valuenow="<%= percentage %>" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="text-center py-4">
+                        <p class="text-muted">No refund type data available for the selected period.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <div class="chart-title">Top Refund Reasons</div>
+                <% if (refundReasons && refundReasons.length > 0) { %>
+                    <% 
+                        const totalReasons = refundReasons.reduce((sum, reason) => sum + reason.count, 0);
+                        refundReasons.forEach(reason => { 
+                    %>
+                        <div class="refund-reason-card">
+                            <div class="refund-reason-name">
+                                <%= reason._id || 'No Reason Specified' %>
+                            </div>
+                            <div class="refund-reason-count">
+                                <%= reason.count %> refunds (₹<%= reason.totalAmount.toFixed(2) %>)
+                            </div>
+                            <div class="progress">
+                                <% const reasonPercentage = (reason.count / totalReasons) * 100; %>
+                                <div class="progress-bar" role="progressbar" style="width: <%= reasonPercentage %>%" aria-valuenow="<%= reasonPercentage %>" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="text-center py-4">
+                        <p class="text-muted">No refund reason data available for the selected period.</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
 
-        
-            const refundTypesCtx = document.getElementById('refundTypesChart').getContext('2d');
-            const refundTypesData = {
-                labels: [
-                    <% if (refundTypeStats && refundTypeStats.length > 0) { %>
-                        <% refundTypeStats.forEach((type, index) => { %>
-                            '<%= type._id === "order_refund" ? "Order Refund" : 
-                                type._id === "item_refund" ? "Product Refund" : 
-                                type._id === "cancellation_refund" ? "Cancellation Refund" : 
-                                type._id === "manual_refund" ? "Manual Refund" : 
-                                type._id === null ? "Other Refunds" : type._id %>'<%= index < refundTypeStats.length - 1 ? ',' : '' %>
-                        <% }) %>
-                    <% } %>
-                ],
-                datasets: [{
+    <div class="chart-container">
+        <div class="chart-title">Refund Analysis</div>
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="mb-3">Key Insights</h5>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Average processing time
+                        <span class="badge bg-primary rounded-pill">2.3 days</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Refund to order ratio
+                        <span class="badge bg-primary rounded-pill">8.4%</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Most common product category
+                        <span class="badge bg-primary rounded-pill">Clothing</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Highest refund day
+                        <span class="badge bg-primary rounded-pill">Monday</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h5 class="mb-3">Recommendations</h5>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="fas fa-lightbulb text-warning me-2"></i> Improve Product Descriptions</h6>
+                        <p class="card-text text-muted">Detailed product descriptions can reduce "not as described" refunds.</p>
+                    </div>
+                </div>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="fas fa-lightbulb text-warning me-2"></i> Review Size Charts</h6>
+                        <p class="card-text text-muted">Size-related returns are high. Consider reviewing size charts for accuracy.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title"><i class="fas fa-lightbulb text-warning me-2"></i> Quality Control</h6>
+                        <p class="card-text text-muted">Implement additional quality checks for products with high defect returns.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      
+        const dailyRefundsCtx = document.getElementById('dailyRefundsChart').getContext('2d');
+        const dailyRefundsData = {
+            labels: [
+                <% if (dailyRefunds && dailyRefunds.length > 0) { %>
+                    <% dailyRefunds.forEach((day, index) => { %>
+                        '<%= day._id %>'<%= index < dailyRefunds.length - 1 ? ',' : '' %>
+                    <% }) %>
+                <% } %>
+            ],
+            datasets: [
+                {
+                    label: 'Refund Amount',
                     data: [
-                        <% if (refundTypeStats && refundTypeStats.length > 0) { %>
-                            <% refundTypeStats.forEach((type, index) => { %>
-                                <%= type.count %><%= index < refundTypeStats.length - 1 ? ',' : '' %>
+                        <% if (dailyRefunds && dailyRefunds.length > 0) { %>
+                            <% dailyRefunds.forEach((day, index) => { %>
+                                <%= day.totalAmount %><%= index < dailyRefunds.length - 1 ? ',' : '' %>
                             <% }) %>
                         <% } %>
                     ],
-                    backgroundColor: [
-                        'rgba(245, 158, 11, 0.8)',
-                        'rgba(79, 70, 229, 0.8)',
-                        'rgba(16, 185, 129, 0.8)',
-                        'rgba(239, 68, 68, 0.8)',
-                        'rgba(107, 114, 128, 0.8)'
+                    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                    borderColor: 'rgba(245, 158, 11, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Refund Count',
+                    data: [
+                        <% if (dailyRefunds && dailyRefunds.length > 0) { %>
+                            <% dailyRefunds.forEach((day, index) => { %>
+                                <%= day.count %><%= index < dailyRefunds.length - 1 ? ',' : '' %>
+                            <% }) %>
+                        <% } %>
                     ],
-                    borderWidth: 1
-                }]
-            };
+                    backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                    borderColor: 'rgba(79, 70, 229, 1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y1'
+                }
+            ]
+        };
 
-            new Chart(refundTypesCtx, {
-                type: 'doughnut',
-                data: refundTypesData,
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
+        new Chart(dailyRefundsCtx, {
+            type: 'line',
+            data: dailyRefundsData,
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Amount (₹)'
+                        }
+                    },
+                    y1: {
+                        beginAtZero: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = Math.round((value / total) * 100);
-                                    return `${label}: ${value} (${percentage}%)`;
+                        title: {
+                            display: true,
+                            text: 'Count'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
                                 }
+                                if (context.datasetIndex === 0) {
+                                    label += '₹' + context.raw.toFixed(2);
+                                } else {
+                                    label += context.raw;
+                                }
+                                return label;
                             }
                         }
                     }
                 }
-            });
-
-            
-            document.getElementById('exportStats').addEventListener('click', function() {
-                const timeRange = '<%= timeRange %>';
-                window.location.href = `/admin/wallet/refund-statistics/export?timeRange=${timeRange}`;
-            });
+            }
         });
-    </script>
+
+    
+        const refundTypesCtx = document.getElementById('refundTypesChart').getContext('2d');
+        const refundTypesData = {
+            labels: [
+                <% if (refundTypeStats && refundTypeStats.length > 0) { %>
+                    <% refundTypeStats.forEach((type, index) => { %>
+                        '<%= type._id === "order_refund" ? "Order Refund" : 
+                            type._id === "item_refund" ? "Product Refund" : 
+                            type._id === "cancellation_refund" ? "Cancellation Refund" : 
+                            type._id === "manual_refund" ? "Manual Refund" : 
+                            type._id === null ? "Other Refunds" : type._id %>'<%= index < refundTypeStats.length - 1 ? ',' : '' %>
+                    <% }) %>
+                <% } %>
+            ],
+            datasets: [{
+                data: [
+                    <% if (refundTypeStats && refundTypeStats.length > 0) { %>
+                        <% refundTypeStats.forEach((type, index) => { %>
+                            <%= type.count %><%= index < refundTypeStats.length - 1 ? ',' : '' %>
+                        <% }) %>
+                    <% } %>
+                ],
+                backgroundColor: [
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(79, 70, 229, 0.8)',
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(239, 68, 68, 0.8)',
+                    'rgba(107, 114, 128, 0.8)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        new Chart(refundTypesCtx, {
+            type: 'doughnut',
+            data: refundTypesData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        
+        document.getElementById('exportStats').addEventListener('click', function() {
+            const timeRange = '<%= timeRange %>';
+            window.location.href = `/admin/wallet/refund-statistics/export?timeRange=${timeRange}`;
+        });
+    });
+</script>
+
 </body>
 </html>

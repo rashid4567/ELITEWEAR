@@ -1,6 +1,7 @@
 const User = require('../../model/userSchema');
 const Address = require('../../model/AddressScheema'); 
 const mongoose = require('mongoose');
+const logger = require("../../utils/logger");
 
 const address = async (req, res) => {
   try {
@@ -12,7 +13,7 @@ const address = async (req, res) => {
       fullname: user.fullname || 'User',
     });
   } catch (error) {
-    console.error('Unable to get address page:', error.message);
+    logger.error('Unable to get address page:', error.message);
     res.status(500).redirect('/page-404/');
   }
 };
@@ -25,7 +26,7 @@ const getaddAddress = async (req, res) => {
       fullname: user.fullname || 'User',
     });
   } catch (error) {
-    console.error('Unable to get the add address page:', error.message);
+    logger.error('Unable to get the add address page:', error.message);
     res.status(500).redirect('/page-404/');
   }
 };
@@ -74,7 +75,7 @@ const addAddress = async (req, res) => {
       address: newAddress,
     });
   } catch (error) {
-    console.error('Unable to add address:', error.message);
+    logger.error('Unable to add address:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to add address',
@@ -97,7 +98,7 @@ const geteditAddress = async (req, res) => {
 
     res.render('editAddress', { address });
   } catch (error) {
-    console.error('Unable to get the user address edit page:', error.message);
+    logger.error('Unable to get the user address edit page:', error.message);
     res.status(500).redirect('/page-404/');
   }
 };
@@ -165,7 +166,7 @@ const updateAddress = async (req, res) => {
       address: updatedAddress,
     });
   } catch (error) {
-    console.error('Update address error:', error.message);
+    logger.error('Update address error:', error.message);
     return res.status(500).json({
       success: false,
       message: 'An error occurred while updating the address. Please try again.',
@@ -192,7 +193,7 @@ const removeAddress = async (req, res) => {
       message: 'Address deleted successfully',
     });
   } catch (error) {
-    console.error('Unable to delete address:', error.message);
+    logger.error('Unable to delete address:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to delete address',
@@ -225,7 +226,7 @@ const setDefaultAddress = async (req, res) => {
       message: 'Default address updated successfully',
     });
   } catch (error) {
-    console.error('Unable to set default address:', error.message);
+    logger.error('Unable to set default address:', error.message);
     res.status(500).json({
       success: false,
       message: 'Failed to set default address',

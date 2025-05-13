@@ -402,516 +402,447 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Initialize AOS
-        AOS.init({
-          duration: 800,
-          easing: 'ease-in-out',
-          once: true
-        });
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: true
+    });
 
-        // Preloader
-        const preloader = document.querySelector('.preloader');
-        setTimeout(() => {
-          preloader.classList.add('fade-out');
-        }, 500);
+    // Preloader
+    const preloader = document.querySelector('.preloader');
+    setTimeout(() => {
+      preloader.classList.add('fade-out');
+    }, 500);
 
-        // Scroll Indicator
-        const scrollIndicator = document.querySelector('.scroll-indicator');
-        window.addEventListener('scroll', () => {
-          const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-          const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-          const scrolled = (winScroll / height) * 100;
-          scrollIndicator.style.width = scrolled + '%';
-        });
+    // Scroll Indicator
+    const scrollIndicator = document.querySelector('.scroll-indicator');
+    window.addEventListener('scroll', () => {
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const scrolled = (winScroll / height) * 100;
+      scrollIndicator.style.width = scrolled + '%';
+    });
 
-        // Cursor Glow Effect
-        const cursorGlow = document.querySelector('.cursor-glow');
-        document.addEventListener('mousemove', (e) => {
-          cursorGlow.style.left = e.clientX + 'px';
-          cursorGlow.style.top = e.clientY + 'px';
-        });
+    // Cursor Glow Effect
+    const cursorGlow = document.querySelector('.cursor-glow');
+    document.addEventListener('mousemove', (e) => {
+      cursorGlow.style.left = e.clientX + 'px';
+      cursorGlow.style.top = e.clientY + 'px';
+    });
 
-        document.addEventListener('mousedown', () => {
-          cursorGlow.style.width = '30px';
-          cursorGlow.style.height = '30px';
-          cursorGlow.style.opacity = '0.8';
-        });
+    document.addEventListener('mousedown', () => {
+      cursorGlow.style.width = '30px';
+      cursorGlow.style.height = '30px';
+      cursorGlow.style.opacity = '0.8';
+    });
 
-        document.addEventListener('mouseup', () => {
-          cursorGlow.style.width = '20px';
-          cursorGlow.style.height = '20px';
-          cursorGlow.style.opacity = '0.5';
-        });
+    document.addEventListener('mouseup', () => {
+      cursorGlow.style.width = '20px';
+      cursorGlow.style.height = '20px';
+      cursorGlow.style.opacity = '0.5';
+    });
 
-        // Dark mode toggle
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    // Dark mode toggle
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
 
-        // Check for saved theme preference or use the system preference
-        const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || (!savedTheme && prefersDarkScheme.matches)) {
+      document.body.classList.add('dark-mode');
+      darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+    }
 
-        if (savedTheme === 'dark' || (!savedTheme && prefersDarkScheme.matches)) {
-          document.body.classList.add('dark-mode');
-          darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+    darkModeToggle.addEventListener('click', () => {
+      if (document.body.classList.contains('dark-mode')) {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('theme', 'light');
+        darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+      } else {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark');
+        darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+      }
+    });
+
+    window.addEventListener('scroll', function () {
+      const navbar = document.querySelector('.navbar');
+      if (navbar) {
+        if (window.scrollY > 50) {
+          navbar.classList.add('navbar-scrolled');
+        } else {
+          navbar.classList.remove('navbar-scrolled');
         }
+      }
+    });
 
-        darkModeToggle.addEventListener('click', () => {
-          if (document.body.classList.contains('dark-mode')) {
-            document.body.classList.remove('dark-mode');
-            localStorage.setItem('theme', 'light');
-            darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-          } else {
-            document.body.classList.add('dark-mode');
-            localStorage.setItem('theme', 'dark');
-            darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-          }
-        });
-
-        // Navbar scroll effect
-        window.addEventListener('scroll', function () {
-          const navbar = document.querySelector('.navbar');
-          if (navbar) {
-            if (window.scrollY > 50) {
-              navbar.classList.add('navbar-scrolled');
-            } else {
-              navbar.classList.remove('navbar-scrolled');
-            }
-          }
-        });
-
-        // Add shimmer effect to payment options
-        document.querySelectorAll('.payment-option').forEach(option => {
-          option.addEventListener('mouseenter', () => {
-            const shimmer = option.querySelector('.shimmer');
-            if (shimmer) {
-              shimmer.style.opacity = '1';
-            }
-          });
-
-          option.addEventListener('mouseleave', () => {
-            const shimmer = option.querySelector('.shimmer');
-            if (shimmer) {
-              shimmer.style.opacity = '0';
-            }
-          });
-        });
-
-        // Add event listeners to payment options
-        const paymentOptions = document.querySelectorAll('.payment-option input[type="radio"]');
-        paymentOptions.forEach((option) => {
-          option.addEventListener("change", () => {
-            // Remove highlight from all options
-            document.querySelectorAll(".payment-option").forEach((opt) => {
-              opt.classList.remove("selected");
-            });
-
-            // Add highlight to selected option
-            if (!option.closest(".payment-option").classList.contains('disabled')) {
-              option.closest(".payment-option").classList.add("selected");
-            }
-          });
-        });
-
-        // Initial highlight for selected payment method
-        const selectedOption = document.querySelector('input[name="payment"]:checked');
-        if (selectedOption && !selectedOption.closest(".payment-option").classList.contains('disabled')) {
-          selectedOption.closest(".payment-option").classList.add("selected");
+    document.querySelectorAll('.payment-option').forEach(option => {
+      option.addEventListener('mouseenter', () => {
+        const shimmer = option.querySelector('.shimmer');
+        if (shimmer) {
+          shimmer.style.opacity = '1';
         }
-
-        // Initialize toast system
-        window.toastSystem = {
-          container: document.getElementById("toastContainer"),
-          counter: 0,
-
-          // Show a toast notification
-          show: function (message, type = "success", duration = 3000) {
-            try {
-              // Create toast element
-              const toastId = `toast-${++this.counter}`;
-              const toast = document.createElement("div");
-              toast.id = toastId;
-              toast.className = `toast-notification ${type}`;
-
-              // Set icon based on type
-              let icon = "";
-              if (type === "success") {
-                icon = '<i class="fas fa-check-circle"></i>';
-              } else if (type === "error") {
-                icon = '<i class="fas fa-exclamation-circle"></i>';
-              } else if (type === "info") {
-                icon = '<i class="fas fa-info-circle"></i>';
-              }
-
-              // Create toast content
-              toast.innerHTML = `
-                <div class="toast-icon">${icon}</div>
-                <div class="toast-message">${message}</div>
-                <button class="toast-close" aria-label="Close">×</button>
-                <div class="toast-progress"></div>
-              `;
-
-              // Add to container
-              this.container.appendChild(toast);
-
-              // Add close button functionality
-              const closeBtn = toast.querySelector(".toast-close");
-              closeBtn.addEventListener("click", () => {
-                this.close(toastId);
-              });
-
-              // Auto close after duration
-              setTimeout(() => {
-                this.close(toastId);
-              }, duration);
-
-              return toastId;
-            } catch (error) {
-              console.error("Error showing toast:", error);
-              // Fallback to alert if toast fails
-              alert(message);
-            }
-          },
-
-          // Close a toast notification
-          close: (id) => {
-            try {
-              const toast = document.getElementById(id);
-              if (toast) {
-                toast.style.animation = "slideOut 0.3s forwards";
-                setTimeout(() => {
-                  if (toast.parentNode) {
-                    toast.parentNode.removeChild(toast);
-                  }
-                }, 300);
-              }
-            } catch (error) {
-              console.error("Error closing toast:", error);
-            }
-          },
-
-          // Helper methods for different toast types
-          success: function (message, duration) {
-            return this.show(message, "success", duration);
-          },
-
-          error: function (message, duration) {
-            return this.show(message, "error", duration);
-          },
-
-          info: function (message, duration) {
-            return this.show(message, "info", duration);
-          },
-        };
       });
 
-      // Show alert message
-      function showAlert(type, message) {
-        const alertDiv = document.getElementById("paymentAlert");
-        alertDiv.innerHTML = `
-          <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        `;
-
-        // Auto dismiss after longer duration - 10 seconds for success, 15 seconds for errors
-        setTimeout(() => {
-          const alertElement = document.querySelector(".alert");
-          if (alertElement) {
-            const bsAlert = new bootstrap.Alert(alertElement);
-            bsAlert.close();
-          }
-        }, type === 'danger' ? 15000 : 10000);
-
-        // Scroll to alert
-        alertDiv.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-
-      // Show loading overlay
-      function showLoading() {
-        document.getElementById('loadingOverlay').style.display = 'flex';
-      }
-
-      // Hide loading overlay
-      function hideLoading() {
-        document.getElementById('loadingOverlay').style.display = 'none';
-      }
-
-      // Create confetti animation
-      function createConfetti() {
-        const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'];
-        const confettiCount = 100;
-
-        for (let i = 0; i < confettiCount; i++) {
-          const confetti = document.createElement('div');
-          confetti.className = 'confetti';
-          confetti.style.left = Math.random() * 100 + 'vw';
-          confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-          confetti.style.width = Math.random() * 10 + 5 + 'px';
-          confetti.style.height = Math.random() * 10 + 5 + 'px';
-          confetti.style.opacity = Math.random();
-          confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
-          document.body.appendChild(confetti);
-
-          // Remove confetti after animation completes
-          setTimeout(() => {
-            confetti.remove();
-          }, 5000);
+      option.addEventListener('mouseleave', () => {
+        const shimmer = option.querySelector('.shimmer');
+        if (shimmer) {
+          shimmer.style.opacity = '0';
         }
-      }
+      });
+    });
 
-      // Helper function to show toast
-      function showToast(message, type = "success", duration = 3000) {
-        if (window.toastSystem) {
-          return window.toastSystem.show(message, type, duration);
-        } else {
-          // Create a simple toast if the toast system is not available
-          const toast = document.createElement("div");
-          toast.className = `toast-notification ${type}`;
-          toast.innerHTML = `
-            <div class="toast-message">${message}</div>
-          `;
-
-          const container = document.getElementById("toastContainer");
-          if (container) {
-            container.appendChild(toast);
-            setTimeout(() => {
-              toast.remove();
-            }, duration);
-          } else {
-            alert(message);
-          }
+    const paymentOptions = document.querySelectorAll('.payment-option input[type="radio"]');
+    paymentOptions.forEach((option) => {
+      option.addEventListener("change", () => {
+        document.querySelectorAll(".payment-option").forEach((opt) => {
+          opt.classList.remove("selected");
+        });
+        if (!option.closest(".payment-option").classList.contains('disabled')) {
+          option.closest(".payment-option").classList.add("selected");
         }
-      }
+      });
+    });
 
-      // Handle payment process
-      async function handlePayment() {
+    const selectedOption = document.querySelector('input[name="payment"]:checked');
+    if (selectedOption && !selectedOption.closest(".payment-option").classList.contains('disabled')) {
+      selectedOption.closest(".payment-option").classList.add("selected");
+    }
+
+    window.toastSystem = {
+      container: document.getElementById("toastContainer"),
+      counter: 0,
+      show: function (message, type = "success", duration = 3000) {
         try {
-          const selectedPaymentOption = document.querySelector('input[name="payment"]:checked');
-
-          if (!selectedPaymentOption) {
-            showAlert('warning', 'Please select a payment method');
-            return;
+          const toastId = `toast-${++this.counter}`;
+          const toast = document.createElement("div");
+          toast.id = toastId;
+          toast.className = `toast-notification ${type}`;
+          let icon = "";
+          if (type === "success") {
+            icon = '<i class="fas fa-check-circle"></i>';
+          } else if (type === "error") {
+            icon = '<i class="fas fa-exclamation-circle"></i>';
+          } else if (type === "info") {
+            icon = '<i class="fas fa-info-circle"></i>';
           }
-
-          const paymentMethod = selectedPaymentOption.value;
-          const couponCode = "<%= appliedCoupon ? (appliedCoupon.code || appliedCoupon.coupencode) : '' %>";
-          const placeOrderBtn = document.getElementById('placeOrderBtn');
-
-          // Check for payment restrictions
-          if (paymentMethod === 'COD' && <%= grandTotal %> > 1000) {
-            window.location.href = `/order-failed?message=${encodeURIComponent('Cash on Delivery is not available for orders above ₹1,000. Please choose another payment method.')}`;
-            return;
-          }
-
-          if (paymentMethod === 'Wallet' && <%= walletBalance %> < <%= grandTotal %>) {
-            window.location.href = `/order-failed?message=${encodeURIComponent(`Insufficient wallet balance. Available: ₹${<%= walletBalance.toFixed(2) %>}, Required: ₹${<%= grandTotal.toFixed(2) %>}`)}`;
-            return;
-          }
-
-          // Disable button and show loading state
-          placeOrderBtn.disabled = true;
-          placeOrderBtn.innerHTML = '<span class="spinner"></span> Processing...';
-
-          if (paymentMethod === 'Razorpay') {
-            // Handle Razorpay payment
-            showLoading();
-            const response = await fetch('/create-razorpay-order', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ couponCode })
-            });
-
-            hideLoading();
-
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.message || 'Failed to create Razorpay order');
-            }
-
-            const data = await response.json();
-            console.log('Razorpay order response:', data);
-
-            if (!data.success) {
-              throw new Error(data.message || 'Failed to create Razorpay order');
-            }
-
-            const options = {
-              key: data.key,
-              amount: data.order.amount,
-              currency: data.order.currency,
-              name: 'Elite Wear',
-              description: 'Purchase from Elite Wear',
-              image: '/Uploads/ChatGPT Image Apr 13, 2025, 06_50_48 PM.png',
-              order_id: data.order.id,
-              prefill: {
-                name: data.user?.name || '<%= deliveryAddress.fullname %>',
-                email: data.user?.email || '',
-                contact: data.user?.mobile || '<%= deliveryAddress.mobile %>' || ''
-              },
-              theme: {
-                color: '#3b82f6'
-              },
-              handler: function(response) {
-                // Handle successful payment
-                verifyPayment(response);
-              },
-              modal: {
-                ondismiss: function() {
-                  // Re-enable button when modal is closed
-                  placeOrderBtn.disabled = false;
-                  placeOrderBtn.innerHTML = '<span class="btn-text">Place Order</span><span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>';
-                  showToast('Payment cancelled', 'info');
-                }
+          toast.innerHTML = `
+            <div class="toast-icon">${icon}</div>
+            <div class="toast-message">${message}</div>
+            <button class="toast-close" aria-label="Close">×</button>
+            <div class="toast-progress"></div>
+          `;
+          this.container.appendChild(toast);
+          const closeBtn = toast.querySelector(".toast-close");
+          closeBtn.addEventListener("click", () => {
+            this.close(toastId);
+          });
+          setTimeout(() => {
+            this.close(toastId);
+          }, duration);
+          return toastId;
+        } catch (error) {
+          console.error("Error showing toast:", error);
+          alert(message);
+        }
+      },
+      close: (id) => {
+        try {
+          const toast = document.getElementById(id);
+          if (toast) {
+            toast.style.animation = "slideOut 0.3s forwards";
+            setTimeout(() => {
+              if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
               }
-            };
-
-            // Initialize Razorpay
-            const razorpay = new Razorpay(options);
-
-            // Open Razorpay checkout
-            razorpay.on('payment.failed', function(response) {
-              console.error('Payment failed:', response.error);
-              window.location.href = `/order-failed?message=${encodeURIComponent(response.error.description || 'Please try again')}`;
-            });
-
-            razorpay.open();
-
-          } else if (paymentMethod === 'Wallet') {
-            // Handle wallet payment
-            showLoading();
-
-            // Place the order directly with wallet payment
-            const response = await fetch('/place-order', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                paymentMethod: 'Wallet',
-                couponCode
-              })
-            });
-
-            hideLoading();
-
-            if (!response.ok) {
-              const errorData = await response.json();
-              window.location.href = `/order-failed?message=${encodeURIComponent(errorData.message || 'Wallet payment failed')}`;
-              return;
-            }
-
-            const data = await response.json();
-
-            if (data.success) {
-              // Show success message and redirect
-              createConfetti();
-              showToast('Payment successful! Redirecting to order confirmation...', 'success', 3000);
-              setTimeout(() => {
-                window.location.href = data.redirect;
-              }, 3000);
-            } else {
-              window.location.href = `/order-failed?message=${encodeURIComponent(data.message || 'Wallet payment failed')}`;
-            }
-
-          } else if (paymentMethod === 'COD') {
-            // Handle COD payment
-            showLoading();
-
-            // Place the order with COD payment
-            const response = await fetch('/place-order', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                paymentMethod: 'COD',
-                couponCode
-              })
-            });
-
-            hideLoading();
-
-            if (!response.ok) {
-              const errorData = await response.json();
-              window.location.href = `/order-failed?message=${encodeURIComponent(errorData.message || 'Failed to place COD order')}`;
-              return;
-            }
-
-            const data = await response.json();
-
-            if (data.success) {
-              // Show success message and redirect
-              createConfetti();
-              showToast('Order placed successfully! Redirecting to order confirmation...', 'success', 3000);
-              setTimeout(() => {
-                window.location.href = data.redirect;
-              }, 3000);
-            } else {
-              window.location.href = `/order-failed?message=${encodeURIComponent(data.message || 'Failed to place COD order')}`;
-            }
+            }, 300);
           }
         } catch (error) {
-          console.error('Payment error:', error);
-          window.location.href = `/order-failed?message=${encodeURIComponent(error.message || 'Unknown error occurred')}`;
-          
-          // Re-enable button
-          const placeOrderBtn = document.getElementById('placeOrderBtn');
-          if (placeOrderBtn) {
+          console.error("Error closing toast:", error);
+        }
+      },
+      success: function (message, duration) {
+        return this.show(message, "success", duration);
+      },
+      error: function (message, duration) {
+        return this.show(message, "error", duration);
+      },
+      info: function (message, duration) {
+        return this.show(message, "info", duration);
+      },
+    };
+  });
+
+  function showAlert(type, message) {
+    const alertDiv = document.getElementById("paymentAlert");
+    alertDiv.innerHTML = `
+      <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    `;
+    setTimeout(() => {
+      const alertElement = document.querySelector(".alert");
+      if (alertElement) {
+        const bsAlert = new bootstrap.Alert(alertElement);
+        bsAlert.close();
+      }
+    }, type === 'danger' ? 15000 : 10000);
+    alertDiv.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function showLoading() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+  }
+
+  function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+  }
+
+  function createConfetti() {
+    const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'];
+    const confettiCount = 100;
+    for (let i = 0; i < confettiCount; i++) {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      confetti.style.left = Math.random() * 100 + 'vw';
+      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.width = Math.random() * 10 + 5 + 'px';
+      confetti.style.height = Math.random() * 10 + 5 + 'px';
+      confetti.style.opacity = Math.random();
+      confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+      document.body.appendChild(confetti);
+      setTimeout(() => {
+        confetti.remove();
+      }, 5000);
+    }
+  }
+
+  function showToast(message, type = "success", duration = 3000) {
+    if (window.toastSystem) {
+      return window.toastSystem.show(message, type, duration);
+    } else {
+      const toast = document.createElement("div");
+      toast.className = `toast-notification ${type}`;
+      toast.innerHTML = `
+        <div class="toast-message">${message}</div>
+      `;
+      const container = document.getElementById("toastContainer");
+      if (container) {
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.remove();
+        }, duration);
+      } else {
+        alert(message);
+      }
+    }
+  }
+
+async function handlePayment() {
+  try {
+    const selectedPaymentOption = document.querySelector('input[name="payment"]:checked');
+    if (!selectedPaymentOption) {
+      showAlert('warning', 'Please select a payment method');
+      return;
+    }
+
+    const paymentMethod = selectedPaymentOption.value;
+    const couponCode = "<%= appliedCoupon ? (appliedCoupon.code || appliedCoupon.coupencode) : '' %>";
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+
+    // Check for payment restrictions
+    if (paymentMethod === 'COD' && <%= grandTotal %> > 1000) {
+      showAlert('danger', 'Cash on Delivery is not available for orders above ₹1,000. Please choose another payment method.');
+      return;
+    }
+
+    if (paymentMethod === 'Wallet' && <%= walletBalance %> < <%= grandTotal %>) {
+      showAlert('danger', `Insufficient wallet balance. Available: ₹${<%= walletBalance.toFixed(2) %>}, Required: ₹${<%= grandTotal.toFixed(2) %>}`);
+      return;
+    }
+
+    placeOrderBtn.disabled = true;
+    placeOrderBtn.innerHTML = '<span class="spinner"></span> Processing...';
+
+    if (paymentMethod === 'Razorpay') {
+      showLoading();
+      const response = await fetch('/create-razorpay-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ couponCode })
+      });
+
+      hideLoading();
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to create Razorpay order:', errorData);
+        // Ensure redirection happens on error
+        window.location.href = errorData.redirect || `/order-failed/${errorData.orderId || 'unknown'}?message=${encodeURIComponent(errorData.message || 'Failed to create Razorpay order')}`;
+        return;
+      }
+
+      const data = await response.json();
+      console.log('Razorpay order response:', data);
+
+      if (!data.success) {
+        console.error('Order creation failed:', data.message);
+        // Ensure redirection happens on unsuccessful response
+        window.location.href = data.redirect || `/order-failed/${data.orderId || 'unknown'}?message=${encodeURIComponent(data.message || 'Failed to create order')}`;
+        return;
+      }
+
+      const options = {
+        key: data.key,
+        amount: data.order.amount,
+        currency: data.order.currency,
+        name: 'Elite Wear',
+        description: 'Purchase from Elite Wear',
+        image: '/Uploads/ChatGPT Image Apr 13, 2025, 06_50_48 PM.png',
+        order_id: data.order.id,
+        prefill: {
+          name: data.user?.name || '<%= deliveryAddress.fullname %>',
+          email: data.user?.email || '',
+          contact: data.user?.mobile || '<%= deliveryAddress.mobile %>' || ''
+        },
+        theme: {
+          color: '#3b82f6'
+        },
+        handler: function(response) {
+          verifyPayment(response, data.orderId);
+        },
+        modal: {
+          ondismiss: function() {
             placeOrderBtn.disabled = false;
             placeOrderBtn.innerHTML = '<span class="btn-text">Place Order</span><span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>';
+            showToast('Payment cancelled', 'info');
+            
+            // Redirect to order failed when payment modal is dismissed
+            if (data.orderId) {
+              window.location.href = `/order-failed/${data.orderId}?reason=payment_cancelled`;
+            }
           }
         }
-      }
+      };
 
-      // Verify payment after Razorpay success
-      async function verifyPayment(response) {
-        try {
-          showLoading();
-          const verifyResponse = await fetch('/verify-payment', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_signature: response.razorpay_signature,
-              couponCode: "<%= appliedCoupon ? (appliedCoupon.code || appliedCoupon.coupencode) : '' %>"
-            })
-          });
+      const razorpay = new Razorpay(options);
+      razorpay.on('payment.failed', function(response) {
+        console.error('Payment failed:', response.error);
+        // Ensure redirection happens on payment failure
+        setTimeout(() => {
+          window.location.href = `/order-failed/${data.orderId}?reason=payment_failed&code=${response.error.code || 'unknown'}`;
+        }, 1000);
+      });
+      razorpay.open();
+    } else {
+      showLoading();
+      try {
+        const response = await fetch('/place-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            paymentMethod,
+            couponCode
+          })
+        });
 
-          hideLoading();
-
-          if (!verifyResponse.ok) {
-            const errorData = await verifyResponse.json();
-            window.location.href = `/order-failed?message=${encodeURIComponent(errorData.message || 'Payment verification failed')}`;
-            return;
-          }
-
-          const data = await verifyResponse.json();
-
-          if (data.success) {
-            // Show success animation and message
-            createConfetti();
-            showToast('Payment successful! Redirecting to order confirmation...', 'success', 3000);
-
-            // Redirect to success page
-            setTimeout(() => {
-              window.location.href = data.redirect;
-            }, 3000);
-          } else {
-            window.location.href = `/order-failed?message=${encodeURIComponent(data.message || 'Payment verification failed')}`;
-          }
-        } catch (error) {
-          console.error('Payment verification error:', error);
-          window.location.href = `/order-failed?message=${encodeURIComponent(error.message || 'Unknown error occurred')}`;
+        hideLoading();
+        
+        // Handle response regardless of status code
+        const data = await response.json();
+        
+        if (!response.ok) {
+          console.error('Order placement error:', data);
+          // Always redirect on error
+          window.location.href = data.redirect || `/order-failed/${data.orderId || 'unknown'}?message=${encodeURIComponent(data.message || 'Failed to place order')}`;
+          return;
         }
+
+        if (data.success) {
+          createConfetti();
+          showToast('Order placed successfully! Redirecting to order confirmation...', 'success', 3000);
+          setTimeout(() => {
+            window.location.href = data.redirect || `/order-success/${data.orderId}`;
+          }, 3000);
+        } else {
+          // Always redirect when success is false
+          console.error('Order not successful:', data);
+          window.location.href = data.redirect || `/order-failed/${data.orderId || 'unknown'}?message=${encodeURIComponent(data.message || 'Order could not be completed')}`;
+        }
+      } catch (fetchError) {
+        hideLoading();
+        console.error('Fetch error during order placement:', fetchError);
+        window.location.href = `/order-failed/unknown?message=${encodeURIComponent(fetchError.message || 'Connection error during checkout')}`;
       }
-    </script>
+    }
+  } catch (error) {
+    hideLoading();
+    console.error('Payment error:', error);
+    
+    // Always reset button state
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+    if (placeOrderBtn) {
+      placeOrderBtn.disabled = false;
+      placeOrderBtn.innerHTML = '<span class="btn-text">Place Order</span><span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>';
+    }
+    
+    // Ensure redirection happens on any uncaught error
+    window.location.href = `/order-failed/unknown?message=${encodeURIComponent(error.message || 'Unknown error occurred during checkout')}`;
+  }
+}
+
+async function verifyPayment(response, orderId) {
+  try {
+    showLoading();
+    const verifyResponse = await fetch('/verify-payment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_order_id: response.razorpay_order_id,
+        razorpay_signature: response.razorpay_signature,
+        couponCode: "<%= appliedCoupon ? (appliedCoupon.code || appliedCoupon.coupencode) : '' %>"
+      })
+    });
+
+    hideLoading();
+    
+    // Parse response data regardless of status
+    const data = await verifyResponse.json();
+
+    if (!verifyResponse.ok) {
+      console.error('Payment verification failed:', data);
+      // Ensure redirection happens on error response
+      window.location.href = data.redirect || `/order-failed/${orderId}?reason=verification_failed&message=${encodeURIComponent(data.message || 'Payment verification failed')}`;
+      return;
+    }
+
+    if (data.success) {
+      createConfetti();
+      showToast('Payment successful! Redirecting to order confirmation...', 'success', 3000);
+      setTimeout(() => {
+        window.location.href = data.redirect || `/order-success/${data.orderId || orderId}`;
+      }, 3000);
+    } else {
+      console.error('Payment verification not successful:', data);
+      // Ensure redirection happens when success is false
+      window.location.href = data.redirect || `/order-failed/${orderId}?reason=verification_unsuccessful&message=${encodeURIComponent(data.message || 'Payment could not be verified')}`;
+    }
+  } catch (error) {
+    hideLoading();
+    console.error('Payment verification error:', error);
+    // Ensure redirection happens on any error
+    window.location.href = `/order-failed/${orderId}?reason=verification_error&message=${encodeURIComponent(error.message || 'Error during payment verification')}`;
+  }
+}
+</script>
   </body>
 </html>
