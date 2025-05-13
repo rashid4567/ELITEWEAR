@@ -4,1341 +4,44 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Elite Wear - Payment</title>
-    <!-- Bootstrap CSS -->
+
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <!-- Font Awesome -->
+
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
-    <!-- Google Fonts -->
+
     <link
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <!-- AOS Animation Library -->
+
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
-    <!-- Swiper CSS -->
+
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css"
     />
-    <!-- Custom CSS -->
+
     <link rel="stylesheet" href="/userStyle/header.css" />
     <link rel="stylesheet" href="/userStyle/footer.css" />
+    <link rel="stylesheet" href="/userStyle/checkoutPayment.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-      :root {
-        --primary-color: #0f172a;
-        --secondary-color: #f8fafc;
-        --accent-color: #3b82f6;
-        --accent-hover: #2563eb;
-        --accent-secondary: #8b5cf6;
-        --accent-tertiary: #ec4899;
-        --text-primary: #1e293b;
-        --text-secondary: #64748b;
-        --text-light: #94a3b8;
-        --border-color: #e2e8f0;
-        --card-bg: #ffffff;
-        --sidebar-bg: #ffffff;
-        --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-        --card-hover-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.1);
-        --gradient-primary: linear-gradient(135deg, #3b82f6, #8b5cf6);
-        --gradient-secondary: linear-gradient(135deg, #8b5cf6, #ec4899);
-        --gradient-accent: linear-gradient(135deg, #3b82f6, #10b981);
-        --success-color: #10b981;
-        --error-color: #ef4444;
-        --warning-color: #f59e0b;
-        --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        --border-radius-sm: 0.375rem;
-        --border-radius: 0.5rem;
-        --border-radius-lg: 0.75rem;
-        --border-radius-xl: 1rem;
-        --border-radius-full: 9999px;
-        --font-primary: "Outfit", sans-serif;
-        --font-secondary: "Playfair Display", serif;
-      }
-
-      /* Dark mode variables */
-      .dark-mode {
-        --primary-color: #f8fafc;
-        --secondary-color: #0f172a;
-        --text-primary: #f1f5f9;
-        --text-secondary: #cbd5e1;
-        --text-light: #94a3b8;
-        --border-color: #334155;
-        --card-bg: #1e293b;
-        --sidebar-bg: #0f172a;
-        --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
-        --card-hover-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.3);
-      }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      body {
-        font-family: var(--font-primary);
-        color: var(--text-primary);
-        background-color: var(--secondary-color);
-        overflow-x: hidden;
-        transition: background-color var(--transition-normal),
-          color var(--transition-normal);
-      }
-
-      /* Scrollbar styling */
-      ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-      }
-
-      ::-webkit-scrollbar-track {
-        background: var(--secondary-color);
-      }
-
-      ::-webkit-scrollbar-thumb {
-        background: var(--text-light);
-        border-radius: var(--border-radius-full);
-      }
-
-      ::-webkit-scrollbar-thumb:hover {
-        background: var(--text-secondary);
-      }
-
-      /* Scroll Indicator */
-      .scroll-indicator {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 3px;
-        background: var(--gradient-primary);
-        z-index: 9999;
-        width: 0%;
-        transition: width 0.1s ease;
-      }
-
-      /* Cursor Glow Effect */
-      .cursor-glow {
-        position: fixed;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: var(--accent-color);
-        pointer-events: none;
-        mix-blend-mode: difference;
-        z-index: 9999;
-        transform: translate(-50%, -50%);
-        opacity: 0.5;
-        transition: width 0.3s, height 0.3s, opacity 0.3s;
-      }
-
-      /* Preloader */
-      .preloader {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: var(--primary-color);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        transition: opacity 0.5s ease, visibility 0.5s ease;
-      }
-
-      .preloader.fade-out {
-        opacity: 0;
-        visibility: hidden;
-      }
-
-      .loader {
-        width: 80px;
-        height: 80px;
-        border: 4px solid rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        border-top-color: var(--accent-color);
-        animation: spin 1s linear infinite;
-        position: relative;
-      }
-
-      .loader::before {
-        content: "";
-        position: absolute;
-        top: -4px;
-        left: -4px;
-        right: -4px;
-        bottom: -4px;
-        border: 4px solid transparent;
-        border-top-color: var(--accent-secondary);
-        border-radius: 50%;
-        animation: spin 2s linear infinite;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* Dark Mode Toggle */
-      .dark-mode-toggle {
-        position: fixed;
-        bottom: 2rem;
-        left: 2rem;
-        width: 50px;
-        height: 50px;
-        background-color: var(--card-bg);
-        color: var(--text-primary);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        z-index: 1000;
-        transition: all var(--transition-normal);
-        border: none;
-      }
-
-      .dark-mode-toggle:hover {
-        transform: translateY(-5px) rotate(45deg);
-        box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
-      }
-
-      /* Checkout Container */
-      .checkout-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 3rem 1rem;
-      }
-
-      /* Checkout Header */
-      .checkout-header-wrapper {
-        position: relative;
-        margin-bottom: 3rem;
-        text-align: center;
-        overflow: hidden;
-      }
-
-      .checkout-header {
-        font-family: var(--font-secondary);
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        position: relative;
-        display: inline-block;
-        background: var(--gradient-primary);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-fill-color: transparent;
-      }
-
-      .checkout-header::after {
-        content: "";
-        position: absolute;
-        bottom: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 80px;
-        height: 3px;
-        background: var(--gradient-primary);
-        border-radius: var(--border-radius-full);
-        transition: width var(--transition-normal);
-      }
-
-      .checkout-header:hover::after {
-        width: 120px;
-      }
-
-      /* Checkout Progress */
-      .checkout-progress-container {
-        margin-bottom: 3rem;
-      }
-
-      .checkout-progress {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        max-width: 800px;
-        margin: 0 auto;
-        position: relative;
-      }
-
-      .progress-step {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        position: relative;
-        z-index: 2;
-      }
-
-      .step-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background-color: var(--card-bg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--text-secondary);
-        font-size: 1.5rem;
-        margin-bottom: 0.75rem;
-        position: relative;
-        transition: all var(--transition-normal);
-        box-shadow: var(--card-shadow);
-      }
-
-      .progress-step.active .step-icon {
-        background: var(--gradient-primary);
-        color: white;
-        transform: scale(1.1);
-        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
-      }
-
-      .progress-step.completed .step-icon {
-        background: var(--success-color);
-        color: white;
-      }
-
-      .step-label {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: var(--text-secondary);
-        transition: color var(--transition-normal);
-      }
-
-      .progress-step.active .step-label {
-        color: var(--accent-color);
-        font-weight: 600;
-      }
-
-      .progress-connector {
-        flex: 1;
-        height: 3px;
-        background-color: var(--border-color);
-        position: relative;
-        z-index: 1;
-        transition: background-color var(--transition-normal);
-      }
-
-      .progress-connector.active {
-        background: var(--gradient-primary);
-      }
-
-      /* Payment Methods Card */
-      .payment-methods-card {
-        background-color: var(--card-bg);
-        border-radius: var(--border-radius-lg);
-        overflow: hidden;
-        box-shadow: var(--card-shadow);
-        transition: all var(--transition-normal);
-        margin-bottom: 2rem;
-        position: relative;
-      }
-
-      .payment-methods-card:hover {
-        transform: translateY(-10px);
-        box-shadow: var(--card-hover-shadow);
-      }
-
-      .payment-methods-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 4px;
-        background: var(--gradient-primary);
-        transition: height var(--transition-normal);
-      }
-
-      .payment-methods-card:hover::before {
-        height: 8px;
-      }
-
-      .payment-methods-card .card-header {
-        padding: 1.5rem;
-        border-bottom: 1px solid var(--border-color);
-      }
-
-      .payment-methods-card .card-header h5 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin: 0;
-        color: var(--text-primary);
-      }
-
-      .payment-methods-card .card-body {
-        padding: 1.5rem;
-      }
-
-      /* Payment Options */
-      .payment-options {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-      }
-
-      .payment-option {
-        position: relative;
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
-        transition: all var(--transition-normal);
-        overflow: hidden;
-      }
-
-      .payment-option::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 4px;
-        height: 0;
-        background: var(--gradient-primary);
-        transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 1;
-      }
-
-      .payment-option:hover::before {
-        height: 100%;
-      }
-
-      .payment-option:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--card-shadow);
-        border-color: var(--accent-color);
-      }
-
-      .payment-option.selected {
-        border-color: var(--accent-color);
-        background-color: rgba(59, 130, 246, 0.05);
-        box-shadow: var(--card-shadow);
-      }
-
-      .payment-option.disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-      }
-
-      .payment-option input[type="radio"] {
-        position: absolute;
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-
-      .payment-option label {
-        display: flex;
-        align-items: center;
-        padding: 1.25rem;
-        cursor: pointer;
-        width: 100%;
-        margin: 0;
-      }
-
-      .payment-option.disabled label {
-        cursor: not-allowed;
-      }
-
-      .payment-option-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        background-color: rgba(59, 130, 246, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--accent-color);
-        font-size: 1.5rem;
-        margin-right: 1rem;
-        transition: all var(--transition-normal);
-      }
-
-      .payment-option.selected .payment-option-icon {
-        background: var(--gradient-primary);
-        color: white;
-        transform: scale(1.1);
-        box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
-      }
-
-      .payment-option-content {
-        flex: 1;
-      }
-
-      .payment-option-title {
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-        color: var(--text-primary);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .payment-option-description {
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-      }
-
-      .wallet-balance {
-        font-size: 0.9rem;
-        font-weight: 500;
-        padding: 0.25rem 0.5rem;
-        border-radius: var(--border-radius-full);
-      }
-
-      .wallet-balance.sufficient {
-        background-color: rgba(16, 185, 129, 0.1);
-        color: var(--success-color);
-      }
-
-      .wallet-balance.insufficient {
-        background-color: rgba(239, 68, 68, 0.1);
-        color: var(--error-color);
-      }
-
-      .add-money-link {
-        color: var(--accent-color);
-        font-weight: 500;
-        text-decoration: none;
-        transition: all var(--transition-fast);
-      }
-
-      .add-money-link:hover {
-        text-decoration: underline;
-        color: var(--accent-hover);
-      }
-
-      /* Payment Cards */
-      .payment-cards {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        margin: 1rem 0;
-        flex-wrap: wrap;
-      }
-
-      .payment-cards img {
-        height: 30px;
-        object-fit: contain;
-        opacity: 0.7;
-        transition: all var(--transition-normal);
-      }
-
-      .payment-cards img:hover {
-        opacity: 1;
-        transform: scale(1.1);
-      }
-
-      /* Delivery Address Card */
-      .delivery-address-card {
-        background-color: var(--card-bg);
-        border-radius: var(--border-radius-lg);
-        overflow: hidden;
-        box-shadow: var(--card-shadow);
-        transition: all var(--transition-normal);
-        margin-bottom: 2rem;
-        position: relative;
-      }
-
-      .delivery-address-card:hover {
-        transform: translateY(-10px);
-        box-shadow: var(--card-hover-shadow);
-      }
-
-      .delivery-address-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 4px;
-        background: var(--gradient-secondary);
-        transition: height var(--transition-normal);
-      }
-
-      .delivery-address-card:hover::before {
-        height: 8px;
-      }
-
-      .delivery-address-card .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1.5rem;
-        border-bottom: 1px solid var(--border-color);
-      }
-
-      .delivery-address-card .card-header h5 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin: 0;
-        color: var(--text-primary);
-      }
-
-      .btn-change-address {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: transparent;
-        color: var(--accent-color);
-        padding: 0.5rem 1rem;
-        border-radius: var(--border-radius);
-        font-size: 0.9rem;
-        font-weight: 500;
-        transition: all var(--transition-normal);
-        text-decoration: none;
-        border: 1px solid var(--accent-color);
-      }
-
-      .btn-change-address:hover {
-        background-color: var(--accent-color);
-        color: white;
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
-      }
-
-      .delivery-address-card .card-body {
-        padding: 1.5rem;
-      }
-
-      /* Address Details */
-      .address-details {
-        position: relative;
-        padding-left: 1.5rem;
-        border-left: 2px dashed var(--accent-color);
-      }
-
-      .address-name {
-        font-weight: 600;
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
-        color: var(--text-primary);
-      }
-
-      .address-line {
-        font-size: 0.95rem;
-        color: var(--text-secondary);
-        margin-bottom: 0.25rem;
-      }
-
-      .address-phone {
-        margin-top: 0.75rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: var(--accent-color);
-        font-weight: 500;
-      }
-
-      /* Order Summary Card */
-      .order-summary-card {
-        background-color: var(--card-bg);
-        border-radius: var(--border-radius-lg);
-        overflow: hidden;
-        box-shadow: var(--card-shadow);
-        transition: all var(--transition-normal);
-        margin-bottom: 2rem;
-        position: relative;
-      }
-
-      .order-summary-card:hover {
-        transform: translateY(-10px);
-        box-shadow: var(--card-hover-shadow);
-      }
-
-      .order-summary-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 4px;
-        background: var(--gradient-primary);
-        transition: height var(--transition-normal);
-      }
-
-      .order-summary-card:hover::before {
-        height: 8px;
-      }
-
-      .order-summary-card .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1.5rem;
-        border-bottom: 1px solid var(--border-color);
-      }
-
-      .order-summary-card .card-header h5 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin: 0;
-        color: var(--text-primary);
-      }
-
-      .order-summary-card .card-header .badge {
-        background: var(--gradient-primary);
-        font-weight: 500;
-        font-size: 0.8rem;
-        padding: 0.35rem 0.75rem;
-        border-radius: var(--border-radius-full);
-      }
-
-      .order-summary-card .card-body {
-        padding: 1.5rem;
-      }
-
-      /* Order Items */
-      .order-items {
-        max-height: 400px;
-        overflow-y: auto;
-        margin-bottom: 1.5rem;
-        padding-right: 0.5rem;
-      }
-
-      .order-item {
-        display: flex;
-        align-items: center;
-        padding: 1rem 0;
-        border-bottom: 1px solid var(--border-color);
-        transition: all var(--transition-normal);
-      }
-
-      .order-item:last-child {
-        border-bottom: none;
-      }
-
-      .order-item:hover {
-        transform: translateX(5px);
-      }
-
-      .item-image {
-        width: 70px;
-        height: 70px;
-        border-radius: var(--border-radius);
-        overflow: hidden;
-        margin-right: 1rem;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        transition: all var(--transition-normal);
-      }
-
-      .order-item:hover .item-image {
-        transform: scale(1.1);
-      }
-
-      .item-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .item-details {
-        flex: 1;
-      }
-
-      .item-name {
-        font-weight: 500;
-        margin-bottom: 0.25rem;
-        color: var(--text-primary);
-        transition: color var(--transition-fast);
-      }
-
-      .order-item:hover .item-name {
-        color: var(--accent-color);
-      }
-
-      .item-meta {
-        display: flex;
-        gap: 1rem;
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-      }
-
-      .item-price {
-        font-weight: 600;
-        color: var(--accent-color);
-      }
-
-      /* Item price with discount styling */
-      .item-price-container {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-      }
-
-      .item-original-price {
-        text-decoration: line-through;
-        color: var(--text-secondary);
-        font-size: 0.85rem;
-      }
-
-      .item-discount-badge {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: white;
-        background-color: var(--success-color);
-        padding: 0.1rem 0.4rem;
-        border-radius: var(--border-radius-full);
-        margin-top: 0.25rem;
-      }
-
-      /* Price Summary */
-      .price-summary {
-        padding: 1.5rem;
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
-        margin-bottom: 1.5rem;
-        background-color: rgba(59, 130, 246, 0.03);
-      }
-
-      .price-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.75rem;
-        font-size: 0.95rem;
-        color: var(--text-secondary);
-      }
-
-      .price-row:last-child {
-        margin-bottom: 0;
-      }
-
-      .price-row.total {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        padding-top: 0.75rem;
-        margin-top: 0.75rem;
-        border-top: 1px solid var(--border-color);
-      }
-
-      .price-row.discount {
-        color: var(--success-color);
-      }
-
-      /* Place Order Button */
-      .btn-place-order {
-        width: 100%;
-        background: var(--gradient-primary);
-        color: white;
-        padding: 1rem;
-        border-radius: var(--border-radius);
-        font-weight: 500;
-        transition: all var(--transition-normal);
-        border: none;
-        position: relative;
-        overflow: hidden;
-        z-index: 1;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .btn-place-order::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--gradient-secondary);
-        z-index: -1;
-        opacity: 0;
-        transition: opacity var(--transition-normal);
-      }
-
-      .btn-place-order:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
-      }
-
-      .btn-place-order:hover::before {
-        opacity: 1;
-      }
-
-      .btn-place-order:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-      }
-
-      .btn-place-order .btn-text {
-        font-size: 1.1rem;
-      }
-
-      .btn-place-order .btn-price {
-        background-color: rgba(255, 255, 255, 0.2);
-        padding: 0.5rem 1rem;
-        border-radius: var(--border-radius);
-        font-weight: 600;
-      }
-
-      /* Spinner */
-      .spinner {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 3px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        border-top-color: white;
-        animation: spin 1s linear infinite;
-        margin-right: 0.5rem;
-      }
-
-      /* Alert Styles */
-      #paymentAlert {
-        margin-bottom: 1.5rem;
-      }
-
-      .alert {
-        border: none;
-        border-radius: var(--border-radius);
-        padding: 1rem;
-        margin-bottom: 1rem;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .alert-success {
-        background-color: rgba(16, 185, 129, 0.1);
-        color: var(--success-color);
-        border-left: 4px solid var(--success-color);
-      }
-
-      .alert-danger {
-        background-color: rgba(239, 68, 68, 0.1);
-        color: var(--error-color);
-        border-left: 4px solid var(--error-color);
-      }
-
-      .alert-warning {
-        background-color: rgba(245, 158, 11, 0.1);
-        color: var(--warning-color);
-        border-left: 4px solid var(--warning-color);
-      }
-
-      .alert-info {
-        background-color: rgba(59, 130, 246, 0.1);
-        color: var(--accent-color);
-        border-left: 4px solid var(--accent-color);
-      }
-
-      /* Toast Container */
-      #toastContainer {
-        position: fixed;
-        bottom: 2rem;
-        right: 2rem;
-        z-index: 1050;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
-
-      .toast-notification {
-        display: flex;
-        align-items: center;
-        background-color: var(--card-bg);
-        border-radius: var(--border-radius);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        padding: 1rem;
-        min-width: 300px;
-        max-width: 400px;
-        position: relative;
-        overflow: hidden;
-        animation: slideIn 0.3s forwards;
-      }
-
-      @keyframes slideIn {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-        }
-      }
-
-      @keyframes slideOut {
-        from {
-          transform: translateX(0);
-          opacity: 1;
-        }
-        to {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-      }
-
-      .toast-icon {
-        margin-right: 1rem;
-        font-size: 1.5rem;
-      }
-
-      .toast-notification.success .toast-icon {
-        color: var(--success-color);
-      }
-
-      .toast-notification.error .toast-icon {
-        color: var(--error-color);
-      }
-
-      .toast-notification.info .toast-icon {
-        color: var(--accent-color);
-      }
-
-      .toast-message {
-        flex: 1;
-        color: var(--text-primary);
-      }
-
-      .toast-close {
-        background: transparent;
-        border: none;
-        color: var(--text-light);
-        font-size: 1.25rem;
-        cursor: pointer;
-        margin-left: 1rem;
-        transition: all var(--transition-fast);
-      }
-
-      .toast-close:hover {
-        color: var(--text-primary);
-        transform: rotate(90deg);
-      }
-
-      .toast-progress {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        height: 3px;
-        background: var(--gradient-primary);
-        width: 100%;
-        animation: progress 3s linear forwards;
-      }
-
-      @keyframes progress {
-        from {
-          width: 100%;
-        }
-        to {
-          width: 0%;
-        }
-      }
-
-      /* Confetti Animation for Successful Payment */
-      .confetti {
-        position: fixed;
-        width: 10px;
-        height: 10px;
-        background-color: var(--accent-color);
-        opacity: 0;
-        z-index: 1060;
-        pointer-events: none;
-        animation: confetti-fall 3s linear forwards;
-      }
-
-      @keyframes confetti-fall {
-        0% {
-          transform: translateY(-100vh) rotate(0deg);
-          opacity: 1;
-        }
-        100% {
-          transform: translateY(100vh) rotate(360deg);
-          opacity: 0;
-        }
-      }
-
-      /* Shimmer effect */
-      .shimmer {
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(
-          to right,
-          rgba(255, 255, 255, 0) 0%,
-          rgba(255, 255, 255, 0.1) 50%,
-          rgba(255, 255, 255, 0) 100%
-        );
-        transform: rotate(30deg);
-        animation: shimmer 6s infinite;
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        z-index: 0;
-      }
-
-      .payment-option:hover .shimmer {
-        opacity: 1;
-      }
-
-      @keyframes shimmer {
-        0% {
-          transform: translateX(-100%) rotate(30deg);
-        }
-        100% {
-          transform: translateX(100%) rotate(30deg);
-        }
-      }
-
-      /* Pulse animation for place order button */
-      @keyframes pulse {
-        0% {
-          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
-        }
-        70% {
-          box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-        }
-        100% {
-          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-        }
-      }
-
-      .btn-place-order {
-        animation: pulse 2s infinite;
-      }
-
-      /* Fade in animations */
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .payment-methods-card,
-      .delivery-address-card,
-      .order-summary-card {
-        animation: fadeInUp 0.6s ease-out forwards;
-      }
-
-      /* Staggered animations */
-      .payment-methods-card {
-        animation-delay: 0.1s;
-      }
-
-      .delivery-address-card {
-        animation-delay: 0.2s;
-      }
-
-      .order-summary-card {
-        animation-delay: 0.3s;
-      }
-
-      /* Error message styles */
-      .error-message {
-        color: var(--error-color);
-        font-size: 0.9rem;
-        margin-top: 0.5rem;
-        display: none;
-      }
-
-      /* Modal styles for error messages */
-      .error-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1100;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .error-modal-content {
-        background-color: var(--card-bg);
-        border-radius: var(--border-radius-lg);
-        padding: 2rem;
-        max-width: 500px;
-        width: 90%;
-        box-shadow: var(--card-shadow);
-      }
-
-      .error-modal-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1rem;
-      }
-
-      .error-modal-icon {
-        color: var(--error-color);
-        font-size: 1.5rem;
-        margin-right: 0.75rem;
-      }
-
-      .error-modal-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--text-primary);
-      }
-
-      .error-modal-body {
-        margin-bottom: 1.5rem;
-        color: var(--text-secondary);
-      }
-
-      .error-modal-footer {
-        display: flex;
-        justify-content: flex-end;
-      }
-
-      .error-modal-button {
-        background: var(--gradient-primary);
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: var(--border-radius);
-        font-weight: 500;
-        cursor: pointer;
-        transition: all var(--transition-normal);
-      }
-
-      .error-modal-button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
-      }
-
-      /* Loading overlay */
-      .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1200;
-        display: none;
-      }
-
-      .loading-spinner {
-        width: 80px;
-        height: 80px;
-        border: 5px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        border-top-color: var(--accent-color);
-        animation: spin 1s linear infinite;
-      }
-
-      /* Responsive Styles */
-      @media (max-width: 991.98px) {
-        .checkout-header {
-          font-size: 2rem;
-        }
-
-        .progress-step .step-icon {
-          width: 50px;
-          height: 50px;
-          font-size: 1.25rem;
-        }
-
-        .step-label {
-          font-size: 0.8rem;
-        }
-      }
-
-      @media (max-width: 767.98px) {
-        .checkout-header {
-          font-size: 1.75rem;
-        }
-
-        .progress-step .step-icon {
-          width: 40px;
-          height: 40px;
-          font-size: 1rem;
-        }
-
-        .step-label {
-          font-size: 0.75rem;
-        }
-
-        .dark-mode-toggle {
-          width: 40px;
-          height: 40px;
-          bottom: 1rem;
-          left: 1rem;
-        }
-      }
-
-      @media (max-width: 575.98px) {
-        .checkout-header {
-          font-size: 1.5rem;
-        }
-
-        .checkout-progress {
-          flex-wrap: wrap;
-          justify-content: center;
-          gap: 1rem;
-        }
-
-        .progress-connector {
-          display: none;
-        }
-
-        .progress-step {
-          width: 45%;
-          margin-bottom: 1rem;
-        }
-
-        .payment-option-icon {
-          width: 40px;
-          height: 40px;
-          font-size: 1.25rem;
-        }
-
-        .payment-option label {
-          padding: 1rem;
-        }
-
-        .btn-place-order .btn-text {
-          font-size: 1rem;
-        }
-
-        .btn-place-order .btn-price {
-          padding: 0.4rem 0.75rem;
-          font-size: 0.9rem;
-        }
-      }
-    </style>
   </head>
   <body>
-    <!-- Preloader -->
+
     <div class="preloader">
       <div class="loader"></div>
     </div>
 
-    <!-- Scroll Indicator -->
     <div class="scroll-indicator"></div>
 
-    <!-- Cursor Glow Effect -->
     <div class="cursor-glow"></div>
-
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
+   <div class="loading-overlay" id="loadingOverlay">
       <div class="loading-spinner"></div>
     </div>
 
@@ -1414,7 +117,7 @@
                     id="cod"
                     value="COD"
                     <%= grandTotal > 1000 ? 'disabled' : 'checked' %>
-                  >
+                  />
                   <label for="cod">
                     <div class="payment-option-icon">
                       <i class="fas fa-money-bill-wave"></i>
@@ -1444,7 +147,7 @@
                     id="razorpay"
                     value="Razorpay"
                     <%= grandTotal > 1000 ? 'checked' : '' %>
-                  >
+                  />
                   <label for="razorpay">
                     <div class="payment-option-icon">
                       <i class="fas fa-credit-card"></i>
@@ -1487,13 +190,8 @@
                   id="wallet-option"
                 >
                   <div class="shimmer"></div>
-                  <input 
-                    type="radio" 
-                    name="payment" 
-                    id="wallet" 
-                    value="Wallet"
-                    <%= (walletBalance < grandTotal) ? 'disabled' : '' %>
-                  >
+                  <input type="radio" name="payment" id="wallet" value="Wallet"
+                  <%= (walletBalance < grandTotal) ? 'disabled' : '' %> >
                   <label for="wallet">
                     <div class="payment-option-icon">
                       <i class="fas fa-wallet"></i>
@@ -1508,18 +206,17 @@
                         </span>
                       </div>
                       <div class="payment-option-description">
-                        <% if (walletBalance < grandTotal) { %> 
-                          Insufficient balance. You need ₹<%= (grandTotal - walletBalance).toFixed(2) %> more.
-                          <a href="/wallet" class="add-money-link">Add money</a>
-                          <div
-                            class="error-message"
-                            style="display: block; color: var(--error-color)"
-                          >
-                            Insufficient wallet balance for this order
-                          </div>
-                        <% } else { %> 
-                          Pay using your wallet balance 
-                        <% } %>
+                        <% if (walletBalance < grandTotal) { %> Insufficient
+                        balance. You need ₹<%= (grandTotal -
+                        walletBalance).toFixed(2) %> more.
+                        <a href="/wallet" class="add-money-link">Add money</a>
+                        <div
+                          class="error-message"
+                          style="display: block; color: var(--error-color)"
+                        >
+                          Insufficient wallet balance for this order
+                        </div>
+                        <% } else { %> Pay using your wallet balance <% } %>
                       </div>
                     </div>
                   </label>
@@ -1567,86 +264,79 @@
           >
             <div class="card-header">
               <h5>Order Summary</h5>
-              <span class="badge bg-primary"><%= cartItems.length %> items</span>
+              <span class="badge bg-primary"
+                ><%= cartItems.length %> items</span
+              >
             </div>
 
             <div class="card-body">
               <div class="order-items">
-                <% cartItems.forEach((item, index) => { 
-                  // Safely check if productId exists and is an object
-                  if (item && item.productId && typeof item.productId === 'object') { 
-                    // Safely get variants
-                    const variants = item.productId.variants || []; 
-                    // Find the variant with matching size
-                    const variant = variants.find(v => v && v.size === item.size); 
-                    // Get price safely
-                    const price = variant ? variant.salePrice : (item.price || 0); 
-                    const totalItemPrice = price * item.quantity; 
+                <% cartItems.forEach((item, index) => { %>
+                  <% // Safely check if productId exists and is an object %>
+                  <% if (item && item.productId && typeof item.productId === 'object') { %>
+                    <% // Safely get variants %>
+                    <% const variants = item.productId.variants || []; %>
+                    <% // Find the variant with matching size %>
+                    <% const variant = variants.find(v => v && v.size === item.size); %>
+                    <% // Get price safely %>
+                    <% const price = variant ? variant.salePrice : (item.price || 0); %>
+                    <% const totalItemPrice = price * item.quantity; %>
+                    <% // Check if this item has a discount %>
+                    <% const hasDiscount = item.originalPrice && item.finalPrice && item.originalPrice > item.finalPrice; %>
                     
-                    // Check if this item has a discount
-                    const hasDiscount = item.originalPrice && item.finalPrice && item.originalPrice > item.finalPrice; 
-                %>
-                <div
-                  class="order-item"
-                  data-aos="fade-up"
-                  data-aos-delay="<%= 300 + (index * 50) %>"
-                >
-                  <div class="item-image">
-                    <img
-                      src="<%= item.productId.images && item.productId.images.length > 0 && item.productId.images[0]?.url || '/placeholder.svg?height=70&width=70&query=fashion+product' %>"
-                      alt="<%= item.productId.name || 'Product' %>"
-                      onerror="this.onerror=null; this.src='/placeholder.svg?height=70&width=70&query=fashion+product';"
-                    />
-                  </div>
-                  <div class="item-details">
-                    <div class="item-name">
-                      <%= item.productId.name || 'Product' %>
-                    </div>
-                    <div class="item-meta">
-                      <span>Size: <%= item.size || 'N/A' %></span>
-                      <span>Qty: <%= item.quantity || 1 %></span>
-                    </div>
-                  </div>
+                    <div class="order-item" data-aos="fade-up" data-aos-delay="<%= 300 + (index * 50) %>">
+                      <div class="item-image">
+                        <img
+                          src="<%= item.productId.images && item.productId.images.length > 0 && item.productId.images[0]?.url || '/placeholder.svg?height=70&width=70&query=fashion+product' %>"
+                          alt="<%= item.productId.name || 'Product' %>"
+                          onerror="this.onerror=null; this.src='/placeholder.svg?height=70&width=70&query=fashion+product';"
+                        />
+                      </div>
+                      <div class="item-details">
+                        <div class="item-name">
+                          <%= item.productId.name || 'Product' %>
+                        </div>
+                        <div class="item-meta">
+                          <span>Size: <%= item.size || 'N/A' %></span>
+                          <span>Qty: <%= item.quantity || 1 %></span>
+                        </div>
+                      </div>
 
-                  <% if (hasDiscount) { %>
-                  <div class="item-price-container">
-                    <span class="item-original-price">₹<%= (item.originalPrice * item.quantity).toFixed(2) %></span>
-                    <span class="item-price">₹<%= (item.finalPrice * item.quantity).toFixed(2) %></span>
-                    <span class="item-discount-badge">-<%= ((item.originalPrice - item.finalPrice) / item.originalPrice * 100).toFixed(0) %>%</span>
-                  </div>
-                  <% } else { %>
-                  <div class="item-price">
-                    ₹<%= totalItemPrice.toFixed(2) %>
-                  </div>
-                  <% } %>
-                </div>
-                <% } else { 
-                  // Handle case where productId is not properly populated
-                  const fallbackPrice = item.price || 0; 
-                  const fallbackQuantity = item.quantity || 1; 
-                  const fallbackTotal = fallbackPrice * fallbackQuantity; 
-                %>
-                <div
-                  class="order-item"
-                  data-aos="fade-up"
-                  data-aos-delay="<%= 300 + (index * 50) %>"
-                >
-                  <div class="item-image">
-                    <img
-                      src="/placeholder.svg?height=70&width=70&query=fashion+product"
-                      alt="Product"
-                    />
-                  </div>
-                  <div class="item-details">
-                    <div class="item-name"><%= item.name || 'Product' %></div>
-                    <div class="item-meta">
-                      <span>Size: <%= item.size || 'N/A' %></span>
-                      <span>Qty: <%= item.quantity || 1 %></span>
+                      <% if (hasDiscount) { %>
+                      <div class="item-price-container">
+                        <span class="item-original-price">₹<%= (item.originalPrice * item.quantity).toFixed(2) %></span>
+                        <span class="item-price">₹<%= (item.finalPrice * item.quantity).toFixed(2) %></span>
+                        <span class="item-discount-badge">-<%= ((item.originalPrice - item.finalPrice) / item.originalPrice * 100).toFixed(0) %>%</span>
+                      </div>
+                      <% } else { %>
+                      <div class="item-price">
+                        ₹<%= totalItemPrice.toFixed(2) %>
+                      </div>
+                      <% } %>
                     </div>
-                  </div>
-                  <div class="item-price">₹<%= fallbackTotal.toFixed(2) %></div>
-                </div>
-                <% } %>
+                  <% } else { %>
+                    <% // Handle case where productId is not properly populated %>
+                    <% const fallbackPrice = item.price || 0; %>
+                    <% const fallbackQuantity = item.quantity || 1; %>
+                    <% const fallbackTotal = fallbackPrice * fallbackQuantity; %>
+                    
+                    <div class="order-item" data-aos="fade-up" data-aos-delay="<%= 300 + (index * 50) %>">
+                      <div class="item-image">
+                        <img
+                          src="/placeholder.svg?height=70&width=70&query=fashion+product"
+                          alt="Product"
+                        />
+                      </div>
+                      <div class="item-details">
+                        <div class="item-name"><%= item.name || 'Product' %></div>
+                        <div class="item-meta">
+                          <span>Size: <%= item.size || 'N/A' %></span>
+                          <span>Qty: <%= item.quantity || 1 %></span>
+                        </div>
+                      </div>
+                      <div class="item-price">₹<%= fallbackTotal.toFixed(2) %></div>
+                    </div>
+                  <% } %>
                 <% }); %>
               </div>
 
@@ -1661,12 +351,18 @@
                 </div>
                 <div class="price-row">
                   <span>Delivery</span>
-                  <span><%= deliveryCharge === 0 ? 'FREE' : '₹' + deliveryCharge.toFixed(2) %></span>
+                  <span
+                    ><%= deliveryCharge === 0 ? 'FREE' : '₹' +
+                    deliveryCharge.toFixed(2) %></span
+                  >
                 </div>
 
                 <% if (discount > 0 && appliedCoupon) { %>
                 <div class="price-row discount">
-                  <span>Discount (<%= appliedCoupon.code || appliedCoupon.coupencode %>)</span>
+                  <span
+                    >Discount (<%= appliedCoupon.code ||
+                    appliedCoupon.coupencode %>)</span
+                  >
                   <span>-₹<%= discount.toFixed(2) %></span>
                 </div>
                 <% } %>
@@ -1695,26 +391,6 @@
 
     <!-- Toast Container -->
     <div id="toastContainer"></div>
-
-    <!-- Error Modal -->
-    <div class="error-modal" id="errorModal">
-      <div class="error-modal-content">
-        <div class="error-modal-header">
-          <div class="error-modal-icon">
-            <i class="fas fa-exclamation-circle"></i>
-          </div>
-          <div class="error-modal-title">Payment Error</div>
-        </div>
-        <div class="error-modal-body" id="errorModalMessage">
-          An error occurred during payment processing.
-        </div>
-        <div class="error-modal-footer">
-          <button class="error-modal-button" onclick="closeErrorModal()">
-            OK
-          </button>
-        </div>
-      </div>
-    </div>
 
     <%- include("../partials/user/footer") %>
 
@@ -1953,21 +629,6 @@
         alertDiv.scrollIntoView({ behavior: "smooth", block: "start" });
       }
 
-      // Show error modal
-      function showErrorModal(message) {
-        const errorModal = document.getElementById('errorModal');
-        const errorMessage = document.getElementById('errorModalMessage');
-
-        errorMessage.textContent = message;
-        errorModal.style.display = 'flex';
-      }
-
-      // Close error modal
-      function closeErrorModal() {
-        const errorModal = document.getElementById('errorModal');
-        errorModal.style.display = 'none';
-      }
-
       // Show loading overlay
       function showLoading() {
         document.getElementById('loadingOverlay').style.display = 'flex';
@@ -2027,33 +688,33 @@
 
       // Handle payment process
       async function handlePayment() {
-        const selectedPaymentOption = document.querySelector('input[name="payment"]:checked');
-
-        if (!selectedPaymentOption) {
-          showAlert('warning', 'Please select a payment method');
-          return;
-        }
-
-        const paymentMethod = selectedPaymentOption.value;
-        const couponCode = "<%= appliedCoupon ? (appliedCoupon.code || appliedCoupon.coupencode) : '' %>";
-        const placeOrderBtn = document.getElementById('placeOrderBtn');
-
-        // Check for payment restrictions
-        if (paymentMethod === 'COD' && <%= grandTotal %> > 1000) {
-          showErrorModal('Cash on Delivery is not available for orders above ₹1,000. Please choose another payment method.');
-          return;
-        }
-
-        if (paymentMethod === 'Wallet' && <%= walletBalance %> < <%= grandTotal %>) {
-          showErrorModal(`Insufficient wallet balance. Available: ₹${<%= walletBalance.toFixed(2) %>}, Required: ₹${<%= grandTotal.toFixed(2) %>}`);
-          return;
-        }
-
-        // Disable button and show loading state
-        placeOrderBtn.disabled = true;
-        placeOrderBtn.innerHTML = '<span class="spinner"></span> Processing...';
-
         try {
+          const selectedPaymentOption = document.querySelector('input[name="payment"]:checked');
+
+          if (!selectedPaymentOption) {
+            showAlert('warning', 'Please select a payment method');
+            return;
+          }
+
+          const paymentMethod = selectedPaymentOption.value;
+          const couponCode = "<%= appliedCoupon ? (appliedCoupon.code || appliedCoupon.coupencode) : '' %>";
+          const placeOrderBtn = document.getElementById('placeOrderBtn');
+
+          // Check for payment restrictions
+          if (paymentMethod === 'COD' && <%= grandTotal %> > 1000) {
+            window.location.href = `/order-failed?message=${encodeURIComponent('Cash on Delivery is not available for orders above ₹1,000. Please choose another payment method.')}`;
+            return;
+          }
+
+          if (paymentMethod === 'Wallet' && <%= walletBalance %> < <%= grandTotal %>) {
+            window.location.href = `/order-failed?message=${encodeURIComponent(`Insufficient wallet balance. Available: ₹${<%= walletBalance.toFixed(2) %>}, Required: ₹${<%= grandTotal.toFixed(2) %>}`)}`;
+            return;
+          }
+
+          // Disable button and show loading state
+          placeOrderBtn.disabled = true;
+          placeOrderBtn.innerHTML = '<span class="spinner"></span> Processing...';
+
           if (paymentMethod === 'Razorpay') {
             // Handle Razorpay payment
             showLoading();
@@ -2115,11 +776,7 @@
             // Open Razorpay checkout
             razorpay.on('payment.failed', function(response) {
               console.error('Payment failed:', response.error);
-              showErrorModal(`Payment failed: ${response.error.description || 'Please try again'}`);
-
-              // Re-enable button
-              placeOrderBtn.disabled = false;
-              placeOrderBtn.innerHTML = '<span class="btn-text">Place Order</span><span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>';
+              window.location.href = `/order-failed?message=${encodeURIComponent(response.error.description || 'Please try again')}`;
             });
 
             razorpay.open();
@@ -2144,7 +801,8 @@
 
             if (!response.ok) {
               const errorData = await response.json();
-              throw new Error(errorData.message || 'Wallet payment failed');
+              window.location.href = `/order-failed?message=${encodeURIComponent(errorData.message || 'Wallet payment failed')}`;
+              return;
             }
 
             const data = await response.json();
@@ -2154,10 +812,10 @@
               createConfetti();
               showToast('Payment successful! Redirecting to order confirmation...', 'success', 3000);
               setTimeout(() => {
-                window.location.href = data.redirect || '/order-success';
+                window.location.href = data.redirect;
               }, 3000);
             } else {
-              throw new Error(data.message || 'Wallet payment failed');
+              window.location.href = `/order-failed?message=${encodeURIComponent(data.message || 'Wallet payment failed')}`;
             }
 
           } else if (paymentMethod === 'COD') {
@@ -2180,7 +838,8 @@
 
             if (!response.ok) {
               const errorData = await response.json();
-              throw new Error(errorData.message || 'Failed to place COD order');
+              window.location.href = `/order-failed?message=${encodeURIComponent(errorData.message || 'Failed to place COD order')}`;
+              return;
             }
 
             const data = await response.json();
@@ -2190,19 +849,22 @@
               createConfetti();
               showToast('Order placed successfully! Redirecting to order confirmation...', 'success', 3000);
               setTimeout(() => {
-                window.location.href = data.redirect || '/order-success';
+                window.location.href = data.redirect;
               }, 3000);
             } else {
-              throw new Error(data.message || 'Failed to place COD order');
+              window.location.href = `/order-failed?message=${encodeURIComponent(data.message || 'Failed to place COD order')}`;
             }
           }
         } catch (error) {
           console.error('Payment error:', error);
-          showErrorModal(`Payment failed: ${error.message || 'Unknown error occurred'}`);
-
+          window.location.href = `/order-failed?message=${encodeURIComponent(error.message || 'Unknown error occurred')}`;
+          
           // Re-enable button
-          placeOrderBtn.disabled = false;
-          placeOrderBtn.innerHTML = '<span class="btn-text">Place Order</span><span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>';
+          const placeOrderBtn = document.getElementById('placeOrderBtn');
+          if (placeOrderBtn) {
+            placeOrderBtn.disabled = false;
+            placeOrderBtn.innerHTML = '<span class="btn-text">Place Order</span><span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>';
+          }
         }
       }
 
@@ -2227,7 +889,8 @@
 
           if (!verifyResponse.ok) {
             const errorData = await verifyResponse.json();
-            throw new Error(errorData.message || 'Payment verification failed');
+            window.location.href = `/order-failed?message=${encodeURIComponent(errorData.message || 'Payment verification failed')}`;
+            return;
           }
 
           const data = await verifyResponse.json();
@@ -2239,19 +902,14 @@
 
             // Redirect to success page
             setTimeout(() => {
-              window.location.href = data.redirect || '/order-success';
+              window.location.href = data.redirect;
             }, 3000);
           } else {
-            throw new Error(data.message || 'Payment verification failed');
+            window.location.href = `/order-failed?message=${encodeURIComponent(data.message || 'Payment verification failed')}`;
           }
         } catch (error) {
           console.error('Payment verification error:', error);
-          showErrorModal(`Payment verification failed: ${error.message || 'Unknown error occurred'}`);
-
-          // Re-enable button
-          const placeOrderBtn = document.getElementById('placeOrderBtn');
-          placeOrderBtn.disabled = false;
-          placeOrderBtn.innerHTML = '<span class="btn-text">Place Order</span><span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>';
+          window.location.href = `/order-failed?message=${encodeURIComponent(error.message || 'Unknown error occurred')}`;
         }
       }
     </script>

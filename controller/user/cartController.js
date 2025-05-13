@@ -200,7 +200,7 @@ const addToCart = async (req, res) => {
         });
       }
 
-      // Calculate total quantity of this productId across all variations
+     
       const totalProductQuantity = userCart.items.reduce((total, item) => {
         return item.productId.toString() === productId 
           ? total + item.quantity 
@@ -217,7 +217,7 @@ const addToCart = async (req, res) => {
       if (itemIndex > -1) {
         const newQuantity = userCart.items[itemIndex].quantity + parsedQuantity;
         
-        // Check combined quantity against 10 item limit
+    
         const otherVariantsQuantity = totalProductQuantity - userCart.items[itemIndex].quantity;
         if (otherVariantsQuantity + newQuantity > 10) {
           return res.status(400).json({
@@ -240,7 +240,7 @@ const addToCart = async (req, res) => {
         }
         userCart.items[itemIndex].quantity = newQuantity;
       } else {
-        // For new variant, check if adding this quantity would exceed 10 item limit
+       
         if (totalProductQuantity + parsedQuantity > 10) {
           return res.status(400).json({
             success: false,

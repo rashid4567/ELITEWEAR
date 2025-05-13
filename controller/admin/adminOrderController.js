@@ -11,7 +11,6 @@ const path = require("path");
 const { processRefundToWallet } = require("../user/walletController");
 const logger = require("../../utils/logger");
 
-
 const updateOrderStatusHelper = async (orderId) => {
   try {
     logger.info(`Updating order status for orderId: ${orderId}`);
@@ -21,14 +20,12 @@ const updateOrderStatusHelper = async (orderId) => {
       return null;
     }
 
-   
     const orderItems = await OrderItem.find({ orderId: order._id });
 
     if (orderItems.length === 0) {
       logger.error(`No order items found for order: ${orderId}`);
       return null;
     }
-
 
     const statusCounts = {};
     for (const item of orderItems) {
@@ -38,17 +35,13 @@ const updateOrderStatusHelper = async (orderId) => {
     logger.info(`Status counts for order ${orderId}:`, statusCounts);
     const totalItems = orderItems.length;
 
-
     let newStatus = order.status;
 
-    
     const allSameStatus = Object.keys(statusCounts).length === 1;
     if (allSameStatus) {
       newStatus = Object.keys(statusCounts)[0];
       logger.info(`All items have same status: ${newStatus}`);
-    }
-
-    else if (
+    } else if (
       statusCounts["Cancelled"] &&
       statusCounts["Cancelled"] < totalItems
     ) {
@@ -56,9 +49,7 @@ const updateOrderStatusHelper = async (orderId) => {
       logger.info(
         `Some items cancelled: ${statusCounts["Cancelled"]}/${totalItems}`
       );
-    }
-  
-    else if (
+    } else if (
       (statusCounts["Returned"] ||
         statusCounts["Return Requested"] ||
         statusCounts["Return Approved"]) &&
@@ -69,26 +60,19 @@ const updateOrderStatusHelper = async (orderId) => {
     ) {
       newStatus = "Partially Returned";
       logger.info(`Some items in return process`);
-    }
- 
-    else if (Object.keys(statusCounts).length > 1) {
-     
+    } else if (Object.keys(statusCounts).length > 1) {
       if (statusCounts["Delivered"]) {
         newStatus = "Partially Delivered";
         logger.info(`Some items delivered, others in different states`);
-      }
-   
-      else if (statusCounts["Shipped"]) {
+      } else if (statusCounts["Shipped"]) {
         newStatus = "Partially Shipped";
         logger.info(`Some items shipped, others in different states`);
       }
     }
 
-    
     if (newStatus !== order.status) {
       logger.info(`Updating order status from ${order.status} to ${newStatus}`);
       order.status = newStatus;
-
 
       if (!Array.isArray(order.statusHistory)) {
         order.statusHistory = [];
@@ -206,12 +190,10 @@ const getorderController = async (req, res) => {
   }
 };
 
-
 const updateOrderStatus = async (req, res) => {
   try {
     const { orderId, status } = req.body;
 
-    
     const validStatuses = [
       "Pending",
       "Processing",
@@ -253,7 +235,6 @@ const updateOrderStatus = async (req, res) => {
         .json({ success: false, message: "Order not found" });
     }
 
-
     const finalStates = ["Cancelled", "Returned"];
     if (finalStates.includes(order.status)) {
       return res.status(400).json({
@@ -264,18 +245,32 @@ const updateOrderStatus = async (req, res) => {
     }
 
     const progressionStates = ["Pending", "Processing", "Confirmed", "Shipped"];
-    if (order.status === "Delivered" && progressionStates.includes(status)) {
+    const advancedStates = [
+      "Delivered",
+      "Cancelled",
+      "Return Requested",
+      "Return Approved",
+      "Returned",
+      "Return Rejected",
+      "Partially Cancelled",
+      "Partially Returned",
+      "Partially Delivered",
+      "Partially Shipped",
+    ];
+
+    if (
+      advancedStates.includes(order.status) &&
+      progressionStates.includes(status)
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Cannot change a delivered order back to an earlier status.",
-        isDelivered: true,
+        message: `Cannot change order from ${order.status} back to ${status}. Moving to earlier status not allowed.`,
+        isAdvancedState: true,
       });
     }
 
-
     if (status !== order.status) {
       order.status = status;
-
 
       if (!Array.isArray(order.statusHistory)) {
         order.statusHistory = [];
@@ -289,14 +284,27 @@ const updateOrderStatus = async (req, res) => {
 
       if (status === "Delivered" && !order.deliveryDate) {
         order.deliveryDate = new Date();
+
+        if (
+          order.paymentMethod === "COD" &&
+          order.paymentStatus !== "Completed"
+        ) {
+          order.paymentStatus = "Completed";
+          order.statusHistory.push({
+            status: "Payment Completed",
+            date: new Date(),
+            note: "Payment status automatically updated to Completed for delivered COD order",
+          });
+          logger.info(
+            `Payment status for COD order ${orderId} automatically marked as Completed`
+          );
+        }
       }
 
       await order.save();
 
-
       if (!status.startsWith("Partially")) {
         const orderItems = await OrderItem.find({ orderId: order._id });
-
 
         const nonFinalStatuses = [
           "Pending",
@@ -310,16 +318,14 @@ const updateOrderStatus = async (req, res) => {
         let skippedCount = 0;
 
         for (const item of orderItems) {
-
           if (finalStates.includes(item.status)) {
             logger.info(
               `Skipping item ${item._id} as it's in final state: ${item.status}`
             );
             skippedCount++;
-            continue; 
+            continue;
           }
 
-          
           if (
             item.status === "Delivered" &&
             progressionStates.includes(status)
@@ -331,7 +337,6 @@ const updateOrderStatus = async (req, res) => {
             continue;
           }
 
-          
           if (
             status !== "Cancelled" &&
             !nonFinalStatuses.includes(item.status) &&
@@ -345,7 +350,6 @@ const updateOrderStatus = async (req, res) => {
           }
 
           try {
-         
             item.status = status;
             item.updatedAt = new Date();
             item.statusHistory.push({
@@ -358,7 +362,6 @@ const updateOrderStatus = async (req, res) => {
             updatedCount++;
           } catch (itemError) {
             logger.error(`Error updating item ${item._id} status:`, itemError);
-           
           }
         }
 
@@ -377,11 +380,9 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
-
 const updateOrderItemStatus = async (req, res) => {
   try {
     const { orderItemId, status } = req.body;
-
 
     const validStatuses = [
       "Pending",
@@ -403,7 +404,6 @@ const updateOrderItemStatus = async (req, res) => {
       });
     }
 
-
     const orderItem = await OrderItem.findById(orderItemId);
     if (!orderItem) {
       return res.status(404).json({
@@ -421,19 +421,27 @@ const updateOrderItemStatus = async (req, res) => {
       });
     }
 
-
     const progressionStates = ["Pending", "Processing", "Confirmed", "Shipped"];
+    const advancedStates = [
+      "Delivered",
+      "Cancelled",
+      "Return Requested",
+      "Return Approved",
+      "Returned",
+      "Return Rejected",
+    ];
+
+    // Check if trying to move from an advanced state back to a basic progression state
     if (
-      orderItem.status === "Delivered" &&
+      advancedStates.includes(orderItem.status) &&
       progressionStates.includes(status)
     ) {
       return res.status(400).json({
         success: false,
-        message: "Cannot change a delivered item back to an earlier status.",
-        isDelivered: true,
+        message: `Cannot change item from ${orderItem.status} back to ${status}. Moving to earlier status not allowed.`,
+        isAdvancedState: true,
       });
     }
-
 
     orderItem.status = status;
     orderItem.updatedAt = new Date();
@@ -446,6 +454,36 @@ const updateOrderItemStatus = async (req, res) => {
     await orderItem.save();
 
     await updateOrderStatusHelper(orderItem.orderId);
+
+    if (status === "Delivered") {
+      const order = await Order.findById(orderItem.orderId);
+
+      if (
+        order &&
+        order.paymentMethod === "COD" &&
+        order.paymentStatus !== "Completed"
+      ) {
+        const allOrderItems = await OrderItem.find({ orderId: order._id });
+        const allDelivered = allOrderItems.every(
+          (item) =>
+            item.status === "Delivered" || finalStates.includes(item.status)
+        );
+
+        if (allDelivered) {
+          order.paymentStatus = "Completed";
+          order.statusHistory.push({
+            status: "Payment Completed",
+            date: new Date(),
+            note: "Payment status automatically updated to Completed as all COD items are delivered",
+          });
+
+          await order.save();
+          logger.info(
+            `Payment status for COD order ${order._id} automatically marked as Completed after all items delivered`
+          );
+        }
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -460,7 +498,6 @@ const updateOrderItemStatus = async (req, res) => {
   }
 };
 
-
 const canUpdateOrderItem = async (orderItemId) => {
   try {
     const orderItem = await OrderItem.findById(orderItemId);
@@ -468,7 +505,6 @@ const canUpdateOrderItem = async (orderItemId) => {
       return { canUpdate: false, message: "Order item not found" };
     }
 
-  
     const finalStates = ["Cancelled", "Returned"];
     if (finalStates.includes(orderItem.status)) {
       return {
@@ -488,14 +524,12 @@ const canUpdateOrderItem = async (orderItemId) => {
   }
 };
 
-
 const canUpdateOrder = async (orderId) => {
   try {
     const order = await Order.findById(orderId);
     if (!order) {
       return { canUpdate: false, message: "Order not found" };
     }
-
 
     const finalStates = ["Cancelled", "Returned"];
     if (finalStates.includes(order.status)) {
@@ -513,7 +547,6 @@ const canUpdateOrder = async (orderId) => {
     return { canUpdate: false, message: "Error checking order status" };
   }
 };
-
 
 const checkItemUpdateability = async (req, res) => {
   try {
@@ -543,7 +576,6 @@ const checkItemUpdateability = async (req, res) => {
     });
   }
 };
-
 
 const checkOrderUpdateability = async (req, res) => {
   try {
@@ -602,14 +634,12 @@ const getOrderDetails = async (req, res) => {
       return res.status(404).render("page-404", { message: "Order not found" });
     }
 
-  
     const orderItems = await OrderItem.find({ orderId: order._id })
       .populate({
         path: "productId",
         select: "name images variants",
       })
       .lean();
-
 
     const formattedItems = orderItems.map((item) => {
       return {
@@ -636,7 +666,7 @@ const getOrderDetails = async (req, res) => {
         cancelReason: item.cancelReason || "",
         returnReason: item.returnReason || "",
         productId: item.productId ? item.productId._id : null,
-       
+
         canModify: !["Cancelled", "Returned"].includes(item.status),
         isDelivered: item.status === "Delivered",
       };
@@ -677,11 +707,9 @@ const getOrderDetails = async (req, res) => {
   }
 };
 
-
 const approveReturnItem = async (req, res) => {
   try {
     const { orderItemId } = req.params;
-
 
     const orderItem = await OrderItem.findById(orderItemId).populate("orderId");
 
@@ -691,14 +719,12 @@ const approveReturnItem = async (req, res) => {
         .json({ success: false, message: "Order item not found" });
     }
 
-   
     if (orderItem.status !== "Return Requested") {
       return res.status(400).json({
         success: false,
         message: "This item is not pending return approval",
       });
     }
-
 
     orderItem.status = "Return Approved";
     orderItem.returnApprovedDate = new Date();
@@ -709,7 +735,6 @@ const approveReturnItem = async (req, res) => {
       note: "Return request approved by admin",
     });
     await orderItem.save();
-
 
     await updateOrderStatusHelper(orderItem.orderId._id);
 
@@ -725,7 +750,6 @@ const approveReturnItem = async (req, res) => {
   }
 };
 
-
 const completeReturnItem = async (req, res) => {
   try {
     logger.info(
@@ -733,7 +757,6 @@ const completeReturnItem = async (req, res) => {
     );
     const { orderItemId } = req.params;
 
-  
     const orderItem = await OrderItem.findById(orderItemId)
       .populate("orderId")
       .populate({
@@ -748,7 +771,6 @@ const completeReturnItem = async (req, res) => {
         .json({ success: false, message: "Order item not found" });
     }
 
-   
     if (orderItem.status !== "Return Approved") {
       logger.error(
         `Item not in Return Approved status. Current status: ${orderItem.status}`
@@ -759,7 +781,6 @@ const completeReturnItem = async (req, res) => {
       });
     }
 
-   
     if (orderItem.refunded) {
       logger.error(`Item already refunded: ${orderItemId}`);
       return res.status(400).json({
@@ -779,7 +800,6 @@ const completeReturnItem = async (req, res) => {
       });
     }
 
-   
     orderItem.status = "Returned";
     orderItem.returnCompletedDate = new Date();
     orderItem.updatedAt = new Date();
@@ -791,7 +811,6 @@ const completeReturnItem = async (req, res) => {
     await orderItem.save();
     logger.info(`Order item status updated to Returned`);
 
-  
     const product = await Product.findById(orderItem.productId);
     if (product) {
       const variantIndex = product.variants.findIndex(
@@ -810,7 +829,6 @@ const completeReturnItem = async (req, res) => {
     } else {
       logger.error(`Product not found: ${orderItem.productId}`);
     }
-
 
     let refundAmount = 0;
     if (
@@ -837,7 +855,6 @@ const completeReturnItem = async (req, res) => {
     logger.info(`Calculated refund amount: ${refundAmount}`);
 
     try {
-   
       const refundResult = await processRefundToWallet(
         userId,
         refundAmount,
@@ -855,7 +872,6 @@ const completeReturnItem = async (req, res) => {
 
       logger.info(`Refund processed successfully:`, refundResult);
 
-   
       orderItem.refunded = true;
       orderItem.refundAmount = refundAmount;
       orderItem.refundDate = new Date();
@@ -863,10 +879,8 @@ const completeReturnItem = async (req, res) => {
       await orderItem.save();
       logger.info(`Item marked as refunded`);
 
-    
       await updateOrderStatusHelper(order._id);
       logger.info(`Parent order status updated`);
-
 
       const user = await User.findById(userId);
       const userName = user ? user.fullname : "Customer";
@@ -894,7 +908,6 @@ const completeReturnItem = async (req, res) => {
   }
 };
 
-
 const rejectReturnItem = async (req, res) => {
   try {
     const { orderItemId } = req.params;
@@ -906,7 +919,6 @@ const rejectReturnItem = async (req, res) => {
         .json({ success: false, message: "Rejection reason is required" });
     }
 
-
     const orderItem = await OrderItem.findById(orderItemId).populate("orderId");
 
     if (!orderItem) {
@@ -915,7 +927,6 @@ const rejectReturnItem = async (req, res) => {
         .json({ success: false, message: "Order item not found" });
     }
 
-
     if (orderItem.status !== "Return Requested") {
       return res.status(400).json({
         success: false,
@@ -923,7 +934,6 @@ const rejectReturnItem = async (req, res) => {
       });
     }
 
-   
     orderItem.status = "Return Rejected";
     orderItem.rejectReason = rejectReason;
     orderItem.updatedAt = new Date();
@@ -934,7 +944,6 @@ const rejectReturnItem = async (req, res) => {
     });
     await orderItem.save();
 
-   
     await updateOrderStatusHelper(orderItem.orderId._id);
 
     return res.status(200).json({
@@ -1013,7 +1022,6 @@ const manageReturn = async (req, res) => {
         });
       }
 
-    
       if (!order.order_items || order.order_items.length === 0) {
         logger.error(
           `manageReturn: No valid order items found for order ID: ${orderId}`
@@ -1061,7 +1069,6 @@ const manageReturn = async (req, res) => {
         }
       }
 
-   
       const updatedOrder = await Order.findByIdAndUpdate(
         orderId,
         { status: "Return Approved" },
@@ -1086,7 +1093,7 @@ const manageReturn = async (req, res) => {
             `manageReturn: Refund processing failed:`,
             refundResult.message
           );
-  
+
           await Order.findByIdAndUpdate(orderId, {
             status: "Return Requested",
           });
@@ -1132,7 +1139,6 @@ const manageReturn = async (req, res) => {
         });
       }
 
-
       const updatedOrder = await Order.findByIdAndUpdate(
         orderId,
         { status: "Return Rejected", returnRejectionReason: rejectionReason },
@@ -1168,7 +1174,6 @@ const manageReturn = async (req, res) => {
   }
 };
 
-
 const processRefund = async (order) => {
   try {
     logger.info(`processRefund called for order: ${order._id}`);
@@ -1182,7 +1187,6 @@ const processRefund = async (order) => {
     let processedItems = 0;
     let skippedItems = 0;
 
- 
     logger.info(`Order items details:`);
     for (const item of order.order_items) {
       logger.info(`Item ${item._id} details:`, {
@@ -1195,20 +1199,17 @@ const processRefund = async (order) => {
     }
 
     for (const item of order.order_items) {
-
       if (item.refunded) {
         logger.info(`Skipping already refunded item: ${item._id}`);
         skippedItems++;
         continue;
       }
 
-
       if (!item.productId) {
         logger.warn(
           `Item ${item._id} has undefined productId, attempting to find product by name`
         );
 
-       
         if (item.product_name) {
           const product = await Product.findOne({ name: item.product_name });
           if (product) {
@@ -1236,7 +1237,6 @@ const processRefund = async (order) => {
         continue;
       }
 
- 
       const quantity = Number(item.quantity);
       if (isNaN(quantity) || quantity <= 0) {
         logger.warn(
@@ -1245,7 +1245,6 @@ const processRefund = async (order) => {
         skippedItems++;
         continue;
       }
-
 
       if (!item.size) {
         logger.warn(
@@ -1263,7 +1262,6 @@ const processRefund = async (order) => {
         continue;
       }
 
-     
       let variantIndex = product.variants.findIndex(
         (v) => v.size === item.size
       );
@@ -1285,7 +1283,6 @@ const processRefund = async (order) => {
         }
       }
 
-     
       logger.info(
         `Restoring stock for product: ${product.name}, size: ${item.size}, quantity: ${quantity}`
       );
@@ -1293,9 +1290,7 @@ const processRefund = async (order) => {
       await product.save();
       logger.info(`Stock restored successfully`);
 
-
       let itemRefundAmount = 0;
-
 
       if (
         typeof item.total_amount === "number" &&
@@ -1304,9 +1299,7 @@ const processRefund = async (order) => {
       ) {
         itemRefundAmount = item.total_amount;
         logger.info(`Using item.total_amount for refund: ${itemRefundAmount}`);
-      }
- 
-      else if (
+      } else if (
         typeof item.price === "number" &&
         !isNaN(item.price) &&
         item.price > 0 &&
@@ -1316,9 +1309,7 @@ const processRefund = async (order) => {
         logger.info(
           `Calculated refund from price * quantity: ${item.price} * ${quantity} = ${itemRefundAmount}`
         );
-      }
-   
-      else if (product.price && !isNaN(product.price) && product.price > 0) {
+      } else if (product.price && !isNaN(product.price) && product.price > 0) {
         itemRefundAmount = product.price * quantity;
         logger.info(
           `Using product price as fallback: ${product.price} * ${quantity} = ${itemRefundAmount}`
@@ -1339,7 +1330,6 @@ const processRefund = async (order) => {
       }
     }
 
-   
     if (processedItems === 0) {
       if (
         typeof order.total === "number" &&
@@ -1367,7 +1357,6 @@ const processRefund = async (order) => {
       `Final refund amount: ${totalRefundAmount} (Processed: ${processedItems}, Skipped: ${skippedItems})`
     );
 
-
     const userId = order.userId;
     const refundResult = await processRefundToWallet(
       userId,
@@ -1382,9 +1371,7 @@ const processRefund = async (order) => {
 
     logger.info(`Refund processed successfully:`, refundResult);
 
-
     for (const item of order.order_items) {
-
       if (item.refunded) {
         continue;
       }
@@ -1396,7 +1383,6 @@ const processRefund = async (order) => {
         );
         continue;
       }
-
 
       let itemRefundAmount = 0;
       if (
@@ -1415,7 +1401,6 @@ const processRefund = async (order) => {
       ) {
         itemRefundAmount = item.price * item.quantity;
       } else {
-       
         const totalItems = order.order_items.length;
         if (totalItems > 0) {
           itemRefundAmount = totalRefundAmount / totalItems;
@@ -1425,7 +1410,6 @@ const processRefund = async (order) => {
         }
       }
 
-      
       if (itemRefundAmount > 0) {
         orderItem.refunded = true;
         orderItem.refundAmount = itemRefundAmount;
@@ -1494,37 +1478,37 @@ const admindownloadInvoice = async (req, res) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
- 
     const formatDate = (date) => {
       if (!date) return "N/A";
       return new Date(date).toLocaleDateString("en-US", {
         year: "numeric",
         month: "long",
-        day: "numeric"
+        day: "numeric",
       });
     };
 
-
     let subtotal = 0;
-    order.order_items.forEach(item => {
+    order.order_items.forEach((item) => {
       subtotal += (item.price || 0) * (item.quantity || 1);
     });
-    
+
     const grandTotal = subtotal;
     const invoiceNumber = `ORD${order.orderNumber || order._id}`;
     const currentDate = formatDate(new Date());
     const dueDate = formatDate(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
-    
-    
+
     const customerAddress = order.address || {};
     const addressLines = [
       customerAddress.fullname || "Customer Name",
       customerAddress.address || "Street Address",
-      `${customerAddress.city || "City"}, ${customerAddress.district || "District"}`,
-      `${customerAddress.state || "State"} - ${customerAddress.pincode || "Pincode"}`,
-      customerAddress.mobile || ""
-    ].filter(line => line);
-
+      `${customerAddress.city || "City"}, ${
+        customerAddress.district || "District"
+      }`,
+      `${customerAddress.state || "State"} - ${
+        customerAddress.pincode || "Pincode"
+      }`,
+      customerAddress.mobile || "",
+    ].filter((line) => line);
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -1873,11 +1857,11 @@ const admindownloadInvoice = async (req, res) => {
                 </div>
                 <div class="row">
                   <div class="label">Status:</div>
-                  <div class="value">${order.status || 'Processing'}</div>
+                  <div class="value">${order.status || "Processing"}</div>
                 </div>
                 <div class="row">
                   <div class="label">Payment:</div>
-                  <div class="value">${order.paymentStatus || 'Pending'}</div>
+                  <div class="value">${order.paymentStatus || "Pending"}</div>
                 </div>
               </div>
             </div>
@@ -1886,7 +1870,7 @@ const admindownloadInvoice = async (req, res) => {
           <div class="customer-section">
             <div class="section-title">Bill To</div>
             <div class="customer-details">
-              ${addressLines.map(line => `<p>${line}</p>`).join('')}
+              ${addressLines.map((line) => `<p>${line}</p>`).join("")}
             </div>
           </div>
           
@@ -1900,17 +1884,21 @@ const admindownloadInvoice = async (req, res) => {
               </tr>
             </thead>
             <tbody>
-              ${order.order_items.map(item => {
-                const itemTotal = (item.price || 0) * (item.quantity || 1);
-                return `
+              ${order.order_items
+                .map((item) => {
+                  const itemTotal = (item.price || 0) * (item.quantity || 1);
+                  return `
                   <tr>
-                    <td>${item.productId?.name || 'Unknown Product'} (Size: ${item.size || 'N/A'})</td>
+                    <td>${item.productId?.name || "Unknown Product"} (Size: ${
+                    item.size || "N/A"
+                  })</td>
                     <td class="text-center">${item.quantity || 1}</td>
                     <td class="text-right">₹${(item.price || 0).toFixed(2)}</td>
                     <td class="text-right">₹${itemTotal.toFixed(2)}</td>
                   </tr>
                 `;
-              }).join('')}
+                })
+                .join("")}
             </tbody>
           </table>
           
@@ -1929,9 +1917,11 @@ const admindownloadInvoice = async (req, res) => {
           
           <div class="admin-note">
             <div class="admin-note-title">Admin Notes</div>
-            <p>Order placed on ${formatDate(order.orderDate)} via ${order.paymentMethod || 'Unknown method'}.</p>
-            <p>Customer ID: ${order.userId?._id || 'Unknown'}</p>
-            <p>Customer Email: ${order.userId?.email || 'Unknown'}</p>
+            <p>Order placed on ${formatDate(order.orderDate)} via ${
+      order.paymentMethod || "Unknown method"
+    }.</p>
+            <p>Customer ID: ${order.userId?._id || "Unknown"}</p>
+            <p>Customer Email: ${order.userId?.email || "Unknown"}</p>
           </div>
           
           <div class="invoice-footer">
@@ -1953,18 +1943,16 @@ const admindownloadInvoice = async (req, res) => {
 
     // Set response headers for download
     const filename = `admin-invoice-${invoiceNumber}.html`;
-    res.setHeader('Content-Type', 'text/html');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+
     // Send the HTML content
     res.send(htmlContent);
-    
   } catch (error) {
     logger.error("admindownloadInvoice Error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
 
 module.exports = {
   getorderController,

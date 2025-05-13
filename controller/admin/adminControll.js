@@ -8,16 +8,17 @@ const PDFDocument = require("pdfkit");
 const ExcelJS = require("exceljs");
 const cloudinary = require("cloudinary").v2;
 const bcrypt = require("bcrypt");
-const { generateSalesReport, generateExcel } = require("../../utils/reportGenerator");
+const {
+  generateSalesReport,
+  generateExcel,
+} = require("../../utils/reportGenerator");
 
-// Configure cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Admin authentication functions
 exports.loadLogin = async (req, res) => {
   try {
     if (req.session.admin) {
@@ -35,7 +36,9 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.render("adminlogin", { message: "Email and password are required" });
+      return res.render("adminlogin", {
+        message: "Email and password are required",
+      });
     }
 
     const admin = await User.findOne({ email, isAdmin: true });
@@ -63,35 +66,77 @@ exports.logout = (req, res) => {
   res.redirect("/admin/login");
 };
 
-// Dashboard data functions
-async function getRevenueData() {
+async function getRevenueData(dateFilter = {}) {
   try {
-    const currentDate = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(currentDate.getDate() - 30);
-    
-    const sixtyDaysAgo = new Date();
-    sixtyDaysAgo.setDate(currentDate.getDate() - 60);
+    let currentPeriodFilter = {};
+    let previousPeriodFilter = {};
 
-    const currentPeriodOrders = await Order.find({
-      orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
+    if (Object.keys(dateFilter).length > 0) {
+      currentPeriodFilter = { ...dateFilter };
+
+      if (
+        dateFilter.orderDate &&
+        dateFilter.orderDate.$gte &&
+        dateFilter.orderDate.$lte
+      ) {
+        const currentStartDate = new Date(dateFilter.orderDate.$gte);
+        const currentEndDate = new Date(dateFilter.orderDate.$lte);
+        const duration = currentEndDate - currentStartDate;
+
+        const previousEndDate = new Date(currentStartDate);
+        previousEndDate.setDate(previousEndDate.getDate() - 1);
+
+        const previousStartDate = new Date(previousEndDate);
+        previousStartDate.setTime(previousStartDate.getTime() - duration);
+
+        previousPeriodFilter = {
+          orderDate: {
+            $gte: previousStartDate,
+            $lte: previousEndDate,
+          },
+        };
+      }
+    } else {
+      const currentDate = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(currentDate.getDate() - 60);
+
+      currentPeriodFilter = {
+        orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
+      };
+
+      previousPeriodFilter = {
+        orderDate: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
+      };
+    }
+
+    const commonFilter = {
       status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
       paymentStatus: "Completed",
-    });
+    };
 
-    const totalRevenue = currentPeriodOrders.reduce((sum, order) => sum + order.total, 0);
+    currentPeriodFilter = { ...currentPeriodFilter, ...commonFilter };
+    previousPeriodFilter = { ...previousPeriodFilter, ...commonFilter };
 
-    const previousPeriodOrders = await Order.find({
-      orderDate: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
-      status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
-      paymentStatus: "Completed",
-    });
+    const currentPeriodOrders = await Order.find(currentPeriodFilter);
+    const totalRevenue = currentPeriodOrders.reduce(
+      (sum, order) => sum + order.total,
+      0
+    );
 
-    const previousTotalRevenue = previousPeriodOrders.reduce((sum, order) => sum + order.total, 0);
+    const previousPeriodOrders = await Order.find(previousPeriodFilter);
+    const previousTotalRevenue = previousPeriodOrders.reduce(
+      (sum, order) => sum + order.total,
+      0
+    );
 
     let revenueChange = 0;
     if (previousTotalRevenue > 0) {
-      revenueChange = ((totalRevenue - previousTotalRevenue) / previousTotalRevenue) * 100;
+      revenueChange =
+        ((totalRevenue - previousTotalRevenue) / previousTotalRevenue) * 100;
     }
 
     return { totalRevenue, revenueChange };
@@ -101,26 +146,62 @@ async function getRevenueData() {
   }
 }
 
-async function getOrdersData() {
+async function getOrdersData(dateFilter = {}) {
   try {
-    const currentDate = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+    let currentPeriodFilter = {};
+    let previousPeriodFilter = {};
 
-    const sixtyDaysAgo = new Date();
-    sixtyDaysAgo.setDate(currentDate.getDate() - 60);
+    if (Object.keys(dateFilter).length > 0) {
+      currentPeriodFilter = { ...dateFilter };
 
-    const totalOrders = await Order.countDocuments({
-      orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
-    });
+      if (
+        dateFilter.orderDate &&
+        dateFilter.orderDate.$gte &&
+        dateFilter.orderDate.$lte
+      ) {
+        const currentStartDate = new Date(dateFilter.orderDate.$gte);
+        const currentEndDate = new Date(dateFilter.orderDate.$lte);
+        const duration = currentEndDate - currentStartDate;
 
-    const previousTotalOrders = await Order.countDocuments({
-      orderDate: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
-    });
+        const previousEndDate = new Date(currentStartDate);
+        previousEndDate.setDate(previousEndDate.getDate() - 1);
+
+        const previousStartDate = new Date(previousEndDate);
+        previousStartDate.setTime(previousStartDate.getTime() - duration);
+
+        previousPeriodFilter = {
+          orderDate: {
+            $gte: previousStartDate,
+            $lte: previousEndDate,
+          },
+        };
+      }
+    } else {
+      const currentDate = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(currentDate.getDate() - 60);
+
+      currentPeriodFilter = {
+        orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
+      };
+
+      previousPeriodFilter = {
+        orderDate: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
+      };
+    }
+
+    const totalOrders = await Order.countDocuments(currentPeriodFilter);
+    const previousTotalOrders = await Order.countDocuments(
+      previousPeriodFilter
+    );
 
     let orderChange = 0;
     if (previousTotalOrders > 0) {
-      orderChange = ((totalOrders - previousTotalOrders) / previousTotalOrders) * 100;
+      orderChange =
+        ((totalOrders - previousTotalOrders) / previousTotalOrders) * 100;
     }
 
     return { totalOrders, orderChange };
@@ -130,28 +211,63 @@ async function getOrdersData() {
   }
 }
 
-async function getCustomerData() {
+async function getCustomerData(dateFilter = {}) {
   try {
-    const currentDate = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+    let currentPeriodFilter = {};
+    let previousPeriodFilter = {};
 
-    const sixtyDaysAgo = new Date();
-    sixtyDaysAgo.setDate(currentDate.getDate() - 60);
+    if (Object.keys(dateFilter).length > 0 && dateFilter.orderDate) {
+      currentPeriodFilter = {
+        createdAt: dateFilter.orderDate,
+      };
 
-    const customerCount = await User.countDocuments({
-      createdAt: { $gte: thirtyDaysAgo, $lte: currentDate },
-      isAdmin: false,
-    });
+      if (dateFilter.orderDate.$gte && dateFilter.orderDate.$lte) {
+        const currentStartDate = new Date(dateFilter.orderDate.$gte);
+        const currentEndDate = new Date(dateFilter.orderDate.$lte);
+        const duration = currentEndDate - currentStartDate;
 
-    const previousCustomerCount = await User.countDocuments({
-      createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
-      isAdmin: false,
-    });
+        const previousEndDate = new Date(currentStartDate);
+        previousEndDate.setDate(previousEndDate.getDate() - 1);
+
+        const previousStartDate = new Date(previousEndDate);
+        previousStartDate.setTime(previousStartDate.getTime() - duration);
+
+        previousPeriodFilter = {
+          createdAt: {
+            $gte: previousStartDate,
+            $lte: previousEndDate,
+          },
+        };
+      }
+    } else {
+      const currentDate = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+
+      const sixtyDaysAgo = new Date();
+      sixtyDaysAgo.setDate(currentDate.getDate() - 60);
+
+      currentPeriodFilter = {
+        createdAt: { $gte: thirtyDaysAgo, $lte: currentDate },
+      };
+
+      previousPeriodFilter = {
+        createdAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo },
+      };
+    }
+
+    currentPeriodFilter.isAdmin = false;
+    previousPeriodFilter.isAdmin = false;
+
+    const customerCount = await User.countDocuments(currentPeriodFilter);
+    const previousCustomerCount = await User.countDocuments(
+      previousPeriodFilter
+    );
 
     let customerChange = 0;
     if (previousCustomerCount > 0) {
-      customerChange = ((customerCount - previousCustomerCount) / previousCustomerCount) * 100;
+      customerChange =
+        ((customerCount - previousCustomerCount) / previousCustomerCount) * 100;
     }
 
     return { customerCount, customerChange };
@@ -161,28 +277,68 @@ async function getCustomerData() {
   }
 }
 
-async function getProductData() {
+async function getProductData(dateFilter = {}) {
   try {
-    const currentDate = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+    let currentPeriodFilter = {};
+    let previousPeriodFilter = {};
 
-    const sixtyDaysAgo = new Date();
-    sixtyDaysAgo.setDate(currentDate.getDate() - 60);
+    if (Object.keys(dateFilter).length > 0 && dateFilter.orderDate) {
+      currentPeriodFilter = {
+        createdAt: dateFilter.orderDate,
+      };
 
-    const productCount = await Product.countDocuments({
-      createdAt: { $lte: currentDate },
-      isActive: true,
-    });
+      if (dateFilter.orderDate.$lte) {
+        const currentEndDate = new Date(dateFilter.orderDate.$lte);
 
-    const previousProductCount = await Product.countDocuments({
-      createdAt: { $lte: thirtyDaysAgo },
-      isActive: true,
-    });
+        if (dateFilter.orderDate.$gte) {
+          const currentStartDate = new Date(dateFilter.orderDate.$gte);
+          const duration = currentEndDate - currentStartDate;
+
+          const previousEndDate = new Date(currentStartDate);
+          previousEndDate.setDate(previousEndDate.getDate() - 1);
+
+          const previousStartDate = new Date(previousEndDate);
+          previousStartDate.setTime(previousStartDate.getTime() - duration);
+
+          previousPeriodFilter = {
+            createdAt: {
+              $lte: previousEndDate,
+            },
+          };
+        } else {
+          previousPeriodFilter = {
+            createdAt: {
+              $lte: currentEndDate,
+            },
+          };
+        }
+      }
+    } else {
+      const currentDate = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+
+      currentPeriodFilter = {
+        createdAt: { $lte: currentDate },
+      };
+
+      previousPeriodFilter = {
+        createdAt: { $lte: thirtyDaysAgo },
+      };
+    }
+
+    currentPeriodFilter.isActive = true;
+    previousPeriodFilter.isActive = true;
+
+    const productCount = await Product.countDocuments(currentPeriodFilter);
+    const previousProductCount = await Product.countDocuments(
+      previousPeriodFilter
+    );
 
     let productChange = 0;
     if (previousProductCount > 0) {
-      productChange = ((productCount - previousProductCount) / previousProductCount) * 100;
+      productChange =
+        ((productCount - previousProductCount) / previousProductCount) * 100;
     }
 
     return { productCount, productChange };
@@ -208,25 +364,25 @@ async function getSalesData(dateFilter = {}) {
 async function getDailySalesData(dateFilter = {}) {
   try {
     let matchFilter = {};
-    
+
     if (Object.keys(dateFilter).length > 0) {
       matchFilter = dateFilter;
     } else {
       const currentDate = new Date();
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(currentDate.getDate() - 7);
-      
+
       matchFilter = {
-        orderDate: { $gte: sevenDaysAgo, $lte: currentDate }
+        orderDate: { $gte: sevenDaysAgo, $lte: currentDate },
       };
     }
-    
+
     matchFilter.status = { $nin: ["Cancelled", "Return Approved", "Returned"] };
     matchFilter.paymentStatus = "Completed";
 
     const dailySalesData = await Order.aggregate([
       {
-        $match: matchFilter
+        $match: matchFilter,
       },
       {
         $group: {
@@ -239,18 +395,20 @@ async function getDailySalesData(dateFilter = {}) {
     ]);
 
     const result = [];
-    
+
     if (dateFilter.orderDate) {
       const startDate = dateFilter.orderDate.$gte;
       const endDate = dateFilter.orderDate.$lte;
       const dayCount = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000));
-      
+
       for (let i = 0; i < dayCount; i++) {
         const date = new Date(startDate);
         date.setDate(date.getDate() + i);
         const dateString = date.toISOString().split("T")[0];
 
-        const existingData = dailySalesData.find((item) => item._id === dateString);
+        const existingData = dailySalesData.find(
+          (item) => item._id === dateString
+        );
         if (existingData) {
           result.push(existingData);
         } else {
@@ -263,7 +421,9 @@ async function getDailySalesData(dateFilter = {}) {
         date.setDate(date.getDate() - (6 - i));
         const dateString = date.toISOString().split("T")[0];
 
-        const existingData = dailySalesData.find((item) => item._id === dateString);
+        const existingData = dailySalesData.find(
+          (item) => item._id === dateString
+        );
         if (existingData) {
           result.push(existingData);
         } else {
@@ -279,19 +439,28 @@ async function getDailySalesData(dateFilter = {}) {
   }
 }
 
-async function getWeeklySalesData() {
+async function getWeeklySalesData(dateFilter = {}) {
   try {
-    const currentDate = new Date();
-    const eightWeeksAgo = new Date();
-    eightWeeksAgo.setDate(currentDate.getDate() - 56); // 8 weeks * 7 days
+    let matchFilter = {};
+
+    if (Object.keys(dateFilter).length > 0) {
+      matchFilter = dateFilter;
+    } else {
+      const currentDate = new Date();
+      const eightWeeksAgo = new Date();
+      eightWeeksAgo.setDate(currentDate.getDate() - 56);
+
+      matchFilter = {
+        orderDate: { $gte: eightWeeksAgo, $lte: currentDate },
+      };
+    }
+
+    matchFilter.status = { $nin: ["Cancelled", "Return Approved", "Returned"] };
+    matchFilter.paymentStatus = "Completed";
 
     const weeklySalesData = await Order.aggregate([
       {
-        $match: {
-          orderDate: { $gte: eightWeeksAgo, $lte: currentDate },
-          status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
-          paymentStatus: "Completed",
-        },
+        $match: matchFilter,
       },
       {
         $group: {
@@ -305,7 +474,13 @@ async function getWeeklySalesData() {
       },
       {
         $project: {
-          _id: { $concat: [{ $toString: "$_id.year" }, "-W", { $toString: "$_id.week" }] },
+          _id: {
+            $concat: [
+              { $toString: "$_id.year" },
+              "-W",
+              { $toString: "$_id.week" },
+            ],
+          },
           revenue: 1,
           count: 1,
           label: { $concat: ["Week ", { $toString: "$_id.week" }] },
@@ -314,16 +489,38 @@ async function getWeeklySalesData() {
       { $sort: { _id: 1 } },
     ]);
 
+    let weekCount = 8;
+    if (
+      dateFilter.orderDate &&
+      dateFilter.orderDate.$gte &&
+      dateFilter.orderDate.$lte
+    ) {
+      const startDate = new Date(dateFilter.orderDate.$gte);
+      const endDate = new Date(dateFilter.orderDate.$lte);
+      const dayDiff = Math.ceil((endDate - startDate) / (24 * 60 * 60 * 1000));
+      weekCount = Math.ceil(dayDiff / 7);
+    }
+
     const result = [];
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < weekCount; i++) {
       const date = new Date();
-      date.setDate(date.getDate() - 7 * (7 - i));
+      if (dateFilter.orderDate && dateFilter.orderDate.$gte) {
+        date.setTime(new Date(dateFilter.orderDate.$gte).getTime());
+        date.setDate(date.getDate() + 7 * i);
+      } else {
+        date.setDate(date.getDate() - 7 * (weekCount - 1 - i));
+      }
+
       const year = date.getFullYear();
-      const week = Math.ceil(((date - new Date(year, 0, 1)) / 86400000 + 1) / 7);
+      const week = Math.ceil(
+        ((date - new Date(year, 0, 1)) / 86400000 + 1) / 7
+      );
       const weekString = `${year}-W${week}`;
       const label = `Week ${week}`;
 
-      const existingData = weeklySalesData.find((item) => item._id === weekString);
+      const existingData = weeklySalesData.find(
+        (item) => item._id === weekString
+      );
       if (existingData) {
         result.push(existingData);
       } else {
@@ -338,20 +535,29 @@ async function getWeeklySalesData() {
   }
 }
 
-async function getMonthlySalesData() {
+async function getMonthlySalesData(dateFilter = {}) {
   try {
-    const currentDate = new Date();
-    const twelveMonthsAgo = new Date();
-    twelveMonthsAgo.setMonth(currentDate.getMonth() - 11);
-    twelveMonthsAgo.setDate(1);
+    let matchFilter = {};
+
+    if (Object.keys(dateFilter).length > 0) {
+      matchFilter = dateFilter;
+    } else {
+      const currentDate = new Date();
+      const twelveMonthsAgo = new Date();
+      twelveMonthsAgo.setMonth(currentDate.getMonth() - 11);
+      twelveMonthsAgo.setDate(1);
+
+      matchFilter = {
+        orderDate: { $gte: twelveMonthsAgo, $lte: currentDate },
+      };
+    }
+
+    matchFilter.status = { $nin: ["Cancelled", "Return Approved", "Returned"] };
+    matchFilter.paymentStatus = "Completed";
 
     const monthlySalesData = await Order.aggregate([
       {
-        $match: {
-          orderDate: { $gte: twelveMonthsAgo, $lte: currentDate },
-          status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
-          paymentStatus: "Completed",
-        },
+        $match: matchFilter,
       },
       {
         $group: {
@@ -363,13 +569,36 @@ async function getMonthlySalesData() {
       { $sort: { _id: 1 } },
     ]);
 
+    let monthCount = 12;
+    if (
+      dateFilter.orderDate &&
+      dateFilter.orderDate.$gte &&
+      dateFilter.orderDate.$lte
+    ) {
+      const startDate = new Date(dateFilter.orderDate.$gte);
+      const endDate = new Date(dateFilter.orderDate.$lte);
+
+      monthCount =
+        (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+        (endDate.getMonth() - startDate.getMonth()) +
+        1;
+    }
+
     const result = [];
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < monthCount; i++) {
       const date = new Date();
-      date.setMonth(date.getMonth() - (11 - i));
+      if (dateFilter.orderDate && dateFilter.orderDate.$gte) {
+        date.setTime(new Date(dateFilter.orderDate.$gte).getTime());
+        date.setMonth(date.getMonth() + i);
+      } else {
+        date.setMonth(date.getMonth() - (monthCount - 1 - i));
+      }
+
       const monthString = date.toISOString().slice(0, 7);
 
-      const existingData = monthlySalesData.find((item) => item._id === monthString);
+      const existingData = monthlySalesData.find(
+        (item) => item._id === monthString
+      );
       if (existingData) {
         result.push(existingData);
       } else {
@@ -386,24 +615,24 @@ async function getMonthlySalesData() {
 
 async function getPaymentMethodDistribution(dateFilter = {}) {
   try {
-    const currentDate = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(currentDate.getDate() - 30);
-
     let matchFilter = {
       status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
-      paymentStatus: "Completed"
+      paymentStatus: "Completed",
     };
 
     if (Object.keys(dateFilter).length > 0) {
       matchFilter = { ...matchFilter, ...dateFilter };
     } else {
+      const currentDate = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+
       matchFilter.orderDate = { $gte: thirtyDaysAgo, $lte: currentDate };
     }
 
     const paymentMethodDistribution = await Order.aggregate([
       {
-        $match: matchFilter
+        $match: matchFilter,
       },
       {
         $group: {
@@ -430,7 +659,9 @@ async function getPaymentMethodDistribution(dateFilter = {}) {
     }
 
     requiredPaymentMethods.forEach((method) => {
-      const existingData = paymentMethodDistribution.find((item) => item._id === method);
+      const existingData = paymentMethodDistribution.find(
+        (item) => item._id === method
+      );
       if (existingData) {
         result.push(existingData);
       } else {
@@ -450,17 +681,25 @@ async function getPaymentMethodDistribution(dateFilter = {}) {
   }
 }
 
-async function getOrderStatusDistribution() {
+async function getOrderStatusDistribution(dateFilter = {}) {
   try {
-    const currentDate = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+    let matchFilter = {};
+
+    if (Object.keys(dateFilter).length > 0) {
+      matchFilter = dateFilter;
+    } else {
+      const currentDate = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+
+      matchFilter = {
+        orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
+      };
+    }
 
     const orderStatusDistribution = await Order.aggregate([
       {
-        $match: {
-          orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
-        },
+        $match: matchFilter,
       },
       {
         $group: {
@@ -478,17 +717,24 @@ async function getOrderStatusDistribution() {
   }
 }
 
-async function getTopCategories() {
+async function getTopCategories(dateFilter = {}) {
   try {
-    const currentDate = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(currentDate.getDate() - 30);
-
-    const orders = await Order.find({
-      orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
+    let matchFilter = {
       status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
       paymentStatus: "Completed",
-    }).populate({
+    };
+
+    if (Object.keys(dateFilter).length > 0) {
+      matchFilter = { ...matchFilter, ...dateFilter };
+    } else {
+      const currentDate = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+
+      matchFilter.orderDate = { $gte: thirtyDaysAgo, $lte: currentDate };
+    }
+
+    const orders = await Order.find(matchFilter).populate({
       path: "order_items",
       populate: {
         path: "productId",
@@ -531,17 +777,24 @@ async function getTopCategories() {
   }
 }
 
-async function getTopBrands() {
+async function getTopBrands(dateFilter = {}) {
   try {
-    const currentDate = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(currentDate.getDate() - 30);
-
-    const orders = await Order.find({
-      orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
+    let matchFilter = {
       status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
       paymentStatus: "Completed",
-    }).populate({
+    };
+
+    if (Object.keys(dateFilter).length > 0) {
+      matchFilter = { ...matchFilter, ...dateFilter };
+    } else {
+      const currentDate = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+
+      matchFilter.orderDate = { $gte: thirtyDaysAgo, $lte: currentDate };
+    }
+
+    const orders = await Order.find(matchFilter).populate({
       path: "order_items",
       populate: {
         path: "productId",
@@ -577,11 +830,28 @@ async function getTopBrands() {
   }
 }
 
-async function getTopProducts() {
+async function getTopProducts(dateFilter = {}) {
   try {
-    const currentDate = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+    const matchFilter = {
+      "order.status": { $nin: ["Cancelled", "Return Approved", "Returned"] },
+      "order.paymentStatus": "Completed",
+      status: {
+        $nin: ["Cancelled", "Return Requested", "Return Approved", "Returned"],
+      },
+    };
+
+    if (Object.keys(dateFilter).length > 0 && dateFilter.orderDate) {
+      matchFilter["order.orderDate"] = dateFilter.orderDate;
+    } else {
+      const currentDate = new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+
+      matchFilter["order.orderDate"] = {
+        $gte: thirtyDaysAgo,
+        $lte: currentDate,
+      };
+    }
 
     const topProducts = await OrderItem.aggregate([
       {
@@ -594,12 +864,7 @@ async function getTopProducts() {
       },
       { $unwind: "$order" },
       {
-        $match: {
-          "order.orderDate": { $gte: thirtyDaysAgo, $lte: currentDate },
-          "order.status": { $nin: ["Cancelled", "Return Approved", "Returned"] },
-          "order.paymentStatus": "Completed",
-          status: { $nin: ["Cancelled", "Return Requested", "Return Approved", "Returned"] },
-        },
+        $match: matchFilter,
       },
       {
         $lookup: {
@@ -636,9 +901,15 @@ async function getTopProducts() {
   }
 }
 
-async function getRecentOrders() {
+async function getRecentOrders(dateFilter = {}) {
   try {
-    const recentOrders = await Order.find().sort({ orderDate: -1 }).limit(5).populate({
+    let query = Order.find();
+
+    if (Object.keys(dateFilter).length > 0) {
+      query = query.find(dateFilter);
+    }
+
+    const recentOrders = await query.sort({ orderDate: -1 }).limit(5).populate({
       path: "userId",
       select: "fullname",
     });
@@ -646,7 +917,9 @@ async function getRecentOrders() {
     return recentOrders.map((order) => ({
       _id: order._id,
       orderNumber: order.orderNumber,
-      customer: { name: order.userId ? order.userId.fullname : "Unknown Customer" },
+      customer: {
+        name: order.userId ? order.userId.fullname : "Unknown Customer",
+      },
       createdAt: order.orderDate,
       totalAmount: order.total,
       status: order.status,
@@ -657,9 +930,21 @@ async function getRecentOrders() {
   }
 }
 
-// Dashboard page
 exports.loadDashboard = async (req, res) => {
   try {
+    let dateFilter = {};
+    if (req.query.startDate && req.query.endDate) {
+      const startDate = new Date(req.query.startDate);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(req.query.endDate);
+      endDate.setHours(23, 59, 59, 999);
+
+      dateFilter = {
+        orderDate: { $gte: startDate, $lte: endDate },
+      };
+    }
+
     const [
       revenueData,
       ordersData,
@@ -673,17 +958,17 @@ exports.loadDashboard = async (req, res) => {
       topProducts,
       recentOrders,
     ] = await Promise.all([
-      getRevenueData(),
-      getOrdersData(),
-      getCustomerData(),
-      getProductData(),
-      getSalesData(),
-      getPaymentMethodDistribution(),
-      getOrderStatusDistribution(),
-      getTopCategories(),
-      getTopBrands(),
-      getTopProducts(),
-      getRecentOrders(),
+      getRevenueData(dateFilter),
+      getOrdersData(dateFilter),
+      getCustomerData(dateFilter),
+      getProductData(dateFilter),
+      getSalesData(dateFilter),
+      getPaymentMethodDistribution(dateFilter),
+      getOrderStatusDistribution(dateFilter),
+      getTopCategories(dateFilter),
+      getTopBrands(dateFilter),
+      getTopProducts(dateFilter),
+      getRecentOrders(dateFilter),
     ]);
 
     res.render("dashboard", {
@@ -712,65 +997,141 @@ exports.loadDashboard = async (req, res) => {
   }
 };
 
-// API endpoint for chart data
 exports.getChartDataAPI = async (req, res) => {
   try {
-    const { type, period, startDate, endDate } = req.query;
+    const { type, period, startDate, endDate, timeRange } = req.query;
 
     let dateFilter = {};
     if (startDate && endDate) {
       const start = new Date(startDate);
       start.setHours(0, 0, 0, 0);
-      
+
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
-      
+
       dateFilter = {
-        orderDate: { $gte: start, $lte: end }
+        orderDate: { $gte: start, $lte: end },
       };
     }
 
-    let data;
-    switch (type) {
-      case "sales":
-        const salesData = await getSalesData(dateFilter);
-        if (period === "daily") {
-          data = salesData.dailySalesData;
-        } else if (period === "weekly") {
-          data = salesData.weeklySalesData;
-        } else {
-          data = salesData.monthlySalesData;
-        }
-        break;
-      case "payment":
-        data = await getPaymentMethodDistribution(dateFilter);
-        break;
-      case "categories":
-        data = await getTopCategories(dateFilter);
-        break;
-      case "brands":
-        data = await getTopBrands(dateFilter);
-        break;
-      case "products":
-        data = await getTopProducts(dateFilter);
-        break;
-      default:
-        data = [];
+    const responseData = {
+      success: true,
+      data: {},
+    };
+
+    if (!type) {
+      const [
+        revenueData,
+        ordersData,
+        salesData,
+        paymentMethodDistribution,
+        topCategories,
+        topBrands,
+        topProducts,
+        recentOrders,
+      ] = await Promise.all([
+        getRevenueData(dateFilter),
+        getOrdersData(dateFilter),
+        getSalesData(dateFilter),
+        getPaymentMethodDistribution(dateFilter),
+        getTopCategories(dateFilter),
+        getTopBrands(dateFilter),
+        getTopProducts(dateFilter),
+        getRecentOrders(dateFilter),
+      ]);
+
+      responseData.data = {
+        totalRevenue: revenueData.totalRevenue,
+        revenueChange: revenueData.revenueChange,
+        totalOrders: ordersData.totalOrders,
+        orderChange: ordersData.orderChange,
+        monthlySalesData: salesData.monthlySalesData,
+        weeklySalesData: salesData.weeklySalesData,
+        dailySalesData: salesData.dailySalesData,
+        paymentMethodDistribution,
+        topCategories,
+        topBrands,
+        topProducts,
+        recentOrders,
+      };
+    } else {
+      switch (type) {
+        case "sales":
+          const salesData = await getSalesData(dateFilter);
+          if (period === "daily") {
+            responseData.data.dailySalesData = salesData.dailySalesData;
+          } else if (period === "weekly") {
+            responseData.data.weeklySalesData = salesData.weeklySalesData;
+          } else {
+            responseData.data.monthlySalesData = salesData.monthlySalesData;
+          }
+          break;
+        case "payment":
+          responseData.data.paymentMethodDistribution =
+            await getPaymentMethodDistribution(dateFilter);
+          break;
+        case "categories":
+          responseData.data.topCategories = await getTopCategories(dateFilter);
+          break;
+        case "brands":
+          responseData.data.topBrands = await getTopBrands(dateFilter);
+          break;
+        case "products":
+          responseData.data.topProducts = await getTopProducts(dateFilter);
+          break;
+        case "orders":
+          responseData.data.recentOrders = await getRecentOrders(dateFilter);
+          break;
+        case "summary":
+          const [revenueData, ordersData, customerData, productData] =
+            await Promise.all([
+              getRevenueData(dateFilter),
+              getOrdersData(dateFilter),
+              getCustomerData(dateFilter),
+              getProductData(dateFilter),
+            ]);
+
+          responseData.data = {
+            totalRevenue: revenueData.totalRevenue,
+            revenueChange: revenueData.revenueChange,
+            totalOrders: ordersData.totalOrders,
+            orderChange: ordersData.orderChange,
+            customerCount: customerData.customerCount,
+            customerChange: customerData.customerChange,
+            productCount: productData.productCount,
+            productChange: productData.productChange,
+          };
+          break;
+        default:
+          responseData.data = {};
+      }
     }
 
-    res.json({ success: true, data });
+    res.json(responseData);
   } catch (error) {
     console.error("Error getting chart data:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-// Export report function
 exports.exportReport = async (req, res) => {
   try {
-    const { format, period, reportType } = req.query;
+    const { format, period, reportType, startDate, endDate, timeRange } =
+      req.query;
 
-    // Get all dashboard data
+    let dateFilter = {};
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+
+      dateFilter = {
+        orderDate: { $gte: start, $lte: end },
+      };
+    }
+
     const [
       revenueData,
       ordersData,
@@ -782,18 +1143,17 @@ exports.exportReport = async (req, res) => {
       topBrands,
       topProducts,
     ] = await Promise.all([
-      getRevenueData(),
-      getOrdersData(),
-      getCustomerData(),
-      getProductData(),
-      getSalesData(),
-      getPaymentMethodDistribution(),
-      getTopCategories(),
-      getTopBrands(),
-      getTopProducts(),
+      getRevenueData(dateFilter),
+      getOrdersData(dateFilter),
+      getCustomerData(dateFilter),
+      getProductData(dateFilter),
+      getSalesData(dateFilter),
+      getPaymentMethodDistribution(dateFilter),
+      getTopCategories(dateFilter),
+      getTopBrands(dateFilter),
+      getTopProducts(dateFilter),
     ]);
 
-    // Determine period data and label
     let periodSalesData;
     let periodLabel;
     if (period === "daily") {
@@ -807,32 +1167,40 @@ exports.exportReport = async (req, res) => {
       periodLabel = "Monthly";
     }
 
-    // If report type is sales, use the sales report generator
     if (reportType === "sales") {
-      // Transform data for sales report
       const salesReportData = [];
-      
-      // Get orders for the period
-      const currentDate = new Date();
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(currentDate.getDate() - 30);
-      
-      const orders = await Order.find({
-        orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
-        status: { $nin: ["Cancelled", "Return Approved", "Returned"] },
-        paymentStatus: "Completed",
-      }).populate({
-        path: "order_items",
-        populate: {
-          path: "productId",
-          select: "name category price sku",
-        },
-      }).populate({
-        path: "userId",
-        select: "fullname",
-      });
-      
-      // Transform orders into sales report format
+
+      let ordersQuery = {};
+      if (Object.keys(dateFilter).length > 0) {
+        ordersQuery = dateFilter;
+      } else {
+        const currentDate = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(currentDate.getDate() - 30);
+
+        ordersQuery = {
+          orderDate: { $gte: thirtyDaysAgo, $lte: currentDate },
+        };
+      }
+
+      ordersQuery.status = {
+        $nin: ["Cancelled", "Return Approved", "Returned"],
+      };
+      ordersQuery.paymentStatus = "Completed";
+
+      const orders = await Order.find(ordersQuery)
+        .populate({
+          path: "order_items",
+          populate: {
+            path: "productId",
+            select: "name category price sku",
+          },
+        })
+        .populate({
+          path: "userId",
+          select: "fullname",
+        });
+
       for (const order of orders) {
         for (const item of order.order_items) {
           salesReportData.push({
@@ -841,40 +1209,48 @@ exports.exportReport = async (req, res) => {
             sku: item.productId ? item.productId.sku : "N/A",
             quantity: item.quantity,
             price: item.price,
-            category: item.productId && item.productId.category ? item.productId.category : "Uncategorized",
+            category:
+              item.productId && item.productId.category
+                ? item.productId.category
+                : "Uncategorized",
             total: item.total_amount,
             orderDate: order.orderDate,
             status: order.status,
-            paymentMethod: order.paymentMethod
+            paymentMethod: order.paymentMethod,
           });
         }
       }
-      
-      // Generate sales report
+
       if (format === "html") {
         return await generateSalesReport(salesReportData, res, {
-          fromDate: thirtyDaysAgo,
-          toDate: currentDate,
-          title: "Sales Report"
+          fromDate: dateFilter.orderDate
+            ? dateFilter.orderDate.$gte
+            : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          toDate: dateFilter.orderDate ? dateFilter.orderDate.$lte : new Date(),
+          title: "Sales Report",
         });
       } else if (format === "excel") {
         return await generateExcel(salesReportData, res, {
-          fromDate: thirtyDaysAgo.toLocaleDateString(),
-          toDate: currentDate.toLocaleDateString()
+          fromDate: dateFilter.orderDate
+            ? dateFilter.orderDate.$gte.toLocaleDateString()
+            : new Date(
+                Date.now() - 30 * 24 * 60 * 60 * 1000
+              ).toLocaleDateString(),
+          toDate: dateFilter.orderDate
+            ? dateFilter.orderDate.$lte.toLocaleDateString()
+            : new Date().toLocaleDateString(),
         });
       }
     }
 
-    // For dashboard reports
     if (format === "html") {
-      // Generate HTML report with the same style as the sales report
       const formatCurrency = (value) => {
         if (value === undefined || value === null) return "0";
         const numValue = typeof value === "number" ? value : Number(value);
         if (isNaN(numValue)) return "0";
         return numValue.toLocaleString("en-IN", {
           maximumFractionDigits: 0,
-          style: "decimal"
+          style: "decimal",
         });
       };
 
@@ -885,7 +1261,7 @@ exports.exportReport = async (req, res) => {
           return date.toLocaleDateString("en-IN", {
             day: "2-digit",
             month: "2-digit",
-            year: "numeric"
+            year: "numeric",
           });
         } catch (e) {
           return dateString;
@@ -896,13 +1272,57 @@ exports.exportReport = async (req, res) => {
       const formattedDate = currentDate.toLocaleDateString("en-IN", {
         day: "2-digit",
         month: "long",
-        year: "numeric"
+        year: "numeric",
       });
       const formattedTime = currentDate.toLocaleTimeString("en-IN", {
         hour: "2-digit",
         minute: "2-digit",
-        hour12: true
+        hour12: true,
       });
+
+      let dateRangeTitle = "Last 30 Days";
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        dateRangeTitle = `${start.toLocaleDateString(
+          "en-IN"
+        )} to ${end.toLocaleDateString("en-IN")}`;
+      } else if (timeRange) {
+        switch (timeRange) {
+          case "today":
+            dateRangeTitle = "Today";
+            break;
+          case "yesterday":
+            dateRangeTitle = "Yesterday";
+            break;
+          case "last7days":
+            dateRangeTitle = "Last 7 Days";
+            break;
+          case "last30days":
+            dateRangeTitle = "Last 30 Days";
+            break;
+          case "thismonth":
+            dateRangeTitle = "This Month";
+            break;
+          case "lastmonth":
+            dateRangeTitle = "Last Month";
+            break;
+          case "thisquarter":
+            dateRangeTitle = "This Quarter";
+            break;
+          case "lastquarter":
+            dateRangeTitle = "Last Quarter";
+            break;
+          case "thisyear":
+            dateRangeTitle = "This Year";
+            break;
+          case "lastyear":
+            dateRangeTitle = "Last Year";
+            break;
+          default:
+            dateRangeTitle = "Custom Range";
+        }
+      }
 
       const htmlContent = `
         <!DOCTYPE html>
@@ -1173,7 +1593,7 @@ exports.exportReport = async (req, res) => {
             </div>
             
             <div class="report-period">
-              Report Type: ${periodLabel} Analysis
+              Report Type: ${periodLabel} Analysis (${dateRangeTitle})
             </div>
             
             <div class="summary-row">
@@ -1206,13 +1626,17 @@ exports.exportReport = async (req, res) => {
                 </tr>
               </thead>
               <tbody>
-                ${periodSalesData.map((item) => `
+                ${periodSalesData
+                  .map(
+                    (item) => `
                   <tr>
                     <td>${item._id}</td>
                     <td class="right">₹${formatCurrency(item.revenue)}</td>
                     <td class="center">${item.count}</td>
                   </tr>
-                `).join('')}
+                `
+                  )
+                  .join("")}
               </tbody>
             </table>
             
@@ -1227,13 +1651,17 @@ exports.exportReport = async (req, res) => {
                 </tr>
               </thead>
               <tbody>
-                ${paymentMethodDistribution.map((item) => `
+                ${paymentMethodDistribution
+                  .map(
+                    (item) => `
                   <tr>
                     <td>${item._id}</td>
                     <td class="right">₹${formatCurrency(item.revenue)}</td>
                     <td class="center">${item.count}</td>
                   </tr>
-                `).join('')}
+                `
+                  )
+                  .join("")}
               </tbody>
             </table>
             
@@ -1248,13 +1676,17 @@ exports.exportReport = async (req, res) => {
                 </tr>
               </thead>
               <tbody>
-                ${topCategories.map((item) => `
+                ${topCategories
+                  .map(
+                    (item) => `
                   <tr>
                     <td>${item.name}</td>
                     <td class="right">₹${formatCurrency(item.revenue)}</td>
                     <td class="center">${item.soldCount}</td>
                   </tr>
-                `).join('')}
+                `
+                  )
+                  .join("")}
               </tbody>
             </table>
             
@@ -1269,13 +1701,17 @@ exports.exportReport = async (req, res) => {
                 </tr>
               </thead>
               <tbody>
-                ${topBrands.map((item) => `
+                ${topBrands
+                  .map(
+                    (item) => `
                   <tr>
                     <td>${item.name}</td>
                     <td class="right">₹${formatCurrency(item.revenue)}</td>
                     <td class="center">${item.soldCount}</td>
                   </tr>
-                `).join('')}
+                `
+                  )
+                  .join("")}
               </tbody>
             </table>
             
@@ -1290,13 +1726,17 @@ exports.exportReport = async (req, res) => {
                 </tr>
               </thead>
               <tbody>
-                ${topProducts.map((item) => `
+                ${topProducts
+                  .map(
+                    (item) => `
                   <tr>
                     <td>${item.name}</td>
                     <td class="right">₹${formatCurrency(item.revenue)}</td>
                     <td class="center">${item.soldCount}</td>
                   </tr>
-                `).join('')}
+                `
+                  )
+                  .join("")}
               </tbody>
             </table>
             
@@ -1324,18 +1764,64 @@ exports.exportReport = async (req, res) => {
         </html>
       `;
 
-      const filename = `elite-wear-dashboard-report-${new Date().toISOString().split('T')[0]}.html`;
-      res.setHeader('Content-Type', 'text/html');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      const filename = `elite-wear-dashboard-report-${
+        new Date().toISOString().split("T")[0]
+      }.html`;
+      res.setHeader("Content-Type", "text/html");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`
+      );
       res.send(htmlContent);
-      
     } else if (format === "excel") {
-      // Generate Excel report
       const workbook = new ExcelJS.Workbook();
       workbook.creator = "Elite Wear";
       workbook.created = new Date();
 
-      // Summary sheet
+      let dateRangeTitle = "Last 30 Days";
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        dateRangeTitle = `${start.toLocaleDateString(
+          "en-IN"
+        )} to ${end.toLocaleDateString("en-IN")}`;
+      } else if (timeRange) {
+        switch (timeRange) {
+          case "today":
+            dateRangeTitle = "Today";
+            break;
+          case "yesterday":
+            dateRangeTitle = "Yesterday";
+            break;
+          case "last7days":
+            dateRangeTitle = "Last 7 Days";
+            break;
+          case "last30days":
+            dateRangeTitle = "Last 30 Days";
+            break;
+          case "thismonth":
+            dateRangeTitle = "This Month";
+            break;
+          case "lastmonth":
+            dateRangeTitle = "Last Month";
+            break;
+          case "thisquarter":
+            dateRangeTitle = "This Quarter";
+            break;
+          case "lastquarter":
+            dateRangeTitle = "Last Quarter";
+            break;
+          case "thisyear":
+            dateRangeTitle = "This Year";
+            break;
+          case "lastyear":
+            dateRangeTitle = "Last Year";
+            break;
+          default:
+            dateRangeTitle = "Custom Range";
+        }
+      }
+
       const summarySheet = workbook.addWorksheet("Summary");
       summarySheet.columns = [
         { header: "Metric", key: "metric", width: 20 },
@@ -1343,16 +1829,24 @@ exports.exportReport = async (req, res) => {
         { header: "Change (%)", key: "change", width: 20 },
       ];
 
+      summarySheet.addRow({
+        metric: "Date Range",
+        value: dateRangeTitle,
+        change: "",
+      });
+
+      summarySheet.addRow({});
+
       summarySheet.addRows([
         {
           metric: "Total Revenue",
           value: revenueData.totalRevenue,
           change: revenueData.revenueChange.toFixed(1) + "%",
         },
-        { 
-          metric: "Total Orders", 
-          value: ordersData.totalOrders, 
-          change: ordersData.orderChange.toFixed(1) + "%" 
+        {
+          metric: "Total Orders",
+          value: ordersData.totalOrders,
+          change: ordersData.orderChange.toFixed(1) + "%",
         },
         {
           metric: "Total Customers",
@@ -1366,7 +1860,6 @@ exports.exportReport = async (req, res) => {
         },
       ]);
 
-      // Style the header row
       const headerRow = summarySheet.getRow(1);
       headerRow.font = { bold: true };
       headerRow.fill = {
@@ -1376,10 +1869,8 @@ exports.exportReport = async (req, res) => {
       };
       headerRow.font = { bold: true, color: { argb: "FFFFFF" } };
 
-      // Format the value column
       summarySheet.getColumn("value").numFmt = "₹#,##0";
 
-      // Sales data sheet
       const salesSheet = workbook.addWorksheet(`${periodLabel} Sales`);
       salesSheet.columns = [
         { header: "Period", key: "period", width: 20 },
@@ -1395,7 +1886,6 @@ exports.exportReport = async (req, res) => {
         });
       });
 
-      // Style the header row
       const salesHeaderRow = salesSheet.getRow(1);
       salesHeaderRow.font = { bold: true };
       salesHeaderRow.fill = {
@@ -1405,7 +1895,6 @@ exports.exportReport = async (req, res) => {
       };
       salesHeaderRow.font = { bold: true, color: { argb: "FFFFFF" } };
 
-      // Format the revenue column
       salesSheet.getColumn("revenue").numFmt = "₹#,##0";
 
       // Payment methods sheet
@@ -1424,7 +1913,6 @@ exports.exportReport = async (req, res) => {
         });
       });
 
-      // Style the header row
       const paymentHeaderRow = paymentSheet.getRow(1);
       paymentHeaderRow.font = { bold: true };
       paymentHeaderRow.fill = {
@@ -1434,10 +1922,8 @@ exports.exportReport = async (req, res) => {
       };
       paymentHeaderRow.font = { bold: true, color: { argb: "FFFFFF" } };
 
-      // Format the revenue column
       paymentSheet.getColumn("revenue").numFmt = "₹#,##0";
 
-      // Top categories sheet
       const categoriesSheet = workbook.addWorksheet("Top Categories");
       categoriesSheet.columns = [
         { header: "Category", key: "category", width: 20 },
@@ -1453,7 +1939,6 @@ exports.exportReport = async (req, res) => {
         });
       });
 
-      // Style the header row
       const categoriesHeaderRow = categoriesSheet.getRow(1);
       categoriesHeaderRow.font = { bold: true };
       categoriesHeaderRow.fill = {
@@ -1463,10 +1948,8 @@ exports.exportReport = async (req, res) => {
       };
       categoriesHeaderRow.font = { bold: true, color: { argb: "FFFFFF" } };
 
-      // Format the revenue column
       categoriesSheet.getColumn("revenue").numFmt = "₹#,##0";
 
-      // Top brands sheet
       const brandsSheet = workbook.addWorksheet("Top Brands");
       brandsSheet.columns = [
         { header: "Brand", key: "brand", width: 20 },
@@ -1482,7 +1965,6 @@ exports.exportReport = async (req, res) => {
         });
       });
 
-      // Style the header row
       const brandsHeaderRow = brandsSheet.getRow(1);
       brandsHeaderRow.font = { bold: true };
       brandsHeaderRow.fill = {
@@ -1492,10 +1974,8 @@ exports.exportReport = async (req, res) => {
       };
       brandsHeaderRow.font = { bold: true, color: { argb: "FFFFFF" } };
 
-      // Format the revenue column
       brandsSheet.getColumn("revenue").numFmt = "₹#,##0";
 
-      // Top products sheet
       const productsSheet = workbook.addWorksheet("Top Products");
       productsSheet.columns = [
         { header: "Product", key: "product", width: 30 },
@@ -1511,7 +1991,6 @@ exports.exportReport = async (req, res) => {
         });
       });
 
-      // Style the header row
       const productsHeaderRow = productsSheet.getRow(1);
       productsHeaderRow.font = { bold: true };
       productsHeaderRow.fill = {
@@ -1521,50 +2000,117 @@ exports.exportReport = async (req, res) => {
       };
       productsHeaderRow.font = { bold: true, color: { argb: "FFFFFF" } };
 
-      // Format the revenue column
       productsSheet.getColumn("revenue").numFmt = "₹#,##0";
 
-      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename=elite-wear-dashboard-report-${new Date().toISOString().slice(0, 10)}.xlsx`,
+        `attachment; filename=elite-wear-dashboard-report-${new Date()
+          .toISOString()
+          .slice(0, 10)}.xlsx`
       );
 
       await workbook.xlsx.write(res);
-      
     } else if (format === "pdf") {
-      // Generate PDF report
       const doc = new PDFDocument({ margin: 50 });
 
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader(
         "Content-Disposition",
-        `attachment; filename=elite-wear-dashboard-report-${new Date().toISOString().slice(0, 10)}.pdf`,
+        `attachment; filename=elite-wear-dashboard-report-${new Date()
+          .toISOString()
+          .slice(0, 10)}.pdf`
       );
 
       doc.pipe(res);
 
-      // Title
+      let dateRangeTitle = "Last 30 Days";
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        dateRangeTitle = `${start.toLocaleDateString(
+          "en-IN"
+        )} to ${end.toLocaleDateString("en-IN")}`;
+      } else if (timeRange) {
+        switch (timeRange) {
+          case "today":
+            dateRangeTitle = "Today";
+            break;
+          case "yesterday":
+            dateRangeTitle = "Yesterday";
+            break;
+          case "last7days":
+            dateRangeTitle = "Last 7 Days";
+            break;
+          case "last30days":
+            dateRangeTitle = "Last 30 Days";
+            break;
+          case "thismonth":
+            dateRangeTitle = "This Month";
+            break;
+          case "lastmonth":
+            dateRangeTitle = "Last Month";
+            break;
+          case "thisquarter":
+            dateRangeTitle = "This Quarter";
+            break;
+          case "lastquarter":
+            dateRangeTitle = "Last Quarter";
+            break;
+          case "thisyear":
+            dateRangeTitle = "This Year";
+            break;
+          case "lastyear":
+            dateRangeTitle = "Last Year";
+            break;
+          default:
+            dateRangeTitle = "Custom Range";
+        }
+      }
+
       doc.fontSize(25).text("ELITE WEAR", { align: "center" });
       doc.fontSize(18).text("Dashboard Report", { align: "center" });
       doc.moveDown();
-      doc.fontSize(10).text(`Generated on: ${new Date().toLocaleString()}`, { align: "center" });
+      doc.fontSize(12).text(`Period: ${dateRangeTitle}`, { align: "center" });
+      doc
+        .fontSize(10)
+        .text(`Generated on: ${new Date().toLocaleString()}`, {
+          align: "center",
+        });
       doc.moveDown(2);
 
-      // Summary section
       doc.fontSize(16).text("Summary", { underline: true });
       doc.moveDown();
-      doc.fontSize(12).text(`Total Revenue: ₹${revenueData.totalRevenue.toLocaleString("en-IN")}`);
-      doc.fontSize(12).text(`Total Orders: ${ordersData.totalOrders.toLocaleString("en-IN")}`);
-      doc.fontSize(12).text(`Total Customers: ${customerData.customerCount.toLocaleString("en-IN")}`);
-      doc.fontSize(12).text(`Total Products: ${productData.productCount.toLocaleString("en-IN")}`);
+      doc
+        .fontSize(12)
+        .text(
+          `Total Revenue: ₹${revenueData.totalRevenue.toLocaleString("en-IN")}`
+        );
+      doc
+        .fontSize(12)
+        .text(
+          `Total Orders: ${ordersData.totalOrders.toLocaleString("en-IN")}`
+        );
+      doc
+        .fontSize(12)
+        .text(
+          `Total Customers: ${customerData.customerCount.toLocaleString(
+            "en-IN"
+          )}`
+        );
+      doc
+        .fontSize(12)
+        .text(
+          `Total Products: ${productData.productCount.toLocaleString("en-IN")}`
+        );
       doc.moveDown(2);
 
-      // Sales data section
       doc.fontSize(16).text(`${periodLabel} Sales Data`, { underline: true });
       doc.moveDown();
 
-      // Create a simple table for sales data
       const salesTable = {
         headers: ["Period", "Revenue", "Orders"],
         rows: [],
@@ -1572,35 +2118,41 @@ exports.exportReport = async (req, res) => {
 
       periodSalesData.forEach((item) => {
         salesTable.rows.push([
-          item._id, 
-          `₹${item.revenue.toLocaleString("en-IN")}`, 
-          item.count.toString()
+          item._id,
+          `₹${item.revenue.toLocaleString("en-IN")}`,
+          item.count.toString(),
         ]);
       });
 
-      // Draw table headers
       let y = doc.y;
       const columnWidth = 150;
       salesTable.headers.forEach((header, i) => {
-        doc.font("Helvetica-Bold").text(header, 50 + i * columnWidth, y, { width: columnWidth, align: "left" });
+        doc
+          .font("Helvetica-Bold")
+          .text(header, 50 + i * columnWidth, y, {
+            width: columnWidth,
+            align: "left",
+          });
       });
       doc.moveDown();
 
-      // Draw table rows
       salesTable.rows.forEach((row) => {
         y = doc.y;
         row.forEach((cell, i) => {
-          doc.font("Helvetica").text(cell, 50 + i * columnWidth, y, { width: columnWidth, align: "left" });
+          doc
+            .font("Helvetica")
+            .text(cell, 50 + i * columnWidth, y, {
+              width: columnWidth,
+              align: "left",
+            });
         });
         doc.moveDown();
       });
       doc.moveDown();
 
-      // Payment methods section
       doc.fontSize(16).text("Payment Methods", { underline: true });
       doc.moveDown();
 
-      // Create a simple table for payment methods
       const paymentTable = {
         headers: ["Method", "Revenue", "Count"],
         rows: [],
@@ -1608,67 +2160,64 @@ exports.exportReport = async (req, res) => {
 
       paymentMethodDistribution.forEach((item) => {
         paymentTable.rows.push([
-          item._id, 
-          `₹${item.revenue.toLocaleString("en-IN")}`, 
-          item.count.toString()
+          item._id,
+          `₹${item.revenue.toLocaleString("en-IN")}`,
+          item.count.toString(),
         ]);
       });
 
-      // Draw table headers
       y = doc.y;
       paymentTable.headers.forEach((header, i) => {
-        doc.font("Helvetica-Bold").text(header, 50 + i * columnWidth, y, { width: columnWidth, align: "left" });
+        doc
+          .font("Helvetica-Bold")
+          .text(header, 50 + i * columnWidth, y, {
+            width: columnWidth,
+            align: "left",
+          });
       });
       doc.moveDown();
 
-      // Draw table rows
       paymentTable.rows.forEach((row) => {
         y = doc.y;
         row.forEach((cell, i) => {
-          doc.font("Helvetica").text(cell, 50 + i * columnWidth, y, { width: columnWidth, align: "left" });
+          doc
+            .font("Helvetica")
+            .text(cell, 50 + i * columnWidth, y, {
+              width: columnWidth,
+              align: "left",
+            });
         });
         doc.moveDown();
       });
 
-      // Add page numbers - FIXED VERSION
-      // Instead of trying to switch pages, add page number to current page
-      // and let PDFKit handle pagination
-      doc.fontSize(8).text(`Page ${doc.bufferedPageRange().start + 1} of ${doc.bufferedPageRange().count}`, {
-        align: "center",
-        bottom: 30
-      });
+      doc
+        .fontSize(8)
+        .text(
+          `Page ${doc.bufferedPageRange().start + 1} of ${
+            doc.bufferedPageRange().count
+          }`,
+          {
+            align: "center",
+            bottom: 30,
+          }
+        );
 
-      // Finalize PDF
       doc.end();
     } else {
-      res.status(400).json({ success: false, message: "Invalid format specified" });
+      res
+        .status(400)
+        .json({ success: false, message: "Invalid format specified" });
     }
   } catch (error) {
     console.error("Error exporting report:", error);
     if (!res.headersSent) {
-      res.status(500).json({ 
-        success: false, 
-        message: "Failed to generate report", 
-        error: error.message 
+      res.status(500).json({
+        success: false,
+        message: "Failed to generate report",
+        error: error.message,
       });
     }
   }
 };
-
-// Test the exportReport function
-const mockReq = { query: { format: 'html', period: 'monthly' } };
-const mockRes = {
-  setHeader: (name, value) => console.log(`Setting header: ${name} = ${value}`),
-  send: (content) => console.log(`Sending response (length: ${content.length} characters)`),
-  status: (code) => {
-    console.log(`Setting status: ${code}`);
-    return mockRes;
-  },
-  json: (data) => console.log('Sending JSON:', data),
-  headersSent: false
-};
-
-// Uncomment to test
-// exports.exportReport(mockReq, mockRes);
 
 module.exports = exports;

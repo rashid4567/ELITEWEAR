@@ -705,7 +705,7 @@ const editProduct = async (req, res) => {
         const variantPrice = Number.parseFloat(variant.varientPrice);
         const variantQuantity = Number.parseInt(variant.varientquatity);
 
-        // Use the utility function to apply discount with minimum price constraint
+       
         const variantObj = applyDiscountToVariant(
           {
             size: variant.size,
@@ -725,10 +725,10 @@ const editProduct = async (req, res) => {
 
     product.variants = variants.length > 0 ? variants : product.variants;
 
-    // If there are existing variants that weren't updated in the form, apply the discount to them
+  
     if (product.variants && product.variants.length > 0) {
       product.variants = product.variants.map((variant) => {
-        // Use the utility function to apply discount with minimum price constraint
+       
         return applyDiscountToVariant(
           {
             ...variant,
@@ -740,7 +740,7 @@ const editProduct = async (req, res) => {
       });
     }
 
-    // Calculate the sale price for the main product using the utility function
+  
     const regularPrice = product.variants[0]?.varientPrice || 0;
     product.regularPrice = regularPrice;
     product.salePrice = calculateSalePrice(regularPrice, effectiveDiscount);
@@ -760,9 +760,7 @@ const editProduct = async (req, res) => {
   }
 };
 
-module.exports = {
-  editProduct,
-};
+
 
 const ProductManagement = async (req, res) => {
   try {

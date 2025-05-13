@@ -85,13 +85,13 @@ router.get("/get-product-variants/:id", adminAuth, productController.getProductV
 
 // Banner management routes
 router.get("/getbannerPage", adminAuth, BannerController.getbannerPage)
-router.get("/banners", adminAuth, BannerController.getbannerPage) // Alias for consistency
+router.get("/banners", adminAuth, BannerController.getbannerPage) 
 router.get("/addBanner", adminAuth, BannerController.getaddBanner)
 router.post("/addBanner", adminAuth, upload.single("posterImage"), BannerController.addBanner)
 
 // Order management routes
 router.get("/adminorder", adminAuth, adminorderController.getorderController)
-router.get("/orders", adminAuth, adminorderController.getorderController) // Alias for consistency
+router.get("/orders", adminAuth, adminorderController.getorderController) 
 router.post("/orders/update-status", adminAuth, adminorderController.updateOrderStatus)
 router.get("/orders/:id", adminAuth, adminorderController.getOrderDetails)
 router.post("/orders/return/:id", adminAuth, adminorderController.manageReturn)
@@ -118,6 +118,7 @@ router.get("/sales", adminAuth, salesontroller.loadsales)
 router.get("/analytics", adminAuth, salesontroller.loadsales) // Alias for consistency
 router.get("/sales/download-pdf", adminAuth, salesontroller.downloadSalesPDF)
 router.get("/sales/download-excel", adminAuth, salesontroller.downloadSalesExcel)
+
 
 // Wallet and refund management routes
 router.get("/wallet-transactions", adminAuth, adminWalletController.getAllWalletTransactions)

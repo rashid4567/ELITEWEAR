@@ -7,27 +7,24 @@ const Coupon = require("../../model/couponScheema");
 const Wallet = require("../../model/walletScheema");
 const { calculateProportionalDiscount } = require("../../utils/discountCalculator");
 
-/**
- * Load checkout page with cart items, addresses, and coupon info
- */
+
 const loadcheckOut = async (req, res) => {
   try {
     const userId = req.user._id;
     console.log("Loading checkout page for user:", userId);
 
-    // Get user cart with populated product details
     const userCart = await Cart.findOne({ userId }).populate({
       path: 'items.productId',
       select: 'name images variants isActive categoryId'
     });
     
-    // Check if cart exists and has items
+
     if (!userCart || !userCart.items.length) {
       delete req.session.checkout;
       return res.redirect("/cart?error=Cart is empty");
     }
 
-    // Filter out inactive products or categories
+
     const validItems = [];
     for (const item of userCart.items) {
       const product = item.productId;
@@ -39,23 +36,23 @@ const loadcheckOut = async (req, res) => {
       validItems.push(item);
     }
 
-    // Update cart with valid items only
+   
     userCart.items = validItems;
     await userCart.save();
 
-    // If no valid items remain, redirect to home
+
     if (!userCart.items.length) {
       delete req.session.checkout;
       req.flash("warning", "Some items were removed from your cart. Please shop again.");
       return res.redirect("/");
     }
 
-    // Get user addresses
+
     const userAddresses = await Address.find({ userId });
 
-    // Prepare cart items for display and discount calculation
+   
     const cartItems = userCart.items.map(item => {
-      // Handle case where product might not be properly populated
+
       if (!item.productId || typeof item.productId !== 'object') {
         console.log('Warning: Product not properly populated for item:', item);
         return {
@@ -71,7 +68,7 @@ const loadcheckOut = async (req, res) => {
         };
       }
 
-      // Get variant price
+    
       const variant = item.productId.variants.find(v => v.size === item.size);
       const price = variant ? variant.salePrice : 0;
       
@@ -91,11 +88,11 @@ const loadcheckOut = async (req, res) => {
       };
     });
 
-    // Calculate totals
+
     const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
     const deliveryCharge = totalPrice > 8000 ? 0 : 200;
     
-    // Initialize discount result with no discount
+
     let discountResult = {
       cartItems: cartItems.map(item => ({
         ...item,
@@ -111,21 +108,21 @@ const loadcheckOut = async (req, res) => {
       message: "No coupon applied"
     };
 
-    // Check if a coupon is applied in the session
+
     if (req.session.checkout?.coupon) {
       console.log("Found coupon in session:", req.session.checkout.coupon.code);
       const storedCoupon = req.session.checkout.coupon;
       
-      // Validate coupon still exists and is active
+
       const coupon = await Coupon.findById(storedCoupon.couponId);
       if (!coupon || !coupon.isActive || new Date() > new Date(coupon.expiryDate)) {
         console.log("Coupon is no longer valid, removing from session");
         delete req.session.checkout.coupon;
         req.session.save();
       } else {
-        // If coupon is valid, use the stored discount information
+  
         if (storedCoupon.items && storedCoupon.items.length > 0) {
-          // Map discount info to cart items
+   
           discountResult.cartItems = cartItems.map(item => {
             const itemDiscount = storedCoupon.items.find(i => 
               i.id && item.id && i.id.toString() === item.id.toString()
@@ -159,7 +156,7 @@ const loadcheckOut = async (req, res) => {
       }
     }
 
-    // Calculate grand total
+
     const grandTotal = discountResult.finalTotal + deliveryCharge;
 
     // Update session with current totals

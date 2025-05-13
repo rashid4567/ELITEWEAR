@@ -26,6 +26,12 @@
   <!-- Socket.IO Client -->
   <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
   
+  <!-- DateRangePicker -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+  
   <!-- Custom CSS -->
   <style>
     :root {
@@ -646,6 +652,35 @@
       color: var(--gray);
     }
 
+    /* Date Range Picker Styling */
+    .daterangepicker {
+      font-family: 'Inter', sans-serif;
+      border-radius: 8px;
+      border: none;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .daterangepicker .ranges li.active {
+      background-color: var(--primary);
+    }
+
+    .daterangepicker td.active, 
+    .daterangepicker td.active:hover {
+      background-color: var(--primary);
+    }
+
+    .daterangepicker .btn-primary {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .date-range-display {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--dark);
+      margin-left: 8px;
+    }
+
     /* Responsive Styles */
     @media (max-width: 992px) {
       :root {
@@ -797,24 +832,18 @@
           <button class="btn btn-outline-primary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fas fa-download"></i> Export
           </button>
-          <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+          <ul class="dropdown-menu" aria-labelledby="exportDropdown" id="export-dropdown-menu">
             <li><a class="dropdown-item" href="/admin/dashboard/export?format=pdf&period=monthly"><i class="fas fa-file-pdf"></i> Export as PDF</a></li>
             <li><a class="dropdown-item" href="/admin/dashboard/export?format=excel&period=monthly"><i class="fas fa-file-excel"></i> Export as Excel</a></li>
           </ul>
         </div>
-        <div class="dropdown">
-          <button class="btn btn-outline-primary dropdown-toggle" type="button" id="timeRangeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-calendar"></i> Last 30 Days
+        <div class="d-flex align-items-center">
+          <button class="btn btn-outline-primary" type="button" id="dateRangeBtn">
+            <i class="fas fa-calendar"></i> <span id="dateRangeText">Last 30 Days</span>
           </button>
-          <ul class="dropdown-menu" aria-labelledby="timeRangeDropdown">
-            <li><a class="dropdown-item" href="#">Today</a></li>
-            <li><a class="dropdown-item" href="#">Yesterday</a></li>
-            <li><a class="dropdown-item" href="#">Last 7 Days</a></li>
-            <li><a class="dropdown-item" href="#">Last 30 Days</a></li>
-            <li><a class="dropdown-item" href="#">This Month</a></li>
-            <li><a class="dropdown-item" href="#">Last Month</a></li>
-            <li><a class="dropdown-item" href="#">Custom Range</a></li>
-          </ul>
+          <input type="hidden" id="startDate" value="">
+          <input type="hidden" id="endDate" value="">
+          <input type="hidden" id="timeRange" value="last30days">
         </div>
         <button class="btn btn-primary" id="refresh-data">
           <i class="fas fa-sync-alt"></i> Refresh Data
@@ -834,7 +863,7 @@
             <h3 id="total-revenue"><%= new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(totalRevenue || 0) %></h3>
             <div class="change <%= (revenueChange || 0) >= 0 ? 'positive' : 'negative' %>" id="revenue-change">
               <i class="fas <%= (revenueChange || 0) >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' %>"></i>
-              <span><%= Math.abs(revenueChange || 0).toFixed(1) %>% from last month</span>
+              <span><%= Math.abs(revenueChange || 0).toFixed(1) %>% from last period</span>
             </div>
           </div>
         </div>
@@ -849,7 +878,7 @@
             <h3 id="total-orders"><%= (totalOrders || 0).toLocaleString('en-IN') %></h3>
             <div class="change <%= (orderChange || 0) >= 0 ? 'positive' : 'negative' %>" id="order-change">
               <i class="fas <%= (orderChange || 0) >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' %>"></i>
-              <span><%= Math.abs(orderChange || 0).toFixed(1) %>% from last month</span>
+              <span><%= Math.abs(orderChange || 0).toFixed(1) %>% from last period</span>
             </div>
           </div>
         </div>
@@ -864,7 +893,7 @@
             <h3 id="total-customers"><%= (customerCount || 0).toLocaleString('en-IN') %></h3>
             <div class="change <%= (customerChange || 0) >= 0 ? 'positive' : 'negative' %>" id="customer-change">
               <i class="fas <%= (customerChange || 0) >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' %>"></i>
-              <span><%= Math.abs(customerChange || 0).toFixed(1) %>% from last month</span>
+              <span><%= Math.abs(customerChange || 0).toFixed(1) %>% from last period</span>
             </div>
           </div>
         </div>
@@ -879,7 +908,7 @@
             <h3 id="total-products"><%= (productCount || 0).toLocaleString('en-IN') %></h3>
             <div class="change <%= (productChange || 0) >= 0 ? 'positive' : 'negative' %>" id="product-change">
               <i class="fas <%= (productChange || 0) >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' %>"></i>
-              <span><%= Math.abs(productChange || 0).toFixed(1) %>% from last month</span>
+              <span><%= Math.abs(productChange || 0).toFixed(1) %>% from last period</span>
             </div>
           </div>
         </div>
@@ -1137,23 +1166,19 @@
     // Create a global object to hold all dashboard data
     window.dashboardData = {};
     
-    // Pass data directly from server to client without EJS template syntax
-   
-  window.dashboardData = {
-    monthlySalesData: JSON.parse('<%- JSON.stringify(monthlySalesData || []) %>'),
-    weeklySalesData: JSON.parse('<%- JSON.stringify(weeklySalesData || []) %>'),
-    dailySalesData: JSON.parse('<%- JSON.stringify(dailySalesData || []) %>'),
-    paymentMethodDistribution: JSON.parse('<%- JSON.stringify(paymentMethodDistribution || []) %>'),
-    orderStatusDistribution: JSON.parse('<%- JSON.stringify(orderStatusDistribution || []) %>'),
-    topCategories: JSON.parse('<%- JSON.stringify(topCategories || []) %>'),
-    topBrands: JSON.parse('<%- JSON.stringify(topBrands || []) %>'),
-    recentOrders: JSON.parse('<%- JSON.stringify(recentOrders || []) %>'),
-    topProducts: JSON.parse('<%- JSON.stringify(topProducts || []) %>'),
-    lastUpdated: "<%- new Date().toISOString() %>"
-  };
-  console.log("Dashboard data initialized", window.dashboardData);
-</script>
-    
+    // Pass data directly from server to client
+    window.dashboardData = {
+      monthlySalesData: JSON.parse('<%- JSON.stringify(monthlySalesData || []) %>'),
+      weeklySalesData: JSON.parse('<%- JSON.stringify(weeklySalesData || []) %>'),
+      dailySalesData: JSON.parse('<%- JSON.stringify(dailySalesData || []) %>'),
+      paymentMethodDistribution: JSON.parse('<%- JSON.stringify(paymentMethodDistribution || []) %>'),
+      orderStatusDistribution: JSON.parse('<%- JSON.stringify(orderStatusDistribution || []) %>'),
+      topCategories: JSON.parse('<%- JSON.stringify(topCategories || []) %>'),
+      topBrands: JSON.parse('<%- JSON.stringify(topBrands || []) %>'),
+      recentOrders: JSON.parse('<%- JSON.stringify(recentOrders || []) %>'),
+      topProducts: JSON.parse('<%- JSON.stringify(topProducts || []) %>'),
+      lastUpdated: "<%- new Date().toISOString() %>"
+    };
     console.log("Dashboard data initialized", window.dashboardData);
   </script>
 
@@ -1327,157 +1352,157 @@
       // Initialize Distribution Chart (Donut Chart)
       let distributionChart;
       
-      // Update the initDistributionChart function to handle zero values
-function initDistributionChart() {
-  console.log("Initializing distribution chart");
-  const distributionChartEl = document.getElementById("distributionChart");
-  if (!distributionChartEl) {
-    console.error("Distribution chart element not found");
-    return;
-  }
+      function initDistributionChart() {
+        console.log("Initializing distribution chart");
+        const distributionChartEl = document.getElementById("distributionChart");
+        if (!distributionChartEl) {
+          console.error("Distribution chart element not found");
+          return;
+        }
 
-  const ctx = distributionChartEl.getContext("2d");
-  if (!ctx) {
-    console.error("Could not get 2D context for distribution chart");
-    return;
-  }
+        const ctx = distributionChartEl.getContext("2d");
+        if (!ctx) {
+          console.error("Could not get 2D context for distribution chart");
+          return;
+        }
 
-  // Show loading
-  const loadingEl = document.getElementById("distribution-chart-loading");
-  if (loadingEl) loadingEl.style.display = "flex";
+        // Show loading
+        const loadingEl = document.getElementById("distribution-chart-loading");
+        if (loadingEl) loadingEl.style.display = "flex";
 
-  try {
-    // Filter payment method data to include only the three required methods
-    const requiredPaymentMethods = ["Online Payment", "COD", "Wallet"];
-    let paymentData = [];
-    
-    // Check if we have payment method distribution data
-    if (
-      !window.dashboardData ||
-      !window.dashboardData.paymentMethodDistribution ||
-      window.dashboardData.paymentMethodDistribution.length === 0
-    ) {
-      // Create fallback data if no data is available
-      console.log("Creating fallback payment method data");
-      paymentData = [
-        { _id: "Online", revenue: 100, count: 10 },
-        { _id: "COD", revenue: 75, count: 8 },
-        { _id: "Wallet", revenue: 50, count: 5 },
-      ];
-    } else {
-      paymentData = window.dashboardData.paymentMethodDistribution;
-      
-      // Check if all values are zero
-      const allZeros = paymentData.every(item => item.revenue === 0);
-      
-      if (allZeros) {
-        console.log("All payment method revenues are zero, using sample data for visualization");
-        paymentData = [
-          { _id: "Online", revenue: 100, count: 10 },
-          { _id: "COD", revenue: 75, count: 8 },
-          { _id: "Wallet", revenue: 50, count: 5 },
-        ];
-      }
-    }
+        try {
+          // Filter payment method data to include only the three required methods
+          const requiredPaymentMethods = ["Online", "COD", "Wallet"];
+          let paymentData = [];
+          
+          // Check if we have payment method distribution data
+          if (
+            !window.dashboardData ||
+            !window.dashboardData.paymentMethodDistribution ||
+            window.dashboardData.paymentMethodDistribution.length === 0
+          ) {
+            // Create fallback data if no data is available
+            console.log("Creating fallback payment method data");
+            paymentData = [
+              { _id: "Online", revenue: 100, count: 10 },
+              { _id: "COD", revenue: 75, count: 8 },
+              { _id: "Wallet", revenue: 50, count: 5 },
+            ];
+          } else {
+            paymentData = window.dashboardData.paymentMethodDistribution;
+            
+            // Check if all values are zero
+            const allZeros = paymentData.every(item => item.revenue === 0);
+            
+            if (allZeros) {
+              console.log("All payment method revenues are zero, using sample data for visualization");
+              paymentData = [
+                { _id: "Online", revenue: 100, count: 10 },
+                { _id: "COD", revenue: 75, count: 8 },
+                { _id: "Wallet", revenue: 50, count: 5 },
+              ];
+            }
+          }
 
-    console.log("Prepared payment data:", paymentData);
+          console.log("Prepared payment data:", paymentData);
 
-    // Prepare data for the chart
-    const labels = paymentData.map(item => item._id);
-    const data = paymentData.map(item => item.revenue);
-    const total = data.reduce((sum, value) => sum + value, 0) || 1; // Avoid division by zero
-    const percentages = data.map(value => ((value / total) * 100).toFixed(1) + '%');
+          // Prepare data for the chart
+          const labels = paymentData.map(item => item._id);
+          const data = paymentData.map(item => item.revenue);
+          const total = data.reduce((sum, value) => sum + value, 0) || 1; // Avoid division by zero
+          const percentages = data.map(value => ((value / total) * 100).toFixed(1) + '%');
 
-    // Destroy existing chart if it exists
-    if (distributionChart) {
-      distributionChart.destroy();
-    }
+          // Destroy existing chart if it exists
+          if (distributionChart) {
+            distributionChart.destroy();
+          }
 
-    // Create the chart
-    distributionChart = new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            data: data,
-            backgroundColor: chartColors.slice(0, data.length),
-            borderColor: chartBorderColors.slice(0, data.length),
-            borderWidth: 1,
-          },
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: "70%",
-        plugins: {
-          legend: {
-            display: false, // Hide default legend, we'll create our own
-          },
-          tooltip: {
-            callbacks: {
-              label: (context) => {
-                const label = context.label || "";
-                const value = context.raw || 0;
-                const percentage = ((value / total) * 100).toFixed(1);
-                return `${label}: ${formatCurrency(value)} (${percentage}%)`;
+          // Create the chart
+          distributionChart = new Chart(ctx, {
+            type: "doughnut",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  data: data,
+                  backgroundColor: chartColors.slice(0, data.length),
+                  borderColor: chartBorderColors.slice(0, data.length),
+                  borderWidth: 1,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: "70%",
+              plugins: {
+                legend: {
+                  display: false, // Hide default legend, we'll create our own
+                },
+                tooltip: {
+                  callbacks: {
+                    label: (context) => {
+                      const label = context.label || "";
+                      const value = context.raw || 0;
+                      const percentage = ((value / total) * 100).toFixed(1);
+                      return `${label}: ${formatCurrency(value)} (${percentage}%)`;
+                    },
+                  },
+                },
               },
             },
-          },
-        },
-      },
-    });
-    
-    // Create custom legend
-    const legendContainer = document.getElementById("payment-method-legend");
-    if (legendContainer) {
-      legendContainer.innerHTML = "";
-      
-      paymentData.forEach((item, index) => {
-        const percentage = ((item.revenue / total) * 100).toFixed(1);
-        
-        const legendItem = document.createElement("div");
-        legendItem.className = "payment-method-item";
-        
-        const colorBox = document.createElement("div");
-        colorBox.className = "payment-method-color";
-        colorBox.style.backgroundColor = chartColors[index];
-        
-        const labelSpan = document.createElement("span");
-        labelSpan.className = "payment-method-label";
-        labelSpan.textContent = item._id;
-        
-        const valueSpan = document.createElement("span");
-        valueSpan.className = "payment-method-value";
-        valueSpan.textContent = formatCurrency(item.revenue);
-        
-        const percentageSpan = document.createElement("span");
-        percentageSpan.className = "payment-method-percentage";
-        percentageSpan.textContent = `(${percentage}%)`;
-        
-        legendItem.appendChild(colorBox);
-        legendItem.appendChild(labelSpan);
-        legendItem.appendChild(valueSpan);
-        legendItem.appendChild(percentageSpan);
-        
-        legendContainer.appendChild(legendItem);
-      });
-    }
+          });
+          
+          // Create custom legend
+          const legendContainer = document.getElementById("payment-method-legend");
+          if (legendContainer) {
+            legendContainer.innerHTML = "";
+            
+            paymentData.forEach((item, index) => {
+              const percentage = ((item.revenue / total) * 100).toFixed(1);
+              
+              const legendItem = document.createElement("div");
+              legendItem.className = "payment-method-item";
+              
+              const colorBox = document.createElement("div");
+              colorBox.className = "payment-method-color";
+              colorBox.style.backgroundColor = chartColors[index];
+              
+              const labelSpan = document.createElement("span");
+              labelSpan.className = "payment-method-label";
+              labelSpan.textContent = item._id;
+              
+              const valueSpan = document.createElement("span");
+              valueSpan.className = "payment-method-value";
+              valueSpan.textContent = formatCurrency(item.revenue);
+              
+              const percentageSpan = document.createElement("span");
+              percentageSpan.className = "payment-method-percentage";
+              percentageSpan.textContent = `(${percentage}%)`;
+              
+              legendItem.appendChild(colorBox);
+              legendItem.appendChild(labelSpan);
+              legendItem.appendChild(valueSpan);
+              legendItem.appendChild(percentageSpan);
+              
+              legendContainer.appendChild(legendItem);
+            });
+          }
 
-    console.log("Distribution chart created successfully");
-  } catch (error) {
-    console.error("Error creating distribution chart:", error);
-    // Display error message on the chart
-    const errorMessage = document.createElement('div');
-    errorMessage.className = 'chart-error';
-    errorMessage.innerHTML = '<i class="fas fa-exclamation-circle text-danger" style="font-size: 24px;"></i><p class="mt-2">Failed to load chart</p>';
-    distributionChartEl.parentNode.appendChild(errorMessage);
-  } finally {
-    // Hide loading
-    if (loadingEl) loadingEl.style.display = "none";
-  }
-}
+          console.log("Distribution chart created successfully");
+        } catch (error) {
+          console.error("Error creating distribution chart:", error);
+          // Display error message on the chart
+          const errorMessage = document.createElement('div');
+          errorMessage.className = 'chart-error';
+          errorMessage.innerHTML = '<i class="fas fa-exclamation-circle text-danger" style="font-size: 24px;"></i><p class="mt-2">Failed to load chart</p>';
+          distributionChartEl.parentNode.appendChild(errorMessage);
+        } finally {
+          // Hide loading
+          if (loadingEl) loadingEl.style.display = "none";
+        }
+      }
+
       // Initialize Sales Chart (Line Chart)
       let salesChart;
       function initSalesChart() {
@@ -2016,6 +2041,152 @@ function initDistributionChart() {
         });
       }
 
+      // Date Range Picker Initialization
+      $(function() {
+        // Initialize date range picker
+        $('#dateRangeBtn').daterangepicker({
+          ranges: {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+            'This Quarter': [moment().startOf('quarter'), moment().endOf('quarter')],
+            'Last Quarter': [moment().subtract(1, 'quarter').startOf('quarter'), moment().subtract(1, 'quarter').endOf('quarter')],
+            'This Year': [moment().startOf('year'), moment().endOf('year')],
+            'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')]
+          },
+          startDate: moment().subtract(29, 'days'),
+          endDate: moment(),
+          locale: {
+            format: 'MMM D, YYYY'
+          },
+          alwaysShowCalendars: true,
+          opens: 'left'
+        }, function(start, end, label) {
+          // Update hidden inputs with selected dates
+          document.getElementById('startDate').value = start.format('YYYY-MM-DD');
+          document.getElementById('endDate').value = end.format('YYYY-MM-DD');
+          
+          // Update time range value based on preset or set to 'custom'
+          let timeRange = 'custom';
+          if (label && label !== 'Custom Range') {
+            timeRange = label.toLowerCase().replace(/\s+/g, '');
+          }
+          document.getElementById('timeRange').value = timeRange;
+          
+          // Update button text
+          document.getElementById('dateRangeText').textContent = label;
+          
+          // Update export links with date range
+          updateExportLinks(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'), timeRange);
+          
+          // Refresh data with new date range
+          refreshData(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'), timeRange);
+        });
+        
+        // Set initial date range (last 30 days)
+        const startDate = moment().subtract(29, 'days').format('YYYY-MM-DD');
+        const endDate = moment().format('YYYY-MM-DD');
+        document.getElementById('startDate').value = startDate;
+        document.getElementById('endDate').value = endDate;
+        
+        // Update export links with initial date range
+        updateExportLinks(startDate, endDate, 'last30days');
+      });
+
+      // Update export links with date range parameters
+      function updateExportLinks(startDate, endDate, timeRange) {
+        const exportLinks = document.querySelectorAll('#export-dropdown-menu a');
+        exportLinks.forEach(link => {
+          const url = new URL(link.href);
+          url.searchParams.set('startDate', startDate);
+          url.searchParams.set('endDate', endDate);
+          url.searchParams.set('timeRange', timeRange);
+          link.href = url.toString();
+        });
+      }
+
+      // Refresh data with date range
+      function refreshData(startDate, endDate, timeRange) {
+        console.log("Refreshing data with date range:", { startDate, endDate, timeRange });
+        
+        // Show loading indicators
+        const loadingElements = document.querySelectorAll(".loading-overlay");
+        loadingElements.forEach((el) => {
+          el.style.display = "flex";
+        });
+        
+        // Build query parameters
+        let queryParams = new URLSearchParams();
+        if (startDate && endDate) {
+          queryParams.append('startDate', startDate);
+          queryParams.append('endDate', endDate);
+        }
+        if (timeRange) {
+          queryParams.append('timeRange', timeRange);
+        }
+        
+        // Fetch fresh data from the server
+        fetch(`/admin/dashboard/chart-data?${queryParams.toString()}`)
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Update dashboard data with new data
+              if (data.data.monthlySalesData) window.dashboardData.monthlySalesData = data.data.monthlySalesData;
+              if (data.data.weeklySalesData) window.dashboardData.weeklySalesData = data.data.weeklySalesData;
+              if (data.data.dailySalesData) window.dashboardData.dailySalesData = data.data.dailySalesData;
+              if (data.data.paymentMethodDistribution) window.dashboardData.paymentMethodDistribution = data.data.paymentMethodDistribution;
+              if (data.data.topCategories) window.dashboardData.topCategories = data.data.topCategories;
+              if (data.data.topBrands) window.dashboardData.topBrands = data.data.topBrands;
+              if (data.data.topProducts) window.dashboardData.topProducts = data.data.topProducts;
+              if (data.data.recentOrders) window.dashboardData.recentOrders = data.data.recentOrders;
+              
+              // Reinitialize all charts
+              initDistributionChart();
+              initSalesChart();
+              initTopCategoriesChart();
+              initTopBrandsChart();
+              
+              // Update tables
+              if (data.data.recentOrders) updateRecentOrders(data.data.recentOrders);
+              if (data.data.topProducts) updateTopProducts(data.data.topProducts);
+              
+              // Update last updated time
+              window.dashboardData.lastUpdated = new Date().toISOString();
+              updateLastUpdatedTime();
+              
+              // Show success toast
+              if (successToast) {
+                document.getElementById("success-toast-message").textContent = "Dashboard data refreshed successfully.";
+                successToast.show();
+              }
+            } else {
+              // Show error toast
+              if (errorToast) {
+                document.getElementById("error-toast-message").textContent = data.message || "An error occurred while refreshing data.";
+                errorToast.show();
+              }
+            }
+          })
+          .catch(error => {
+            console.error("Error refreshing data:", error);
+            
+            // Show error toast
+            if (errorToast) {
+              document.getElementById("error-toast-message").textContent = "Failed to connect to the server.";
+              errorToast.show();
+            }
+          })
+          .finally(() => {
+            // Hide loading indicators
+            loadingElements.forEach((el) => {
+              el.style.display = "none";
+            });
+          });
+      }
+
       // Initialize all charts
       initDistributionChart();
       initSalesChart();
@@ -2049,69 +2220,13 @@ function initDistributionChart() {
         refreshDataBtn.addEventListener("click", () => {
           console.log("Refresh button clicked");
           
-          // Show loading indicators
-          const loadingElements = document.querySelectorAll(".loading-overlay");
-          loadingElements.forEach((el) => {
-            el.style.display = "flex";
-          });
+          // Get current date range values
+          const startDate = document.getElementById('startDate').value;
+          const endDate = document.getElementById('endDate').value;
+          const timeRange = document.getElementById('timeRange').value;
           
-          // Fetch fresh data from the server
-          fetch('/admin/dashboard/chart-data')
-            .then(response => response.json())
-            .then(data => {
-              if (data.success) {
-                // Update dashboard data with new data
-                if (data.data.monthlySalesData) window.dashboardData.monthlySalesData = data.data.monthlySalesData;
-                if (data.data.weeklySalesData) window.dashboardData.weeklySalesData = data.data.weeklySalesData;
-                if (data.data.dailySalesData) window.dashboardData.dailySalesData = data.data.dailySalesData;
-                if (data.data.paymentMethodDistribution) window.dashboardData.paymentMethodDistribution = data.data.paymentMethodDistribution;
-                if (data.data.topCategories) window.dashboardData.topCategories = data.data.topCategories;
-                if (data.data.topBrands) window.dashboardData.topBrands = data.data.topBrands;
-                if (data.data.topProducts) window.dashboardData.topProducts = data.data.topProducts;
-                if (data.data.recentOrders) window.dashboardData.recentOrders = data.data.recentOrders;
-                
-                // Reinitialize all charts
-                initDistributionChart();
-                initSalesChart();
-                initTopCategoriesChart();
-                initTopBrandsChart();
-                
-                // Update tables
-                if (data.data.recentOrders) updateRecentOrders(data.data.recentOrders);
-                if (data.data.topProducts) updateTopProducts(data.data.topProducts);
-                
-                // Update last updated time
-                window.dashboardData.lastUpdated = new Date().toISOString();
-                updateLastUpdatedTime();
-                
-                // Show success toast
-                if (successToast) {
-                  document.getElementById("success-toast-message").textContent = "Dashboard data refreshed successfully.";
-                  successToast.show();
-                }
-              } else {
-                // Show error toast
-                if (errorToast) {
-                  document.getElementById("error-toast-message").textContent = data.message || "An error occurred while refreshing data.";
-                  errorToast.show();
-                }
-              }
-            })
-            .catch(error => {
-              console.error("Error refreshing data:", error);
-              
-              // Show error toast
-              if (errorToast) {
-                document.getElementById("error-toast-message").textContent = "Failed to connect to the server.";
-                errorToast.show();
-              }
-            })
-            .finally(() => {
-              // Hide loading indicators
-              loadingElements.forEach((el) => {
-                el.style.display = "none";
-              });
-            });
+          // Refresh data with current date range
+          refreshData(startDate, endDate, timeRange);
         });
       }
 

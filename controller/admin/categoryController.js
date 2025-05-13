@@ -230,21 +230,21 @@ const geteditCategory = async (req, res) => {
 
 const updateProductsWithCategoryOffer = async (categoryId, offerValue, maxRedeemable = 0) => {
   try {
-   
+
     const products = await Product.find({ categoryId: categoryId })
 
     for (const product of products) {
-     
+
       const { discount: effectiveDiscount, source: discountSource } = calculateEffectiveDiscount(
         product.offer,
         offerValue,
       )
 
- 
+      
       product.effectiveDiscount = effectiveDiscount
       product.discountSource = discountSource
 
-
+  
       product.variants = product.variants.map((variant) => {
         return applyDiscountToVariant(variant, effectiveDiscount, maxRedeemable)
       })
@@ -264,67 +264,85 @@ const editCategory = async (req, res) => {
     const id = req.body.id
 
     if (!id) {
-      return res.status(400).json({ error: "Missing category ID" })
+      return res.status(400).json({ success: false, message: "Missing category ID" })
     }
 
-    const { name, description, offer, maxRedeemable } = req.body
+    const { name, description, stock = 0, offer = 0, maxRedeemable = 0 } = req.body
     const trimmedName = name.trim()
     const trimmedDescription = description.trim()
-    const offerValue = Number(offer)
-    const maxRedeemableValue = Number(maxRedeemable);
+    const offerValue = Number(offer) || 0
+    const maxRedeemableValue = Number(maxRedeemable) || 0
+    const stockValue = Number(stock) || 0
 
-    if(isNaN(maxRedeemableValue) || maxRedeemableValue < 0){
-      return res.status(400).json({success:false, message :"Max Redeemable amount can't be a negative number"})
-    }
-    if(maxRedeemableValue > 500000){
-      return res.status(400).json({success:false, message : "Max redeemable can't be more than 5 lakhs "})
-    }
-
-    if (offerValue < 0) {
-      return res.status(400).json({ error: "Offer cannot be negative" })
+    // Validate inputs
+    if (!trimmedName) {
+      return res.status(400).json({ success: false, message: "Category name is required" })
     }
 
-    const productsInCategory = await Product.find({ category: id })
-
-    if (productsInCategory.length > 0) {
-      const minProductPrice = Math.min(...productsInCategory.map((product) => product.price))
-
-      if (offerValue >= minProductPrice) {
-        return res.status(400).json({
-          error: "Category offer must be less than the minimum product price in this category",
-        })
-      }
+    if (trimmedName.includes(" ")) {
+      return res.status(400).json({ success: false, message: "Category name cannot contain spaces" })
     }
+
+    if (/\d/.test(trimmedName)) {
+      return res.status(400).json({ success: false, message: "Category name cannot contain numbers" })
+    }
+
+    if (trimmedDescription.length < 20) {
+      return res.status(400).json({
+        success: false,
+        message: `Description must be at least 20 characters (currently ${trimmedDescription.length})`,
+      })
+    }
+
+    if (offerValue < 0 || offerValue > 100) {
+      return res.status(400).json({ success: false, message: "Offer must be between 0 and 100%" })
+    }
+
+    if (maxRedeemableValue < 0) {
+      return res.status(400).json({ success: false, message: "Max redeemable amount cannot be negative" })
+    }
+
+    if (maxRedeemableValue > 500000) {
+      return res.status(400).json({ success: false, message: "Max redeemable cannot exceed ₹500,000" })
+    }
+
 
     const existingCategory = await Category.findOne({
-      name: trimmedName,
+      name: { $regex: new RegExp(`^${trimmedName}$`, "i") },
       _id: { $ne: id },
     })
 
     if (existingCategory) {
-      return res.status(400).json({ error: "Category already exists" })
+      return res.status(400).json({ success: false, message: "Category already exists" })
     }
+
 
     const updatedCategory = await Category.findByIdAndUpdate(
       id,
       {
         $set: {
-          name: trimmedName,
+          name: trimmedName.charAt(0).toUpperCase() + trimmedName.slice(1),
           description: trimmedDescription,
+          stock: stockValue,
           offer: offerValue,
+          maxRedeemable: maxRedeemableValue,
+          updatedAt: new Date(),
         },
       },
       { new: true },
     )
 
     if (!updatedCategory) {
-      return res.status(404).json({ error: "Category not found" })
+      return res.status(404).json({ success: false, message: "Category not found" })
     }
+
+ 
+    await updateProductsWithCategoryOffer(id, offerValue, maxRedeemableValue)
 
     res.redirect("/admin/categories")
   } catch (error) {
     console.error("Error updating category:", error)
-    res.status(500).json({ error: error.message || "Internal server error" })
+    return res.status(500).json({ success: false, message: "Internal server error" })
   }
 }
 
@@ -333,10 +351,10 @@ const applyCategoryOffer = async (categoryId) => {
     const category = await Category.findById(categoryId)
     if (!category || !category.offer) return
 
-    const products = await Product.find({ category: categoryId })
+    const products = await Product.find({ categoryId: categoryId })
 
     for (const product of products) {
-      if (category.offer < product.price) {
+      if (category.offer > 0) {
         await Product.findByIdAndUpdate(product._id, {
           $set: {
             categoryDiscount: category.offer,
@@ -346,57 +364,6 @@ const applyCategoryOffer = async (categoryId) => {
     }
   } catch (error) {
     console.error("Error applying category offer:", error)
-  }
-}
-
-const editCategoryWithOffer = async (req, res) => {
-  try {
-    const id = req.body.id
-
-    if (!id) {
-      return res.status(400).json({ error: "Missing category ID" })
-    }
-
-    const { name, description, offer } = req.body
-    const trimmedName = name.trim()
-    const trimmedDescription = description.trim()
-    const offerValue = Number(offer)
-
-    if (offerValue < 0) {
-      return res.status(400).json({ error: "Offer cannot be negative" })
-    }
-
-    const existingCategory = await Category.findOne({
-      name: trimmedName,
-      _id: { $ne: id },
-    })
-
-    if (existingCategory) {
-      return res.status(400).json({ error: "Category already exists" })
-    }
-
-    const updatedCategory = await Category.findByIdAndUpdate(
-      id,
-      {
-        $set: {
-          name: trimmedName,
-          description: trimmedDescription,
-          offer: offerValue,
-        },
-      },
-      { new: true },
-    )
-
-    if (!updatedCategory) {
-      return res.status(404).json({ error: "Category not found" })
-    }
-
-    await applyCategoryOffer(id)
-
-    res.redirect("/admin/categories")
-  } catch (error) {
-    console.error("Error updating category:", error)
-    res.status(500).json({ error: error.message || "Internal server error" })
   }
 }
 
@@ -434,7 +401,7 @@ const applyDiscountToVariant = (variant, discount, maxRedeemable) => {
   const originalPrice = variant.price
   let discountAmount = (originalPrice * discount) / 100
 
-  
+ 
   if (maxRedeemable > 0 && discountAmount > maxRedeemable) {
     discountAmount = maxRedeemable
   }
@@ -448,7 +415,7 @@ module.exports = {
   addCategory,
   toggleCategory,
   geteditCategory,
-  editCategory: editCategoryWithOffer,
+  editCategory,
   deleteCategory,
   checkCategoryNameExists,
 }
