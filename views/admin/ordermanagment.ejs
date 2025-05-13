@@ -153,21 +153,21 @@
             <div class="filter-group">
               <label class="filter-label">Status</label>
               <select class="filter-select" id="statusFilter">
-                <option value="All">All Statuses</option>
-                <option value="Pending">Pending</option>
-                <option value="Processing">Processing</option>
-                <option value="Confirmed">Confirmed</option>
-                <option value="Shipped">Shipped</option>
-                <option value="Delivered">Delivered</option>
-                <option value="Cancelled">Cancelled</option>
-                <option value="Return Requested">Return Requested</option>
-                <option value="Return Approved">Return Approved</option>
-                <option value="Returned">Returned</option>
-                <option value="Return Rejected">Return Rejected</option>
-                <option value="Partially Cancelled">Partially Cancelled</option>
-                <option value="Partially Returned">Partially Returned</option>
-                <option value="Partially Delivered">Partially Delivered</option>
-                <option value="Partially Shipped">Partially Shipped</option>
+                <option value="All" <%= currentStatus === 'All' ? 'selected' : '' %>>All Statuses</option>
+                <option value="Pending" <%= currentStatus === 'Pending' ? 'selected' : '' %>>Pending</option>
+                <option value="Processing" <%= currentStatus === 'Processing' ? 'selected' : '' %>>Processing</option>
+                <option value="Confirmed" <%= currentStatus === 'Confirmed' ? 'selected' : '' %>>Confirmed</option>
+                <option value="Shipped" <%= currentStatus === 'Shipped' ? 'selected' : '' %>>Shipped</option>
+                <option value="Delivered" <%= currentStatus === 'Delivered' ? 'selected' : '' %>>Delivered</option>
+                <option value="Cancelled" <%= currentStatus === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                <option value="Return Requested" <%= currentStatus === 'Return Requested' ? 'selected' : '' %>>Return Requested</option>
+                <option value="Return Approved" <%= currentStatus === 'Return Approved' ? 'selected' : '' %>>Return Approved</option>
+                <option value="Returned" <%= currentStatus === 'Returned' ? 'selected' : '' %>>Returned</option>
+                <option value="Return Rejected" <%= currentStatus === 'Return Rejected' ? 'selected' : '' %>>Return Rejected</option>
+                <option value="Partially Cancelled" <%= currentStatus === 'Partially Cancelled' ? 'selected' : '' %>>Partially Cancelled</option>
+                <option value="Partially Returned" <%= currentStatus === 'Partially Returned' ? 'selected' : '' %>>Partially Returned</option>
+                <option value="Partially Delivered" <%= currentStatus === 'Partially Delivered' ? 'selected' : '' %>>Partially Delivered</option>
+                <option value="Partially Shipped" <%= currentStatus === 'Partially Shipped' ? 'selected' : '' %>>Partially Shipped</option>
               </select>
             </div>
 
@@ -189,18 +189,19 @@
                 class="search-input"
                 id="searchInput"
                 placeholder="Search by order ID, customer name..."
+                value="<%= searchQuery %>"
               />
             </div>
           </div>
 
           <div class="time-filter">
-            <button class="time-filter-btn active" data-range="all">
+            <button class="time-filter-btn <%= timeRange === 'all' ? 'active' : '' %>" data-range="all">
               All Time
             </button>
-            <button class="time-filter-btn" data-range="12m">12 Months</button>
-            <button class="time-filter-btn" data-range="30d">30 Days</button>
-            <button class="time-filter-btn" data-range="7d">7 Days</button>
-            <button class="time-filter-btn" data-range="24h">24 Hours</button>
+            <button class="time-filter-btn <%= timeRange === '12m' ? 'active' : '' %>" data-range="12m">12 Months</button>
+            <button class="time-filter-btn <%= timeRange === '30d' ? 'active' : '' %>" data-range="30d">30 Days</button>
+            <button class="time-filter-btn <%= timeRange === '7d' ? 'active' : '' %>" data-range="7d">7 Days</button>
+            <button class="time-filter-btn <%= timeRange === '24h' ? 'active' : '' %>" data-range="24h">24 Hours</button>
           </div>
         </div>
 
@@ -254,179 +255,137 @@
                   </tr>
                 </thead>
                 <tbody id="ordersTableBody">
-                  <% if (orders && orders.length > 0) { %> <%
-                  orders.forEach(order => { %>
-                  <tr>
-                    <td class="order-id"><%= order.orderNumber %></td>
-                    <td>
-                      <div class="product-cell">
-                        <div class="product-image">
-                          <% if (order.order_items && order.order_items.length >
-                          0) { %> <% if (order.order_items[0].productId &&
-                          order.order_items[0].productId.images &&
-                          order.order_items[0].productId.images.length > 0) { %>
-                          <img
-                            src="<%= order.order_items[0].productId.images[0].url %>"
-                            alt="Product"
-                          />
-                          <% } else if (order.order_items[0].itemImage) { %>
-                          <img
-                            src="<%= order.order_items[0].itemImage %>"
-                            alt="Product"
-                          />
-                          <% } else { %>
-                          <img
-                            src="/placeholder.svg?height=50&width=50&query=product"
-                            alt="Product"
-                          />
-                          <% } %> <% } else { %>
-                          <img
-                            src="/placeholder.svg?height=50&width=50&query=product"
-                            alt="Product"
-                          />
-                          <% } %>
-                        </div>
-                        <div class="product-info">
-                          <% if (order.order_items && order.order_items.length >
-                          0) { %>
-                          <div class="product-name">
-                            <%= order.order_items[0].product_name ||
-                            (order.order_items[0].productId ?
-                            order.order_items[0].productId.name : 'Unknown
-                            Product') %>
+                  <% if (orders && orders.length > 0) { %>
+                    <% orders.forEach(order => { %>
+                      <tr data-status="<%= order.status %>" data-total="<%= order.total %>">
+                        <td class="order-id"><%= order.orderNumber %></td>
+                        <td>
+                          <div class="product-cell">
+                            <div class="product-image">
+                              <% if (order.order_items && order.order_items.length > 0) { %>
+                                <% if (order.order_items[0].productId && order.order_items[0].productId.images && order.order_items[0].productId.images.length > 0) { %>
+                                  <img src="<%= order.order_items[0].productId.images[0].url %>" alt="Product" />
+                                <% } else if (order.order_items[0].itemImage) { %>
+                                  <img src="<%= order.order_items[0].itemImage %>" alt="Product" />
+                                <% } else { %>
+                                  <img src="/placeholder.svg?height=50&width=50&query=product" alt="Product" />
+                                <% } %>
+                              <% } else { %>
+                                <img src="/placeholder.svg?height=50&width=50&query=product" alt="Product" />
+                              <% } %>
+                            </div>
+                            <div class="product-info">
+                              <% if (order.order_items && order.order_items.length > 0) { %>
+                                <div class="product-name">
+                                  <%= order.order_items[0].product_name || (order.order_items[0].productId ? order.order_items[0].productId.name : 'Unknown Product') %>
+                                </div>
+                                <div class="product-meta">
+                                  <% if (order.order_items.length > 1) { %>
+                                    + <%= order.order_items.length - 1 %> other items
+                                  <% } else { %>
+                                    Size: <%= order.order_items[0].size || 'N/A' %>, Qty: <%= order.order_items[0].quantity || 1 %>
+                                  <% } %>
+                                </div>
+                              <% } else { %>
+                                <div class="product-name">No items</div>
+                              <% } %>
+                            </div>
                           </div>
-                          <div class="product-meta">
-                            <% if (order.order_items.length > 1) { %> + <%=
-                            order.order_items.length - 1 %> other items <% }
-                            else { %> Size: <%= order.order_items[0].size ||
-                            'N/A' %>, Qty: <%= order.order_items[0].quantity ||
-                            1 %> <% } %>
+                        </td>
+                        <td>
+                          <%= new Date(order.orderDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                        </td>
+                        <td>
+                          <div class="customer-cell">
+                            <% if (order.userId) { %>
+                              <div class="customer-name">
+                                <%= order.userId.name || order.userId.fullname || 'Unknown' %>
+                              </div>
+                              <div class="customer-email">
+                                <%= order.userId.email || 'No email' %>
+                              </div>
+                            <% } else { %>
+                              <div class="customer-name">Unknown User</div>
+                            <% } %>
                           </div>
-                          <% } else { %>
-                          <div class="product-name">No items</div>
+                        </td>
+                        <td class="price-cell">₹<%= order.total.toFixed(2) %></td>
+                        <td>
+                          <div class="payment-method <%= order.paymentMethod.toLowerCase().includes('cod') ? 'cod' : (order.paymentMethod.toLowerCase().includes('wallet') ? 'wallet' : 'online') %>">
+                            <i class="<%= order.paymentMethod.toLowerCase().includes('cod') ? 'fas fa-money-bill-wave' : (order.paymentMethod.toLowerCase().includes('wallet') ? 'fas fa-wallet' : 'fas fa-credit-card') %>"></i>
+                            <%= order.paymentMethod %>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="status-badge <%= order.status.toLowerCase().replace(/\s+/g, '-') %>">
+                            <% 
+                              let statusIcon = 'fas fa-info-circle';
+                              switch(order.status) {
+                                case 'Pending': statusIcon = 'fas fa-clock'; break;
+                                case 'Processing': statusIcon = 'fas fa-spinner'; break;
+                                case 'Confirmed': statusIcon = 'fas fa-check'; break;
+                                case 'Shipped': statusIcon = 'fas fa-truck'; break;
+                                case 'Delivered': statusIcon = 'fas fa-check-circle'; break;
+                                case 'Cancelled': statusIcon = 'fas fa-times-circle'; break;
+                                case 'Return Requested': statusIcon = 'fas fa-undo'; break;
+                                case 'Return Approved': statusIcon = 'fas fa-check-square'; break;
+                                case 'Returned': statusIcon = 'fas fa-box'; break;
+                                case 'Return Rejected': statusIcon = 'fas fa-ban'; break;
+                                case 'Partially Cancelled': statusIcon = 'fas fa-exclamation-circle'; break;
+                                case 'Partially Returned': statusIcon = 'fas fa-exchange-alt'; break;
+                                case 'Partially Delivered': statusIcon = 'fas fa-truck-loading'; break;
+                                case 'Partially Shipped': statusIcon = 'fas fa-dolly'; break;
+                              }
+                            %>
+                            <i class="<%= statusIcon %>"></i>
+                            <%= order.status %>
+                          </div>
+                          <% if (order.returnRejectionReason) { %>
+                            <div class="reason-tag">
+                              <i class="fas fa-info-circle"></i>
+                              <%= order.returnRejectionReason.substring(0, 20) %>...
+                            </div>
                           <% } %>
+                        </td>
+                        <td>
+                          <div class="action-buttons">
+                            <a href="/admin/orders/<%= order._id %>" class="action-btn view" title="View Details">
+                              <i class="far fa-eye"></i>
+                            </a>
+                            <button class="action-btn edit" title="Update Status" onclick="openStatusModal('<%= order._id %>', '<%= order.status %>')">
+                              <i class="fas fa-edit"></i>
+                            </button>
+                            <% if (order.status === 'Return Requested') { %>
+                              <button class="action-btn approve" title="Approve Return" onclick="openApproveReturnModal('<%= order._id %>')">
+                                <i class="fas fa-check"></i>
+                              </button>
+                              <button class="action-btn reject" title="Reject Return" onclick="openRejectReturnModal('<%= order._id %>')">
+                                <i class="fas fa-times"></i>
+                              </button>
+                            <% } %>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  <% } else { %>
+                    <tr>
+                      <td colspan="8">
+                        <div class="empty-state">
+                          <div class="empty-state-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                          </div>
+                          <h3 class="empty-state-title">No Orders Found</h3>
+                          <p class="empty-state-description">
+                            There are no orders matching your criteria. Try
+                            adjusting your filters or create a new order.
+                          </p>
+                          <button class="empty-state-action" onclick="resetFilters()">
+                            <i class="fas fa-redo"></i>
+                            Reset Filters
+                          </button>
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      <%= new Date(order.orderDate).toLocaleDateString('en-IN',
-                      { day: 'numeric', month: 'short', year: 'numeric' }) %>
-                    </td>
-                    <td>
-                      <div class="customer-cell">
-                        <% if (order.userId) { %>
-                        <div class="customer-name">
-                          <%= order.userId.name || order.userId.fullname ||
-                          'Unknown' %>
-                        </div>
-                        <div class="customer-email">
-                          <%= order.userId.email || 'No email' %>
-                        </div>
-                        <% } else { %>
-                        <div class="customer-name">Unknown User</div>
-                        <% } %>
-                      </div>
-                    </td>
-                    <td class="price-cell">₹<%= order.total.toFixed(2) %></td>
-                    <td>
-                      <div
-                        class="payment-method <%= order.paymentMethod.toLowerCase().includes('cod') ? 'cod' : (order.paymentMethod.toLowerCase().includes('wallet') ? 'wallet' : 'online') %>"
-                      >
-                        <i
-                          class="<%= order.paymentMethod.toLowerCase().includes('cod') ? 'fas fa-money-bill-wave' : (order.paymentMethod.toLowerCase().includes('wallet') ? 'fas fa-wallet' : 'fas fa-credit-card') %>"
-                        ></i>
-                        <%= order.paymentMethod %>
-                      </div>
-                    </td>
-                    <td>
-                      <div
-                        class="status-badge <%= order.status.toLowerCase().replace(/\s+/g, '-') %>"
-                      >
-                        <% let statusIcon = 'fas fa-info-circle';
-                        switch(order.status) { case 'Pending': statusIcon = 'fas
-                        fa-clock'; break; case 'Processing': statusIcon = 'fas
-                        fa-spinner'; break; case 'Confirmed': statusIcon = 'fas
-                        fa-check'; break; case 'Shipped': statusIcon = 'fas
-                        fa-truck'; break; case 'Delivered': statusIcon = 'fas
-                        fa-check-circle'; break; case 'Cancelled': statusIcon =
-                        'fas fa-times-circle'; break; case 'Return Requested':
-                        statusIcon = 'fas fa-undo'; break; case 'Return
-                        Approved': statusIcon = 'fas fa-check-square'; break;
-                        case 'Returned': statusIcon = 'fas fa-box'; break; case
-                        'Return Rejected': statusIcon = 'fas fa-ban'; break;
-                        case 'Partially Cancelled': statusIcon = 'fas
-                        fa-exclamation-circle'; break; case 'Partially
-                        Returned': statusIcon = 'fas fa-exchange-alt'; break;
-                        case 'Partially Delivered': statusIcon = 'fas
-                        fa-truck-loading'; break; case 'Partially Shipped':
-                        statusIcon = 'fas fa-dolly'; break; } %>
-                        <i class="<%= statusIcon %>"></i>
-                        <%= order.status %>
-                      </div>
-                      <% if (order.returnRejectionReason) { %>
-                      <div class="reason-tag">
-                        <i class="fas fa-info-circle"></i>
-                        <%= order.returnRejectionReason.substring(0, 20) %>...
-                      </div>
-                      <% } %>
-                    </td>
-                    <td>
-                      <div class="action-buttons">
-                        <a
-                          href="/admin/orders/<%= order._id %>"
-                          class="action-btn view"
-                          title="View Details"
-                        >
-                          <i class="far fa-eye"></i>
-                        </a>
-                        <button
-                          class="action-btn edit"
-                          title="Update Status"
-                          onclick="openStatusModal('<%= order._id %>', '<%= order.status %>')"
-                        >
-                          <i class="fas fa-edit"></i>
-                        </button>
-                        <% if (order.status === 'Return Requested') { %>
-                        <button
-                          class="action-btn approve"
-                          title="Approve Return"
-                          onclick="openApproveReturnModal('<%= order._id %>')"
-                        >
-                          <i class="fas fa-check"></i>
-                        </button>
-                        <button
-                          class="action-btn reject"
-                          title="Reject Return"
-                          onclick="openRejectReturnModal('<%= order._id %>')"
-                        >
-                          <i class="fas fa-times"></i>
-                        </button>
-                        <% } %>
-                      </div>
-                    </td>
-                  </tr>
-                  <% }); %> <% } else { %>
-                  <tr>
-                    <td colspan="8">
-                      <div class="empty-state">
-                        <div class="empty-state-icon">
-                          <i class="fas fa-shopping-cart"></i>
-                        </div>
-                        <h3 class="empty-state-title">No Orders Found</h3>
-                        <p class="empty-state-description">
-                          There are no orders matching your criteria. Try
-                          adjusting your filters or create a new order.
-                        </p>
-                        <button
-                          class="empty-state-action"
-                          onclick="resetFilters()"
-                        >
-                          <i class="fas fa-redo"></i>
-                          Reset Filters
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
+                    </tr>
                   <% } %>
                 </tbody>
               </table>
@@ -436,175 +395,144 @@
           <!-- Card View -->
           <div id="cardView" style="display: none">
             <div class="orders-grid">
-              <% if (orders && orders.length > 0) { %> <% orders.forEach(order
-              => { %>
-              <div class="order-card">
-                <div class="order-card-header">
-                  <div class="order-card-id"><%= order.orderNumber %></div>
-                  <div class="order-card-date">
-                    <%= new Date(order.orderDate).toLocaleDateString('en-IN', {
-                    day: 'numeric', month: 'short', year: 'numeric' }) %>
-                  </div>
-                </div>
-                <div class="order-card-body">
-                  <div class="order-card-product">
-                    <div class="order-card-product-image">
-                      <% if (order.order_items && order.order_items.length > 0)
-                      { %> <% if (order.order_items[0].productId &&
-                      order.order_items[0].productId.images &&
-                      order.order_items[0].productId.images.length > 0) { %>
-                      <img
-                        src="<%= order.order_items[0].productId.images[0].url %>"
-                        alt="Product"
-                      />
-                      <% } else if (order.order_items[0].itemImage) { %>
-                      <img
-                        src="<%= order.order_items[0].itemImage %>"
-                        alt="Product"
-                      />
-                      <% } else { %>
-                      <img
-                        src="/placeholder.svg?height=80&width=80&query=product"
-                        alt="Product"
-                      />
-                      <% } %> <% } else { %>
-                      <img
-                        src="/placeholder.svg?height=80&width=80&query=product"
-                        alt="Product"
-                      />
+              <% if (orders && orders.length > 0) { %>
+                <% orders.forEach(order => { %>
+                  <div class="order-card" data-status="<%= order.status %>" data-total="<%= order.total %>">
+                    <div class="order-card-header">
+                      <div class="order-card-id"><%= order.orderNumber %></div>
+                      <div class="order-card-date">
+                        <%= new Date(order.orderDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                      </div>
+                    </div>
+                    <div class="order-card-body">
+                      <div class="order-card-product">
+                        <div class="order-card-product-image">
+                          <% if (order.order_items && order.order_items.length > 0) { %>
+                            <% if (order.order_items[0].productId && order.order_items[0].productId.images && order.order_items[0].productId.images.length > 0) { %>
+                              <img src="<%= order.order_items[0].productId.images[0].url %>" alt="Product" />
+                            <% } else if (order.order_items[0].itemImage) { %>
+                              <img src="<%= order.order_items[0].itemImage %>" alt="Product" />
+                            <% } else { %>
+                              <img src="/placeholder.svg?height=80&width=80&query=product" alt="Product" />
+                            <% } %>
+                          <% } else { %>
+                            <img src="/placeholder.svg?height=80&width=80&query=product" alt="Product" />
+                          <% } %>
+                        </div>
+                        <div class="order-card-product-info">
+                          <% if (order.order_items && order.order_items.length > 0) { %>
+                            <div class="order-card-product-name">
+                              <%= order.order_items[0].product_name || (order.order_items[0].productId ? order.order_items[0].productId.name : 'Unknown Product') %>
+                            </div>
+                            <div class="order-card-product-meta">
+                              <% if (order.order_items.length > 1) { %>
+                                + <%= order.order_items.length - 1 %> other items
+                              <% } else { %>
+                                Size: <%= order.order_items[0].size || 'N/A' %>, Qty: <%= order.order_items[0].quantity || 1 %>
+                              <% } %>
+                            </div>
+                          <% } else { %>
+                            <div class="order-card-product-name">No items</div>
+                          <% } %>
+                        </div>
+                      </div>
+                      <div class="order-card-details">
+                        <div class="order-card-detail">
+                          <div class="order-card-detail-label">Customer</div>
+                          <div class="order-card-detail-value">
+                            <% if (order.userId) { %>
+                              <%= order.userId.name || order.userId.fullname || 'Unknown' %>
+                            <% } else { %>
+                              Unknown User
+                            <% } %>
+                          </div>
+                        </div>
+                        <div class="order-card-detail">
+                          <div class="order-card-detail-label">Total</div>
+                          <div class="order-card-detail-value">
+                            ₹<%= order.total.toFixed(2) %>
+                          </div>
+                        </div>
+                        <div class="order-card-detail">
+                          <div class="order-card-detail-label">Payment</div>
+                          <div class="order-card-detail-value">
+                            <%= order.paymentMethod %>
+                          </div>
+                        </div>
+                        <div class="order-card-detail">
+                          <div class="order-card-detail-label">Payment Status</div>
+                          <div class="order-card-detail-value">
+                            <%= order.paymentStatus %>
+                          </div>
+                        </div>
+                      </div>
+                      <% if (order.returnRejectionReason) { %>
+                        <div class="reason-tag">
+                          <i class="fas fa-info-circle"></i>
+                          <%= order.returnRejectionReason %>
+                        </div>
                       <% } %>
                     </div>
-                    <div class="order-card-product-info">
-                      <% if (order.order_items && order.order_items.length > 0)
-                      { %>
-                      <div class="order-card-product-name">
-                        <%= order.order_items[0].product_name ||
-                        (order.order_items[0].productId ?
-                        order.order_items[0].productId.name : 'Unknown Product')
-                        %>
+                    <div class="order-card-footer">
+                      <div class="order-card-status">
+                        <div class="status-badge <%= order.status.toLowerCase().replace(/\s+/g, '-') %>">
+                          <% 
+                            let statusIcon = 'fas fa-info-circle';
+                            switch(order.status) {
+                              case 'Pending': statusIcon = 'fas fa-clock'; break;
+                              case 'Processing': statusIcon = 'fas fa-spinner'; break;
+                              case 'Confirmed': statusIcon = 'fas fa-check'; break;
+                              case 'Shipped': statusIcon = 'fas fa-truck'; break;
+                              case 'Delivered': statusIcon = 'fas fa-check-circle'; break;
+                              case 'Cancelled': statusIcon = 'fas fa-times-circle'; break;
+                              case 'Return Requested': statusIcon = 'fas fa-undo'; break;
+                              case 'Return Approved': statusIcon = 'fas fa-check-square'; break;
+                              case 'Returned': statusIcon = 'fas fa-box'; break;
+                              case 'Return Rejected': statusIcon = 'fas fa-ban'; break;
+                              case 'Partially Cancelled': statusIcon = 'fas fa-exclamation-circle'; break;
+                              case 'Partially Returned': statusIcon = 'fas fa-exchange-alt'; break;
+                              case 'Partially Delivered': statusIcon = 'fas fa-truck-loading'; break;
+                              case 'Partially Shipped': statusIcon = 'fas fa-dolly'; break;
+                            }
+                          %>
+                          <i class="<%= statusIcon %>"></i>
+                          <%= order.status %>
+                        </div>
                       </div>
-                      <div class="order-card-product-meta">
-                        <% if (order.order_items.length > 1) { %> + <%=
-                        order.order_items.length - 1 %> other items <% } else {
-                        %> Size: <%= order.order_items[0].size || 'N/A' %>, Qty:
-                        <%= order.order_items[0].quantity || 1 %> <% } %>
-                      </div>
-                      <% } else { %>
-                      <div class="order-card-product-name">No items</div>
-                      <% } %>
-                    </div>
-                  </div>
-                  <div class="order-card-details">
-                    <div class="order-card-detail">
-                      <div class="order-card-detail-label">Customer</div>
-                      <div class="order-card-detail-value">
-                        <% if (order.userId) { %> <%= order.userId.name ||
-                        order.userId.fullname || 'Unknown' %> <% } else { %>
-                        Unknown User <% } %>
-                      </div>
-                    </div>
-                    <div class="order-card-detail">
-                      <div class="order-card-detail-label">Total</div>
-                      <div class="order-card-detail-value">
-                        ₹<%= order.total.toFixed(2) %>
-                      </div>
-                    </div>
-                    <div class="order-card-detail">
-                      <div class="order-card-detail-label">Payment</div>
-                      <div class="order-card-detail-value">
-                        <%= order.paymentMethod %>
-                      </div>
-                    </div>
-                    <div class="order-card-detail">
-                      <div class="order-card-detail-label">Payment Status</div>
-                      <div class="order-card-detail-value">
-                        <%= order.paymentStatus %>
+                      <div class="order-card-actions">
+                        <a href="/admin/orders/<%= order._id %>" class="action-btn view" title="View Details">
+                          <i class="far fa-eye"></i>
+                        </a>
+                        <button class="action-btn edit" title="Update Status" onclick="openStatusModal('<%= order._id %>', '<%= order.status %>')">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <% if (order.status === 'Return Requested') { %>
+                          <button class="action-btn approve" title="Approve Return" onclick="openApproveReturnModal('<%= order._id %>')">
+                            <i class="fas fa-check"></i>
+                          </button>
+                          <button class="action-btn reject" title="Reject Return" onclick="openRejectReturnModal('<%= order._id %>')">
+                            <i class="fas fa-times"></i>
+                          </button>
+                        <% } %>
                       </div>
                     </div>
                   </div>
-                  <% if (order.returnRejectionReason) { %>
-                  <div class="reason-tag">
-                    <i class="fas fa-info-circle"></i>
-                    <%= order.returnRejectionReason %>
+                <% }); %>
+              <% } else { %>
+                <div class="empty-state">
+                  <div class="empty-state-icon">
+                    <i class="fas fa-shopping-cart"></i>
                   </div>
-                  <% } %>
+                  <h3 class="empty-state-title">No Orders Found</h3>
+                  <p class="empty-state-description">
+                    There are no orders matching your criteria. Try adjusting your
+                    filters or create a new order.
+                  </p>
+                  <button class="empty-state-action" onclick="resetFilters()">
+                    <i class="fas fa-redo"></i>
+                    Reset Filters
+                  </button>
                 </div>
-                <div class="order-card-footer">
-                  <div class="order-card-status">
-                    <div
-                      class="status-badge <%= order.status.toLowerCase().replace(/\s+/g, '-') %>"
-                    >
-                      <% let statusIcon = 'fas fa-info-circle';
-                      switch(order.status) { case 'Pending': statusIcon = 'fas
-                      fa-clock'; break; case 'Processing': statusIcon = 'fas
-                      fa-spinner'; break; case 'Confirmed': statusIcon = 'fas
-                      fa-check'; break; case 'Shipped': statusIcon = 'fas
-                      fa-truck'; break; case 'Delivered': statusIcon = 'fas
-                      fa-check-circle'; break; case 'Cancelled': statusIcon =
-                      'fas fa-times-circle'; break; case 'Return Requested':
-                      statusIcon = 'fas fa-undo'; break; case 'Return Approved':
-                      statusIcon = 'fas fa-check-square'; break; case
-                      'Returned': statusIcon = 'fas fa-box'; break; case 'Return
-                      Rejected': statusIcon = 'fas fa-ban'; break; case
-                      'Partially Cancelled': statusIcon = 'fas
-                      fa-exclamation-circle'; break; case 'Partially Returned':
-                      statusIcon = 'fas fa-exchange-alt'; break; case 'Partially
-                      Delivered': statusIcon = 'fas fa-truck-loading'; break;
-                      case 'Partially Shipped': statusIcon = 'fas fa-dolly';
-                      break; } %>
-                      <i class="<%= statusIcon %>"></i>
-                      <%= order.status %>
-                    </div>
-                  </div>
-                  <div class="order-card-actions">
-                    <a
-                      href="/admin/orders/<%= order._id %>"
-                      class="action-btn view"
-                      title="View Details"
-                    >
-                      <i class="far fa-eye"></i>
-                    </a>
-                    <button
-                      class="action-btn edit"
-                      title="Update Status"
-                      onclick="openStatusModal('<%= order._id %>', '<%= order.status %>')"
-                    >
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <% if (order.status === 'Return Requested') { %>
-                    <button
-                      class="action-btn approve"
-                      title="Approve Return"
-                      onclick="openApproveReturnModal('<%= order._id %>')"
-                    >
-                      <i class="fas fa-check"></i>
-                    </button>
-                    <button
-                      class="action-btn reject"
-                      title="Reject Return"
-                      onclick="openRejectReturnModal('<%= order._id %>')"
-                    >
-                      <i class="fas fa-times"></i>
-                    </button>
-                    <% } %>
-                  </div>
-                </div>
-              </div>
-              <% }); %> <% } else { %>
-              <div class="empty-state">
-                <div class="empty-state-icon">
-                  <i class="fas fa-shopping-cart"></i>
-                </div>
-                <h3 class="empty-state-title">No Orders Found</h3>
-                <p class="empty-state-description">
-                  There are no orders matching your criteria. Try adjusting your
-                  filters or create a new order.
-                </p>
-                <button class="empty-state-action" onclick="resetFilters()">
-                  <i class="fas fa-redo"></i>
-                  Reset Filters
-                </button>
-              </div>
               <% } %>
             </div>
           </div>
@@ -612,43 +540,31 @@
           <!-- Pagination -->
           <div class="pagination-container">
             <div class="pagination-info">
-              <% if (orders && orders.length > 0) { %> Showing <%= (currentPage
-              - 1) * limit + 1 %>-<%= Math.min(currentPage * limit, totalOrders)
-              %> of <%= totalOrders %> orders <% } else { %> No orders found <%
-              } %>
+              <% if (orders && orders.length > 0) { %>
+                Showing <%= (currentPage - 1) * limit + 1 %>-<%= Math.min(currentPage * limit, totalOrders) %> of <%= totalOrders %> orders
+              <% } else { %>
+                No orders found
+              <% } %>
             </div>
             <ul class="pagination">
               <% if (totalPages > 0) { %>
-              <li
-                class="pagination-item <%= currentPage === 1 ? 'disabled' : '' %>"
-              >
-                <a
-                  class="pagination-link <%= currentPage === 1 ? 'disabled' : '' %>"
-                  href="?page=<%= currentPage - 1 %>&status=<%= currentStatus %>&search=<%= searchQuery %>&sort=<%= sort %>&order=<%= sortOrder %>&timeRange=<%= timeRange %>"
-                >
-                  <i class="fas fa-chevron-left"></i>
-                </a>
-              </li>
-              <% for (let i = 1; i <= totalPages; i++) { %>
-              <li class="pagination-item">
-                <a
-                  class="pagination-link <%= currentPage === i ? 'active' : '' %>"
-                  href="?page=<%= i %>&status=<%= currentStatus %>&search=<%= searchQuery %>&sort=<%= sort %>&order=<%= sortOrder %>&timeRange=<%= timeRange %>"
-                >
-                  <%= i %>
-                </a>
-              </li>
-              <% } %>
-              <li
-                class="pagination-item <%= currentPage === totalPages ? 'disabled' : '' %>"
-              >
-                <a
-                  class="pagination-link <%= currentPage === totalPages ? 'disabled' : '' %>"
-                  href="?page=<%= currentPage + 1 %>&status=<%= currentStatus %>&search=<%= searchQuery %>&sort=<%= sort %>&order=<%= sortOrder %>&timeRange=<%= timeRange %>"
-                >
-                  <i class="fas fa-chevron-right"></i>
-                </a>
-              </li>
+                <li class="pagination-item <%= currentPage === 1 ? 'disabled' : '' %>">
+                  <a class="pagination-link <%= currentPage === 1 ? 'disabled' : '' %>" href="?page=<%= currentPage - 1 %>&status=<%= currentStatus %>&search=<%= searchQuery %>&sort=<%= sort %>&order=<%= sortOrder %>&timeRange=<%= timeRange %>">
+                    <i class="fas fa-chevron-left"></i>
+                  </a>
+                </li>
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                  <li class="pagination-item">
+                    <a class="pagination-link <%= currentPage === i ? 'active' : '' %>" href="?page=<%= i %>&status=<%= currentStatus %>&search=<%= searchQuery %>&sort=<%= sort %>&order=<%= sortOrder %>&timeRange=<%= timeRange %>">
+                      <%= i %>
+                    </a>
+                  </li>
+                <% } %>
+                <li class="pagination-item <%= currentPage === totalPages ? 'disabled' : '' %>">
+                  <a class="pagination-link <%= currentPage === totalPages ? 'disabled' : '' %>" href="?page=<%= currentPage + 1 %>&status=<%= currentStatus %>&search=<%= searchQuery %>&sort=<%= sort %>&order=<%= sortOrder %>&timeRange=<%= timeRange %>">
+                    <i class="fas fa-chevron-right"></i>
+                  </a>
+                </li>
               <% } %>
             </ul>
           </div>
@@ -1264,101 +1180,73 @@
         rejectReturnModal.show();
       }
 
-      // Update stats
+      // Update stats - Improved version
       function updateStats() {
-        // Calculate stats directly from the page data
-        calculateStatsFromPageData();
-      }
-
-      // Calculate stats from the current page data
-      function calculateStatsFromPageData() {
-        try {
-          // Get all orders from the table
-          const orderRows = document.querySelectorAll("#ordersTableBody tr");
-          let pendingCount = 0;
-          let processingCount = 0;
-          let deliveredCount = 0;
-          let totalRevenue = 0;
-
-          // Count orders by status
-          orderRows.forEach((row) => {
-            const statusCell = row.querySelector(".status-badge");
-            const priceCell = row.querySelector(".price-cell");
-
-            if (statusCell) {
-              const status = statusCell.textContent.trim();
-              if (status.includes("Pending")) pendingCount++;
-              if (status.includes("Processing")) processingCount++;
-              if (status.includes("Delivered")) deliveredCount++;
-            }
-
-            if (priceCell) {
-              const priceText = priceCell.textContent.replace("₹", "").trim();
-              const price = parseFloat(priceText);
-              if (!isNaN(price)) {
-                totalRevenue += price;
-              }
-            }
-          });
-
-          // Get total orders count from pagination info if available
-          let totalOrdersText =
-            document.querySelector(".pagination-info")?.textContent || "";
-          let totalOrdersMatch = totalOrdersText.match(/of\s+(\d+)\s+orders/);
-          let totalOrders = totalOrdersMatch
-            ? parseInt(totalOrdersMatch[1])
-            : orderRows.length;
-
-          // If we have total orders info, adjust the counts proportionally
-          if (totalOrders > orderRows.length && orderRows.length > 0) {
-            const ratio = totalOrders / orderRows.length;
-            pendingCount = Math.round(pendingCount * ratio);
-            processingCount = Math.round(processingCount * ratio);
-            deliveredCount = Math.round(deliveredCount * ratio);
-            totalRevenue = totalRevenue * ratio;
+        // Get all order elements from both table and card views
+        const orderRows = document.querySelectorAll("#ordersTableBody tr[data-status]");
+        const orderCards = document.querySelectorAll(".order-card[data-status]");
+        
+        // Combine all order elements
+        const allOrderElements = [...orderRows, ...orderCards];
+        
+        // Initialize counters
+        let pendingCount = 0;
+        let processingCount = 0;
+        let deliveredCount = 0;
+        let totalRevenue = 0;
+        
+        // Count orders by status and calculate total revenue
+        allOrderElements.forEach(element => {
+          const status = element.getAttribute('data-status');
+          const total = parseFloat(element.getAttribute('data-total') || 0);
+          
+          // Count by status
+          if (status === 'Pending') pendingCount++;
+          if (status === 'Processing') processingCount++;
+          if (status === 'Delivered') deliveredCount++;
+          
+          // Add to total revenue
+          if (!isNaN(total)) {
+            totalRevenue += total;
           }
-
-          // Update the UI
-          document.getElementById("pendingCount").textContent = pendingCount;
-          document.getElementById("processingCount").textContent =
-            processingCount;
-          document.getElementById("deliveredCount").textContent =
-            deliveredCount;
-          document.getElementById("revenueCount").textContent =
-            totalRevenue.toFixed(2);
-
-          // Generate random change percentages for visual effect
-          const pendingChange = Math.floor(Math.random() * 20) - 5; // -5 to +15
-          const processingChange = Math.floor(Math.random() * 20) - 5;
-          const deliveredChange = Math.floor(Math.random() * 30); // 0 to +30
-          const revenueChange = Math.floor(Math.random() * 25); // 0 to +25
-
-          document.getElementById(
-            "pendingChange"
-          ).textContent = `${pendingChange}%`;
-          document.getElementById(
-            "processingChange"
-          ).textContent = `${processingChange}%`;
-          document.getElementById(
-            "deliveredChange"
-          ).textContent = `${deliveredChange}%`;
-          document.getElementById(
-            "revenueChange"
-          ).textContent = `${revenueChange}%`;
-
-          // Update change indicators
-          updateChangeIndicator("pendingChange", pendingChange);
-          updateChangeIndicator("processingChange", processingChange);
-          updateChangeIndicator("deliveredChange", deliveredChange);
-          updateChangeIndicator("revenueChange", revenueChange);
-        } catch (error) {
-          console.error("Error calculating stats from page data:", error);
-          // Set default values if calculation fails
-          document.getElementById("pendingCount").textContent = "0";
-          document.getElementById("processingCount").textContent = "0";
-          document.getElementById("deliveredCount").textContent = "0";
-          document.getElementById("revenueCount").textContent = "0.00";
+        });
+        
+        // Get total orders count from pagination info if available
+        let totalOrdersText = document.querySelector(".pagination-info")?.textContent || "";
+        let totalOrdersMatch = totalOrdersText.match(/of\s+(\d+)\s+orders/);
+        let totalOrders = totalOrdersMatch ? parseInt(totalOrdersMatch[1]) : allOrderElements.length;
+        
+        // If we have total orders info and it's more than what's displayed, adjust the counts proportionally
+        if (totalOrders > allOrderElements.length && allOrderElements.length > 0) {
+          const ratio = totalOrders / allOrderElements.length;
+          pendingCount = Math.round(pendingCount * ratio);
+          processingCount = Math.round(processingCount * ratio);
+          deliveredCount = Math.round(deliveredCount * ratio);
+          totalRevenue = totalRevenue * ratio;
         }
+        
+        // Update the UI
+        document.getElementById("pendingCount").textContent = pendingCount;
+        document.getElementById("processingCount").textContent = processingCount;
+        document.getElementById("deliveredCount").textContent = deliveredCount;
+        document.getElementById("revenueCount").textContent = totalRevenue.toFixed(2);
+        
+        // Generate random change percentages for visual effect
+        const pendingChange = Math.floor(Math.random() * 20) - 5; // -5 to +15
+        const processingChange = Math.floor(Math.random() * 20) - 5;
+        const deliveredChange = Math.floor(Math.random() * 30); // 0 to +30
+        const revenueChange = Math.floor(Math.random() * 25); // 0 to +25
+        
+        document.getElementById("pendingChange").textContent = `${pendingChange}%`;
+        document.getElementById("processingChange").textContent = `${processingChange}%`;
+        document.getElementById("deliveredChange").textContent = `${deliveredChange}%`;
+        document.getElementById("revenueChange").textContent = `${revenueChange}%`;
+        
+        // Update change indicators
+        updateChangeIndicator("pendingChange", pendingChange);
+        updateChangeIndicator("processingChange", processingChange);
+        updateChangeIndicator("deliveredChange", deliveredChange);
+        updateChangeIndicator("revenueChange", revenueChange);
       }
 
       // Update change indicator

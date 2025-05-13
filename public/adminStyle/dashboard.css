@@ -151,6 +151,8 @@
       padding: 20px;
       transition: margin-left var(--transition-speed) ease;
       min-height: 100vh;
+          transform: translateY(-700px);
+
     }
 
     .main-content-expanded {

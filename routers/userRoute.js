@@ -16,6 +16,7 @@
   const reviewController = require('../controller/user/reviewController');
   const contactController = require("../controller/user/contactController")
   const addCountsMiddleware = require("../middleware/addCountsMiddleware")
+  const razorpayWalletController = require("../controller/user/razzerpaywalletController")
   const { UserAuth } = require("../middleware/auth");
 
   const { checkBlockedStatus } = userControllers;
@@ -273,6 +274,11 @@ router.get("/order-failed/:id", UserAuth, orderController.loadOrderfailure);
   router.get("/contact",UserAuth, contactController.getContactPage)
 router.post("/send",UserAuth, contactController.sendContactMessage)
 
+
+// Add these routes inside your router definition
+router.post("/wallet/create-razorpay-order", UserAuth, razorpayWalletController.createWalletTopupOrder)
+router.post("/wallet/verify-razorpay-payment", UserAuth, razorpayWalletController.verifyWalletTopupPayment)
+router.post("/wallet/handle-failed-payment", UserAuth, razorpayWalletController.handleFailedWalletTopup)
   // Enhanced review functionality
   router.post("/api/reviews/helpful", UserAuth, productController.markReviewHelpful);
   router.get("/api/reviews/reload/:productId", productController.reloadReviews);

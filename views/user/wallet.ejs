@@ -296,21 +296,24 @@
           <div class="modal-body">
             <form id="addMoneyForm">
               <div class="form-group mb-4">
-                <label for="amount" class="form-label">Amount (₹)</label>
-                <div class="input-group">
-                  <span class="input-group-text">₹</span>
-                  <input
-                    type="number"
-                    class="form-control form-control-lg"
-                    id="amount"
-                    name="amount"
-                    min="1"
-                    placeholder="Enter amount"
-                    required
-                  />
-                </div>
-                <div class="form-text">Minimum amount: ₹1</div>
-              </div>
+               <label for="amount" class="form-label">Amount (₹)</label>
+  <div class="input-group">
+    <span class="input-group-text">₹</span>
+    <input
+      type="number"
+      class="form-control form-control-lg"
+      id="amount"
+      name="amount"
+      min="5"
+      max="25000"
+      placeholder="Enter amount"
+     
+      oninput="validateAmount()"
+    />
+  </div>
+  <div class="form-text text-muted">Minimum amount: ₹5, Maximum: ₹25,000</div>
+  <div id="amountError" style="color: red; font-size: 0.9rem; display: none;"></div>
+</div>
               
               <div class="form-group mb-4">
                 <label for="description" class="form-label">Description</label>
@@ -321,7 +324,7 @@
                   name="description"
                   value="Added money to wallet"
                   placeholder="Enter a description for this transaction"
-                  required
+                 
                 />
               </div>
               
@@ -335,35 +338,52 @@
                 </div>
               </div>
               
-              <div class="payment-methods mb-4">
-                <label class="form-label">Payment Method</label>
-                <div class="payment-options">
-                  <div class="form-check payment-option">
-                    <input class="form-check-input" type="radio" name="paymentMethod" id="methodCard" value="card" checked>
-                    <label class="form-check-label" for="methodCard">
-                      <i class="fas fa-credit-card"></i> Credit/Debit Card
-                    </label>
-                  </div>
-                  <div class="form-check payment-option">
-                    <input class="form-check-input" type="radio" name="paymentMethod" id="methodUPI" value="upi">
-                    <label class="form-check-label" for="methodUPI">
-                      <i class="fas fa-mobile-alt"></i> UPI
-                    </label>
-                  </div>
-                  <div class="form-check payment-option">
-                    <input class="form-check-input" type="radio" name="paymentMethod" id="methodNetBanking" value="netbanking">
-                    <label class="form-check-label" for="methodNetBanking">
-                      <i class="fas fa-university"></i> Net Banking
-                    </label>
-                  </div>
-                </div>
+              <div id="razorpay-button-container" class="text-center mb-3" style="display: none;">
+                <button type="button" id="razorpay-pay-btn" class="btn-razorpay">
+                  <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay" height="30">
+                  <span>Pay with Razorpay</span>
+                </button>
               </div>
               
               <button type="submit" class="btn-submit" id="addMoneyBtn">
-                <span class="btn-text">Add Money</span>
+                <span class="btn-text">Proceed to Payment</span>
                 <span class="btn-icon"><i class="fas fa-arrow-right"></i></span>
               </button>
             </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Success Modal -->
+    <div class="modal fade" id="paymentSuccessModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-body text-center p-5">
+            <div class="success-animation">
+              <div class="checkmark-circle">
+                <div class="checkmark draw"></div>
+              </div>
+            </div>
+            <h3 class="mt-4">Payment Successful!</h3>
+            <p class="text-muted">Your wallet has been topped up successfully.</p>
+            <div class="transaction-details mt-4">
+              <div class="detail-item">
+                <span class="detail-label">Amount Added:</span>
+                <span class="detail-value" id="successAmount">₹0.00</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Transaction ID:</span>
+                <span class="detail-value" id="successTransactionId">-</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">New Balance:</span>
+                <span class="detail-value" id="successNewBalance">₹0.00</span>
+              </div>
+            </div>
+            <button type="button" class="btn-primary mt-4" data-bs-dismiss="modal" onclick="window.location.reload()">
+              <i class="fas fa-check-circle me-2"></i> Done
+            </button>
           </div>
         </div>
       </div>
@@ -380,9 +400,8 @@
     <!-- Enhanced Toast Notification -->
     <div id="toastContainer" class="toast-container"></div>
 
-    
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         // Enhanced Toast Notification System
@@ -456,7 +475,7 @@
         const amountInput = document.getElementById('amount');
         
         amountOptions.forEach(option => {
-          option.addEventListener('click', function() {
+          option.addEventListener('click', function(event) {
             const amount = this.getAttribute('data-amount');
             amountInput.value = amount;
             
@@ -471,17 +490,21 @@
           });
         });
         
+        // Razorpay integration
+        let razorpayOrderId = null;
+        let razorpayInstance = null;
+        
         // Add money form submission
         const addMoneyForm = document.getElementById('addMoneyForm');
         const addMoneyBtn = document.getElementById('addMoneyBtn');
         const addMoneyModal = new bootstrap.Modal(document.getElementById('addMoneyModal'));
+        const paymentSuccessModal = new bootstrap.Modal(document.getElementById('paymentSuccessModal'));
         
         addMoneyForm.addEventListener('submit', async function(e) {
           e.preventDefault();
           
           const amount = document.getElementById('amount').value;
           const description = document.getElementById('description').value;
-          const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
           
           // Validate amount
           if (amount <= 0) {
@@ -496,46 +519,153 @@
           try {
             showLoading();
             
-            const response = await fetch('/wallet/credit', {
+            // Create Razorpay order
+            const response = await fetch('/wallet/create-razorpay-order', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ 
                 amount, 
-                description,
-                paymentMethod
+                description
               })
             });
             
             const result = await response.json();
             
-            hideLoading();
-            addMoneyModal.hide();
-            
-            if (result.success) {
-              showToast('Transaction Successful', `₹${amount} has been added to your wallet successfully!`, 'success');
-              
-              // Reload the page after a short delay
-              setTimeout(() => {
-                window.location.reload();
-              }, 1500);
-            } else {
-              showToast('Transaction Failed', result.message || 'Failed to add money to your wallet', 'error');
+            if (!result.success) {
+              hideLoading();
+              showToast('Error', result.message || 'Failed to create payment order', 'error');
               
               // Reset button state
               addMoneyBtn.disabled = false;
-              addMoneyBtn.innerHTML = '<span class="btn-text">Add Money</span><span class="btn-icon"><i class="fas fa-arrow-right"></i></span>';
+              addMoneyBtn.innerHTML = '<span class="btn-text">Proceed to Payment</span><span class="btn-icon"><i class="fas fa-arrow-right"></i></span>';
+              return;
             }
-          } catch (error) {
-            console.error('Error adding money:', error);
+            
+            // Initialize Razorpay
+            const options = {
+              key: result.key,
+              amount: result.order.amount,
+              currency: result.order.currency,
+              name: "Elite Wear",
+              description: description || "Wallet Top-up",
+              order_id: result.order.id,
+              handler: async function (response) {
+                try {
+                  showLoading();
+                  
+                  // Verify payment
+                  const verifyResponse = await fetch('/wallet/verify-razorpay-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      razorpay_payment_id: response.razorpay_payment_id,
+                      razorpay_order_id: response.razorpay_order_id,
+                      razorpay_signature: response.razorpay_signature
+                    })
+                  });
+                  
+                  const verifyResult = await verifyResponse.json();
+                  
+                  hideLoading();
+                  addMoneyModal.hide();
+                  
+                  if (verifyResult.success) {
+                    // Update success modal with transaction details
+                    document.getElementById('successAmount').textContent = `₹${verifyResult.topupAmount.toFixed(2)}`;
+                    document.getElementById('successTransactionId').textContent = verifyResult.transactionRef;
+                    document.getElementById('successNewBalance').textContent = `₹${verifyResult.walletBalance.toFixed(2)}`;
+                    
+                    // Show success toast
+                    showToast(
+                      'Payment Successful', 
+                      `₹${verifyResult.topupAmount.toFixed(2)} has been added to your wallet successfully!`, 
+                      'success',
+                      7000
+                    );
+                    
+                    // Show success modal
+                    paymentSuccessModal.show();
+                  } else {
+                    showToast('Payment Verification Failed', verifyResult.message || 'Failed to verify payment', 'error');
+                  }
+                } catch (error) {
+                  hideLoading();
+                  console.error('Payment verification error:', error);
+                  showToast(
+                    'Verification Error', 
+                    'We encountered an issue while verifying your payment. If your account was charged, please contact customer support.', 
+                    'error',
+                    15000
+                  );
+                }
+              },
+              prefill: {
+                name: result.user.name,
+                email: result.user.email,
+                contact: result.user.contact
+              },
+              theme: {
+                color: "#3399cc"
+              },
+              modal: {
+                ondismiss: function() {
+                  // Reset button state
+                  addMoneyBtn.disabled = false;
+                  addMoneyBtn.innerHTML = '<span class="btn-text">Proceed to Payment</span><span class="btn-icon"><i class="fas fa-arrow-right"></i></span>';
+                  hideLoading();
+                  
+                  // Show info toast when payment window is closed
+                  showToast('Payment Cancelled', 'You have closed the payment window. Your wallet has not been charged.', 'info');
+                }
+              }
+            };
             
             hideLoading();
-            addMoneyModal.hide();
+            
+            // Create Razorpay instance
+            razorpayInstance = new Razorpay(options);
+            razorpayInstance.open();
+            
+            // Handle payment failure
+            razorpayInstance.on('payment.failed', async function(response) {
+              try {
+                const failureResponse = await fetch('/wallet/handle-failed-payment', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    razorpay_order_id: response.error.metadata.order_id
+                  })
+                });
+                
+                const failureResult = await failureResponse.json();
+                
+                // Show detailed error toast
+                showToast(
+                  'Payment Failed', 
+                  `${response.error.description || 'Your payment could not be processed'}. Please try again or use a different payment method.`, 
+                  'error',
+                  10000
+                );
+                
+                // Reset button state
+                addMoneyBtn.disabled = false;
+                addMoneyBtn.innerHTML = '<span class="btn-text">Proceed to Payment</span><span class="btn-icon"><i class="fas fa-arrow-right"></i></span>';
+              } catch (error) {
+                console.error('Error handling payment failure:', error);
+                showToast('Error', 'An unexpected error occurred while processing your payment failure.', 'error');
+              }
+            });
+            
+          } catch (error) {
+            console.error('Error creating Razorpay order:', error);
+            
+            hideLoading();
             
             showToast('Error', 'An unexpected error occurred. Please try again later.', 'error');
             
             // Reset button state
             addMoneyBtn.disabled = false;
-            addMoneyBtn.innerHTML = '<span class="btn-text">Add Money</span><span class="btn-icon"><i class="fas fa-arrow-right"></i></span>';
+            addMoneyBtn.innerHTML = '<span class="btn-text">Proceed to Payment</span><span class="btn-icon"><i class="fas fa-arrow-right"></i></span>';
           }
         });
         
@@ -607,6 +737,25 @@
           showToast('Welcome to Your Wallet', 'Manage your funds and track your transactions easily', 'info');
         }, 1000);
       });
+      function validateAmount() {
+    const amountInput = document.getElementById("amount");
+    const errorDiv = document.getElementById("amountError");
+    const value = parseInt(amountInput.value);
+
+    if (isNaN(value)) {
+      errorDiv.textContent = "Please enter a valid amount.";
+      errorDiv.style.display = "block";
+    } else if (value < 5) {
+      errorDiv.textContent = "Amount must be at least ₹5.";
+      errorDiv.style.display = "block";
+    } else if (value > 25000) {
+      errorDiv.textContent = "Amount must not exceed ₹25,000.";
+      errorDiv.style.display = "block";
+    } else {
+      errorDiv.style.display = "none";
+    }
+  }
     </script>
+  
   </body>
 </html>
