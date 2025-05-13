@@ -1,987 +1,961 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ELITE WEAR - Premium Men's Shirts</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/userStyle/header.css" />
+  </head>
 
-<head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>ELITE WEAR - Premium Men's Shirts</title>
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/userStyle/header.css">
-</head>
-
-<body>
-  <header class="transparent dark">
-  <div class="container nav-container">
-      <a href="/">
+  <body>
+    <header class="transparent dark">
+      <div class="container nav-container">
+        <a href="/">
           <div class="logo">ELITE WEAR</div>
-      </a>
-      <div class="menu-toggle">
+        </a>
+        <div class="menu-toggle">
           <i class="fas fa-bars"></i>
-      </div>
-      <ul class="nav-menu">
+        </div>
+        <ul class="nav-menu">
           <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
-          <li class="nav-item"><a href="/allproduct" class="nav-link">Shop</a></li>
-          <li class="nav-item"><a href="/aboutUs" class="nav-link">About</a></li>
-          <li class="nav-item"><a href="/contact" class="nav-link">Contact</a></li>
-      </ul>
+          <li class="nav-item">
+            <a href="/allproduct" class="nav-link">Shop</a>
+          </li>
+          <li class="nav-item">
+            <a href="/aboutUs" class="nav-link">About</a>
+          </li>
+          <li class="nav-item">
+            <a href="/contact" class="nav-link">Contact</a>
+          </li>
+        </ul>
 
-      <div class="auth-buttons">
+        <div class="auth-buttons">
           <% if (typeof user !== 'undefined' && user) { %>
-              <div class="nav-buttons">
-                  <a href="/wishlist" class="nav-link position-relative" title="Wishlist" id="wishlist-link">
-                      <i class="far fa-heart"></i>
-                      <% if (typeof wishlistCount !== 'undefined' && wishlistCount > 0) { %>
-                          <span class="count-badge" id="wishlist-badge"><%= wishlistCount %></span>
-                      <% } %>
-                  </a>
-                  <a href="/cart" class="nav-link position-relative" title="Cart" id="cart-link">
-                      <i class="fas fa-shopping-cart"></i>
-                      <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
-                          <span class="count-badge" id="cart-badge"><%= cartCount %></span>
-                      <% } %>
-                  </a>
-                  <a href="/LoadProfile" class="nav-link" title="My Account">
-                      <i class="fas fa-user-circle"></i>
-                  </a>
-              </div>
+          <div class="nav-buttons">
+            <a
+              href="/wishlist"
+              class="nav-link position-relative"
+              title="Wishlist"
+              id="wishlist-link"
+            >
+              <i class="far fa-heart"></i>
+              <% if (typeof wishlistCount !== 'undefined' && wishlistCount > 0)
+              { %>
+              <span class="count-badge" id="wishlist-badge"
+                ><%= wishlistCount %></span
+              >
+              <% } %>
+            </a>
+            <a
+              href="/cart"
+              class="nav-link position-relative"
+              title="Cart"
+              id="cart-link"
+            >
+              <i class="fas fa-shopping-cart"></i>
+              <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
+              <span class="count-badge" id="cart-badge"><%= cartCount %></span>
+              <% } %>
+            </a>
+            <a href="/LoadProfile" class="nav-link" title="My Account">
+              <i class="fas fa-user-circle"></i>
+            </a>
+          </div>
           <% } else { %>
-              <a href="/login" class="auth-button login-button">Login</a>
-              <a href="/signup" class="auth-button signup-button">Sign Up</a>
+          <a href="/login" class="auth-button login-button">Login</a>
+          <a href="/signup" class="auth-button signup-button">Sign Up</a>
           <% } %>
+        </div>
       </div>
-  </div>
-</header>
+    </header>
 
-<script>
-document.addEventListener("DOMContentLoaded", () => {
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const header = document.querySelector("header");
 
-  const header = document.querySelector("header");
+        updateHeaderState();
 
-  updateHeaderState();
+        function updateHeaderState() {
+          const isAtTop = window.scrollY <= 50;
 
+          const bgColor = getBackgroundColorBehindHeader();
 
-  function updateHeaderState() {
-   
-    const isAtTop = window.scrollY <= 50;
+          header.classList.remove("transparent", "dark", "light", "scrolled");
 
+          if (isAtTop) {
+            header.classList.add("transparent");
 
-    const bgColor = getBackgroundColorBehindHeader();
+            if (isLightColor(bgColor)) {
+              header.classList.add("light");
+            } else {
+              header.classList.add("dark");
+            }
+          } else {
+            header.classList.add("scrolled");
+            header.classList.add("light");
+          }
+        }
 
+        function isLightColor(color) {
+          if (!color) return false;
 
-    header.classList.remove("transparent", "dark", "light", "scrolled");
+          let r, g, b;
 
-    if (isAtTop) {
-    
-      header.classList.add("transparent");
+          if (color.startsWith("rgb")) {
+            const match = color.match(
+              /rgba?$$(\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?$$/
+            );
+            if (match) {
+              r = Number.parseInt(match[1]);
+              g = Number.parseInt(match[2]);
+              b = Number.parseInt(match[3]);
+            }
+          } else if (color.startsWith("#")) {
+            const hex = color.replace("#", "");
+            r = Number.parseInt(hex.substr(0, 2), 16);
+            g = Number.parseInt(hex.substr(2, 2), 16);
+            b = Number.parseInt(hex.substr(4, 2), 16);
+          }
 
-     
-      if (isLightColor(bgColor)) {
-        header.classList.add("light");
-      } else {
-        header.classList.add("dark");
-      }
-    } else {
-     
-      header.classList.add("scrolled");
-      header.classList.add("light"); 
-    }
-  }
+          if (r !== undefined && g !== undefined && b !== undefined) {
+            const brightness = (299 * r + 587 * g + 114 * b) / 1000;
+            return brightness > 125;
+          }
 
+          return false;
+        }
 
-  function isLightColor(color) {
-  
-    if (!color) return false;
+        function getBackgroundColorBehindHeader() {
+          const bgType = document.body.getAttribute("data-header-bg") || "dark";
 
- 
-    let r, g, b;
+          if (bgType === "light") {
+            return "#ffffff";
+          } else {
+            return "#000000";
+          }
+        }
 
-    if (color.startsWith("rgb")) {
+        window.addEventListener("scroll", updateHeaderState);
 
-      const match = color.match(/rgba?$$(\d+),\s*(\d+),\s*(\d+)(?:,\s*[\d.]+)?$$/);
-      if (match) {
-        r = Number.parseInt(match[1]);
-        g = Number.parseInt(match[2]);
-        b = Number.parseInt(match[3]);
-      }
-    } else if (color.startsWith("#")) {
+        const menuToggle = document.querySelector(".menu-toggle");
+        const navMenu = document.querySelector(".nav-menu");
 
-      const hex = color.replace("#", "");
-      r = Number.parseInt(hex.substr(0, 2), 16);
-      g = Number.parseInt(hex.substr(2, 2), 16);
-      b = Number.parseInt(hex.substr(4, 2), 16);
-    }
+        if (menuToggle && navMenu) {
+          let overlay = document.querySelector(".menu-overlay");
+          if (!overlay) {
+            overlay = document.createElement("div");
+            overlay.className = "menu-overlay";
+            document.body.appendChild(overlay);
+          }
 
+          menuToggle.addEventListener("click", () => {
+            navMenu.classList.toggle("active");
+            menuToggle.classList.toggle("active");
+            overlay.classList.toggle("active");
 
-    if (r !== undefined && g !== undefined && b !== undefined) {
-      const brightness = (299 * r + 587 * g + 114 * b) / 1000;
-      return brightness > 125;
-    }
+            if (navMenu.classList.contains("active")) {
+              document.body.style.overflow = "hidden";
+            } else {
+              document.body.style.overflow = "";
+            }
 
-    return false;
-  }
+            if (navMenu.classList.contains("active")) {
+              menuToggle.innerHTML = '<i class="fas fa-times"></i>';
+            } else {
+              menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            }
+          });
 
+          overlay.addEventListener("click", () => {
+            navMenu.classList.remove("active");
+            menuToggle.classList.remove("active");
+            overlay.classList.remove("active");
+            document.body.style.overflow = "";
+            menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+          });
+        }
 
-  function getBackgroundColorBehindHeader() {
+        const navLinks = document.querySelectorAll(".nav-link");
+        const currentPath = window.location.pathname;
 
-    const bgType = document.body.getAttribute("data-header-bg") || "dark";
+        navLinks.forEach((link) => {
+          const href = link.getAttribute("href");
+          if (
+            href === currentPath ||
+            (href !== "/" && currentPath.includes(href))
+          ) {
+            link.parentElement.classList.add("active");
+          }
 
-    if (bgType === "light") {
-      return "#ffffff";
-    } else {
-      return "#000000";
-    }
-  }
+          link.addEventListener("click", function (e) {
+            if (this.id === "cart-link" || this.id === "wishlist-link") return;
 
+            document.querySelectorAll(".nav-item").forEach((item) => {
+              item.classList.remove("active");
+            });
 
-  window.addEventListener("scroll", updateHeaderState);
+            this.parentElement.classList.add("active");
 
+            if (this.classList.contains("position-relative")) {
+              const rect = this.getBoundingClientRect();
+              const x = e.clientX - rect.left;
+              const y = e.clientY - rect.top;
 
-  const menuToggle = document.querySelector(".menu-toggle");
-  const navMenu = document.querySelector(".nav-menu");
+              const ripple = document.createElement("span");
+              ripple.className = "ripple";
+              ripple.style.left = x + "px";
+              ripple.style.top = y + "px";
 
-  if (menuToggle && navMenu) {
+              this.appendChild(ripple);
 
-    let overlay = document.querySelector(".menu-overlay");
-    if (!overlay) {
-      overlay = document.createElement("div");
-      overlay.className = "menu-overlay";
-      document.body.appendChild(overlay);
-    }
+              setTimeout(() => {
+                ripple.remove();
+              }, 600);
+            }
+          });
+        });
 
-    menuToggle.addEventListener("click", () => {
-      navMenu.classList.toggle("active");
-      menuToggle.classList.toggle("active");
-      overlay.classList.toggle("active");
+        const profileIcon = document.querySelector(
+          ".nav-buttons .fa-user-circle, .nav-buttons .fa-user"
+        );
 
-     
-      if (navMenu.classList.contains("active")) {
-        document.body.style.overflow = "hidden";
-      } else {
-        document.body.style.overflow = "";
-      }
+        if (profileIcon) {
+          const profileLink = profileIcon.closest("a");
 
-   
-      if (navMenu.classList.contains("active")) {
-        menuToggle.innerHTML = '<i class="fas fa-times"></i>';
-      } else {
-        menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-      }
-    });
+          if (profileLink) {
+            const parentContainer = profileLink.parentElement;
 
+            if (parentContainer) {
+              let dropdownContent =
+                parentContainer.querySelector(".dropdown-content");
 
-    overlay.addEventListener("click", () => {
-      navMenu.classList.remove("active");
-      menuToggle.classList.remove("active");
-      overlay.classList.remove("active");
-      document.body.style.overflow = "";
-      menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-    });
-  }
+              if (!dropdownContent) {
+                parentContainer.classList.add("dropdown");
 
-  const navLinks = document.querySelectorAll('.nav-link');
-  const currentPath = window.location.pathname;
-  
-  navLinks.forEach(link => {
-    const href = link.getAttribute('href');
-    if (href === currentPath || (href !== '/' && currentPath.includes(href))) {
-      link.parentElement.classList.add('active');
-    }
-    
-
-    link.addEventListener('click', function(e) {
-
-      if (this.id === 'cart-link' || this.id === 'wishlist-link') return;
-      
-  
-      document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active');
-      });
-      
-  
-      this.parentElement.classList.add('active');
-      
-
-      if (this.classList.contains('position-relative')) {
-        const rect = this.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        
-        const ripple = document.createElement('span');
-        ripple.className = 'ripple';
-        ripple.style.left = x + 'px';
-        ripple.style.top = y + 'px';
-        
-        this.appendChild(ripple);
-        
-        setTimeout(() => {
-          ripple.remove();
-        }, 600);
-      }
-    });
-  });
-
-
-  const profileIcon = document.querySelector(".nav-buttons .fa-user-circle, .nav-buttons .fa-user");
-
-  if (profileIcon) {
-    
-    const profileLink = profileIcon.closest("a");
-
-    if (profileLink) {
-
-      const parentContainer = profileLink.parentElement;
-
-      if (parentContainer) {
-   
-        let dropdownContent = parentContainer.querySelector(".dropdown-content");
-
-        if (!dropdownContent) {
-
-          parentContainer.classList.add("dropdown");
-
-          dropdownContent = document.createElement("div");
-          dropdownContent.className = "dropdown-content";
-          dropdownContent.innerHTML = `
+                dropdownContent = document.createElement("div");
+                dropdownContent.className = "dropdown-content";
+                dropdownContent.innerHTML = `
             <a href="/LoadProfile"><i class="fas fa-user"></i> My Profile</a>
             <a href="/orders"><i class="fas fa-shopping-bag"></i> My Orders</a>
             <a href="/address"><i class="fas fa-map-marker-alt"></i> My Addresses</a>
             <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
           `;
 
-        
-          parentContainer.appendChild(dropdownContent);
-        }
-
-       
-        profileLink.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation(); 
-          dropdownContent.classList.toggle("show");
-        });
-
-    
-        document.addEventListener("click", (e) => {
-         
-          if (!dropdownContent.contains(e.target) && !profileLink.contains(e.target)) {
-            dropdownContent.classList.remove("show");
-          }
-        });
-      }
-    }
-  }
-
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-   
-      if (navMenu && navMenu.classList.contains("active")) {
-        navMenu.classList.remove("active");
-        if (menuToggle) {
-          menuToggle.classList.remove("active");
-          menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-        }
-        const overlay = document.querySelector(".menu-overlay");
-        if (overlay) overlay.classList.remove("active");
-        document.body.style.overflow = "";
-      }
-
-
-      const openDropdowns = document.querySelectorAll(".dropdown-content.show");
-      openDropdowns.forEach((dropdown) => {
-        dropdown.classList.remove("show");
-      });
-    }
-  });
-
-
-  const dropdownLinks = document.querySelectorAll(".dropdown > a");
-  dropdownLinks.forEach((link) => {
-    link.setAttribute("aria-haspopup", "true");
-    link.setAttribute("aria-expanded", "false");
-
-    link.addEventListener("click", () => {
-      const expanded = link.getAttribute("aria-expanded") === "true";
-      link.setAttribute("aria-expanded", !expanded);
-    });
-  });
-
-
-  function initCartWishlistSystem() {
-
-    const cartBadge = document.getElementById('cart-badge');
-    const wishlistBadge = document.getElementById('wishlist-badge');
-    
-    
-    if (cartBadge) {
-      cartBadge.classList.add('new-item');
-      setTimeout(() => cartBadge.classList.remove('new-item'), 600);
-    }
-    
-    if (wishlistBadge) {
-      wishlistBadge.classList.add('new-item');
-      setTimeout(() => wishlistBadge.classList.remove('new-item'), 600);
-    }
-
-
-    function createParticles(element, count = 10) {
-      if (!element) return;
-      
-      const rect = element.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      
-      for (let i = 0; i < count; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        
-
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 5 + Math.random() * 15;
-        const x = centerX + Math.cos(angle) * distance;
-        const y = centerY + Math.sin(angle) * distance;
-        
-     
-        const tx = (Math.random() - 0.5) * 100;
-        const ty = (Math.random() - 0.5) * 100;
-        
-      
-        particle.style.left = `${x}px`;
-        particle.style.top = `${y}px`;
-        particle.style.setProperty('--tx', `${tx}px`);
-        particle.style.setProperty('--ty', `${ty}px`);
-        
-      
-        const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981'];
-        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        
-
-        document.body.appendChild(particle);
-        
-        
-        setTimeout(() => {
-          if (particle.parentElement) {
-            particle.parentElement.removeChild(particle);
-          }
-        }, 1000);
-      }
-    }
-
-   
-    window.updateBadgeCount = function(badgeId, count) {
-
-      let badge = document.getElementById(badgeId);
-      const parent = badgeId === 'cart-badge' 
-        ? document.querySelector('.nav-link[title="Cart"]')
-        : document.querySelector('.nav-link[title="Wishlist"]');
-      
-
-      if (!badge && count > 0 && parent) {
-        badge = document.createElement('span');
-        badge.className = 'count-badge new-item';
-        badge.id = badgeId;
-        badge.textContent = count;
-        parent.appendChild(badge);
-        
-
-        createParticles(badge, 15);
-        return;
-      }
-      
-     
-      if (!badge) return;
-      
-      const currentCount = parseInt(badge.textContent || '0');
-      
-      
-      if (count > currentCount) {
-        
-        badge.classList.remove('increased', 'new-item', 'flip');
-        
-      
-        void badge.offsetWidth;
-        
-
-        badge.classList.add('increased');
-        
-   
-        createParticles(badge, 15);
-        
-
-        const notification = document.createElement('div');
-        notification.className = 'floating-notification';
-        notification.textContent = '+' + (count - currentCount);
-        
-    
-        parent.appendChild(notification);
-        
-
-        setTimeout(() => {
-          if (notification.parentElement) {
-            notification.parentElement.removeChild(notification);
-          }
-        }, 1500);
-        
-       
-        setTimeout(() => {
-          badge.classList.remove('increased');
-        }, 1000);
-      } else if (count < currentCount && count > 0) {
-    
-        badge.classList.remove('increased', 'new-item', 'flip');
-        
-   
-        void badge.offsetWidth;
-        
-        badge.classList.add('flip');
-        
-        setTimeout(() => {
-          badge.classList.remove('flip');
-        }, 600);
-      }
-      
-      badge.textContent = count;
-      
-
-      if (count <= 0) {
-        badge.style.display = 'none';
-        
-    
-        setTimeout(() => {
-          if (badge.parentElement) {
-            badge.parentElement.removeChild(badge);
-          }
-        }, 300);
-      } else {
-        badge.style.display = 'flex';
-      }
-    };
-
-    
-    function showToast(message, type = 'success') {
-   
-      let toast = document.querySelector('.toast-notification');
-      if (!toast) {
-        toast = document.createElement('div');
-        toast.className = 'toast-notification';
-        document.body.appendChild(toast);
-      }
-      
-    
-      toast.textContent = message;
-      toast.className = 'toast-notification';
-      if (type === 'error') {
-        toast.style.backgroundColor = 'rgba(220, 38, 38, 0.9)';
-      } else if (type === 'success') {
-        toast.style.backgroundColor = 'rgba(16, 185, 129, 0.9)';
-      }
-      
-      
-      setTimeout(() => {
-        toast.classList.add('show');
-      }, 10);
-      
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000);
-    }
-
-
-    function createFlyingItem(fromElement, toElement) {
-      if (!fromElement || !toElement) return;
-      
-
-      const flyingItem = document.createElement('div');
-      flyingItem.className = 'flying-item';
-      
-    
-      const fromRect = fromElement.getBoundingClientRect();
-      flyingItem.style.top = `${fromRect.top + fromRect.height/2 - 10}px`;
-      flyingItem.style.left = `${fromRect.left + fromRect.width/2 - 10}px`;
-      
- 
-      document.body.appendChild(flyingItem);
-      
-
-      void flyingItem.offsetWidth;
-      
-
-      const toRect = toElement.getBoundingClientRect();
-      flyingItem.style.top = `${toRect.top + toRect.height/2 - 10}px`;
-      flyingItem.style.left = `${toRect.left + toRect.width/2 - 10}px`;
-      flyingItem.style.opacity = '0';
-      flyingItem.style.transform = 'scale(0.3)';
-      
-      setTimeout(() => {
-        if (flyingItem.parentElement) {
-          flyingItem.parentElement.removeChild(flyingItem);
-        }
-      }, 800);
-    }
-
-    
-    
-    function interceptForms() {
-      document.addEventListener('submit', function(e) {
-        const form = e.target;
-        
-      
-        const formAction = form.getAttribute('action') || '';
-        const isCartForm = formAction.includes('/cart/add') || 
-                          formAction.includes('/add-to-cart') || 
-                          form.classList.contains('add-to-cart-form');
-                          
-        const isWishlistForm = formAction.includes('/wishlist/add') || 
-                              formAction.includes('/add-to-wishlist') || 
-                              form.classList.contains('add-to-wishlist-form');
-        
-        if (isCartForm || isWishlistForm) {
-          e.preventDefault(); 
-          
-          const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
-          const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
-          
-          if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-          }
-          
-         
-          const formData = new FormData(form);
-          
-  
-          fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: {
-              'X-Requested-With': 'XMLHttpRequest'
-            }
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json();
-          })
-          .then(data => {
-      
-            if (submitBtn) {
-              submitBtn.innerHTML = '<i class="fas fa-check"></i> Added!';
-              setTimeout(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
-              }, 2000);
-            }
-            
-   
-            if (isCartForm) {
-             
-              const currentCount = parseInt(document.getElementById('cart-badge')?.textContent || '0');
-             
-              const newCount = data.count !== undefined ? data.count : currentCount + 1;
-              updateBadgeCount('cart-badge', newCount);
-              
-     
-              showToast('Item added to cart', 'success');
-              
-      
-              const cartLink = document.getElementById('cart-link');
-              if (cartLink) {
-                createFlyingItem(submitBtn || form, cartLink);
+                parentContainer.appendChild(dropdownContent);
               }
-            } else {
-          
-              const currentCount = parseInt(document.getElementById('wishlist-badge')?.textContent || '0');
-       
-              const newCount = data.count !== undefined ? data.count : currentCount + 1;
-              updateBadgeCount('wishlist-badge', newCount);
-              
-    
-              showToast('Item added to wishlist', 'success');
-              
-     
-              const wishlistLink = document.getElementById('wishlist-link');
-              if (wishlistLink) {
-                createFlyingItem(submitBtn || form, wishlistLink);
-              }
-            }
-          })
-          .catch(error => {
-            console.error('Error adding item:', error);
-            
-   
-            if (submitBtn) {
-              submitBtn.innerHTML = '<i class="fas fa-times"></i> Failed';
-              setTimeout(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
-              }, 2000);
-            }
-            
-         
-            showToast('Failed to add item. Please try again.', 'error');
-          });
-        }
-      });
-    }
-    
-    
-    function interceptButtons() {
-      document.addEventListener('click', function(e) {
 
-        const addButton = e.target.closest('button[data-action="add-to-cart"], a[data-action="add-to-cart"], .add-to-cart-btn, button[data-action="add-to-wishlist"], a[data-action="add-to-wishlist"], .add-to-wishlist-btn');
-        
-        if (!addButton) return;
-        
-        e.preventDefault();
-        e.stopPropagation();
-        
+              profileLink.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropdownContent.classList.toggle("show");
+              });
 
-        const isCart = addButton.getAttribute('data-action') === 'add-to-cart' || 
-                      addButton.classList.contains('add-to-cart-btn');
-        
-    
-        const productId = addButton.getAttribute('data-id') || 
-                         addButton.getAttribute('data-product-id');
-        const quantity = addButton.getAttribute('data-quantity') || 1;
-        
-        if (!productId) {
-          console.error('Product ID not found on button');
-          return;
-        }
-        
-        const originalText = addButton.innerHTML;
-        addButton.disabled = true;
-        addButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
-        
-       
-        const endpoint = isCart ? '/cart/add' : '/wishlist/add';
-        
-        const formData = new FormData();
-        formData.append('productId', productId);
-        formData.append('quantity', quantity);
-        
-    
-        fetch(endpoint, {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-
-          addButton.innerHTML = '<i class="fas fa-check"></i> Added!';
-          
-   
-          if (isCart) {
-           
-            const currentCount = parseInt(document.getElementById('cart-badge')?.textContent || '0');
-
-            const newCount = data.count !== undefined ? data.count : currentCount + 1;
-            updateBadgeCount('cart-badge', newCount);
-            
-            
-            showToast('Item added to cart', 'success');
-            
-      
-            const cartLink = document.getElementById('cart-link');
-            if (cartLink) {
-              createFlyingItem(addButton, cartLink);
-            }
-          } else {
-    
-            const currentCount = parseInt(document.getElementById('wishlist-badge')?.textContent || '0');
-
-            const newCount = data.count !== undefined ? data.count : currentCount + 1;
-            updateBadgeCount('wishlist-badge', newCount);
-
-            showToast('Item added to wishlist', 'success');
-            
-
-            const wishlistLink = document.getElementById('wishlist-link');
-            if (wishlistLink) {
-              createFlyingItem(addButton, wishlistLink);
-            }
-          }
-          
-    
-          setTimeout(() => {
-            addButton.disabled = false;
-            addButton.innerHTML = originalText;
-          }, 2000);
-        })
-        .catch(error => {
-          console.error('Error adding item:', error);
-          
-  
-          addButton.innerHTML = '<i class="fas fa-times"></i> Failed';
-          
-
-          showToast('Failed to add item. Please try again.', 'error');
-     
-          setTimeout(() => {
-            addButton.disabled = false;
-            addButton.innerHTML = originalText;
-          }, 2000);
-        });
-      });
-    }
-    
-    
-    function interceptRemoveButtons() {
-      document.addEventListener('click', function(e) {
-     
-        const removeButton = e.target.closest('button[data-action="remove-from-cart"], a[data-action="remove-from-cart"], .remove-from-cart-btn, button[data-action="remove-from-wishlist"], a[data-action="remove-from-wishlist"], .remove-from-wishlist-btn, a[href*="/cart/remove"], a[href*="/wishlist/remove"]');
-        
-        if (!removeButton) return;
-        
-        e.preventDefault();
-        e.stopPropagation();
-        
-
-        const isCart = removeButton.getAttribute('data-action') === 'remove-from-cart' || 
-                      removeButton.classList.contains('remove-from-cart-btn') ||
-                      (removeButton.getAttribute('href') && removeButton.getAttribute('href').includes('/cart/remove'));
-        
-
-        let itemId = removeButton.getAttribute('data-id') || 
-                    removeButton.getAttribute('data-item-id');
-                    
-
-        if (!itemId && removeButton.getAttribute('href')) {
-          const hrefParts = removeButton.getAttribute('href').split('/');
-          itemId = hrefParts[hrefParts.length - 1];
-        }
-        
-        if (!itemId) {
-          console.error('Item ID not found on remove button');
-          return;
-        }
-        
-
-        if (removeButton.tagName === 'BUTTON') {
-          const originalText = removeButton.innerHTML;
-          removeButton.disabled = true;
-          removeButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        }
-        
-    
-        const endpoint = isCart ? `/cart/remove/${itemId}` : `/wishlist/remove/${itemId}`;
-        
-   
-        fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          }
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-
-          if (isCart) {
-            updateBadgeCount('cart-badge', data.count || 0);
-            showToast('Item removed from cart', 'success');
-          } else {
-            updateBadgeCount('wishlist-badge', data.count || 0);
-            showToast('Item removed from wishlist', 'success');
-          }
-          
-    
-          const itemElement = removeButton.closest('.cart-item, .wishlist-item, tr, .product-item');
-          if (itemElement) {
-            itemElement.style.opacity = '0';
-            itemElement.style.height = itemElement.offsetHeight + 'px';
-            itemElement.style.overflow = 'hidden';
-            
-            setTimeout(() => {
-              itemElement.style.height = '0';
-              itemElement.style.padding = '0';
-              itemElement.style.margin = '0';
-              
-              setTimeout(() => {
-                if (itemElement.parentElement) {
-                  itemElement.parentElement.removeChild(itemElement);
+              document.addEventListener("click", (e) => {
+                if (
+                  !dropdownContent.contains(e.target) &&
+                  !profileLink.contains(e.target)
+                ) {
+                  dropdownContent.classList.remove("show");
                 }
-                
-                // Update totals if they exist
-                if (isCart && data.total) {
-                  const totalElements = document.querySelectorAll('.cart-total, .total-price, .cart-subtotal');
-                  totalElements.forEach(el => {
-                    el.textContent = data.total;
-                  });
-                }
-              }, 300);
-            }, 300);
-          }
-        })
-        .catch(error => {
-          console.error('Error removing item:', error);
-
-          if (removeButton.tagName === 'BUTTON') {
-            removeButton.disabled = false;
-            removeButton.innerHTML = originalText || '<i class="fas fa-times"></i>';
-          }
-
-          showToast('Failed to remove item. Please try again.', 'error');
-        });
-      });
-    }
-    
-   
-    function interceptQuantityChanges() {
-      document.addEventListener('change', function(e) {
-       
-        if (e.target.matches('input[type="number"][name="quantity"], .quantity-input')) {
-          const quantityInput = e.target;
-          const form = quantityInput.closest('form');
-          
-      
-          let itemId;
-          if (form) {
-            itemId = form.querySelector('input[name="itemId"]')?.value;
-          }
-          
-          if (!itemId) {
-            itemId = quantityInput.getAttribute('data-id') || 
-                    quantityInput.getAttribute('data-item-id');
-          }
-          
-          if (!itemId) {
-            console.error('Item ID not found for quantity input');
-            return;
-          }
-          
-          const quantity = quantityInput.value;
-          
-
-          let loadingIndicator = document.createElement('span');
-          loadingIndicator.className = 'quantity-loading';
-          loadingIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-          loadingIndicator.style.position = 'absolute';
-          loadingIndicator.style.right = '-25px';
-          loadingIndicator.style.top = '50%';
-          loadingIndicator.style.transform = 'translateY(-50%)';
-          
-          const parent = quantityInput.parentElement;
-          const originalPosition = parent.style.position;
-          if (parent.style.position !== 'relative') {
-            parent.style.position = 'relative';
-          }
-          
-          parent.appendChild(loadingIndicator);
-
-          fetch('/cart/update', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify({ itemId, quantity }),
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json();
-          })
-          .then(data => {
-   
-            parent.removeChild(loadingIndicator);
-            parent.style.position = originalPosition;
-            
-          
-            updateBadgeCount('cart-badge', data.count || 0);
-            
-           
-            const subtotalElement = quantityInput.closest('tr, .cart-item')?.querySelector('.subtotal, .item-subtotal');
-            if (subtotalElement && data.subtotal) {
-              subtotalElement.textContent = data.subtotal;
-              
-     
-              subtotalElement.style.transition = 'background-color 0.5s';
-              subtotalElement.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
-              setTimeout(() => {
-                subtotalElement.style.backgroundColor = 'transparent';
-              }, 800);
-            }
-            
-     
-            if (data.total) {
-              const totalElements = document.querySelectorAll('.cart-total, .total-price, .cart-subtotal');
-              totalElements.forEach(el => {
-                el.textContent = data.total;
-                
-                el.style.transition = 'background-color 0.5s';
-                el.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
-                setTimeout(() => {
-                  el.style.backgroundColor = 'transparent';
-                }, 800);
               });
             }
-            
-            
-            showToast('Cart updated', 'success');
-          })
-          .catch(error => {
-            console.error('Error updating quantity:', error);
-            
-        
-            parent.removeChild(loadingIndicator);
-            parent.style.position = originalPosition;
-            
-      
-            showToast('Failed to update cart. Please try again.', 'error');
-            
-         
-            quantityInput.value = quantityInput.defaultValue;
-          });
+          }
         }
+
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") {
+            if (navMenu && navMenu.classList.contains("active")) {
+              navMenu.classList.remove("active");
+              if (menuToggle) {
+                menuToggle.classList.remove("active");
+                menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+              }
+              const overlay = document.querySelector(".menu-overlay");
+              if (overlay) overlay.classList.remove("active");
+              document.body.style.overflow = "";
+            }
+
+            const openDropdowns = document.querySelectorAll(
+              ".dropdown-content.show"
+            );
+            openDropdowns.forEach((dropdown) => {
+              dropdown.classList.remove("show");
+            });
+          }
+        });
+
+        const dropdownLinks = document.querySelectorAll(".dropdown > a");
+        dropdownLinks.forEach((link) => {
+          link.setAttribute("aria-haspopup", "true");
+          link.setAttribute("aria-expanded", "false");
+
+          link.addEventListener("click", () => {
+            const expanded = link.getAttribute("aria-expanded") === "true";
+            link.setAttribute("aria-expanded", !expanded);
+          });
+        });
+
+        function initCartWishlistSystem() {
+          const cartBadge = document.getElementById("cart-badge");
+          const wishlistBadge = document.getElementById("wishlist-badge");
+
+          if (cartBadge) {
+            cartBadge.classList.add("new-item");
+            setTimeout(() => cartBadge.classList.remove("new-item"), 600);
+          }
+
+          if (wishlistBadge) {
+            wishlistBadge.classList.add("new-item");
+            setTimeout(() => wishlistBadge.classList.remove("new-item"), 600);
+          }
+
+          function createParticles(element, count = 10) {
+            if (!element) return;
+
+            const rect = element.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            for (let i = 0; i < count; i++) {
+              const particle = document.createElement("div");
+              particle.className = "particle";
+
+              const angle = Math.random() * Math.PI * 2;
+              const distance = 5 + Math.random() * 15;
+              const x = centerX + Math.cos(angle) * distance;
+              const y = centerY + Math.sin(angle) * distance;
+
+              const tx = (Math.random() - 0.5) * 100;
+              const ty = (Math.random() - 0.5) * 100;
+
+              particle.style.left = `${x}px`;
+              particle.style.top = `${y}px`;
+              particle.style.setProperty("--tx", `${tx}px`);
+              particle.style.setProperty("--ty", `${ty}px`);
+
+              const colors = ["#3b82f6", "#8b5cf6", "#ec4899", "#10b981"];
+              particle.style.backgroundColor =
+                colors[Math.floor(Math.random() * colors.length)];
+
+              document.body.appendChild(particle);
+
+              setTimeout(() => {
+                if (particle.parentElement) {
+                  particle.parentElement.removeChild(particle);
+                }
+              }, 1000);
+            }
+          }
+
+          window.updateBadgeCount = function (badgeId, count) {
+            let badge = document.getElementById(badgeId);
+            const parent =
+              badgeId === "cart-badge"
+                ? document.querySelector('.nav-link[title="Cart"]')
+                : document.querySelector('.nav-link[title="Wishlist"]');
+
+            if (!badge && count > 0 && parent) {
+              badge = document.createElement("span");
+              badge.className = "count-badge new-item";
+              badge.id = badgeId;
+              badge.textContent = count;
+              parent.appendChild(badge);
+
+              createParticles(badge, 15);
+              return;
+            }
+
+            if (!badge) return;
+
+            const currentCount = parseInt(badge.textContent || "0");
+
+            if (count > currentCount) {
+              badge.classList.remove("increased", "new-item", "flip");
+
+              void badge.offsetWidth;
+
+              badge.classList.add("increased");
+
+              createParticles(badge, 15);
+
+              const notification = document.createElement("div");
+              notification.className = "floating-notification";
+              notification.textContent = "+" + (count - currentCount);
+
+              parent.appendChild(notification);
+
+              setTimeout(() => {
+                if (notification.parentElement) {
+                  notification.parentElement.removeChild(notification);
+                }
+              }, 1500);
+
+              setTimeout(() => {
+                badge.classList.remove("increased");
+              }, 1000);
+            } else if (count < currentCount && count > 0) {
+              badge.classList.remove("increased", "new-item", "flip");
+
+              void badge.offsetWidth;
+
+              badge.classList.add("flip");
+
+              setTimeout(() => {
+                badge.classList.remove("flip");
+              }, 600);
+            }
+
+            badge.textContent = count;
+
+            if (count <= 0) {
+              badge.style.display = "none";
+
+              setTimeout(() => {
+                if (badge.parentElement) {
+                  badge.parentElement.removeChild(badge);
+                }
+              }, 300);
+            } else {
+              badge.style.display = "flex";
+            }
+          };
+
+          function showToast(message, type = "success") {
+            let toast = document.querySelector(".toast-notification");
+            if (!toast) {
+              toast = document.createElement("div");
+              toast.className = "toast-notification";
+              document.body.appendChild(toast);
+            }
+
+            toast.textContent = message;
+            toast.className = "toast-notification";
+            if (type === "error") {
+              toast.style.backgroundColor = "rgba(220, 38, 38, 0.9)";
+            } else if (type === "success") {
+              toast.style.backgroundColor = "rgba(16, 185, 129, 0.9)";
+            }
+
+            setTimeout(() => {
+              toast.classList.add("show");
+            }, 10);
+
+            setTimeout(() => {
+              toast.classList.remove("show");
+            }, 3000);
+          }
+
+          function createFlyingItem(fromElement, toElement) {
+            if (!fromElement || !toElement) return;
+
+            const flyingItem = document.createElement("div");
+            flyingItem.className = "flying-item";
+
+            const fromRect = fromElement.getBoundingClientRect();
+            flyingItem.style.top = `${
+              fromRect.top + fromRect.height / 2 - 10
+            }px`;
+            flyingItem.style.left = `${
+              fromRect.left + fromRect.width / 2 - 10
+            }px`;
+
+            document.body.appendChild(flyingItem);
+
+            void flyingItem.offsetWidth;
+
+            const toRect = toElement.getBoundingClientRect();
+            flyingItem.style.top = `${toRect.top + toRect.height / 2 - 10}px`;
+            flyingItem.style.left = `${toRect.left + toRect.width / 2 - 10}px`;
+            flyingItem.style.opacity = "0";
+            flyingItem.style.transform = "scale(0.3)";
+
+            setTimeout(() => {
+              if (flyingItem.parentElement) {
+                flyingItem.parentElement.removeChild(flyingItem);
+              }
+            }, 800);
+          }
+
+          function interceptForms() {
+            document.addEventListener("submit", function (e) {
+              const form = e.target;
+
+              const formAction = form.getAttribute("action") || "";
+              const isCartForm =
+                formAction.includes("/cart/add") ||
+                formAction.includes("/add-to-cart") ||
+                form.classList.contains("add-to-cart-form");
+
+              const isWishlistForm =
+                formAction.includes("/wishlist/add") ||
+                formAction.includes("/add-to-wishlist") ||
+                form.classList.contains("add-to-wishlist-form");
+
+              if (isCartForm || isWishlistForm) {
+                e.preventDefault();
+
+                const submitBtn = form.querySelector(
+                  'button[type="submit"], input[type="submit"]'
+                );
+                const originalBtnText = submitBtn ? submitBtn.innerHTML : "";
+
+                if (submitBtn) {
+                  submitBtn.disabled = true;
+                  submitBtn.innerHTML =
+                    '<i class="fas fa-spinner fa-spin"></i> Adding...';
+                }
+
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                  method: "POST",
+                  body: formData,
+                  headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                  },
+                })
+                  .then((response) => {
+                    if (!response.ok) {
+                      throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                  })
+                  .then((data) => {
+                    if (submitBtn) {
+                      submitBtn.innerHTML =
+                        '<i class="fas fa-check"></i> Added!';
+                      setTimeout(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                      }, 2000);
+                    }
+
+                    if (isCartForm) {
+                      const currentCount = parseInt(
+                        document.getElementById("cart-badge")?.textContent ||
+                          "0"
+                      );
+
+                      const newCount =
+                        data.count !== undefined
+                          ? data.count
+                          : currentCount + 1;
+                      updateBadgeCount("cart-badge", newCount);
+
+                      showToast("Item added to cart", "success");
+
+                      const cartLink = document.getElementById("cart-link");
+                      if (cartLink) {
+                        createFlyingItem(submitBtn || form, cartLink);
+                      }
+                    } else {
+                      const currentCount = parseInt(
+                        document.getElementById("wishlist-badge")
+                          ?.textContent || "0"
+                      );
+
+                      const newCount =
+                        data.count !== undefined
+                          ? data.count
+                          : currentCount + 1;
+                      updateBadgeCount("wishlist-badge", newCount);
+
+                      showToast("Item added to wishlist", "success");
+
+                      const wishlistLink =
+                        document.getElementById("wishlist-link");
+                      if (wishlistLink) {
+                        createFlyingItem(submitBtn || form, wishlistLink);
+                      }
+                    }
+                  })
+                  .catch((error) => {
+                    console.error("Error adding item:", error);
+
+                    if (submitBtn) {
+                      submitBtn.innerHTML =
+                        '<i class="fas fa-times"></i> Failed';
+                      setTimeout(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+                      }, 2000);
+                    }
+
+                    showToast("Failed to add item. Please try again.", "error");
+                  });
+              }
+            });
+          }
+
+          function interceptButtons() {
+            document.addEventListener("click", function (e) {
+              const addButton = e.target.closest(
+                'button[data-action="add-to-cart"], a[data-action="add-to-cart"], .add-to-cart-btn, button[data-action="add-to-wishlist"], a[data-action="add-to-wishlist"], .add-to-wishlist-btn'
+              );
+
+              if (!addButton) return;
+
+              e.preventDefault();
+              e.stopPropagation();
+
+              const isCart =
+                addButton.getAttribute("data-action") === "add-to-cart" ||
+                addButton.classList.contains("add-to-cart-btn");
+
+              const productId =
+                addButton.getAttribute("data-id") ||
+                addButton.getAttribute("data-product-id");
+              const quantity = addButton.getAttribute("data-quantity") || 1;
+
+              if (!productId) {
+                console.error("Product ID not found on button");
+                return;
+              }
+
+              const originalText = addButton.innerHTML;
+              addButton.disabled = true;
+              addButton.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i> Adding...';
+
+              const endpoint = isCart ? "/cart/add" : "/wishlist/add";
+
+              const formData = new FormData();
+              formData.append("productId", productId);
+              formData.append("quantity", quantity);
+
+              fetch(endpoint, {
+                method: "POST",
+                body: formData,
+                headers: {
+                  "X-Requested-With": "XMLHttpRequest",
+                },
+              })
+                .then((response) => {
+                  if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                  }
+                  return response.json();
+                })
+                .then((data) => {
+                  addButton.innerHTML = '<i class="fas fa-check"></i> Added!';
+
+                  if (isCart) {
+                    const currentCount = parseInt(
+                      document.getElementById("cart-badge")?.textContent || "0"
+                    );
+
+                    const newCount =
+                      data.count !== undefined ? data.count : currentCount + 1;
+                    updateBadgeCount("cart-badge", newCount);
+
+                    showToast("Item added to cart", "success");
+
+                    const cartLink = document.getElementById("cart-link");
+                    if (cartLink) {
+                      createFlyingItem(addButton, cartLink);
+                    }
+                  } else {
+                    const currentCount = parseInt(
+                      document.getElementById("wishlist-badge")?.textContent ||
+                        "0"
+                    );
+
+                    const newCount =
+                      data.count !== undefined ? data.count : currentCount + 1;
+                    updateBadgeCount("wishlist-badge", newCount);
+
+                    showToast("Item added to wishlist", "success");
+
+                    const wishlistLink =
+                      document.getElementById("wishlist-link");
+                    if (wishlistLink) {
+                      createFlyingItem(addButton, wishlistLink);
+                    }
+                  }
+
+                  setTimeout(() => {
+                    addButton.disabled = false;
+                    addButton.innerHTML = originalText;
+                  }, 2000);
+                })
+                .catch((error) => {
+                  console.error("Error adding item:", error);
+
+                  addButton.innerHTML = '<i class="fas fa-times"></i> Failed';
+
+                  showToast("Failed to add item. Please try again.", "error");
+
+                  setTimeout(() => {
+                    addButton.disabled = false;
+                    addButton.innerHTML = originalText;
+                  }, 2000);
+                });
+            });
+          }
+
+          function interceptRemoveButtons() {
+            document.addEventListener("click", function (e) {
+              const removeButton = e.target.closest(
+                'button[data-action="remove-from-cart"], a[data-action="remove-from-cart"], .remove-from-cart-btn, button[data-action="remove-from-wishlist"], a[data-action="remove-from-wishlist"], .remove-from-wishlist-btn, a[href*="/cart/remove"], a[href*="/wishlist/remove"]'
+              );
+
+              if (!removeButton) return;
+
+              e.preventDefault();
+              e.stopPropagation();
+
+              const isCart =
+                removeButton.getAttribute("data-action") ===
+                  "remove-from-cart" ||
+                removeButton.classList.contains("remove-from-cart-btn") ||
+                (removeButton.getAttribute("href") &&
+                  removeButton.getAttribute("href").includes("/cart/remove"));
+
+              let itemId =
+                removeButton.getAttribute("data-id") ||
+                removeButton.getAttribute("data-item-id");
+
+              if (!itemId && removeButton.getAttribute("href")) {
+                const hrefParts = removeButton.getAttribute("href").split("/");
+                itemId = hrefParts[hrefParts.length - 1];
+              }
+
+              if (!itemId) {
+                console.error("Item ID not found on remove button");
+                return;
+              }
+
+              if (removeButton.tagName === "BUTTON") {
+                const originalText = removeButton.innerHTML;
+                removeButton.disabled = true;
+                removeButton.innerHTML =
+                  '<i class="fas fa-spinner fa-spin"></i>';
+              }
+
+              const endpoint = isCart
+                ? `/cart/remove/${itemId}`
+                : `/wishlist/remove/${itemId}`;
+
+              fetch(endpoint, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-Requested-With": "XMLHttpRequest",
+                },
+              })
+                .then((response) => {
+                  if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                  }
+                  return response.json();
+                })
+                .then((data) => {
+                  if (isCart) {
+                    updateBadgeCount("cart-badge", data.count || 0);
+                    showToast("Item removed from cart", "success");
+                  } else {
+                    updateBadgeCount("wishlist-badge", data.count || 0);
+                    showToast("Item removed from wishlist", "success");
+                  }
+
+                  const itemElement = removeButton.closest(
+                    ".cart-item, .wishlist-item, tr, .product-item"
+                  );
+                  if (itemElement) {
+                    itemElement.style.opacity = "0";
+                    itemElement.style.height = itemElement.offsetHeight + "px";
+                    itemElement.style.overflow = "hidden";
+
+                    setTimeout(() => {
+                      itemElement.style.height = "0";
+                      itemElement.style.padding = "0";
+                      itemElement.style.margin = "0";
+
+                      setTimeout(() => {
+                        if (itemElement.parentElement) {
+                          itemElement.parentElement.removeChild(itemElement);
+                        }
+
+                        // Update totals if they exist
+                        if (isCart && data.total) {
+                          const totalElements = document.querySelectorAll(
+                            ".cart-total, .total-price, .cart-subtotal"
+                          );
+                          totalElements.forEach((el) => {
+                            el.textContent = data.total;
+                          });
+                        }
+                      }, 300);
+                    }, 300);
+                  }
+                })
+                .catch((error) => {
+                  console.error("Error removing item:", error);
+
+                  if (removeButton.tagName === "BUTTON") {
+                    removeButton.disabled = false;
+                    removeButton.innerHTML =
+                      originalText || '<i class="fas fa-times"></i>';
+                  }
+
+                  showToast(
+                    "Failed to remove item. Please try again.",
+                    "error"
+                  );
+                });
+            });
+          }
+
+          function interceptQuantityChanges() {
+            document.addEventListener("change", function (e) {
+              if (
+                e.target.matches(
+                  'input[type="number"][name="quantity"], .quantity-input'
+                )
+              ) {
+                const quantityInput = e.target;
+                const form = quantityInput.closest("form");
+
+                let itemId;
+                if (form) {
+                  itemId = form.querySelector('input[name="itemId"]')?.value;
+                }
+
+                if (!itemId) {
+                  itemId =
+                    quantityInput.getAttribute("data-id") ||
+                    quantityInput.getAttribute("data-item-id");
+                }
+
+                if (!itemId) {
+                  console.error("Item ID not found for quantity input");
+                  return;
+                }
+
+                const quantity = quantityInput.value;
+
+                let loadingIndicator = document.createElement("span");
+                loadingIndicator.className = "quantity-loading";
+                loadingIndicator.innerHTML =
+                  '<i class="fas fa-spinner fa-spin"></i>';
+                loadingIndicator.style.position = "absolute";
+                loadingIndicator.style.right = "-25px";
+                loadingIndicator.style.top = "50%";
+                loadingIndicator.style.transform = "translateY(-50%)";
+
+                const parent = quantityInput.parentElement;
+                const originalPosition = parent.style.position;
+                if (parent.style.position !== "relative") {
+                  parent.style.position = "relative";
+                }
+
+                parent.appendChild(loadingIndicator);
+
+                fetch("/cart/update", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                  },
+                  body: JSON.stringify({ itemId, quantity }),
+                })
+                  .then((response) => {
+                    if (!response.ok) {
+                      throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                  })
+                  .then((data) => {
+                    parent.removeChild(loadingIndicator);
+                    parent.style.position = originalPosition;
+
+                    updateBadgeCount("cart-badge", data.count || 0);
+
+                    const subtotalElement = quantityInput
+                      .closest("tr, .cart-item")
+                      ?.querySelector(".subtotal, .item-subtotal");
+                    if (subtotalElement && data.subtotal) {
+                      subtotalElement.textContent = data.subtotal;
+
+                      subtotalElement.style.transition =
+                        "background-color 0.5s";
+                      subtotalElement.style.backgroundColor =
+                        "rgba(16, 185, 129, 0.2)";
+                      setTimeout(() => {
+                        subtotalElement.style.backgroundColor = "transparent";
+                      }, 800);
+                    }
+
+                    if (data.total) {
+                      const totalElements = document.querySelectorAll(
+                        ".cart-total, .total-price, .cart-subtotal"
+                      );
+                      totalElements.forEach((el) => {
+                        el.textContent = data.total;
+
+                        el.style.transition = "background-color 0.5s";
+                        el.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
+                        setTimeout(() => {
+                          el.style.backgroundColor = "transparent";
+                        }, 800);
+                      });
+                    }
+
+                    showToast("Cart updated", "success");
+                  })
+                  .catch((error) => {
+                    console.error("Error updating quantity:", error);
+
+                    parent.removeChild(loadingIndicator);
+                    parent.style.position = originalPosition;
+
+                    showToast(
+                      "Failed to update cart. Please try again.",
+                      "error"
+                    );
+
+                    quantityInput.value = quantityInput.defaultValue;
+                  });
+              }
+            });
+          }
+
+          window.updateCartCount = function (count) {
+            updateBadgeCount("cart-badge", count);
+          };
+
+          window.updateWishlistCount = function (count) {
+            updateBadgeCount("wishlist-badge", count);
+          };
+
+          document.addEventListener("cartUpdated", function (e) {
+            if (e.detail && typeof e.detail.count !== "undefined") {
+              updateBadgeCount("cart-badge", e.detail.count);
+            }
+          });
+
+          document.addEventListener("wishlistUpdated", function (e) {
+            if (e.detail && typeof e.detail.count !== "undefined") {
+              updateBadgeCount("wishlist-badge", e.detail.count);
+            }
+          });
+
+          interceptForms();
+          interceptButtons();
+          interceptRemoveButtons();
+          interceptQuantityChanges();
+        }
+
+        initCartWishlistSystem();
       });
-    }
-    
-
-    window.updateCartCount = function(count) {
-      updateBadgeCount('cart-badge', count);
-    };
-    
-    window.updateWishlistCount = function(count) {
-      updateBadgeCount('wishlist-badge', count);
-    };
-    
-    document.addEventListener('cartUpdated', function(e) {
-      if (e.detail && typeof e.detail.count !== 'undefined') {
-        updateBadgeCount('cart-badge', e.detail.count);
-      }
-    });
-    
-    document.addEventListener('wishlistUpdated', function(e) {
-      if (e.detail && typeof e.detail.count !== 'undefined') {
-        updateBadgeCount('wishlist-badge', e.detail.count);
-      }
-    });
-
-    interceptForms();
-    interceptButtons();
-    interceptRemoveButtons();
-    interceptQuantityChanges();
-  }
-
-  initCartWishlistSystem();
-});
-</script>
-</body>
-
+    </script>
+  </body>
 </html>

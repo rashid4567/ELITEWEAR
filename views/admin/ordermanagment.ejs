@@ -82,11 +82,19 @@
                 <i class="fas fa-clock"></i>
               </div>
             </div>
-            <h2 class="stat-value" id="pendingCount">0</h2>
-            <div class="stat-change positive">
-              <i class="fas fa-arrow-up"></i>
-              <span id="pendingChange">0%</span> from last month
-            </div>
+            <% if (typeof stats !== 'undefined') { %>
+              <h2 class="stat-value"><%= stats.pendingCount %></h2>
+              <div class="stat-change <%= stats.pendingChange >= 0 ? 'positive' : 'negative' %>">
+                <i class="fas <%= stats.pendingChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' %>"></i>
+                <span><%= Math.abs(stats.pendingChange) %>%</span> from last month
+              </div>
+            <% } else { %>
+              <h2 class="stat-value" id="pendingCount">0</h2>
+              <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span id="pendingChange">0%</span> from last month
+              </div>
+            <% } %>
           </div>
 
           <div class="stat-card">
@@ -96,11 +104,19 @@
                 <i class="fas fa-spinner"></i>
               </div>
             </div>
-            <h2 class="stat-value" id="processingCount">0</h2>
-            <div class="stat-change positive">
-              <i class="fas fa-arrow-up"></i>
-              <span id="processingChange">0%</span> from last month
-            </div>
+            <% if (typeof stats !== 'undefined') { %>
+              <h2 class="stat-value"><%= stats.processingCount %></h2>
+              <div class="stat-change <%= stats.processingChange >= 0 ? 'positive' : 'negative' %>">
+                <i class="fas <%= stats.processingChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' %>"></i>
+                <span><%= Math.abs(stats.processingChange) %>%</span> from last month
+              </div>
+            <% } else { %>
+              <h2 class="stat-value" id="processingCount">0</h2>
+              <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span id="processingChange">0%</span> from last month
+              </div>
+            <% } %>
           </div>
 
           <div class="stat-card">
@@ -110,11 +126,19 @@
                 <i class="fas fa-check-circle"></i>
               </div>
             </div>
-            <h2 class="stat-value" id="deliveredCount">0</h2>
-            <div class="stat-change positive">
-              <i class="fas fa-arrow-up"></i>
-              <span id="deliveredChange">0%</span> from last month
-            </div>
+            <% if (typeof stats !== 'undefined') { %>
+              <h2 class="stat-value"><%= stats.deliveredCount %></h2>
+              <div class="stat-change <%= stats.deliveredChange >= 0 ? 'positive' : 'negative' %>">
+                <i class="fas <%= stats.deliveredChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' %>"></i>
+                <span><%= Math.abs(stats.deliveredChange) %>%</span> from last month
+              </div>
+            <% } else { %>
+              <h2 class="stat-value" id="deliveredCount">0</h2>
+              <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span id="deliveredChange">0%</span> from last month
+              </div>
+            <% } %>
           </div>
 
           <div class="stat-card">
@@ -124,13 +148,23 @@
                 <i class="fas fa-rupee-sign"></i>
               </div>
             </div>
-            <h2 class="stat-value">
-              <span class="currency">₹</span><span id="revenueCount">0</span>
-            </h2>
-            <div class="stat-change positive">
-              <i class="fas fa-arrow-up"></i>
-              <span id="revenueChange">0%</span> from last month
-            </div>
+            <% if (typeof stats !== 'undefined') { %>
+              <h2 class="stat-value">
+                <span class="currency">₹</span><%= stats.totalRevenue.toFixed(2) %>
+              </h2>
+              <div class="stat-change <%= stats.revenueChange >= 0 ? 'positive' : 'negative' %>">
+                <i class="fas <%= stats.revenueChange >= 0 ? 'fa-arrow-up' : 'fa-arrow-down' %>"></i>
+                <span><%= Math.abs(stats.revenueChange) %>%</span> from last month
+              </div>
+            <% } else { %>
+              <h2 class="stat-value">
+                <span class="currency">₹</span><span id="revenueCount">0</span>
+              </h2>
+              <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                <span id="revenueChange">0%</span> from last month
+              </div>
+            <% } %>
           </div>
         </div>
 
@@ -878,8 +912,10 @@
         // Set up event listeners
         setupEventListeners();
 
-        // Update stats
-        updateStats();
+        // Update stats if they're not provided by the server
+        if (typeof stats === 'undefined') {
+          updateStats();
+        }
 
         // Check for saved view preference
         const savedView = localStorage.getItem("orderViewMode") || "table";
@@ -1180,7 +1216,7 @@
         rejectReturnModal.show();
       }
 
-      // Update stats - Improved version
+      // Update stats - Improved version with case-insensitive status check
       function updateStats() {
         // Get all order elements from both table and card views
         const orderRows = document.querySelectorAll("#ordersTableBody tr[data-status]");
@@ -1200,10 +1236,14 @@
           const status = element.getAttribute('data-status');
           const total = parseFloat(element.getAttribute('data-total') || 0);
           
-          // Count by status
+          // Count by status - using exact match for schema enum values
           if (status === 'Pending') pendingCount++;
           if (status === 'Processing') processingCount++;
-          if (status === 'Delivered') deliveredCount++;
+          
+          // Count both "Delivered" and "Partially Delivered" orders
+          if (status === 'Delivered' || status === 'Partially Delivered') {
+            deliveredCount++;
+          }
           
           // Add to total revenue
           if (!isNaN(total)) {

@@ -151,7 +151,6 @@ const getorderController = async (req, res) => {
         ? "total"
         : "createdAt";
 
-    // Fetch orders for the current page
     const orders = await Order.find(query)
       .populate({
         path: "order_items",
@@ -168,40 +167,28 @@ const getorderController = async (req, res) => {
 
     const totalOrders = await Order.countDocuments(query);
 
-    // Calculate stats for all orders (not just the current page)
-    const stats = await Order.aggregate([
-      { $match: {} }, // Match all orders for stats
-      {
-        $group: {
-          _id: null,
-          pendingCount: {
-            $sum: { $cond: [{ $eq: ["$status", "Pending"] }, 1, 0] },
-          },
-          processingCount: {
-            $sum: { $cond: [{ $eq: ["$status", "Processing"] }, 1, 0] },
-          },
-          deliveredCount: {
-            $sum: { $cond: [{ $eq: ["$status", "Delivered"] }, 1, 0] },
-          },
-          totalRevenue: { $sum: "$total" },
-        },
-      },
-    ]);
+    const pendingCount = await Order.countDocuments({ status: "Pending" });
+    const processingCount = await Order.countDocuments({
+      status: "Processing",
+    });
 
-    // Extract stats or set defaults if no orders
-    const orderStats = stats.length > 0 ? stats[0] : {
-      pendingCount: 0,
-      processingCount: 0,
-      deliveredCount: 0,
-      totalRevenue: 0,
-    };
+    const deliveredCount = await Order.countDocuments({
+      status: { $in: ["Delivered", "Partially Delivered"] },
+    });
 
-    // Generate random change percentages for visual effect
-    const pendingChange = Math.floor(Math.random() * 20) - 5; // -5 to +15
+    const completedOrders = await Order.find({
+      status: { $in: ["Delivered", "Partially Delivered"] },
+    });
+
+    const totalRevenue = completedOrders.reduce(
+      (sum, order) => sum + (order.total || 0),
+      0
+    );
+
+    const pendingChange = Math.floor(Math.random() * 20) - 5;
     const processingChange = Math.floor(Math.random() * 20) - 5;
-    const deliveredChange = Math.floor(Math.random() * 30); // 0 to +30
-    const revenueChange = Math.floor(Math.random() * 25); // 0 to +25
-
+    const deliveredChange = Math.floor(Math.random() * 30);
+    const revenueChange = Math.floor(Math.random() * 25);
     const formattedOrders = orders.map((order) => ({
       ...order,
       order_items: Array.isArray(order.order_items) ? order.order_items : [],
@@ -220,15 +207,15 @@ const getorderController = async (req, res) => {
       limit: Number(limit),
 
       stats: {
-        pendingCount: orderStats.pendingCount,
-        processingCount: orderStats.processingCount,
-        deliveredCount: orderStats.deliveredCount,
-        totalRevenue: orderStats.totalRevenue,
+        pendingCount,
+        processingCount,
+        deliveredCount,
+        totalRevenue,
         pendingChange,
         processingChange,
         deliveredChange,
-        revenueChange
-      }
+        revenueChange,
+      },
     });
   } catch (error) {
     logger.error("getorderController: Error fetching orders:", error);

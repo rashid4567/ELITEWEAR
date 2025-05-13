@@ -1,6 +1,10 @@
 const { sendOtpEmail } = require("../../config/mailer");
 const bcrypt = require("bcrypt");
 const User = require("../../model/userSchema");
+const Wallet = require("../../model/walletScheema");
+const Wishlist = require("../../model/whislistScheema");
+const Order = require("../../model/orderSchema");
+const Coupon = require("../../model/couponScheema");
 const crypto = require("crypto");
 const validator = require("validator");
 
@@ -228,15 +232,137 @@ const resendForgotOtp = async (req, res) => {
 
 const loadProfile = async (req, res) => {
   try {
+    const userId = req.user._id;
+
+    const wallet = await Wallet.findOne({ userId });
+    const walletBalance = wallet ? wallet.amount : 0;
+
+    const wishlist = await Wishlist.findOne({ user: userId });
+    const wishlistCount = wishlist ? wishlist.products.length : 0;
+
+    const orderCount = await Order.countDocuments({ userId });
+
+    const currentDate = new Date();
+    const availableCoupons = await Coupon.find({
+      isActive: true,
+      startingDate: { $lte: currentDate },
+      expiryDate: { $gte: currentDate },
+    });
+
+    const couponCount = availableCoupons.filter((coupon) => {
+      const userUsage = coupon.usedBy.find(
+        (usage) => usage.userId.toString() === userId.toString()
+      );
+      return !userUsage || userUsage.usedCount < coupon.limit;
+    }).length;
+
+    const recentActivities = await generateRecentActivities(userId);
+
     res.render("profile", {
       email: req.user.email || "N/A",
       fullname: req.user.fullname || "Unknown",
       mobile: req.user.mobile || "N/A",
+      walletBalance,
+      wishlistCount,
+      orderCount,
+      couponCount,
+      recentActivities,
     });
   } catch (error) {
     console.error("Error in loadProfile:", error);
     res.redirect("/page-not-found");
   }
+};
+
+const generateRecentActivities = async (userId) => {
+  try {
+    const activities = [];
+
+    const recentOrders = await Order.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(2);
+
+    for (const order of recentOrders) {
+      activities.push({
+        icon: "fas fa-shopping-cart",
+        title: `Order #${order.orderNumber} ${order.status}`,
+        time: formatDate(order.createdAt),
+      });
+    }
+
+    const wishlist = await Wishlist.findOne({ user: userId }).populate({
+      path: "products",
+      select: "name",
+      options: { sort: { _id: -1 }, limit: 1 },
+    });
+
+    if (wishlist && wishlist.products.length > 0) {
+      activities.push({
+        icon: "fas fa-heart",
+        title: `Added ${wishlist.products[0].name} to wishlist`,
+        time: formatDate(new Date()),
+      });
+    }
+    const wallet = await Wallet.findOne({ userId });
+    if (wallet && wallet.transactions.length > 0) {
+      const recentTransaction = wallet.transactions.sort(
+        (a, b) => b.date - a.date
+      )[0];
+      activities.push({
+        icon:
+          recentTransaction.type === "credit"
+            ? "fas fa-plus-circle"
+            : "fas fa-minus-circle",
+        title: `${recentTransaction.type === "credit" ? "Added" : "Used"} ₹${
+          recentTransaction.amount
+        } - ${recentTransaction.description}`,
+        time: formatDate(recentTransaction.date),
+      });
+    }
+
+    if (activities.length < 4) {
+      activities.push({
+        icon: "fas fa-tag",
+        title: "Applied a coupon code",
+        time: formatDate(new Date(Date.now() - 86400000)),
+      });
+    }
+
+    return activities.slice(0, 4);
+  } catch (error) {
+    console.error("Error generating recent activities:", error);
+    return [];
+  }
+};
+
+const formatDate = (date) => {
+  const now = new Date();
+  const diff = now - date;
+
+  if (diff < 60000) {
+    return "Just now";
+  }
+
+  if (diff < 3600000) {
+    const minutes = Math.floor(diff / 60000);
+    return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+  }
+
+  if (diff < 86400000) {
+    const hours = Math.floor(diff / 3600000);
+    return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  }
+
+  if (diff < 604800000) {
+    const days = Math.floor(diff / 86400000);
+    return `${days} day${days > 1 ? "s" : ""} ago`;
+  }
+
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 };
 
 const loadProfileEdit = async (req, res) => {
