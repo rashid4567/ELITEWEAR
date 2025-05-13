@@ -3,9 +3,7 @@ const Cart = require("../../model/cartScheema");
 const mongoose = require("mongoose");
 const { calculateProportionalDiscount } = require("../../utils/discountCalculator");
 
-/**
- * Get all coupons for user display
- */
+
 const allCoupons = async (req, res) => {
   try {
     const today = new Date();
@@ -94,9 +92,7 @@ const allCoupons = async (req, res) => {
   }
 };
 
-/**
- * Get available coupons for API/AJAX requests
- */
+
 const getAvailableCoupons = async (req, res) => {
   try {
     const userId = req.user._id.toString();

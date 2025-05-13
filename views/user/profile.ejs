@@ -1034,7 +1034,7 @@
         }
       });
       
-      // Add hover effect to stats items
+
       document.querySelectorAll('.stat-item').forEach(item => {
         item.addEventListener('mouseenter', function() {
           const icon = this.querySelector('.stat-icon');
@@ -1047,13 +1047,13 @@
         });
       });
       
-      // Add ripple effect to buttons
+     
       document.querySelectorAll('.btn').forEach(btn => {
         btn.addEventListener('click', createRippleEffect);
       });
     });
     
-    // Ripple effect function
+ 
     function createRippleEffect(event) {
       const button = event.currentTarget;
       

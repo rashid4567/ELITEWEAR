@@ -610,25 +610,9 @@
       color: var(--error-color);
     }
 
-    /* Preloader */
-    .preloader {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: var(--primary-color);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      transition: opacity 0.5s ease, visibility 0.5s ease;
-    }
+  
 
-    .preloader.fade-out {
-      opacity: 0;
-      visibility: hidden;
-    }
+
 
     .loader {
       width: 80px;
@@ -888,10 +872,7 @@
   </style>
 </head>
 <body>
-  <!-- Preloader -->
-  <div class="preloader">
-    <div class="loader"></div>
-  </div>
+ 
 
   <!-- Scroll Indicator -->
   <div class="scroll-indicator"></div>
@@ -1071,14 +1052,7 @@
         once: true
       });
 
-      // Preloader
-      const preloader = document.querySelector('.preloader');
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-          preloader.classList.add('fade-out');
-        }, 500);
-      });
-
+    
       // Scroll Indicator
       const scrollIndicator = document.querySelector('.scroll-indicator');
       window.addEventListener('scroll', () => {

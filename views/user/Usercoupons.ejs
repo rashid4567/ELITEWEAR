@@ -1427,18 +1427,16 @@
                   <div class="coupon-card fade-in" data-status="<%= coupon.status %>" style="animation-delay: <%= index * 0.1 %>s;">
                     <div class="coupon-header">
                       <div class="discount-badge">
-                        <span class="discount-value"><%= coupon.couponpercent %>%</span>
+                        <span class="discount-value"><%= coupon.discount || coupon.couponpercent %>%</span>
                         <span class="discount-label">OFF</span>
                       </div>
                       <div class="coupon-status-badge <%= coupon.status %>">
-                        <%= coupon.status === 'available' ? 'Available' : 
-                           coupon.status === 'used' ? 'Used' : 
-                           coupon.status === 'expired' ? 'Expired' : 'Upcoming' %>
+                        <%= coupon.statusText %>
                       </div>
                     </div>
                     
                     <div class="coupon-body">
-                      <div class="coupon-title"><%= coupon.coupencode %></div>
+                      <div class="coupon-title"><%= coupon.code || coupon.coupencode %></div>
                       <div class="coupon-description">
                         <%= coupon.description || 'Discount on your purchase' %>
                       </div>
@@ -1458,6 +1456,12 @@
                             <span>Uses: <%= coupon.userUsageCount || 0 %>/<%= coupon.limit %></span>
                           </div>
                         <% } %>
+                        <% if (coupon.startingDate) { %>
+                          <div class="detail-item">
+                            <i class="fas fa-calendar-plus"></i>
+                            <span>Available from <%= new Date(coupon.startingDate).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) %></span>
+                          </div>
+                        <% } %>
                       </div>
                     </div>
                     
@@ -1469,10 +1473,10 @@
                     
                     <div class="coupon-footer">
                       <div class="coupon-code-container">
-                        <span class="coupon-code" id="coupon-<%= coupon._id %>"><%= coupon.coupencode %></span>
+                        <span class="coupon-code" id="coupon-<%= coupon._id %>"><%= coupon.code || coupon.coupencode %></span>
                       </div>
                       <% if (coupon.status === 'available') { %>
-                        <button class="copy-btn" onclick="copyCoupon('<%= coupon._id %>', '<%= coupon.coupencode %>')">
+                        <button class="copy-btn" onclick="copyCoupon('<%= coupon._id %>', '<%= coupon.code || coupon.coupencode %>')">
                           <span class="btn-text">Copy Code</span>
                           <i class="fas fa-copy"></i>
                         </button>
@@ -1716,31 +1720,30 @@
         toastProgress.style.transition = 'width 3s linear';
         toastProgress.style.width = '0%';
         
-        // Hide toast after animation
+        
         setTimeout(() => {
           toast.classList.remove('show');
         }, 3000);
       }
       
-      // Make showToast available globally
+      
       window.showToast = showToast;
       
-      // Copy coupon code
       window.copyCoupon = function(id, code) {
         navigator.clipboard.writeText(code).then(() => {
           const btn = document.querySelector(`button[onclick="copyCoupon('${id}', '${code}')"]`);
           const btnText = btn.querySelector('.btn-text');
           const btnIcon = btn.querySelector('i');
           
-          // Change button appearance
+       
           btn.classList.add('copied');
           btnText.textContent = 'Copied!';
           btnIcon.className = 'fas fa-check';
           
-          // Show toast notification
+          
           showToast('Coupon code copied to clipboard!', 'success');
           
-          // Reset button after delay
+    
           setTimeout(() => {
             btn.classList.remove('copied');
             btnText.textContent = 'Copy Code';
@@ -1751,7 +1754,7 @@
         });
       };
       
-      // Filter tabs functionality
+
       const filterTabs = document.querySelectorAll('.filter-tab');
       const couponCards = document.querySelectorAll('.coupon-card');
       
@@ -1759,16 +1762,16 @@
         tab.addEventListener('click', function(e) {
           createRipple(e, this);
           
-          // Remove active class from all tabs
+
           filterTabs.forEach(t => t.classList.remove('active'));
           
-          // Add active class to clicked tab
+       
           this.classList.add('active');
           
-          // Get filter value
+   
           const filter = this.getAttribute('data-filter');
           
-          // Filter coupon cards
+          
           couponCards.forEach(card => {
             if (filter === 'all' || card.getAttribute('data-status') === filter) {
               card.style.display = 'flex';
@@ -1777,12 +1780,12 @@
             }
           });
           
-          // Show filter applied toast
+      
           showToast(`Showing ${filter === 'all' ? 'all' : filter} coupons`, 'info');
         });
       });
       
-      // Search functionality
+ 
       const searchInput = document.getElementById('couponSearch');
       
       searchInput.addEventListener('input', function() {
@@ -1808,7 +1811,7 @@
         }
       });
       
-      // Sort dropdown toggle
+ 
       const sortBtn = document.querySelector('.sort-btn');
       const sortDropdown = document.querySelector('.sort-dropdown-menu');
       
@@ -1816,14 +1819,14 @@
         sortDropdown.classList.toggle('show');
       });
       
-      // Close dropdown when clicking outside
+    
       document.addEventListener('click', function(event) {
         if (!event.target.closest('.sort-dropdown')) {
           sortDropdown.classList.remove('show');
         }
       });
       
-      // Sort functionality
+    
       const sortOptions = document.querySelectorAll('.sort-dropdown-menu a');
       
       sortOptions.forEach(option => {
@@ -1833,7 +1836,7 @@
           const sortValue = this.getAttribute('data-sort');
           const couponCardsArray = Array.from(couponCards);
           
-          // Sort coupon cards
+          
           couponCardsArray.sort((a, b) => {
             if (sortValue === 'expiry-asc') {
               const dateA = new Date(a.querySelector('.detail-item:nth-child(2) span').textContent.replace('Valid till ', ''));
@@ -1854,13 +1857,13 @@
             }
           });
           
-          // Reorder DOM elements
+       
           const couponsGrid = document.querySelector('.coupons-grid');
           couponCardsArray.forEach(card => {
             couponsGrid.appendChild(card);
           });
           
-          // Close dropdown
+         
           sortDropdown.classList.remove('show');
           
           // Show sort applied toast

@@ -781,7 +781,7 @@
 
     <%- include("../partials/user/header") %>
 
-    <!-- Contact Hero Section -->
+  
     <section class="contact-hero">
         <div class="contact-hero-content" data-aos="fade-up">
             <h1 class="contact-hero-title">Get In Touch</h1>
@@ -1094,7 +1094,7 @@
                 once: true
             });
 
-            // Scroll Indicator
+     
             const scrollIndicator = document.querySelector('.scroll-indicator');
             window.addEventListener('scroll', () => {
                 const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
@@ -1103,26 +1103,24 @@
                 scrollIndicator.style.width = scrolled + '%';
             });
 
-            // Form validation
             const contactForm = document.getElementById('contactForm');
             const submitBtn = document.getElementById('submitBtn');
             const submitText = document.getElementById('submitText');
             const loadingSpinner = document.getElementById('loadingSpinner');
 
-            // Form submission - only validate on submit
+            
             if (contactForm) {
                 contactForm.addEventListener('submit', function(event) {
                     if (!contactForm.checkValidity()) {
                         event.preventDefault();
                         event.stopPropagation();
-                        
-                        // Show validation messages only when form is submitted
+                
                         const invalidInputs = contactForm.querySelectorAll(':invalid');
                         invalidInputs.forEach(input => {
                             input.classList.add('is-invalid');
                         });
                         
-                        // Scroll to the first invalid input
+            
                         if (invalidInputs.length > 0) {
                             invalidInputs[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
                             invalidInputs[0].focus();
@@ -1185,7 +1183,7 @@
                 delay: 5000
             });
             
-            // Show toast if there's a success or error message
+
             <% if (locals.success || locals.error) { %>
                 const toastBody = document.getElementById('toastBody');
                 const toastElement = document.getElementById('contactToast');
@@ -1203,13 +1201,13 @@
                     toastIcon.className = 'toast-icon fas fa-exclamation-circle';
                 <% } %>
                 
-                // Show toast after a small delay
+            
                 setTimeout(() => {
                     contactToast.show();
                 }, 1000);
             <% } %>
 
-            // Reset form if submission was successful
+ 
             <% if (locals.success) { %>
                 if (contactForm) {
                     contactForm.reset();

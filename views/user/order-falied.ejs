@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Failed - ELITE WEAR</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .failure-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 15px;
+        }
+        
+        .failure-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .failure-title {
+            font-weight: 700;
+            margin-top: 20px;
+            color: #dc3545;
+        }
+        
+        .failure-subtitle {
+            color: #6c757d;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .order-card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .order-card-header {
+            padding: 20px;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .order-card-header h3 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .order-card-body {
+            padding: 20px;
+        }
+        
+        .order-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f1f1;
+            transition: all 0.3s ease;
+        }
+        
+        .order-detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .order-detail-row:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .order-detail-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .order-detail-value {
+            font-weight: 500;
+            text-align: right;
+        }
+        
+        .total-row {
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-top: 2px solid #f1f1f1;
+            margin-top: 10px;
+            padding-top: 15px;
+        }
+        
+        .tracking-progress {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .tracking-steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .tracking-steps:before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+        
+        .tracking-step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            width: 25%;
+        }
+        
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            color: #adb5bd;
+            transition: all 0.3s ease;
+        }
+        
+        .step-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        
+        .step-active .step-icon {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        
+        .step-active .step-label {
+            color: #212529;
+            font-weight: 600;
+        }
+        
+        .estimated-delivery {
+            text-align: center;
+            color: #6c757d;
+            margin-top: 20px;
+        }
+        
+        .delivery-date {
+            font-weight: 600;
+            color: #212529;
+        }
+        
+        .order-illustration {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .order-illustration img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        
+        .btn-action {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary-action {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: #fff;
+        }
+        
+        .btn-primary-action:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary-action {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            color: #212529;
+        }
+        
+        .btn-secondary-action:hover {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+            color: #212529;
+            transform: translateY(-2px);
+        }
+        
+        .error-circle {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            display: inline-block;
+            vertical-align: top;
+            margin-bottom: 20px;
+        }
+        
+        .error-circle .background {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #dc3545;
+            position: absolute;
+        }
+        
+        .error-circle .error-x {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+        }
+        
+        .shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .shimmer::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(30deg);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%) rotate(30deg);
+            }
+            100% {
+                transform: translateX(100%) rotate(30deg);
+            }
+        }
+        
+        .failure-badge {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #dc3545;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+            }
+        }
+        
+        .sound-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .sound-control:hover {
+            transform: scale(1.1);
+        }
+        
+        .lightning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            animation: lightning 4s ease-in-out infinite;
+        }
+        
+        @keyframes lightning {
+            0%, 100% {
+                opacity: 0;
+            }
+            0.5%, 1.5% {
+                opacity: 0.1;
+            }
+            1% {
+                opacity: 0.3;
+            }
+        }
+        
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+        
+        .custom-toast {
+            background-color: #fff;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .retry-payment-container {
+            background-color: #fff3f5;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px dashed #dc3545;
+        }
+        
+        .retry-payment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .retry-payment-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #dc3545;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+        }
+        
+        .retry-payment-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+        
+        .retry-payment-description {
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        
+        .payment-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .payment-option {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-option:hover {
+            border-color: #dc3545;
+            transform: translateY(-2px);
+        }
+        
+        .payment-option.active {
+            border-color: #dc3545;
+            background-color: #fff3f5;
+        }
+        
+        .payment-option-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #212529;
+        }
+        
+        .payment-option-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 767px) {
+            .tracking-steps {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .tracking-steps:before {
+                top: 0;
+                bottom: 0;
+                left: 15px;
+                right: auto;
+                height: 100%;
+                width: 2px;
+            }
+            
+            .tracking-step {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                margin-bottom: 20px;
+                padding-left: 40px;
+                text-align: left;
+            }
+            
+            .step-icon {
+                margin: 0 15px 0 0;
+            }
+            
+            .order-actions {
+                flex-direction: column;
+            }
+            
+            .btn-action {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            .payment-options {
+                flex-direction: column;
+            }
+        }
+        
+        /* Error animation */
+        @keyframes shake {
+            0%, 100% {transform: translateX(0);}
+            10%, 30%, 50%, 70%, 90% {transform: translateX(-5px);}
+            20%, 40%, 60%, 80% {transform: translateX(5px);}
+        }
+        
+        .shake {
+            animation: shake 0.8s cubic-bezier(.36,.07,.19,.97) both;
+        }
+    </style>
+</head>
+<body>
+    <%- include("../partials/user/header") %>
+
+    <!-- Toast notification -->
+    <div class="toast-container">
+        <div class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+            <div class="toast-header">
+                <i class="fas fa-exclamation-circle text-danger me-2"></i>
+                <strong class="me-auto">Payment Failed</strong>
+                <small>Just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                <p class="mb-0">Your payment for order #<%= order.orderNumber %> was not successful. Please try again.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sound control button -->
+    <div class="sound-control" id="soundControl" title="Play alert sound">
+        <i class="fas fa-volume-up"></i>
+    </div>
+
+    <!-- Lightning effect container -->
+    <div class="lightning" id="lightning"></div>
+
+    <!-- Main content -->
+    <div class="failure-container">
+        <div class="failure-header" data-aos="fade-down">
+            <div class="error-circle">
+                <div class="background"></div>
+                <div class="error-x">×</div>
+            </div>
+            <h1 class="failure-title">Payment Failed!</h1>
+            <p class="failure-subtitle">
+                We couldn't process your payment. Don't worry, your order is saved and you can try again.
+            </p>
+        </div>
+
+        <div class="row">
+            <!-- Order details -->
+            <div class="col-lg-7" data-aos="fade-right" data-aos-delay="200">
+                <div class="retry-payment-container" data-aos="fade-up" data-aos-delay="300">
+                    <div class="retry-payment-header">
+                        <div class="retry-payment-icon">
+                            <i class="fas fa-redo-alt"></i>
+                        </div>
+                        <h3 class="retry-payment-title">Retry Payment</h3>
+                    </div>
+                    <p class="retry-payment-description">
+                        Your order is saved but the payment was not successful. You can retry payment now or later from your orders page.
+                    </p>
+                    <div class="payment-options">
+                        <div class="payment-option active" data-payment="razorpay">
+                            <div class="payment-option-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="payment-option-label">Credit/Debit Card</div>
+                        </div>
+                        <div class="payment-option" data-payment="upi">
+                            <div class="payment-option-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="payment-option-label">UPI</div>
+                        </div>
+                        <div class="payment-option" data-payment="netbanking">
+                            <div class="payment-option-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div class="payment-option-label">Net Banking</div>
+                        </div>
+                        <div class="payment-option" data-payment="wallet">
+                            <div class="payment-option-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="payment-option-label">Wallet</div>
+                        </div>
+                    </div>
+                    <a href="/checkout-payment" class="btn btn-primary-action btn-action w-100" id="retryPaymentBtn">
+                        <i class="fas fa-redo-alt me-2"></i>Retry Payment Now
+                    </a>
+                </div>
+
+                <div class="order-card shimmer">
+                    <div class="failure-badge" id="failureBadge">
+                        <i class="fas fa-exclamation"></i>
+                    </div>
+                    <div class="order-card-header">
+                        <h3>Order #<%= order.orderNumber %></h3>
+                        <p class="mb-0">Placed on <%= order.orderDate.toLocaleString('en-IN', { dateStyle: 'full', timeStyle: 'short' }) %></p>
+                    </div>
+                    <div class="order-card-body">
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">
+                                <i class="fas fa-user me-2"></i> Customer
+                            </div>
+                            <div class="order-detail-value"><%= user.fullname || 'N/A' %></div>
+                        </div>
+                        
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">
+                                <i class="fas fa-envelope me-2"></i> Email
+                            </div>
+                            <div class="order-detail-value"><%= user.email || 'N/A' %></div>
+                        </div>
+                        
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">
+                                <i class="fas fa-phone me-2"></i> Phone
+                            </div>
+                            <div class="order-detail-value"><%= user.mobile || (order.address && order.address.mobile) || 'N/A' %></div>
+                        </div>
+                        
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">
+                                <i class="fas fa-map-marker-alt me-2"></i> Shipping Address
+                            </div>
+                            <div class="order-detail-value">
+                                <% if (order.address) { %>
+                                    <%= order.address.fullname %><br>
+                                    <%= order.address.address %><br>
+                                    <%= order.address.city %>, <%= order.address.district %><br>
+                                    <%= order.address.state %> - <%= order.address.pincode %>
+                                <% } else { %>
+                                    Address information not available
+                                <% } %>
+                            </div>
+                        </div>
+                        
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">
+                                <i class="fas fa-credit-card me-2"></i> Payment Method
+                            </div>
+                            <div class="order-detail-value">
+                                <%= order.paymentMethod %>
+                                <span class="badge bg-danger ms-2">
+                                    <i class="fas fa-times-circle me-1"></i> Failed
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">
+                                <i class="fas fa-shopping-bag me-2"></i> Items
+                            </div>
+                            <div class="order-detail-value">
+                                <%= order.order_items.length %> item<%= order.order_items.length > 1 ? 's' : '' %>
+                            </div>
+                        </div>
+                        
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">
+                                <i class="fas fa-tag me-2"></i> Subtotal
+                            </div>
+                            <div class="order-detail-value">
+                                ₹<%= ((order.total || 0) - ((order.total || 0) > 8000 ? 0 : 200) + (order.discount || 0)).toFixed(2) %>
+                            </div>
+                        </div>
+                        
+                        <div class="order-detail-row">
+                            <div class="order-detail-label">
+                                <i class="fas fa-truck me-2"></i> Shipping
+                            </div>
+                            <div class="order-detail-value">
+                                <% if ((order.total || 0) > 8000) { %>
+                                    <span class="text-success">Free</span>
+                                <% } else { %>
+                                    ₹200.00
+                                <% } %>
+                            </div>
+                        </div>
+                        
+                        <% if (order.discount > 0) { %>
+                            <div class="order-detail-row">
+                                <div class="order-detail-label">
+                                    <i class="fas fa-percent me-2"></i> Discount
+                                </div>
+                                <div class="order-detail-value text-success">
+                                    -₹<%= order.discount.toFixed(2) %>
+                                </div>
+                            </div>
+                        <% } %>
+                        
+                        <div class="order-detail-row total-row">
+                            <div class="order-detail-label">
+                                <i class="fas fa-money-bill-wave me-2"></i> Total
+                            </div>
+                            <div class="order-detail-value">
+                                ₹<%= (order.total || 0).toFixed(2) %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order status -->
+                <div class="tracking-progress" data-aos="fade-up" data-aos-delay="400">
+                    <h4 class="fw-bold mb-3">Order Status</h4>
+                    <div class="tracking-steps">
+                        <div class="tracking-step step-active">
+                            <div class="step-icon">
+                                <i class="fas fa-exclamation"></i>
+                            </div>
+                            <div class="step-label">Payment Failed</div>
+                        </div>
+                        <div class="tracking-step">
+                            <div class="step-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="step-label">Confirmed</div>
+                        </div>
+                        <div class="tracking-step">
+                            <div class="step-icon">
+                                <i class="fas fa-shipping-fast"></i>
+                            </div>
+                            <div class="step-label">Shipped</div>
+                        </div>
+                        <div class="tracking-step">
+                            <div class="step-icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                            <div class="step-label">Delivered</div>
+                        </div>
+                    </div>
+                    <div class="estimated-delivery">
+                        <span class="text-danger">Your order will be processed after successful payment</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order summary and actions -->
+            <div class="col-lg-5" data-aos="fade-left" data-aos-delay="300">
+                <div class="order-illustration">
+                    <img 
+                        src="/Uploads/payment_failed.png" 
+                        alt="Payment Failed" 
+                        class="img-fluid" 
+                        onerror="this.src='/Uploads/placeholder.jpg'"
+                    />
+                </div>
+
+                <!-- Order items summary -->
+                <div class="order-card mb-4">
+                    <div class="order-card-header">
+                        <h3>Order Items</h3>
+                    </div>
+                    <div class="order-card-body p-0">
+                        <div class="list-group list-group-flush">
+                            <% order.order_items.forEach(item => { %>
+                                <div class="list-group-item d-flex align-items-center p-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <% if (item.itemImage || (item.productId && item.productId.images && item.productId.images.length > 0)) { %>
+                                            <img 
+                                                src="<%= item.itemImage || (item.productId.images[0].url) %>" 
+                                                alt="<%= item.product_name %>" 
+                                                class="rounded" 
+                                                width="60"
+                                                height="60"
+                                                style="object-fit: cover;"
+                                            >
+                                        <% } else { %>
+                                            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                                <i class="fas fa-tshirt text-muted"></i>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-0 fw-bold">
+                                            <%= item.product_name || 'Unnamed Product' %>
+                                        </h6>
+                                        <p class="mb-0 small text-muted">
+                                            Size: <%= item.size || 'N/A' %> | Qty: <%= item.quantity || 1 %>
+                                        </p>
+                                    </div>
+                                    <div class="flex-shrink-0 ms-3 text-end">
+                                        <span class="fw-bold">₹<%= (item.price !== undefined ? item.price.toFixed(2) : '0.00') %></span>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="action-buttons">
+                    <a href="/checkout-payment" class="btn btn-primary-action btn-action w-100 mb-3 shake" data-aos="fade-up" data-aos-delay="500">
+                        <i class="fas fa-redo-alt me-2"></i>Retry Payment
+                    </a>
+                    <a href="/orders" class="btn btn-secondary-action btn-action w-100 mb-3" data-aos="fade-up" data-aos-delay="600">
+                        <i class="fas fa-history me-2"></i>View All Orders
+                    </a>
+                    <a href="/" class="btn btn-secondary-action btn-action w-100 mb-3" data-aos="fade-up" data-aos-delay="700">
+                        <i class="fas fa-shopping-bag me-2"></i>Continue Shopping
+                    </a>
+                </div>
+
+                <!-- Customer support -->
+                <div class="mt-4 p-3 bg-white rounded-3 shadow-sm" data-aos="fade-up" data-aos-delay="800">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                <i class="fas fa-headset text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Need Help?</h6>
+                            <p class="mb-0 small">
+                                Having trouble with your payment? Contact our customer support at <a href="mailto:support@elitewear.com">support@elitewear.com</a> or call us at <strong>+91 1234567890</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include("../partials/user/footer") %>
+
+    <!-- Hidden audio element for alert sound -->
+    <audio id="alertSound" preload="auto">
+        <source src="/Uploads/alert-sound.mp3" type="audio/mpeg">
+        <!-- Fallback alert sound -->
+        <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Initialize AOS animation library
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true,
+                disable: window.innerWidth < 768 ? 'phone' : false // Disable animations on small screens for better performance
+            });
+            
+            // Show toast notification
+            const toastEl = document.querySelector('.toast');
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+            
+            // Play alert sound
+            playAlertSound();
+            
+            // Add event listeners
+            setupEventListeners();
+            
+            // Create lightning effect
+            createLightningEffect();
+            
+            // Check for viewport changes
+            window.addEventListener('resize', function() {
+                if (window.innerWidth < 768) {
+                    AOS.init({disable: 'phone'});
+                }
+            });
+        });
+        
+        // Play alert sound
+        function playAlertSound() {
+            const audio = document.getElementById('alertSound');
+            
+            // Check if browser supports audio
+            if (audio) {
+                // Try to play with user interaction to avoid autoplay restrictions
+                const playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log('Audio playback was prevented by the browser. Will play on user interaction.');
+                    });
+                }
+            }
+        }
+        
+        // Create lightning effect
+        function createLightningEffect() {
+            const lightning = document.getElementById('lightning');
+            
+            // Initial flash
+            setTimeout(() => {
+                flashLightning();
+            }, 1000);
+            
+            // Periodic flashes
+            setInterval(() => {
+                flashLightning();
+            }, 8000);
+        }
+        
+        function flashLightning() {
+            const lightning = document.getElementById('lightning');
+            lightning.style.opacity = '0.1';
+            
+            setTimeout(() => {
+                lightning.style.opacity = '0.3';
+                
+                setTimeout(() => {
+                    lightning.style.opacity = '0.1';
+                    
+                    setTimeout(() => {
+                        lightning.style.opacity = '0';
+                    }, 100);
+                }, 100);
+            }, 100);
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Sound control button
+            const soundControl = document.getElementById('soundControl');
+            if (soundControl) {
+                soundControl.addEventListener('click', function() {
+                    playAlertSound();
+                    
+                    // Add animation
+                    this.classList.add('animate__animated', 'animate__heartBeat');
+                    setTimeout(() => {
+                        this.classList.remove('animate__animated', 'animate__heartBeat');
+                    }, 1000);
+                });
+            }
+            
+            // Failure badge click effect
+            const failureBadge = document.getElementById('failureBadge');
+            if (failureBadge) {
+                failureBadge.addEventListener('click', function() {
+                    this.classList.add('shake');
+                    setTimeout(() => {
+                        this.classList.remove('shake');
+                    }, 800);
+                });
+            }
+            
+            // Payment options
+            const paymentOptions = document.querySelectorAll('.payment-option');
+            paymentOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove active class from all options
+                    paymentOptions.forEach(opt => opt.classList.remove('active'));
+                    
+                    // Add active class to clicked option
+                    this.classList.add('active');
+                    
+                    // Update retry payment button with selected payment method
+                    const paymentMethod = this.getAttribute('data-payment');
+                    const retryBtn = document.getElementById('retryPaymentBtn');
+                    
+                    if (retryBtn) {
+                        retryBtn.href = `/checkout-payment?method=${paymentMethod}`;
+                    }
+                });
+            });
+            
+            // Make sure all images are loaded properly
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                img.addEventListener('error', function() {
+                    this.src = '/Uploads/placeholder.jpg';
+                });
+            });
+            
+            // Add shake animation to retry payment button periodically
+            const retryBtn = document.querySelector('.btn-primary-action');
+            if (retryBtn) {
+                setInterval(() => {
+                    retryBtn.classList.add('shake');
+                    setTimeout(() => {
+                        retryBtn.classList.remove('shake');
+                    }, 800);
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>

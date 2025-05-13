@@ -27,25 +27,25 @@ const orderItemSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
-    // Original price per unit
+
     price: {
       type: Number,
       required: true,
       min: 0,
     },
-    // Discount per unit
+
     discountPerUnit: {
       type: Number,
       default: 0,
       min: 0
     },
-    // Total discount for this item (quantity * discountPerUnit)
+
     discountAmount: {
       type: Number,
       default: 0,
       min: 0
     },
-    // Final price per unit after discount
+
     finalPrice: {
       type: Number,
       min: 0,
@@ -53,7 +53,7 @@ const orderItemSchema = new mongoose.Schema(
         return this.price - (this.discountPerUnit || 0);
       }
     },
-    // Total amount for this item (quantity * finalPrice)
+   
     total_amount: {
       type: Number,
       required: true,
@@ -143,7 +143,7 @@ const orderItemSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    // Coupon tracking fields
+  
     couponApplied: {
       type: Boolean,
       default: false,
@@ -168,7 +168,7 @@ const orderItemSchema = new mongoose.Schema(
   }
 );
 
-// Add validation to ensure finalPrice is not negative
+
 orderItemSchema.pre('validate', function(next) {
   if (this.finalPrice < 0) {
     this.finalPrice = 0;
@@ -176,7 +176,7 @@ orderItemSchema.pre('validate', function(next) {
   next();
 });
 
-// Add useful indexes
+
 orderItemSchema.index({ refundDate: -1 });
 orderItemSchema.index({ returnRequestedDate: -1 });
 orderItemSchema.index({ returnCompletedDate: -1 });

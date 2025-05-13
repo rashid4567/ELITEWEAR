@@ -56,7 +56,7 @@ const generateSalesReport = async (salesData, res, options = {}) => {
       hour12: true
     });
 
-    // Generate HTML content
+
     const htmlContent = `
       <!DOCTYPE html>
       <html lang="en">

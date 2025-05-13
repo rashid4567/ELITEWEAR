@@ -319,9 +319,7 @@ const checkWalletBalance = async (userId) => {
   }
 };
 
-/**
- * Load checkout payment page
- */
+
 const loadCheckoutPayment = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -522,9 +520,7 @@ const loadCheckoutPayment = async (req, res) => {
   }
 };
 
-/**
- * Validate payment method selection
- */
+
 const validatePaymentMethod = async (req, res) => {
   try {
     const { paymentMethod } = req.body;

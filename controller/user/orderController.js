@@ -8,6 +8,7 @@ const Wallet = require("../../model/walletScheema");
 const Address = require("../../model/AddressScheema");
 const Review = require("../../model/ReviewScheema");
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require('uuid');
 const {
   generateOrderNumber,
   generateTransactionId,
@@ -88,9 +89,6 @@ const updateOrderStatusHelper = async (orderId) => {
   }
 };
 
-/**
- * Place a new order
- */
 const placeOrder = async (req, res) => {
     try {
         const userId = req.session.user || req.user._id;
@@ -99,14 +97,14 @@ const placeOrder = async (req, res) => {
 
         console.log(`[INFO] Processing order for user ${userId} with payment method ${paymentMethod}`);
 
-        // Validate payment method
+        
         if (!["COD", "Wallet", "Online"].includes(paymentMethod)) {
             return res
                 .status(400)
                 .json({ success: false, message: "Invalid payment method" });
         }
 
-        // Validate user
+       
         const user = await User.findById(userId);
         if (!user) {
             return res
@@ -114,7 +112,7 @@ const placeOrder = async (req, res) => {
                 .json({ success: false, message: "User not found" });
         }
 
-        // Get cart items
+      
         const cart = await Cart.findOne({ userId }).populate({
             path: "items.productId",
             select: "name images variants",
@@ -126,7 +124,7 @@ const placeOrder = async (req, res) => {
                 .json({ success: false, message: "Your cart is empty" });
         }
 
-        // Validate stock
+   
         for (const item of cart.items) {
             const variant = item.productId.variants.find((v) => v.size === item.size);
             if (!variant) {
@@ -143,7 +141,7 @@ const placeOrder = async (req, res) => {
             }
         }
 
-        // Prepare cart items for discount calculation
+    
         const cartItems = cart.items.map((item) => {
             const variant = item.productId.variants.find((v) => v.size === item.size);
             return {
@@ -159,7 +157,7 @@ const placeOrder = async (req, res) => {
             };
         });
 
-        // Initialize discount result with no discount
+
         let discountResult = {
             cartItems: cartItems.map((item) => ({
                 ...item,
@@ -182,13 +180,13 @@ const placeOrder = async (req, res) => {
             message: "No coupon applied",
         };
 
-        // Calculate subtotal
+   
         const totalPrice = discountResult.cartTotal;
         const deliveryCharge = totalPrice > 8000 ? 0 : 200;
 
         let appliedCoupon = null;
 
-        // Apply coupon if available
+      
         if (req.session.checkout?.coupon) {
             const couponId = req.session.checkout.coupon.couponId;
             const coupon = await Coupon.findById(couponId);
@@ -200,13 +198,13 @@ const placeOrder = async (req, res) => {
                     now <= new Date(coupon.expiryDate) &&
                     coupon.isActive
                 ) {
-                    // Check user usage
+              
                     const userUsage = coupon.usedBy.find(
                         (usage) => usage.userId.toString() === userId.toString()
                     );
                     
                     if (!userUsage || userUsage.usedCount < coupon.limit) {
-                        // Apply coupon discount
+                    
                         discountResult = calculateProportionalDiscount(
                             cartItems,
                             coupon.couponpercent,
@@ -222,10 +220,10 @@ const placeOrder = async (req, res) => {
             }
         }
 
-        // Calculate grand total
+      
         let grandTotal = discountResult.finalTotal + deliveryCharge;
 
-        // Get delivery address
+      
         const addressId = req.session.checkout?.addressId;
         if (!addressId) {
             return res
@@ -233,7 +231,7 @@ const placeOrder = async (req, res) => {
                 .json({ success: false, message: "Delivery address not selected" });
         }
 
-        // Validate wallet payment
+       
         if (paymentMethod === "Wallet") {
             let wallet = await Wallet.findOne({ userId });
             if (!wallet) {
@@ -256,7 +254,7 @@ const placeOrder = async (req, res) => {
             }
         }
 
-        // Validate COD
+      
         if (paymentMethod === "COD" && grandTotal > 1000) {
             return res.status(400).json({
                 success: false,
@@ -265,7 +263,7 @@ const placeOrder = async (req, res) => {
             });
         }
 
-        // Create order
+        
         const orderNumber = generateOrderNumber();
         const newOrder = new Order({
             userId: userId,
@@ -295,7 +293,7 @@ const placeOrder = async (req, res) => {
         await newOrder.save();
         console.log(`[INFO] Created order ${newOrder._id} with number ${orderNumber}`);
 
-        // Create order items
+     
         const orderItems = [];
         for (const item of discountResult.cartItems) {
             const orderItem = new OrderItem({
@@ -328,11 +326,11 @@ const placeOrder = async (req, res) => {
             console.log(`[INFO] Created order item ${orderItem._id} for product ${item.name}`);
         }
 
-        // Update order with item references
+
         newOrder.order_items = orderItems;
         await newOrder.save();
 
-        // Update inventory
+
         for (const item of cart.items) {
             const product = await Product.findById(item.productId);
             if (product) {
@@ -347,7 +345,7 @@ const placeOrder = async (req, res) => {
             }
         }
 
-        // Update coupon usage if applied
+ 
         if (appliedCoupon) {
             const userUsageIndex = appliedCoupon.usedBy.findIndex(
                 (usage) => usage.userId.toString() === userId.toString()
@@ -368,7 +366,7 @@ const placeOrder = async (req, res) => {
             console.log(`[INFO] Updated coupon usage for coupon ${appliedCoupon._id}`);
         }
 
-        // Process wallet payment
+     
         if (paymentMethod === "Wallet") {
             const wallet = await Wallet.findOne({ userId });
             if (wallet) {
@@ -377,24 +375,24 @@ const placeOrder = async (req, res) => {
                     type: "debit",
                     amount: grandTotal,
                     description: `Payment for order #${orderNumber}`,
+                    transactionRef: uuidv4(),
                     date: new Date(),
-                    orderId: newOrder._id,
+                    orderReference: newOrder._id.toString(), // Use orderReference per schema
+                    status: "completed",
                 });
                 await wallet.save();
                 console.log(`[INFO] Processed wallet payment for order ${newOrder._id}`);
             }
         }
 
-        // Clear cart
+       
         cart.items = [];
         await cart.save();
         console.log(`[INFO] Cleared cart for user ${userId}`);
 
-        // Clear checkout session
+     
         delete req.session.checkout;
         req.session.save();
-
-        // Return success
         return res.status(200).json({
             success: true,
             message: "Order placed successfully",
@@ -413,16 +411,18 @@ const placeOrder = async (req, res) => {
 
 
 
-
-
 const loadOrderSuccess = async (req, res) => {
   try {
     const userId = req.session.user || req.user._id;
-    const orderId = req.session.lastOrderId;
+    // Get order ID from query parameters first, then fall back to session
+    const orderId = req.query.id || req.session.lastOrderId;
 
     if (!orderId) {
+      console.log("No order ID found for success page, redirecting to orders");
       return res.redirect("/orders");
     }
+
+    console.log(`Loading order success page for order: ${orderId}`);
 
     const order = await Order.findById(orderId)
       .populate("userId")
@@ -436,6 +436,13 @@ const loadOrderSuccess = async (req, res) => {
       });
 
     if (!order) {
+      console.log(`Order ${orderId} not found, redirecting to orders`);
+      return res.redirect("/orders");
+    }
+
+    
+    if (order.userId._id.toString() !== userId.toString()) {
+      console.log(`Order ${orderId} does not belong to user ${userId}, redirecting to orders`);
       return res.redirect("/orders");
     }
 
@@ -448,9 +455,63 @@ const loadOrderSuccess = async (req, res) => {
       page: "order-success",
     });
 
+    // Clean up session after rendering
     delete req.session.lastOrderId;
   } catch (error) {
     console.error("Error loading order success page:", error);
+    res.redirect("/orders");
+  }
+};
+
+const loadOrderfailure = async (req, res) => {
+  try {
+    const userId = req.session.user || req.user._id;
+    // Get order ID from query parameters first, then fall back to session
+    const orderId = req.query.id || req.session.lastOrderId;
+
+    if (!orderId) {
+      console.log("No order ID found for failure page, redirecting to orders");
+      return res.redirect("/orders");
+    }
+
+    console.log(`Loading order failure page for order: ${orderId}`);
+
+    const order = await Order.findById(orderId)
+      .populate("userId")
+      .populate("address")
+      .populate({
+        path: "order_items",
+        populate: {
+          path: "productId",
+          select: "name",
+        },
+      });
+
+    if (!order) {
+      console.log(`Order ${orderId} not found, redirecting to orders`);
+      return res.redirect("/orders");
+    }
+
+    // Verify this is the user's order
+    if (order.userId._id.toString() !== userId.toString()) {
+      console.log(`Order ${orderId} does not belong to user ${userId}, redirecting to orders`);
+      return res.redirect("/orders");
+    }
+
+    const user = await User.findById(userId);
+
+    // Note: Check if the EJS file name is correct ("order-falied" or should it be "order-failed"?)
+    res.render("order-falied", {
+      title: "Order Failed",
+      user,
+      order,
+      page: "order-failed",
+    });
+
+   
+    delete req.session.lastOrderId;
+  } catch (error) {
+    console.error("Error loading order failure page:", error);
     res.redirect("/orders");
   }
 };
@@ -2580,6 +2641,7 @@ const updatePaymentStatus = async (req, res) => {
 module.exports = {
   placeOrder,
   loadOrderSuccess,
+  loadOrderfailure,
   getUserOrders,
   getOrderDetails,
   trackOrder,

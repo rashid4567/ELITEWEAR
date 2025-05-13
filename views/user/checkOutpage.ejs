@@ -1600,9 +1600,7 @@
 </head>
 <body>
 <!-- Preloader -->
-<div class="preloader">
-  <div class="loader"></div>
-</div>
+
 
 <!-- Scroll Indicator -->
 <div class="scroll-indicator"></div>
@@ -2026,13 +2024,7 @@
       once: true
     });
 
-    // Preloader
-    const preloader = document.querySelector('.preloader');
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        preloader.classList.add('fade-out');
-      }, 500);
-    });
+
 
     // Scroll Indicator
     const scrollIndicator = document.querySelector('.scroll-indicator');

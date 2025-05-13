@@ -147,8 +147,7 @@ orderSchema.pre("save", async function (next) {
   next();
 });
 
-// Add useful indexes
-// orderSchema.index({ orderNumber: 1 });
+
 orderSchema.index({ createdAt: -1 });
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ couponApplied: 1 });

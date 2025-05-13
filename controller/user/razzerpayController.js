@@ -253,11 +253,11 @@ const createRazorpayOrder = async (req, res) => {
   }
 }
 
+// Modified verifyPayment function in razorpayController.js
 const verifyPayment = async (req, res) => {
   try {
     const userId = req.session.user || req.user._id;
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
-      req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
     console.log("Verifying payment:", {
       razorpay_order_id,
@@ -283,11 +283,23 @@ const verifyPayment = async (req, res) => {
       if (pendingOrder) {
         pendingOrder.paymentStatus = "Failed";
         await pendingOrder.save();
+        
+        // Store order ID in session and redirect to failure page
+        req.session.lastOrderId = pendingOrder._id;
+        return res.status(400).json({ 
+          success: false, 
+          message: "Payment verification failed",
+          redirect: `/order-failed?id=${pendingOrder._id}`
+        });
       }
 
       return res
         .status(400)
-        .json({ success: false, message: "Payment verification failed" });
+        .json({ 
+          success: false, 
+          message: "Payment verification failed",
+          redirect: "/order-failed"
+        });
     }
 
     const orderDetails = req.session.razorpayOrder;
@@ -295,7 +307,11 @@ const verifyPayment = async (req, res) => {
       console.error("Invalid or missing session order details:", orderDetails);
       return res
         .status(400)
-        .json({ success: false, message: "Invalid order details" });
+        .json({ 
+          success: false, 
+          message: "Invalid order details",
+          redirect: "/order-failed"
+        });
     }
 
     const pendingOrder = await Order.findOne({
@@ -368,14 +384,18 @@ const verifyPayment = async (req, res) => {
           return res.status(200).json({
             success: true,
             message: "Payment successful",
-            redirect: "/order-success",
+            redirect: `/order-success?id=${order._id}`
           });
         }
       }
 
       return res
         .status(404)
-        .json({ success: false, message: "Order not found" });
+        .json({ 
+          success: false, 
+          message: "Order not found",
+          redirect: "/order-failed"
+        });
     }
 
     pendingOrder.paymentStatus = "Completed";
@@ -443,7 +463,7 @@ const verifyPayment = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Payment successful",
-      redirect: "/order-success",
+      redirect: `/order-success?id=${pendingOrder._id}`
     });
   } catch (error) {
     console.error("Error verifying payment:", error);
@@ -451,10 +471,12 @@ const verifyPayment = async (req, res) => {
       success: false,
       message: "Payment verification failed. Please contact support.",
       details: error.message,
+      redirect: "/order-failed"
     });
   }
 };
 
+// Modified handleFailedPayment function
 const handleFailedPayment = async (req, res) => {
   try {
     const userId = req.session.user || req.user._id;
@@ -468,15 +490,23 @@ const handleFailedPayment = async (req, res) => {
     if (!pendingOrder) {
       return res
         .status(404)
-        .json({ success: false, message: "Order not found" });
+        .json({ 
+          success: false, 
+          message: "Order not found",
+          redirect: "/order-failed"
+        });
     }
 
     pendingOrder.paymentStatus = "Failed";
     await pendingOrder.save();
 
+    // Store order ID in session for the failure page
+    req.session.lastOrderId = pendingOrder._id;
+
     return res.status(200).json({
       success: true,
       message: "Payment status updated to failed",
+      redirect: `/order-failed?id=${pendingOrder._id}`
     });
   } catch (error) {
     console.error("Error handling failed payment:", error);
@@ -484,6 +514,7 @@ const handleFailedPayment = async (req, res) => {
       success: false,
       message: "Failed to update payment status",
       details: error.message,
+      redirect: "/order-failed"
     });
   }
 };

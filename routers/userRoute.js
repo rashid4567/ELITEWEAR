@@ -183,7 +183,10 @@ router.use(addCountsMiddleware)
 
   // Order routes
   router.post("/place-order", UserAuth, orderController.placeOrder);
-  router.get("/order-success", UserAuth, orderController.loadOrderSuccess);
+router.get("/order-success", UserAuth, orderController.loadOrderSuccess);
+router.get("/order-success/:id", UserAuth, orderController.loadOrderSuccess);
+router.get("/order-failed", UserAuth, orderController.loadOrderfailure);
+router.get("/order-failed/:id", UserAuth, orderController.loadOrderfailure);
   router.get("/orders", UserAuth, orderController.getUserOrders);
   router.post("/orders/cancel/:id", UserAuth, orderController.cancelOrder);
   router.post("/return-order/:id", UserAuth, orderController.initiateReturn);
