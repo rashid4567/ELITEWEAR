@@ -1347,15 +1347,7 @@
                 </div>
             </div>
             
-            <% if (user) { %>
-                <button class="write-review-btn" onclick="openReviewForm()">
-                    <i class="fas fa-pen me-2"></i> Write a Review
-                </button>
-            <% } else { %>
-                <a href="/login?redirect=<%= encodeURIComponent('/productdetails/' + product._id) %>" class="write-review-btn">
-                    <i class="fas fa-pen me-2"></i> Login to Write a Review
-                </a>
-            <% } %>
+        
             
             <div id="reviews-container">
                 <!-- Reviews will be loaded here via AJAX -->
@@ -2206,9 +2198,7 @@
                             <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
                             <h4>No Reviews Yet</h4>
                             <p class="text-muted">Be the first to review this product</p>
-                            <button class="btn btn-primary mt-3" onclick="openReviewForm()">
-                                <i class="fas fa-pen me-2"></i> Write a Review
-                            </button>
+                           
                         </div>
                     `;
                     

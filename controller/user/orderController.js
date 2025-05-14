@@ -355,7 +355,7 @@ const placeOrder = async (req, res) => {
       }
 
       await appliedCoupon.save();
-      loger.info(
+      logger.info(
         `[INFO] Updated coupon usage for coupon ${appliedCoupon._id}`
       );
     }
@@ -382,7 +382,7 @@ const placeOrder = async (req, res) => {
 
     cart.items = [];
     await cart.save();
-   logger.info(`[INFO] Cleared cart for user ${userId}`);
+    logger.info(`[INFO] Cleared cart for user ${userId}`);
 
     delete req.session.checkout;
     req.session.save();
@@ -417,6 +417,7 @@ const placeOrder = async (req, res) => {
         });
       }
     } else {
+      // For COD and Wallet payments, always redirect to success
       return res.status(200).json({
         success: true,
         message: "Order placed successfully",
@@ -430,7 +431,7 @@ const placeOrder = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to place order. Please try again.",
-      redirect: "/order-failed",
+      redirect: "/order-failed", // This should ideally include an order ID if available
     });
   }
 };
@@ -439,14 +440,14 @@ const loadOrderSuccess = async (req, res) => {
   try {
     const userId = req.session.user || req.user._id;
 
-    const orderId = req.query.id || req.session.lastOrderId;
+    const orderId = req.params.id || req.query.id || req.session.lastOrderId;
 
     if (!orderId) {
-     logger.info("No order ID found for success page, redirecting to orders");
+      logger.info("No order ID found for success page, redirecting to orders");
       return res.redirect("/orders");
     }
 
-   logger.info(`Loading order success page for order: ${orderId}`);
+    logger.info(`Loading order success page for order: ${orderId}`);
 
     const order = await Order.findById(orderId)
       .populate("userId")
@@ -460,12 +461,12 @@ const loadOrderSuccess = async (req, res) => {
       });
 
     if (!order) {
- logger.info(`Order ${orderId} not found, redirecting to orders`);
+      logger.info(`Order ${orderId} not found, redirecting to orders`);
       return res.redirect("/orders");
     }
 
     if (order.userId._id.toString() !== userId.toString()) {
-     logger.info(
+      logger.info(
         `Order ${orderId} does not belong to user ${userId}, redirecting to orders`
       );
       return res.redirect("/orders");
@@ -481,61 +482,205 @@ const loadOrderSuccess = async (req, res) => {
     });
 
     delete req.session.lastOrderId;
+    req.session.save();
   } catch (error) {
-  logger.info("Error loading order success page:", error);
+    logger.error("Error loading order success page:", error);
     res.redirect("/orders");
   }
 };
 
 const loadOrderfailure = async (req, res) => {
   try {
-    const userId = req.session.user || req.user._id;
+    const userId = req.session.user || (req.user && req.user._id);
 
-    const orderId = req.query.id || req.session.lastOrderId;
-
-    if (!orderId) {
-     logger.info("No order ID found for failure page, redirecting to orders");
-      return res.redirect("/orders");
+    if (!userId) {
+      logger.warn(
+        "No user ID found for order failure page, redirecting to login"
+      );
+      return res.redirect("/login");
     }
 
-  logger.info(`Loading order failure page for order: ${orderId}`);
+    let orderId =
+      req.params.id ||
+      req.query.id ||
+      req.session.failedOrderId ||
+      req.session.lastOrderId ||
+      req.session.orderId;
+
+    logger.info(`Attempting to load order failure page for order: ${orderId}`);
+
+    if (
+      !orderId ||
+      orderId === "unknown" ||
+      !mongoose.Types.ObjectId.isValid(orderId)
+    ) {
+      logger.warn(
+        `Invalid order ID: ${orderId}, attempting to find most recent pending order`
+      );
+
+      const recentOrder = await Order.findOne({
+        userId: userId,
+        paymentStatus: { $in: ["Failed", "Pending"] },
+      }).sort({ orderDate: -1 });
+
+      if (recentOrder) {
+        orderId = recentOrder._id;
+        logger.info(`Found recent pending order: ${orderId}`);
+      } else {
+        logger.warn(
+          `No recent pending orders found for user ${userId}, trying to use cart items`
+        );
+
+        const user = await User.findById(userId);
+        const cart = await Cart.findOne({ userId }).populate({
+          path: "items.productId",
+          select: "name images variants",
+        });
+
+        if (cart && cart.items && cart.items.length > 0) {
+          const cartItems = cart.items.map((item) => {
+            const variant =
+              item.productId.variants.find((v) => v.size === item.size) || {};
+            return {
+              product_name: item.productId.name,
+              quantity: item.quantity,
+              price: variant.salePrice || variant.price || 0,
+              size: item.size,
+              itemImage:
+                item.productId.images && item.productId.images.length > 0
+                  ? typeof item.productId.images[0] === "object"
+                    ? item.productId.images[0].url
+                    : item.productId.images[0]
+                  : null,
+            };
+          });
+
+          const mockOrder = {
+            order_items: cartItems,
+            total: cartItems.reduce(
+              (sum, item) => sum + item.price * item.quantity,
+              0
+            ),
+            discount: 0,
+          };
+
+          return res.render("order-failed", {
+            title: "Payment Failed - ELITE WEAR",
+            user,
+            order: mockOrder,
+            page: "order-failed",
+          });
+        }
+
+        logger.warn(
+          `No cart items found for user ${userId}, redirecting to cart`
+        );
+        return res.redirect("/cart");
+      }
+    }
 
     const order = await Order.findById(orderId)
       .populate("userId")
-      .populate("address")
-      .populate({
-        path: "order_items",
-        populate: {
-          path: "productId",
-          select: "name",
-        },
-      });
+      .populate("address");
 
     if (!order) {
-   logger.info(`Order ${orderId} not found, redirecting to orders`);
-      return res.redirect("/orders");
-    }
-
-    if (order.userId._id.toString() !== userId.toString()) {
-     logger.info(
-        `Order ${orderId} does not belong to user ${userId}, redirecting to orders`
-      );
+      logger.info(`Order ${orderId} not found, redirecting to orders`);
       return res.redirect("/orders");
     }
 
     const user = await User.findById(userId);
 
-    res.render("order-falied", {
-      title: "Order Failed",
+    if (!user) {
+      logger.warn(`User ${userId} not found, redirecting to login`);
+      return res.redirect("/login");
+    }
+
+    if (order.userId._id.toString() !== userId.toString()) {
+      logger.warn(
+        `Order ${orderId} does not belong to user ${userId}, redirecting to orders`
+      );
+      return res.redirect("/orders");
+    }
+
+    const orderItems = await OrderItem.find({ orderId: orderId }).populate({
+      path: "productId",
+      select: "name images",
+    });
+
+    logger.info(`Found ${orderItems.length} order items for order ${orderId}`);
+
+    const processedOrderItems = orderItems.map((item) => {
+      let imageUrl = null;
+      if (item.itemImage) {
+        imageUrl = item.itemImage;
+      } else if (
+        item.productId &&
+        item.productId.images &&
+        item.productId.images.length > 0
+      ) {
+        if (
+          typeof item.productId.images[0] === "object" &&
+          item.productId.images[0].url
+        ) {
+          imageUrl = item.productId.images[0].url;
+        } else {
+          imageUrl = item.productId.images[0];
+        }
+      }
+
+      return {
+        product_name:
+          item.product_name ||
+          (item.productId && item.productId.name) ||
+          "Unnamed Product",
+        quantity: item.quantity || 1,
+        price: item.price || 0,
+        size: item.size || "N/A",
+        itemImage: imageUrl,
+      };
+    });
+
+    logger.info(
+      `Processed ${processedOrderItems.length} order items with images`
+    );
+
+    const processedOrder = {
+      ...order.toObject(),
+      order_items: processedOrderItems,
+    };
+
+    res.render("order-failed", {
+      title: "Payment Failed - ELITE WEAR",
       user,
-      order,
+      order: processedOrder,
       page: "order-failed",
     });
 
     delete req.session.lastOrderId;
+    delete req.session.failedOrderId;
+    req.session.save();
   } catch (error) {
     logger.error("Error loading order failure page:", error);
-    res.redirect("/orders");
+
+    try {
+      const userId = req.session.user || (req.user && req.user._id);
+      const user = userId ? await User.findById(userId) : null;
+
+      res.render("order-failed", {
+        title: "Payment Failed - ELITE WEAR",
+        user,
+        order: null,
+        message:
+          "An error occurred while processing your order. Please try again later.",
+        page: "order-failed",
+      });
+    } catch (secondaryError) {
+      logger.error(
+        "Secondary error in failure page error handling:",
+        secondaryError
+      );
+      res.redirect("/orders");
+    }
   }
 };
 
@@ -566,10 +711,10 @@ const getUserOrders = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-  logger.info(`Found ${orders.length} orders for user ${userId}`);
+    logger.info(`Found ${orders.length} orders for user ${userId}`);
 
     orders.forEach((order) => {
-    logger.info(
+      logger.info(
         `Order ${order._id}: Payment Method: ${order.paymentMethod}, Payment Status: ${order.paymentStatus}, Status: ${order.status}`
       );
     });
@@ -579,7 +724,7 @@ const getUserOrders = async (req, res) => {
         order.paymentMethod === "Online" &&
         (order.paymentStatus === "Failed" || order.paymentStatus === "Pending")
       ) {
-       logger.info(`Order ${order._id} has failed/pending payment status`);
+        logger.info(`Order ${order._id} has failed/pending payment status`);
         return { ...order.toObject(), progressWidth: 0 };
       }
 
@@ -643,7 +788,7 @@ const getOrderDetails = async (req, res) => {
     const orderId = req.params.id;
     const userId = req.user?._id || req.session.user;
 
-   logger.info(
+    logger.info(
       `[DEBUG] Getting order details for order: ${orderId}, user: ${userId}`
     );
 
@@ -668,7 +813,7 @@ const getOrderDetails = async (req, res) => {
       .populate("productId", "name images price description")
       .sort({ createdAt: -1 });
 
-  logger.info(
+    logger.info(
       `[DEBUG] Found ${orderItems.length} order items for order ${orderId}`
     );
 
@@ -713,7 +858,7 @@ const getOrderDetails = async (req, res) => {
         productId: { $in: productIds },
       });
 
-   logger.info(
+      logger.info(
         `[DEBUG] Found ${reviews.length} reviews by user for products in this order`
       );
 
@@ -741,7 +886,7 @@ const getOrderDetails = async (req, res) => {
             hasReview: false,
             review: null,
           };
-         logger.debug(
+          logger.debug(
             `[DEBUG] Review for product ${productId}: Not found, Can review: false`
           );
         }
@@ -772,7 +917,7 @@ const getOrderDetails = async (req, res) => {
             reviewsMap[productId].hasReview = true;
             reviewsMap[productId].review = itemReview;
             reviewsMap[productId].orderItemReviewed = itemId;
-           logger.debug(`[DEBUG] Order item ${itemId} has a specific review`);
+            logger.debug(`[DEBUG] Order item ${itemId} has a specific review`);
           }
         }
       });

@@ -280,7 +280,7 @@ const addToCart = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Product added to cart and removed from wishlist",
+      message: "Product added to cart",
       wishlistCount,
       cartItemCount: userCart.items.length,
       updatedItem: updatedItem

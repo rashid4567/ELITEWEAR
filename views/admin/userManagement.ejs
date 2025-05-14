@@ -133,29 +133,7 @@
                 </div>
                 
                 <div class="col-md-6 d-flex justify-content-md-end align-items-center mt-3 mt-md-0">
-                        <!-- <div class="dropdown me-2">
-                            <button class="btn btn-light dropdown-toggle" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-filter me-1"></i> Filter
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
-                                <li><a class="dropdown-item" href="?status=active">Active Customers</a></li>
-                                <li><a class="dropdown-item" href="?status=blocked">Blocked Customers</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="?sort=newest">Newest First</a></li>
-                                <li><a class="dropdown-item" href="?sort=oldest">Oldest First</a></li>
-                            </ul>
-                        </div> -->
-                    
-                    <!-- <div class="dropdown">
-                        <button class="btn btn-light dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-download me-1"></i> Export
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
-                            <li><a class="dropdown-item" href="#"><i class="far fa-file-excel me-2"></i>Excel</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="far fa-file-pdf me-2"></i>PDF</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="far fa-file-csv me-2"></i>CSV</a></li>
-                        </ul>
-                    </div> -->
+                      
                 </div>
             </div>
 
@@ -213,7 +191,7 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="fw-medium">₹<%= user.walletBalance || '0.00' %></span>
+                                        <span class="fw-medium">₹<%= user.walletBalance ? user.walletBalance.toFixed(2) : '0.00' %></span>
                                     </td>
                                     <td>
                                         <% if (user.isBlocked) { %>
@@ -936,25 +914,21 @@
                 </div>
             `;
             
-            console.log(`Fetching details for user ID: ${userId}`);
-            
             // Fetch customer details from the server
             fetch(`/admin/customers/${userId}/details`)
                 .then(response => {
-                    console.log('Response status:', response.status);
-                    return response.json().catch(err => {
-                        console.error('Error parsing JSON:', err);
-                        throw new Error('Failed to parse response as JSON');
-                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
                 })
                 .then(data => {
-                    console.log('Response data:', data);
                     if (data.success) {
-                        const user = data.data.user;
-                        const wallet = data.data.wallet;
-                        const orders = data.data.orders;
-                        const reviews = data.data.reviews;
-                        const stats = data.data.stats;
+                        const user = data.user || {};
+                        const wallet = data.wallet || { amount: 0, transactions: [] };
+                        const orders = data.orders || { total: 0, recent: [] };
+                        const reviews = data.reviews || [];
+                        const stats = data.stats || { totalSpent: 0, totalReviews: 0 };
                         
                         // Format date
                         const joinDate = new Date(user.createdAt).toLocaleDateString('en-US', {
@@ -969,86 +943,47 @@
                         // First check for default address in user profile
                         if (user.defaultAddress) {
                             const address = user.defaultAddress;
-                            addressHtml = `
-                                <div class="address-card">
-                                    <div class="address-card-header">
-                                        <h6 class="address-card-title">${address.fullname || user.fullname}</h6>
-                                        <span class="address-card-type">${address.type || 'Home'}</span>
-                                    </div>
-                                    <div class="address-card-body">
-                                        <p class="mb-1">${address.address}</p>
-                                        <p class="mb-1">${address.city}, ${address.district}</p>
-                                        <p class="mb-1">${address.state} - ${address.pincode}</p>
-                                        <p class="mb-0">Landmark: ${address.landmark || 'N/A'}</p>
-                                    </div>
-                                </div>
-                            `;
+                            addressHtml = createAddressHtml(address, user.fullname);
                         } 
                         // If no default address in profile, check addresses array
                         else if (user.addresses && user.addresses.length > 0) {
                             // Find default address or use first one
                             const address = user.addresses.find(addr => addr.isDefault) || user.addresses[0];
-                            addressHtml = `
-                                <div class="address-card">
-                                    <div class="address-card-header">
-                                        <h6 class="address-card-title">${address.fullname || user.fullname}</h6>
-                                        <span class="address-card-type">${address.type || 'Home'}</span>
-                                    </div>
-                                    <div class="address-card-body">
-                                        <p class="mb-1">${address.address}</p>
-                                        <p class="mb-1">${address.city}, ${address.district}</p>
-                                        <p class="mb-1">${address.state} - ${address.pincode}</p>
-                                        <p class="mb-0">Landmark: ${address.landmark || 'N/A'}</p>
-                                    </div>
-                                </div>
-                            `;
-                        }
+                            addressHtml = createAddressHtml(address, user.fullname);
+                        } 
                         // If no address in profile, check recent orders
                         else if (orders.recent && orders.recent.length > 0 && orders.recent[0].address) {
                             const address = orders.recent[0].address;
-                            addressHtml = `
-                                <div class="address-card">
-                                    <div class="address-card-header">
-                                        <h6 class="address-card-title">${address.fullname || user.fullname}</h6>
-                                        <span class="address-card-type">${address.type || 'Home'}</span>
-                                    </div>
-                                    <div class="address-card-body">
-                                        <p class="mb-1">${address.address}</p>
-                                        <p class="mb-1">${address.city}, ${address.district}</p>
-                                        <p class="mb-1">${address.state} - ${address.pincode}</p>
-                                        <p class="mb-0">Landmark: ${address.landmark || 'N/A'}</p>
-                                    </div>
-                                </div>
-                            `;
+                            addressHtml = createAddressHtml(address, user.fullname);
                         }
                         
                         // Create HTML for recent orders
                         let ordersHtml = '';
                         if (orders.recent && orders.recent.length > 0) {
                             ordersHtml = `
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Order #</th>
-                                            <th>Date</th>
-                                            <th>Items</th>
-                                            <th>Amount</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${orders.recent.map(order => `
-                                            <tr>
-                                                <td>${order.orderNumber || '#' + order._id.substring(0, 8)}</td>
-                                                <td>${new Date(order.createdAt).toLocaleDateString()}</td>
-                                                <td>${order.totalItems || 0}</td>
-                                                <td>₹${order.total ? order.total.toFixed(2) : '0.00'}</td>
-                                                <td><span class="badge bg-${getStatusColor(order.status)}">${order.status || 'N/A'}</span></td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            `;
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Date</th>
+                                    <th>Items</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${orders.recent.map(order => `
+                                    <tr>
+                                        <td>${order.orderNumber || '#' + (order._id ? order._id.substring(0, 8) : 'N/A')}</td>
+                                        <td>${order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</td>
+                                        <td>${order.totalItems || order.items?.length || 0}</td>
+                                        <td>₹${order.total ? order.total.toFixed(2) : '0.00'}</td>
+                                        <td><span class="badge bg-${getStatusColor(order.status)}">${order.status || 'N/A'}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
                         } else {
                             ordersHtml = '<p class="text-muted text-center">No orders yet</p>';
                         }
@@ -1057,27 +992,27 @@
                         let walletHtml = '';
                         if (wallet.transactions && wallet.transactions.length > 0) {
                             walletHtml = `
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>Type</th>
-                                            <th>Amount</th>
-                                            <th>Description</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${wallet.transactions.map(transaction => `
-                                            <tr>
-                                                <td>${new Date(transaction.date).toLocaleDateString()}</td>
-                                                <td><span class="badge bg-${transaction.type === 'credit' ? 'success' : 'danger'}">${transaction.type}</span></td>
-                                                <td>₹${transaction.amount.toFixed(2)}</td>
-                                                <td>${transaction.description}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            `;
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${wallet.transactions.map(transaction => `
+                                    <tr>
+                                        <td>${transaction.date ? new Date(transaction.date).toLocaleDateString() : 'N/A'}</td>
+                                        <td><span class="badge bg-${transaction.type === 'credit' ? 'success' : 'danger'}">${transaction.type || 'N/A'}</span></td>
+                                        <td>₹${transaction.amount ? transaction.amount.toFixed(2) : '0.00'}</td>
+                                        <td>${transaction.description || 'N/A'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
                         } else {
                             walletHtml = '<p class="text-muted text-center">No wallet transactions</p>';
                         }
@@ -1086,171 +1021,191 @@
                         let reviewsHtml = '';
                         if (reviews && reviews.length > 0) {
                             reviewsHtml = `
-                                <div class="list-group">
-                                    ${reviews.map(review => `
-                                        <div class="list-group-item">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <h6 class="mb-1">${review.productId?.name || 'Product'}</h6>
-                                                <div>
-                                                    ${getStarRating(review.rating)}
-                                                </div>
-                                            </div>
-                                            <p class="mb-1 small">${review.description?.substring(0, 100) || ''}${review.description?.length > 100 ? '...' : ''}</p>
-                                            <small class="text-muted">${new Date(review.createdAt).toLocaleDateString()}</small>
+                        <div class="list-group">
+                            ${reviews.map(review => `
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-1">${review.productId?.name || review.productName || 'Product'}</h6>
+                                        <div>
+                                            ${getStarRating(review.rating)}
                                         </div>
-                                    `).join('')}
+                                    </div>
+                                    <p class="mb-1 small">${review.description ? (review.description.substring(0, 100) + (review.description.length > 100 ? '...' : '')) : 'No description'}</p>
+                                    <small class="text-muted">${review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'N/A'}</small>
                                 </div>
-                            `;
+                            `).join('')}
+                        </div>
+                    `;
                         } else {
                             reviewsHtml = '<p class="text-muted text-center">No reviews yet</p>';
                         }
                         
                         // Update modal content
                         document.getElementById('customerDetailsContent').innerHTML = `
-                            <div class="row">
-                                <div class="col-md-4 text-center mb-4 mb-md-0">
-                                    <div class="avatar mx-auto mb-3" style="width: 100px; height: 100px; font-size: 2.5rem;">
-                                        ${user.fullname ? user.fullname.charAt(0).toUpperCase() : 'U'}
-                                    </div>
-                                    <h5>${user.fullname || 'User'}</h5>
-                                    <p class="text-muted">Member since ${joinDate}</p>
-                                    
-                                    <!-- Wallet Balance Card - Prominently displayed -->
-                                    <div class="card mb-3 border-primary">
-                                        <div class="card-body text-center">
-                                            <h6 class="card-subtitle mb-2 text-muted">Wallet Balance</h6>
-                                            <h3 class="text-primary">₹${wallet.balance ? wallet.balance.toFixed(2) : '0.00'}</h3>
-                                            <a href="/admin/customers/${user._id}/wallet" class="btn btn-sm btn-outline-primary mt-2">
-                                                <i class="fas fa-wallet me-1"></i> Manage Wallet
-                                            </a>
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4 mb-md-0">
+                            <div class="avatar mx-auto mb-3" style="width: 100px; height: 100px; font-size: 2.5rem;">
+                                ${user.fullname ? user.fullname.charAt(0).toUpperCase() : 'U'}
+                            </div>
+                            <h5>${user.fullname || 'User'}</h5>
+                            <p class="text-muted">Member since ${joinDate || 'N/A'}</p>
+                            
+                            <!-- Wallet Balance Card - Prominently displayed -->
+                            <div class="card mb-3 border-primary">
+                                <div class="card-body text-center">
+                                    <h6 class="card-subtitle mb-2 text-muted">Wallet Balance</h6>
+                                    <h3 class="text-primary">₹${wallet.amount ? wallet.amount.toFixed(2) : '0.00'}</h3>
+                                    <a href="/admin/customers/${user._id}/wallet" class="btn btn-sm btn-outline-primary mt-2">
+                                        <i class="fas fa-wallet me-1"></i> Manage Wallet
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 mt-3">
+                                <a href="mailto:${user.email}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-envelope me-1"></i> Send Email
+                                </a>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="openEditProfileModal('${user._id}')">
+                                    <i class="fas fa-edit me-1"></i> Edit Profile
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-subtitle mb-2 text-muted">Contact Information</h6>
+                                            <ul class="list-unstyled">
+                                                <li class="mb-2"><i class="fas fa-envelope me-2 text-primary"></i> ${user.email || 'No email'}</li>
+                                                <li class="mb-2"><i class="fas fa-phone me-2 text-primary"></i> ${user.mobile || 'Not provided'}</li>
+                                                <li class="mb-2"><i class="fas fa-user me-2 text-primary"></i> Status: 
+                                                    <span class="badge bg-${user.isBlocked ? 'danger' : 'success'}">
+                                                        ${user.isBlocked ? 'Blocked' : 'Active'}
+                                                    </span>
+                                                </li>
+                                            </ul>
                                         </div>
-                                    </div>
-                                    
-                                    <div class="d-grid gap-2 mt-3">
-                                        <a href="mailto:${user.email}" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-envelope me-1"></i> Send Email
-                                        </a>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="openEditProfileModal('${user._id}')">
-                                            <i class="fas fa-edit me-1"></i> Edit Profile
-                                        </button>
                                     </div>
                                 </div>
-                                <div class="col-md-8">
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <div class="card h-100">
-                                                <div class="card-body">
-                                                    <h6 class="card-subtitle mb-2 text-muted">Contact Information</h6>
-                                                    <ul class="list-unstyled">
-                                                        <li class="mb-2"><i class="fas fa-envelope me-2 text-primary"></i> ${user.email || 'No email'}</li>
-                                                        <li class="mb-2"><i class="fas fa-phone me-2 text-primary"></i> ${user.mobile || 'Not provided'}</li>
-                                                        <li class="mb-2"><i class="fas fa-user me-2 text-primary"></i> Status: 
-                                                            <span class="badge bg-${user.isBlocked ? 'danger' : 'success'}">
-                                                                ${user.isBlocked ? 'Blocked' : 'Active'}
-                                                            </span>
-                                                        </li>
-                                                    </ul>
-                                                </div>
+                                <div class="col-md-6">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="card-subtitle text-muted mb-0">Default Address</h6>
+                                                <button class="btn btn-sm btn-outline-primary" onclick="openEditProfileModal('${user._id}')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
                                             </div>
+                                            ${addressHtml}
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="card h-100">
-                                                <div class="card-body">
-                                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                                        <h6 class="card-subtitle text-muted mb-0">Default Address</h6>
-                                                        <button class="btn btn-sm btn-outline-primary" onclick="openEditProfileModal('${user._id}')">
-                                                            <i class="fas fa-edit"></i>
-                                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-subtitle mb-2 text-muted">Account Summary</h6>
+                                            <div class="row">
+                                                <div class="col-md-4 text-center mb-3">
+                                                    <div class="border rounded p-3">
+                                                        <h3 class="text-primary">${orders.total || 0}</h3>
+                                                        <p class="text-muted mb-0">Total Orders</p>
                                                     </div>
-                                                    ${addressHtml}
                                                 </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-12">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <h6 class="card-subtitle mb-2 text-muted">Account Summary</h6>
-                                                    <div class="row">
-                                                        <div class="col-md-4 text-center mb-3">
-                                                            <div class="border rounded p-3">
-                                                                <h3 class="text-primary">${orders.total || 0}</h3>
-                                                                <p class="text-muted mb-0">Total Orders</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-4 text-center mb-3">
-                                                            <div class="border rounded p-3">
-                                                                <h3 class="text-primary">${stats.totalReviews || 0}</h3>
-                                                                <p class="text-muted mb-0">Reviews</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-4 text-center mb-3">
-                                                            <div class="border rounded p-3">
-                                                                <h3 class="text-primary">${stats.totalSpent ? '₹' + stats.totalSpent.toFixed(2) : '₹0.00'}</h3>
-                                                                <p class="text-muted mb-0">Total Spent</p>
-                                                            </div>
-                                                        </div>
+                                                <div class="col-md-4 text-center mb-3">
+                                                    <div class="border rounded p-3">
+                                                        <h3 class="text-primary">${stats.totalReviews || 0}</h3>
+                                                        <p class="text-muted mb-0">Reviews</p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4 text-center mb-3">
+                                                    <div class="border rounded p-3">
+                                                        <h3 class="text-primary">${stats.totalSpent ? '₹' + stats.totalSpent.toFixed(2) : '₹0.00'}</h3>
+                                                        <p class="text-muted mb-0">Total Spent</p>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-12">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                                        <h6 class="card-subtitle text-muted">Recent Orders</h6>
-                                                        <a href="/admin/customers/${user._id}/orders" class="btn btn-sm btn-outline-primary">View All</a>
-                                                    </div>
-                                                    <div class="table-responsive">
-                                                        ${ordersHtml}
-                                                    </div>
-                                                </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="card-subtitle text-muted">Recent Orders</h6>
+                                                <a href="/admin/customers/${user._id}/orders" class="btn btn-sm btn-outline-primary">View All</a>
+                                            </div>
+                                            <div class="table-responsive">
+                                                ${ordersHtml}
                                             </div>
                                         </div>
-                                        <div class="col-12">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                                        <h6 class="card-subtitle text-muted">Wallet Transactions</h6>
-                                                        <a href="/admin/customers/${user._id}/wallet" class="btn btn-sm btn-outline-primary">View All</a>
-                                                    </div>
-                                                    <div class="table-responsive">
-                                                        ${walletHtml}
-                                                    </div>
-                                                </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="card-subtitle text-muted">Wallet Transactions</h6>
+                                                <a href="/admin/customers/${user._id}/wallet" class="btn btn-sm btn-outline-primary">View All</a>
+                                            </div>
+                                            <div class="table-responsive">
+                                                ${walletHtml}
                                             </div>
                                         </div>
-                                        <div class="col-12">
-                                            <div class="card">
-                                                <div class="card-body">
-                                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                                        <h6 class="card-subtitle text-muted">Recent Reviews</h6>
-                                                        <a href="/admin/customers/${user._id}/reviews" class="btn btn-sm btn-outline-primary">View All</a>
-                                                    </div>
-                                                    ${reviewsHtml}
-                                                </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="card-subtitle text-muted">Recent Reviews</h6>
+                                                <a href="/admin/customers/${user._id}/reviews" class="btn btn-sm btn-outline-primary">View All</a>
                                             </div>
+                                            ${reviewsHtml}
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        `;
+                        </div>
+                    </div>
+                `;
                     } else {
                         document.getElementById('customerDetailsContent').innerHTML = `
-                            <div class="alert alert-danger">
-                                <i class="fas fa-exclamation-circle me-2"></i> ${data.message || 'Failed to load customer details'}
-                            </div>
-                        `;
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i> ${data.message || 'Failed to load customer details'}
+                    </div>
+                `;
                     }
                 })
                 .catch(error => {
-                    console.error('Detailed error:', error);
+                    console.error('Error fetching customer details:', error);
                     document.getElementById('customerDetailsContent').innerHTML = `
-                        <div class="alert alert-danger">
-                            <i class="fas fa-exclamation-circle me-2"></i> An error occurred while loading customer details: ${error.message}
-                            <button class="btn btn-sm btn-danger ms-3" onclick="viewCustomerDetails('${userId}')">Retry</button>
-                        </div>
-                    `;
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i> An error occurred while loading customer details: ${error.message}
+                    <button class="btn btn-sm btn-danger ms-3" onclick="viewCustomerDetails('${userId}')">Retry</button>
+                </div>
+            `;
                 });
+        }
+
+        // Helper function to create address HTML
+        function createAddressHtml(address, fallbackName) {
+            if (!address) return '<p class="text-muted">No address information available</p>';
+            
+            return `
+            <div class="address-card">
+                <div class="address-card-header">
+                    <h6 class="address-card-title">${address.fullname || fallbackName || 'User'}</h6>
+                    <span class="address-card-type">${address.type || 'Home'}</span>
+                </div>
+                <div class="address-card-body">
+                    <p class="mb-1">${address.address || 'No address'}</p>
+                    <p class="mb-1">${address.city || 'N/A'}, ${address.district || 'N/A'}</p>
+                    <p class="mb-1">${address.state || 'N/A'} - ${address.pincode || 'N/A'}</p>
+                    <p class="mb-0">Landmark: ${address.landmark || 'N/A'}</p>
+                </div>
+            </div>
+        `;
         }
 
         // Open Edit Profile Modal

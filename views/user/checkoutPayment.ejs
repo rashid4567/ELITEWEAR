@@ -376,7 +376,6 @@
               <button
                 id="placeOrderBtn"
                 class="btn-place-order"
-                onclick="handlePayment()"
                 data-aos="fade-up"
                 data-aos-delay="500"
               >
@@ -448,6 +447,7 @@
     // Dark mode toggle
     const darkModeToggle = document.getElementById('darkModeToggle');
     const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    const savedTheme = localStorage.getItem('theme');
 
     if (savedTheme === 'dark' || (!savedTheme && prefersDarkScheme.matches)) {
       document.body.classList.add('dark-mode');
@@ -572,6 +572,12 @@
         return this.show(message, "info", duration);
       },
     };
+    
+    // Add click event listener to the Place Order button
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+    if (placeOrderBtn) {
+      placeOrderBtn.addEventListener('click', handlePayment);
+    }
   });
 
   function showAlert(type, message) {
@@ -721,22 +727,30 @@ async function handlePayment() {
             placeOrderBtn.innerHTML = '<span class="btn-text">Place Order</span><span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>';
             showToast('Payment cancelled', 'info');
             
-            // Redirect to order failed when payment modal is dismissed
+            // FIXED: Always redirect to order-failed when payment modal is dismissed
             if (data.orderId) {
               window.location.href = `/order-failed/${data.orderId}?reason=payment_cancelled`;
+            } else {
+              window.location.href = '/order-failed/unknown?reason=payment_cancelled';
             }
           }
         }
       };
 
       const razorpay = new Razorpay(options);
+      
+      // FIXED: Added proper payment.failed event handler with redirection
       razorpay.on('payment.failed', function(response) {
         console.error('Payment failed:', response.error);
-        // Ensure redirection happens on payment failure
+        placeOrderBtn.disabled = false;
+        placeOrderBtn.innerHTML = '<span class="btn-text">Place Order</span><span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>';
+        
+        // Ensure redirection happens on payment failure with a delay to allow modal to close
         setTimeout(() => {
-          window.location.href = `/order-failed/${data.orderId}?reason=payment_failed&code=${response.error.code || 'unknown'}`;
+          window.location.href = `/order-failed/${data.orderId || 'unknown'}?reason=payment_failed&code=${response.error.code || 'unknown'}&message=${encodeURIComponent(response.error.description || 'Payment failed')}`;
         }, 1000);
       });
+      
       razorpay.open();
     } else {
       showLoading();
@@ -771,13 +785,14 @@ async function handlePayment() {
             window.location.href = data.redirect || `/order-success/${data.orderId}`;
           }, 3000);
         } else {
-          // Always redirect when success is false
+          // FIXED: Always redirect to order-failed when success is false
           console.error('Order not successful:', data);
           window.location.href = data.redirect || `/order-failed/${data.orderId || 'unknown'}?message=${encodeURIComponent(data.message || 'Order could not be completed')}`;
         }
       } catch (fetchError) {
         hideLoading();
         console.error('Fetch error during order placement:', fetchError);
+        // FIXED: Redirect to order-failed on fetch error
         window.location.href = `/order-failed/unknown?message=${encodeURIComponent(fetchError.message || 'Connection error during checkout')}`;
       }
     }
@@ -792,7 +807,7 @@ async function handlePayment() {
       placeOrderBtn.innerHTML = '<span class="btn-text">Place Order</span><span class="btn-price">₹<%= grandTotal.toFixed(2) %></span>';
     }
     
-    // Ensure redirection happens on any uncaught error
+    // FIXED: Ensure redirection happens on any uncaught error
     window.location.href = `/order-failed/unknown?message=${encodeURIComponent(error.message || 'Unknown error occurred during checkout')}`;
   }
 }
@@ -820,7 +835,7 @@ async function verifyPayment(response, orderId) {
 
     if (!verifyResponse.ok) {
       console.error('Payment verification failed:', data);
-      // Ensure redirection happens on error response
+      // FIXED: Ensure redirection happens on error response
       window.location.href = data.redirect || `/order-failed/${orderId}?reason=verification_failed&message=${encodeURIComponent(data.message || 'Payment verification failed')}`;
       return;
     }
@@ -833,13 +848,13 @@ async function verifyPayment(response, orderId) {
       }, 3000);
     } else {
       console.error('Payment verification not successful:', data);
-      // Ensure redirection happens when success is false
+      // FIXED: Ensure redirection happens when success is false
       window.location.href = data.redirect || `/order-failed/${orderId}?reason=verification_unsuccessful&message=${encodeURIComponent(data.message || 'Payment could not be verified')}`;
     }
   } catch (error) {
     hideLoading();
     console.error('Payment verification error:', error);
-    // Ensure redirection happens on any error
+    // FIXED: Ensure redirection happens on any error
     window.location.href = `/order-failed/${orderId}?reason=verification_error&message=${encodeURIComponent(error.message || 'Error during payment verification')}`;
   }
 }

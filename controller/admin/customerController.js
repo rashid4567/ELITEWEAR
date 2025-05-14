@@ -8,16 +8,16 @@ const mongoose = require("mongoose");
 
 const customerInfo = async (req, res) => {
   try {
-    let search = "";
+    let search = ""
     if (req.query.search) {
-      search = req.query.search;
+      search = req.query.search
     }
 
-    let page = 1;
+    let page = 1
     if (req.query.page) {
-      page = parseInt(req.query.page);
+      page = Number.parseInt(req.query.page)
     }
-    const limit = 5;
+    const limit = 5
 
     const userData = await User.find({
       isAdmin: false,
@@ -29,22 +29,26 @@ const customerInfo = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip((page - 1) * limit)
-      .exec();
+      .exec()
 
     const enhancedUserData = await Promise.all(
       userData.map(async (user) => {
-        const orderCount = await Order.countDocuments({ userId: user._id });
+     
+        const orderCount = await Order.countDocuments({ userId: user._id })
 
-        const wallet = await Wallet.findOne({ userId: user._id });
-        const walletBalance = wallet ? wallet.balance : 0;
+      
+        const wallet = await Wallet.findOne({ userId: user._id })
+
+      
+        const walletBalance = wallet ? wallet.amount : 0
 
         return {
           ...user.toObject(),
           orderCount,
           walletBalance,
-        };
-      })
-    );
+        }
+      }),
+    )
 
     const count = await User.find({
       isAdmin: false,
@@ -52,11 +56,11 @@ const customerInfo = async (req, res) => {
         { fullname: { $regex: ".*" + search + ".*", $options: "i" } },
         { email: { $regex: ".*" + search + ".*", $options: "i" } },
       ],
-    }).countDocuments();
+    }).countDocuments()
 
-    const totalPages = Math.ceil(count / limit);
-    const hasNextPage = page < totalPages;
-    const hasPrevPage = page > 1;
+    const totalPages = Math.ceil(count / limit)
+    const hasNextPage = page < totalPages
+    const hasPrevPage = page > 1
 
     return res.render("userManagement", {
       search: search,
@@ -69,15 +73,15 @@ const customerInfo = async (req, res) => {
         hasPrevPage: hasPrevPage,
         limit: limit,
       },
-    });
+    })
   } catch (error) {
-    console.error("Error in customerInfo controller:", error);
+    console.error("Error in customerInfo controller:", error)
     res.status(500).render("error", {
       message: "Internal server error",
       error: error.message,
-    });
+    })
   }
-};
+}
 
 const customerBlocked = async (req, res) => {
   try {
