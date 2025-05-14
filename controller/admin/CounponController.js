@@ -50,7 +50,7 @@ const createCoupon = async (req, res) => {
 
 const getAllCoupons = async (req, res) => {
   try {
-    const coupons = await Coupon.find().sort({createdAt : -1});
+    const coupons = await Coupon.find().sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: coupons });
   } catch (error) {
     console.error("Error on loading the coupons:", error);
@@ -98,12 +98,10 @@ const editCoupon = async (req, res) => {
         .json({ success: false, message: "Invalid date format" });
     }
     if (endDate <= startDate) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Expiry date must be after start date",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Expiry date must be after start date",
+      });
     }
 
     const updatedCoupon = await Coupon.findByIdAndUpdate(
@@ -121,13 +119,11 @@ const editCoupon = async (req, res) => {
     const tempCoupon = new Coupon(updatedCoupon.toObject());
     await tempCoupon.validate();
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Coupon updated successfully",
-        data: updatedCoupon,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Coupon updated successfully",
+      data: updatedCoupon,
+    });
   } catch (error) {
     console.error("Unable to edit the coupon:", error);
     if (error.name === "ValidationError") {
@@ -160,13 +156,11 @@ const toggleCouponStatus = async (req, res) => {
     coupon.isActive = isActive;
     await coupon.save();
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Coupon status updated",
-        isActive: coupon.isActive,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Coupon status updated",
+      isActive: coupon.isActive,
+    });
   } catch (error) {
     console.error("Unable to toggle the coupon:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -211,17 +205,16 @@ const getCouponById = async (req, res) => {
 const renderCouponsPage = async (req, res) => {
   try {
     const page = Number.parseInt(req.query.page) || 1;
-    const limit = 7; 
+    const limit = 7;
     const skip = (page - 1) * limit;
 
     const totalcoupons = await Coupon.countDocuments();
-
 
     const totalpages = Math.ceil(totalcoupons / limit);
 
     res.render("coupons", {
       title: "Coupon Management",
-      Coupon, 
+      Coupon,
       totalcoupons,
       currentPage: page,
       totalpages,

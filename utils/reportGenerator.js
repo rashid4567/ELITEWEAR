@@ -12,12 +12,37 @@ const generateSalesReport = async (salesData, res, options = {}) => {
       throw new Error("Sales data must be an array");
     }
 
-
     const totalSales = salesData.reduce((sum, item) => sum + (item.total || 0), 0);
     const totalItems = salesData.reduce((sum, item) => sum + item.quantity, 0);
     const uniqueCustomers = new Set(salesData.map(item => item.buyer)).size;
     const averageOrderValue = totalSales / uniqueCustomers || 0;
+    
 
+    const totalDiscounts = salesData.reduce((sum, item) => sum + (item.discount || 0), 0);
+    const totalProductDiscounts = salesData.reduce((sum, item) => {
+      const productDiscountAmount =
+        (item.price || 0) *
+        ((item.productEffectiveDiscount || 0) / 100) *
+        (item.quantity || 0);
+      return sum + productDiscountAmount;
+    }, 0);
+    
+    const totalCouponDiscounts = salesData.reduce((sum, item) => {
+      if (item.couponApplied) {
+        if (item.discount > 0) {
+          return sum + item.discount;
+        }
+        const couponDiscountAmount =
+          (item.price || 0) *
+          ((item.couponPercent || 0) / 100) *
+          (item.quantity || 0);
+        return sum + couponDiscountAmount;
+      }
+      return sum;
+    }, 0);
+ 
+    const ordersWithCoupons = salesData.filter(item => item.couponApplied).length;
+    const uniqueCoupons = new Set(salesData.filter(item => item.couponCode).map(item => item.couponCode)).size;
 
     const formatCurrency = (value) => {
       if (value === undefined || value === null) return "0";
@@ -43,7 +68,6 @@ const generateSalesReport = async (salesData, res, options = {}) => {
       }
     };
 
-
     const currentDate = new Date();
     const formattedDate = currentDate.toLocaleDateString("en-IN", {
       day: "2-digit",
@@ -55,7 +79,6 @@ const generateSalesReport = async (salesData, res, options = {}) => {
       minute: "2-digit",
       hour12: true
     });
-
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -260,6 +283,26 @@ const generateSalesReport = async (salesData, res, options = {}) => {
             background-color: #1a2530;
           }
           
+          .discount-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background-color: var(--accent-color);
+            color: var(--white);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+          }
+          
+          .coupon-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background-color: var(--secondary-color);
+            color: var(--white);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+          }
+          
           @media print {
             .print-button {
               display: none;
@@ -317,7 +360,7 @@ const generateSalesReport = async (salesData, res, options = {}) => {
       <body>
         <div class="container">
           <div class="watermark">
-            <span>DELIVERED ORDERS ONLY</span>
+            <span>ELITE WEAR REPORT</span>
           </div>
           
           <div class="header">
@@ -348,6 +391,25 @@ const generateSalesReport = async (salesData, res, options = {}) => {
             </div>
           </div>
           
+          <div class="summary-row">
+            <div class="summary-box" style="background-color: var(--accent-color);">
+              <h3>TOTAL DISCOUNTS</h3>
+              <p>₹${formatCurrency(totalDiscounts)}</p>
+            </div>
+            <div class="summary-box" style="background-color: var(--accent-color);">
+              <h3>PRODUCT DISCOUNTS</h3>
+              <p>₹${formatCurrency(totalProductDiscounts)}</p>
+            </div>
+            <div class="summary-box" style="background-color: var(--accent-color);">
+              <h3>COUPON DISCOUNTS</h3>
+              <p>₹${formatCurrency(totalCouponDiscounts)}</p>
+            </div>
+            <div class="summary-box" style="background-color: var(--accent-color);">
+              <h3>ORDERS WITH COUPONS</h3>
+              <p>${formatCurrency(ordersWithCoupons)}</p>
+            </div>
+          </div>
+          
           <h2 class="section-title">Sales Details</h2>
           
           <table class="sales-table">
@@ -358,7 +420,8 @@ const generateSalesReport = async (salesData, res, options = {}) => {
                 <th>SKU</th>
                 <th class="center">Qty</th>
                 <th class="right">Price</th>
-                <th>Category</th>
+                <th class="right">Discount</th>
+                <th>Coupon</th>
                 <th class="right">Total</th>
               </tr>
             </thead>
@@ -370,7 +433,16 @@ const generateSalesReport = async (salesData, res, options = {}) => {
                   <td>${(item.sku || "").toString()}</td>
                   <td class="center">${(item.quantity || 0).toString()}</td>
                   <td class="right">₹${formatCurrency(item.price || 0)}</td>
-                  <td>${(item.category || "Uncategorized").toString().substring(0, 15)}</td>
+                  <td class="right">
+                    ${item.discount > 0 ? 
+                      `<span class="discount-badge">₹${formatCurrency(item.discount)} (${item.discountPercentage}%)</span>` : 
+                      '₹0'}
+                  </td>
+                  <td>
+                    ${item.couponApplied ? 
+                      `<span class="coupon-badge">${item.couponCode} (${item.couponPercent}%)</span>` : 
+                      '-'}
+                  </td>
                   <td class="right">₹${formatCurrency(item.total || 0)}</td>
                 </tr>
               `).join('')}
@@ -401,12 +473,10 @@ const generateSalesReport = async (salesData, res, options = {}) => {
       </html>
     `;
 
-
     const filename = `elite-wear-sales-report-${new Date().toISOString().split('T')[0]}.html`;
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     
-  
     res.send(htmlContent);
     return true;
     
@@ -440,6 +510,11 @@ const generateExcel = async (salesData, res, options = {}) => {
     { header: "Product ID", key: "sku", width: 15 },
     { header: "Quantity", key: "quantity", width: 10 },
     { header: "Price", key: "price", width: 15 },
+    { header: "Discount Amount", key: "discount", width: 15 },
+    { header: "Discount %", key: "discountPercentage", width: 10 },
+    { header: "Coupon Applied", key: "couponApplied", width: 15 },
+    { header: "Coupon Code", key: "couponCode", width: 15 },
+    { header: "Coupon %", key: "couponPercent", width: 10 },
     { header: "Category", key: "category", width: 15 },
     { header: "Total", key: "total", width: 15 },
     { header: "Date", key: "orderDate", width: 20 },
@@ -462,6 +537,11 @@ const generateExcel = async (salesData, res, options = {}) => {
       sku: item.sku,
       quantity: item.quantity,
       price: item.price,
+      discount: item.discount,
+      discountPercentage: item.discountPercentage,
+      couponApplied: item.couponApplied ? "Yes" : "No",
+      couponCode: item.couponCode || "-",
+      couponPercent: item.couponPercent || 0,
       category: item.category,
       total: item.total,
       orderDate: new Date(item.orderDate).toLocaleDateString(),
@@ -470,16 +550,50 @@ const generateExcel = async (salesData, res, options = {}) => {
     });
   });
 
-  const totalSales = salesData.reduce((sum, item) => sum + item.total, 0);
-  const totalItems = salesData.reduce((sum, item) => sum + item.quantity, 0);
+
+  const totalSales = salesData.reduce((sum, item) => sum + (item.total || 0), 0);
+  const totalItems = salesData.reduce((sum, item) => sum + (item.quantity || 0), 0);
+  const totalDiscounts = salesData.reduce((sum, item) => sum + (item.discount || 0), 0);
+  
+  const totalProductDiscounts = salesData.reduce((sum, item) => {
+    const productDiscountAmount =
+      (item.price || 0) *
+      ((item.productEffectiveDiscount || 0) / 100) *
+      (item.quantity || 0);
+    return sum + productDiscountAmount;
+  }, 0);
+  
+  const totalCouponDiscounts = salesData.reduce((sum, item) => {
+    if (item.couponApplied) {
+      if (item.discount > 0) {
+        return sum + item.discount;
+      }
+      const couponDiscountAmount =
+        (item.price || 0) *
+        ((item.couponPercent || 0) / 100) *
+        (item.quantity || 0);
+      return sum + couponDiscountAmount;
+    }
+    return sum;
+  }, 0);
+  
+  const ordersWithCoupons = salesData.filter(item => item.couponApplied).length;
+  const uniqueCoupons = new Set(salesData.filter(item => item.couponCode).map(item => item.couponCode)).size;
 
   worksheet.addRow([]);
   worksheet.addRow(["Report Period:", `${fromDate} to ${toDate}`]);
   worksheet.addRow(["Total Sales:", `₹${totalSales.toLocaleString()}`]);
   worksheet.addRow(["Items Sold:", totalItems]);
+  worksheet.addRow(["Total Discounts:", `₹${totalDiscounts.toLocaleString()}`]);
+  worksheet.addRow(["Product Discounts:", `₹${totalProductDiscounts.toLocaleString()}`]);
+  worksheet.addRow(["Coupon Discounts:", `₹${totalCouponDiscounts.toLocaleString()}`]);
+  worksheet.addRow(["Orders with Coupons:", ordersWithCoupons]);
+  worksheet.addRow(["Unique Coupons Used:", uniqueCoupons]);
   worksheet.addRow(["Generated On:", new Date().toLocaleString()]);
 
+  
   worksheet.getColumn("price").numFmt = "₹#,##0.00";
+  worksheet.getColumn("discount").numFmt = "₹#,##0.00";
   worksheet.getColumn("total").numFmt = "₹#,##0.00";
 
   res.setHeader(

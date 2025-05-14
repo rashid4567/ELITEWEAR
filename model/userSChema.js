@@ -1,5 +1,4 @@
-const mongoose = require("mongoose")
-
+const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
   fullname: {
@@ -39,12 +38,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     unique: true,
     default: () => {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" 
-      let code = ""
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let code = "";
       for (let i = 0; i < 8; i++) {
-        code += chars.charAt(Math.floor(Math.random() * chars.length))
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
       }
-      return code
+      return code;
     },
   },
   referredBy: {
@@ -56,6 +55,6 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-})
+});
 
-module.exports = mongoose.model("User", userSchema)
+module.exports = mongoose.model("User", userSchema);

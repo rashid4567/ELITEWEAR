@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elite Wear Admin Profile</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- Toastify CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+
+    <!-- SweetAlert2 CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
+    />
+
+    <link rel="stylesheet" href="/adminStyle/sidebar.css" />
+    <link rel="stylesheet" href="/adminStyle/adminprofile.css" />
+  </head>
+
+  <body>
+    <!-- Sidebar -->
+    <%- include("../partials/admin/header") %>
+
+    <button id="sidebar-toggle">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+
+    <div class="main-content" id="main-content">
+      <div class="container-fluid">
+        <div class="row mb-4">
+          <div class="col-12">
+            <h1 class="fw-bold">Admin Profile</h1>
+            <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">
+                  Profile
+                </li>
+              </ol>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Hidden divs to store flash messages -->
+        <% if (messages && messages.success) { %>
+        <div id="successMessage" class="d-none"><%= messages.success %></div>
+        <% } %>
+        
+        <% if (messages && messages.error) { %>
+        <div id="errorMessage" class="d-none"><%= messages.error %></div>
+        <% } %>
+
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="profile-card">
+              <div class="profile-header">
+                <div class="profile-avatar">
+                  <%= admin.fullname.charAt(0).toUpperCase() %>
+                </div>
+                <div class="profile-info">
+                  <h2><%= admin.fullname %></h2>
+                  <p><i class="fas fa-envelope me-2"></i><%= admin.email %></p>
+                  <p><i class="fas fa-phone me-2"></i><%= admin.mobile %></p>
+                  <p>
+                    <i class="fas fa-clock me-2"></i>Admin since <%= new
+                    Date(admin.createdAt).toLocaleDateString('en-US', { year:
+                    'numeric', month: 'long', day: 'numeric' }) %>
+                  </p>
+                </div>
+              </div>
+
+              <!-- Updated form section in the admin profile EJS template -->
+              <div class="form-section">
+                <h3>Change Password</h3>
+                <form
+                  id="changePasswordForm"
+                  action="/admin/profile/change-password"
+                  method="POST"
+                >
+                  <div class="mb-3">
+                    <label for="currentPassword" class="form-label"
+                      >Current Password</label
+                    >
+                    <div class="password-input-group">
+                      <input
+                        type="password"
+                        class="form-control"
+                        id="currentPassword"
+                        name="currentPassword"
+                    
+                      />
+                      <button
+                        type="button"
+                        class="password-toggle"
+                        data-target="currentPassword"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="newPassword" class="form-label"
+                      >New Password</label
+                    >
+                    <div class="password-input-group">
+                      <input
+                        type="password"
+                        class="form-control"
+                        id="newPassword"
+                        name="newPassword"
+                    
+                      />
+                      <button
+                        type="button"
+                        class="password-toggle"
+                        data-target="newPassword"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </button>
+                    </div>
+                    <div class="password-strength">
+                      <div
+                        class="password-strength-meter"
+                        id="passwordStrengthMeter"
+                      ></div>
+                    </div>
+                    <div
+                      class="password-feedback text-muted"
+                      id="passwordFeedback"
+                    >
+                      Password must be at least 8 characters
+                    </div>
+                  </div>
+
+                  <div class="mb-4">
+                    <label for="confirmPassword" class="form-label"
+                      >Confirm New Password</label
+                    >
+                    <div class="password-input-group">
+                      <input
+                        type="password"
+                        class="form-control"
+                        id="confirmPassword"
+                        name="confirmPassword"
+                       
+                      />
+                      <button
+                        type="button"
+                        class="password-toggle"
+                        data-target="confirmPassword"
+                      >
+                        <i class="fas fa-eye"></i>
+                      </button>
+                    </div>
+                    <div
+                      class="password-feedback text-muted"
+                      id="confirmPasswordFeedback"
+                    ></div>
+                  </div>
+
+                  <div class="d-flex justify-content-end">
+                    <button
+                      type="submit"
+                      class="btn btn-save"
+                      id="savePasswordBtn"
+                    >
+                      Update Password
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="profile-card">
+              <h3 class="mb-3">Security Tips</h3>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item px-0">
+                  <i class="fas fa-shield-alt text-primary me-2"></i>
+                  Use a strong, unique password
+                </li>
+                <li class="list-group-item px-0">
+                  <i class="fas fa-fingerprint text-primary me-2"></i>
+                  Never share your credentials
+                </li>
+                <li class="list-group-item px-0">
+                  <i class="fas fa-lock text-primary me-2"></i>
+                  Change your password regularly
+                </li>
+                <li class="list-group-item px-0">
+                  <i class="fas fa-user-shield text-primary me-2"></i>
+                  Log out when not using the system
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Toastify JS -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Show toast messages if they exist
+        const successMessage = document.getElementById("successMessage");
+        const errorMessage = document.getElementById("errorMessage");
+        
+        if (successMessage && successMessage.textContent.trim() !== "") {
+          Toastify({
+            text: successMessage.textContent,
+            duration: 5000,
+            close: true,
+            gravity: "top",
+            position: "right",
+            style: {
+              background: "linear-gradient(to right, #00b09b, #96c93d)",
+            },
+          }).showToast();
+        }
+        
+        if (errorMessage && errorMessage.textContent.trim() !== "") {
+          Toastify({
+            text: errorMessage.textContent,
+            duration: 5000,
+            close: true,
+            gravity: "top",
+            position: "right",
+            style: {
+              background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+            },
+          }).showToast();
+        }
+
+        // Sidebar toggle functionality
+        const sidebarToggle = document.getElementById("sidebar-toggle");
+        const sidebar = document.querySelector(".sidebar");
+        const mainContent = document.getElementById("main-content");
+
+        if (sidebarToggle && sidebar && mainContent) {
+          sidebarToggle.addEventListener("click", () => {
+            sidebar.classList.toggle("sidebar-collapsed");
+            mainContent.classList.toggle("main-content-expanded");
+
+            const icon = sidebarToggle.querySelector("i");
+            if (icon) {
+              icon.classList.toggle("fa-chevron-left");
+              icon.classList.toggle("fa-chevron-right");
+            }
+          });
+        }
+
+        function checkScreenSize() {
+          if (window.innerWidth < 992 && sidebar && mainContent) {
+            sidebar.classList.add("sidebar-collapsed");
+            mainContent.classList.add("main-content-expanded");
+
+            const icon = sidebarToggle.querySelector("i");
+            if (icon && icon.classList.contains("fa-chevron-left")) {
+              icon.classList.remove("fa-chevron-left");
+              icon.classList.add("fa-chevron-right");
+            }
+          }
+        }
+
+        checkScreenSize();
+        window.addEventListener("resize", checkScreenSize);
+
+        // Password toggle visibility
+        const toggleButtons = document.querySelectorAll(".password-toggle");
+        toggleButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const targetId = button.getAttribute("data-target");
+            const passwordInput = document.getElementById(targetId);
+            const icon = button.querySelector("i");
+
+            if (passwordInput.type === "password") {
+              passwordInput.type = "text";
+              icon.classList.remove("fa-eye");
+              icon.classList.add("fa-eye-slash");
+            } else {
+              passwordInput.type = "password";
+              icon.classList.remove("fa-eye-slash");
+              icon.classList.add("fa-eye");
+            }
+          });
+        });
+
+        // Password strength meter
+        const newPasswordInput = document.getElementById("newPassword");
+        const confirmPasswordInput = document.getElementById("confirmPassword");
+        const currentPasswordInput = document.getElementById("currentPassword");
+        const passwordStrengthMeter = document.getElementById(
+          "passwordStrengthMeter"
+        );
+        const passwordFeedback = document.getElementById("passwordFeedback");
+        const confirmPasswordFeedback = document.getElementById(
+          "confirmPasswordFeedback"
+        );
+        const savePasswordBtn = document.getElementById("savePasswordBtn");
+        const changePasswordForm = document.getElementById("changePasswordForm");
+
+        // Password strength check function
+        function checkPasswordStrength(password) {
+          let strength = 0;
+          let feedback = [];
+
+          // Length check
+          if (password.length < 8) {
+            feedback.push("Password must be at least 8 characters");
+          } else {
+            strength += 25;
+          }
+
+          // Uppercase check
+          if (/[A-Z]/.test(password)) {
+            strength += 25;
+          } else {
+            feedback.push("Add uppercase letters");
+          }
+
+          // Lowercase check
+          if (/[a-z]/.test(password)) {
+            strength += 25;
+          } else {
+            feedback.push("Add lowercase letters");
+          }
+
+          // Number or special char check
+          if (/[0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+            strength += 25;
+          } else {
+            feedback.push("Add numbers or special characters");
+          }
+
+          return { strength, feedback };
+        }
+
+        function updatePasswordStrength() {
+          const password = newPasswordInput.value;
+          const { strength, feedback } = checkPasswordStrength(password);
+
+          passwordStrengthMeter.style.width = `${strength}%`;
+
+          if (strength <= 25) {
+            passwordStrengthMeter.style.backgroundColor = "#ef4444"; // Red
+            passwordFeedback.className = "password-feedback text-danger";
+          } else if (strength <= 50) {
+            passwordStrengthMeter.style.backgroundColor = "#f59e0b"; // Orange
+            passwordFeedback.className = "password-feedback text-warning";
+          } else if (strength <= 75) {
+            passwordStrengthMeter.style.backgroundColor = "#10b981"; // Green
+            passwordFeedback.className = "password-feedback text-success";
+          } else {
+            passwordStrengthMeter.style.backgroundColor = "#059669"; // Dark Green
+            passwordFeedback.className = "password-feedback text-success";
+          }
+
+          passwordFeedback.textContent =
+            feedback.length > 0 ? feedback.join(", ") : "Strong password";
+
+          // We'll still call validateForm but we won't disable the button
+          validateForm();
+        }
+
+        function validatePasswordMatch() {
+          const password = newPasswordInput.value;
+          const confirmPassword = confirmPasswordInput.value;
+
+          if (confirmPassword === "") {
+            confirmPasswordFeedback.textContent = "";
+            confirmPasswordFeedback.className = "password-feedback text-muted";
+            return false;
+          }
+
+          if (password === confirmPassword) {
+            confirmPasswordFeedback.textContent = "Passwords match";
+            confirmPasswordFeedback.className =
+              "password-feedback text-success";
+            return true;
+          } else {
+            confirmPasswordFeedback.textContent = "Passwords do not match";
+            confirmPasswordFeedback.className = "password-feedback text-danger";
+            return false;
+          }
+        }
+
+        function validateForm() {
+          // We'll validate but not disable the button
+          // This function now just updates the UI feedback
+          const currentPassword = currentPasswordInput.value;
+          const newPassword = newPasswordInput.value;
+          const confirmPassword = confirmPasswordInput.value;
+          const { strength } = checkPasswordStrength(newPassword);
+          const passwordsMatch = validatePasswordMatch();
+          
+          // Instead of disabling the button, we'll just track if the form is valid
+          return (
+            currentPassword.length > 0 &&
+            newPassword.length >= 8 &&
+            strength >= 50 && // Lowered the strength requirement to make it easier
+            passwordsMatch &&
+            newPassword !== currentPassword
+          );
+        }
+
+        // Add event listeners for input fields
+        if (newPasswordInput) {
+          newPasswordInput.addEventListener("input", updatePasswordStrength);
+        }
+
+        if (confirmPasswordInput) {
+          confirmPasswordInput.addEventListener("input", validatePasswordMatch);
+        }
+
+        if (currentPasswordInput) {
+          currentPasswordInput.addEventListener("input", validateForm);
+        }
+
+        // Form submission handler with SweetAlert confirmation
+        if (changePasswordForm) {
+          changePasswordForm.addEventListener("submit", function (event) {
+            event.preventDefault();
+            
+            const currentPassword = document.getElementById("currentPassword").value;
+            const newPassword = document.getElementById("newPassword").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+
+            // Client-side validation
+            if (!currentPassword || !newPassword || !confirmPassword) {
+              Toastify({
+                text: "All fields are required",
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                style: {
+                  background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                },
+              }).showToast();
+              return false;
+            }
+
+            if (newPassword !== confirmPassword) {
+              Toastify({
+                text: "Passwords do not match",
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                style: {
+                  background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                },
+              }).showToast();
+              return false;
+            }
+
+            const { strength } = checkPasswordStrength(newPassword);
+            if (strength < 50) { // Lowered the strength requirement
+              Toastify({
+                text: "Please use a stronger password",
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                style: {
+                  background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                },
+              }).showToast();
+              return false;
+            }
+
+            if (newPassword === currentPassword) {
+              Toastify({
+                text: "New password must be different from current password",
+                duration: 3000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                style: {
+                  background: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                },
+              }).showToast();
+              return false;
+            }
+
+            // Show SweetAlert confirmation
+            Swal.fire({
+              title: 'Confirm Password Change',
+              text: "Are you sure you want to update your password?",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Yes, update it!'
+            }).then((result) => {
+              if (result.isConfirmed) {
+                // Submit the form
+                changePasswordForm.submit();
+                
+                // Show loading state
+                Swal.fire({
+                  title: 'Updating Password',
+                  text: 'Please wait...',
+                  allowOutsideClick: false,
+                  didOpen: () => {
+                    Swal.showLoading();
+                  }
+                });
+              }
+            });
+          });
+        }
+
+        // Initialize validation on page load
+        if (newPasswordInput && newPasswordInput.value) {
+          updatePasswordStrength();
+        }
+        if (confirmPasswordInput && confirmPasswordInput.value) {
+          validatePasswordMatch();
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="Secure admin login portal">
-    <!-- Security headers -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' https://cdn.jsdelivr.net https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:;">
+    <!-- Security headers - Modified to allow inline scripts -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:;">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta name="referrer" content="no-referrer">
@@ -51,6 +51,27 @@
             min-height: 100vh;
             padding: 2rem 1rem;
         }
+    }
+    
+    /* Fix for password toggle button */
+    .toggle-password {
+        cursor: pointer !important;
+        z-index: 10 !important;
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* Ensure the password toggle is visible and clickable */
+    .input-group .toggle-password {
+        position: relative !important;
+        z-index: 5 !important;
+    }
+    
+    /* Make sure the icon is visible */
+    .toggle-password i {
+        pointer-events: none !important;
     }
 </style>
 
@@ -115,8 +136,6 @@
                         <span>Real-time Analytics</span>
                     </div>
                 </div>
-                
-              
             </div>
             
             <div class="brand-footer">
@@ -145,15 +164,6 @@
                     </div>
                 <% } %>
                 
-                <!-- Login attempts warning -->
-                <div id="loginAttemptsWarning" class="login-attempts-warning d-none">
-                    <i class="fa-solid fa-exclamation-triangle"></i>
-                    <div class="warning-content">
-                        <p class="warning-title">Multiple failed login attempts detected</p>
-                        <p class="warning-message">Your account will be temporarily locked after <span id="attemptsRemaining">3</span> more failed attempts.</p>
-                    </div>
-                </div>
-                
                 <!-- Login form -->
                 <form id="adminLoginForm" action="/admin/login" method="POST" class="needs-validation" novalidate>
                     <div class="form-group">
@@ -177,7 +187,7 @@
                     </div>
                     
                     <div class="form-group">
-
+                        <label for="password" class="form-label">Password</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
                             <input 
@@ -190,13 +200,13 @@
                                 autocomplete="current-password"
                                 minlength="8"
                             >
-                            <button 
-                                class="btn btn-outline-secondary toggle-password" 
-                                type="button" 
-                                aria-label="Toggle password visibility"
+                            <span 
+                                class="input-group-text toggle-password" 
+                                id="togglePasswordBtn"
+                                style="cursor: pointer;"
                             >
                                 <i class="fa-solid fa-eye" id="toggleIcon"></i>
-                            </button>
+                            </span>
                             <div class="invalid-feedback">
                                 Password must be at least 8 characters.
                             </div>
@@ -210,8 +220,6 @@
                             <div class="strength-text" id="strengthText">Password strength</div>
                         </div>
                     </div>
-                    
-                    
                     
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary login-btn">
@@ -247,54 +255,50 @@
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Custom JavaScript -->
+    <!-- Custom JavaScript with inline function for password toggle -->
     <script>
-    // Add this at the beginning of your DOMContentLoaded event
-    console.log('Admin login page loaded');
-    
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('Admin login page loaded');
+        
         // Ensure the login container is visible immediately
         const loginContainer = document.querySelector('.login-container');
         if (loginContainer) {
-            // Remove any inline styles that might be affecting visibility
-            loginContainer.style.display = '';
-            loginContainer.style.visibility = '';
+            loginContainer.style.display = 'block';
+            loginContainer.style.visibility = 'visible';
             loginContainer.style.opacity = '1';
             
             // Add the animation class after a short delay
             setTimeout(() => {
                 loginContainer.classList.add('fade-in-up');
             }, 100);
-        } else {
-            console.error('Login container not found!');
         }
         
-        // Rest of the JavaScript remains the same...
-        
-        // Password visibility toggle
+        // Password toggle button - FIXED VERSION
+        const toggleBtn = document.getElementById('togglePasswordBtn');
         const passwordField = document.getElementById('password');
-        const toggleButton = document.querySelector('.toggle-password');
         const toggleIcon = document.getElementById('toggleIcon');
         
-        if (passwordField && toggleButton && toggleIcon) {
-            toggleButton.addEventListener('click', function() {
+        if (toggleBtn && passwordField && toggleIcon) {
+            console.log('Toggle button and password field found');
+            
+            // Use direct event listener
+            toggleBtn.addEventListener('click', function() {
+                console.log('Toggle button clicked');
+                
                 if (passwordField.type === 'password') {
                     passwordField.type = 'text';
                     toggleIcon.classList.remove('fa-eye');
                     toggleIcon.classList.add('fa-eye-slash');
+                    console.log('Password visible');
                 } else {
                     passwordField.type = 'password';
                     toggleIcon.classList.remove('fa-eye-slash');
                     toggleIcon.classList.add('fa-eye');
+                    console.log('Password hidden');
                 }
-                
-                // Add focus back to input field for better UX
-                passwordField.focus();
-                
-                // Position cursor at the end of the text
-                const length = passwordField.value.length;
-                passwordField.setSelectionRange(length, length);
             });
+        } else {
+            console.error('Toggle button or password field not found!');
         }
 
         // Password strength meter
@@ -360,93 +364,12 @@
             });
         }
 
-        // Simulate login attempts tracking (for demonstration)
-        let loginAttempts = parseInt(localStorage.getItem('adminLoginAttempts') || '0');
-        const warningElement = document.getElementById('loginAttemptsWarning');
-        const attemptsRemainingElement = document.getElementById('attemptsRemaining');
-        
-        if (warningElement && attemptsRemainingElement) {
-            // Show warning after 2 failed attempts
-            if (loginAttempts >= 2) {
-                warningElement.classList.remove('d-none');
-                attemptsRemainingElement.textContent = (5 - loginAttempts).toString();
-            }
-        }
-
-        // For demo purposes - increment attempts on failed login
-        <% if (typeof message !== 'undefined' && message && message.includes('Invalid')) { %>
-            loginAttempts++;
-            localStorage.setItem('adminLoginAttempts', loginAttempts.toString());
-            
-            if (loginAttempts >= 2 && loginAttempts < 5) {
-                warningElement.classList.remove('d-none');
-                attemptsRemainingElement.textContent = (5 - loginAttempts).toString();
-            }
-            
-            // Simulate account lockout after 5 failed attempts
-            if (loginAttempts >= 5) {
-                warningElement.classList.remove('d-none');
-                warningElement.innerHTML = `
-                    <i class="fa-solid fa-lock"></i>
-                    <div class="warning-content">
-                        <p class="warning-title">Account temporarily locked</p>
-                        <p class="warning-message">For security reasons, your account has been temporarily locked. Please try again after 30 minutes or contact support.</p>
-                    </div>
-                `;
-                
-                // Disable the form
-                const formElements = form.elements;
-                for (let i = 0; i < formElements.length; i++) {
-                    formElements[i].disabled = true;
-                }
-                
-                // Set a timeout to "unlock" after 30 seconds (for demo purposes)
-                setTimeout(function() {
-                    localStorage.setItem('adminLoginAttempts', '0');
-                    location.reload();
-                }, 30000);
-            }
-        <% } %>
-        
         // Reset attempts on successful login
-        <% if (typeof message !== 'undefined' && message && message.includes('success')) { %>
+        const hasSuccessMessage = <%= typeof message !== 'undefined' && message && message.includes('success') ? 'true' : 'false' %>;
+        if (hasSuccessMessage) {
             localStorage.setItem('adminLoginAttempts', '0');
-        <% } %>
-
-        // Preload background image for better performance
-        const preloadImage = new Image();
-        preloadImage.src = '/placeholder.svg?height=300&width=300&query=secure%20admin%20dashboard%20illustration';
-        preloadImage.crossOrigin = "anonymous";
-    });
-</script>
-
-<!-- Add debugging information to help troubleshoot any remaining issues -->
-<script>
-    // Check if the login container exists and is visible
-    window.addEventListener('load', function() {
-        const loginContainer = document.querySelector('.login-container');
-        if (loginContainer) {
-            console.log('Login container found');
-            
-            // Get computed style
-            const style = window.getComputedStyle(loginContainer);
-            console.log('Login container visibility:', style.visibility);
-            console.log('Login container display:', style.display);
-            console.log('Login container opacity:', style.opacity);
-            
-            // Force visibility after a delay as a last resort
-            setTimeout(() => {
-                if (parseFloat(style.opacity) < 0.5) {
-                    console.log('Forcing login container visibility');
-                    loginContainer.style.opacity = '1';
-                    loginContainer.style.visibility = 'visible';
-                    loginContainer.style.display = 'block';
-                }
-            }, 1000);
-        } else {
-            console.error('Login container not found!');
         }
     });
-</script>
+    </script>
 </body>
 </html>

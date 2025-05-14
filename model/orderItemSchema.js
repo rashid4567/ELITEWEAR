@@ -37,23 +37,23 @@ const orderItemSchema = new mongoose.Schema(
     discountPerUnit: {
       type: Number,
       default: 0,
-      min: 0
+      min: 0,
     },
 
     discountAmount: {
       type: Number,
       default: 0,
-      min: 0
+      min: 0,
     },
 
     finalPrice: {
       type: Number,
       min: 0,
-      default: function() {
+      default: function () {
         return this.price - (this.discountPerUnit || 0);
-      }
+      },
     },
-   
+
     total_amount: {
       type: Number,
       required: true,
@@ -95,7 +95,7 @@ const orderItemSchema = new mongoose.Schema(
     refundAmount: {
       type: Number,
       default: 0,
-      min: 0
+      min: 0,
     },
     refundDate: {
       type: Date,
@@ -143,7 +143,7 @@ const orderItemSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-  
+
     couponApplied: {
       type: Boolean,
       default: false,
@@ -160,7 +160,7 @@ const orderItemSchema = new mongoose.Schema(
     couponDiscountPercent: {
       type: Number,
       default: 0,
-      min: 0
+      min: 0,
     },
   },
   {
@@ -168,19 +168,17 @@ const orderItemSchema = new mongoose.Schema(
   }
 );
 
-
-orderItemSchema.pre('validate', function(next) {
+orderItemSchema.pre("validate", function (next) {
   if (this.finalPrice < 0) {
     this.finalPrice = 0;
   }
   next();
 });
 
-
 orderItemSchema.index({ refundDate: -1 });
 orderItemSchema.index({ returnRequestedDate: -1 });
 orderItemSchema.index({ returnCompletedDate: -1 });
 orderItemSchema.index({ couponApplied: 1 });
 
-
-module.exports = mongoose.models.OrderItem || mongoose.model("OrderItem", orderItemSchema);
+module.exports =
+  mongoose.models.OrderItem || mongoose.model("OrderItem", orderItemSchema);

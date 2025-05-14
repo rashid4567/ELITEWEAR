@@ -10,6 +10,7 @@ const CouponController = require("../controller/admin/CounponController")
 const salesontroller = require("../controller/admin/salesController")
 const adminWalletController = require("../controller/admin/adminWalletController")
 const reviewController = require("../controller/admin/adminReviewController")
+const profileController = require("../controller/admin/adminProfileController")
 const upload = require("../middleware/cluadinaryConfig")
 const { userAuth, adminAuth } = require("../middleware/auth")
 
@@ -43,6 +44,10 @@ router.get("/editCategory", adminAuth, CategoryController.geteditCategory)
 router.post("/editCategory", adminAuth, CategoryController.editCategory)
 router.post("/delete-category", adminAuth, CategoryController.deleteCategory)
 router.get("/check-category-name", CategoryController.checkCategoryNameExists)
+
+//ADMIN PROFILR
+router.get("/profile", adminAuth, profileController.getAdminProfile)
+router.post("/profile/change-password", adminAuth, profileController.changeAdminPassword)
 
 // Product management routes
 router.get("/productManagement", adminAuth, productController.ProductManagement)

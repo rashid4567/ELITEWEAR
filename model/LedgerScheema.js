@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const ledgerSchema = new mongoose.Schema({
   date: {
@@ -43,12 +43,11 @@ const ledgerSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-})
-
+});
 
 ledgerSchema.pre("save", function (next) {
-  this.updatedAt = Date.now()
-  next()
-})
+  this.updatedAt = Date.now();
+  next();
+});
 
-module.exports = mongoose.model("Ledger", ledgerSchema)
+module.exports = mongoose.model("Ledger", ledgerSchema);

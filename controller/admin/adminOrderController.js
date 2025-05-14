@@ -1974,12 +1974,10 @@ const admindownloadInvoice = async (req, res) => {
       </html>
     `;
 
-    // Set response headers for download
     const filename = `admin-invoice-${invoiceNumber}.html`;
     res.setHeader("Content-Type", "text/html");
     res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
-    // Send the HTML content
     res.send(htmlContent);
   } catch (error) {
     logger.error("admindownloadInvoice Error:", error);

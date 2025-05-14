@@ -22,7 +22,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
 
-    <link rel="stylesheet" href="/adminStyle/sidebar.css">
+    <link rel="stylesheet" href="/adminStyle/sidebar.css" />
   </head>
 
   <body>
@@ -95,6 +95,12 @@
             <span>Review Management</span>
           </a>
         </li>
+        <li>
+          <a href="/admin/profile">
+            <i class="fas fa-user-cog"></i>
+            <span>Profile</span>
+          </a>
+        </li>
       </ul>
       <div class="sidebar-footer">
         <button class="btn btn-outline-primary">Account</button>
@@ -112,7 +118,6 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        
         const sidebarToggle = document.getElementById("sidebar-toggle");
         const sidebar = document.getElementById("sidebar");
         const mainContent = document.getElementById("main-content");
@@ -146,17 +151,15 @@
         checkScreenSize();
         window.addEventListener("resize", checkScreenSize);
 
- 
         const currentPath = window.location.pathname;
         const menuItems = document.querySelectorAll(".sidebar-menu a");
 
         menuItems.forEach((item) => {
           if (item.getAttribute("href") === currentPath) {
-     
             menuItems.forEach((menuItem) => {
               menuItem.classList.remove("active");
             });
-    
+
             item.classList.add("active");
           }
         });

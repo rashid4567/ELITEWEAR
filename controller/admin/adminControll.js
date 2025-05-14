@@ -2075,11 +2075,9 @@ exports.exportReport = async (req, res) => {
       doc.fontSize(18).text("Dashboard Report", { align: "center" });
       doc.moveDown();
       doc.fontSize(12).text(`Period: ${dateRangeTitle}`, { align: "center" });
-      doc
-        .fontSize(10)
-        .text(`Generated on: ${new Date().toLocaleString()}`, {
-          align: "center",
-        });
+      doc.fontSize(10).text(`Generated on: ${new Date().toLocaleString()}`, {
+        align: "center",
+      });
       doc.moveDown(2);
 
       doc.fontSize(16).text("Summary", { underline: true });
@@ -2127,24 +2125,20 @@ exports.exportReport = async (req, res) => {
       let y = doc.y;
       const columnWidth = 150;
       salesTable.headers.forEach((header, i) => {
-        doc
-          .font("Helvetica-Bold")
-          .text(header, 50 + i * columnWidth, y, {
-            width: columnWidth,
-            align: "left",
-          });
+        doc.font("Helvetica-Bold").text(header, 50 + i * columnWidth, y, {
+          width: columnWidth,
+          align: "left",
+        });
       });
       doc.moveDown();
 
       salesTable.rows.forEach((row) => {
         y = doc.y;
         row.forEach((cell, i) => {
-          doc
-            .font("Helvetica")
-            .text(cell, 50 + i * columnWidth, y, {
-              width: columnWidth,
-              align: "left",
-            });
+          doc.font("Helvetica").text(cell, 50 + i * columnWidth, y, {
+            width: columnWidth,
+            align: "left",
+          });
         });
         doc.moveDown();
       });
@@ -2168,24 +2162,20 @@ exports.exportReport = async (req, res) => {
 
       y = doc.y;
       paymentTable.headers.forEach((header, i) => {
-        doc
-          .font("Helvetica-Bold")
-          .text(header, 50 + i * columnWidth, y, {
-            width: columnWidth,
-            align: "left",
-          });
+        doc.font("Helvetica-Bold").text(header, 50 + i * columnWidth, y, {
+          width: columnWidth,
+          align: "left",
+        });
       });
       doc.moveDown();
 
       paymentTable.rows.forEach((row) => {
         y = doc.y;
         row.forEach((cell, i) => {
-          doc
-            .font("Helvetica")
-            .text(cell, 50 + i * columnWidth, y, {
-              width: columnWidth,
-              align: "left",
-            });
+          doc.font("Helvetica").text(cell, 50 + i * columnWidth, y, {
+            width: columnWidth,
+            align: "left",
+          });
         });
         doc.moveDown();
       });

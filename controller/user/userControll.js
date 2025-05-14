@@ -252,7 +252,6 @@ const loadHomepage = async (req, res) => {
     const userData = userId ? await User.findById(userId) : null;
     const today = new Date().toISOString();
 
-    
     const findBanner = await Banner.find({
       startingDate: { $lt: new Date(today) },
       endingDate: { $gt: new Date(today) },
@@ -261,7 +260,6 @@ const loadHomepage = async (req, res) => {
     const categories = await Category.find({ isListed: true });
     const categoryIds = categories.map((category) => category._id);
 
-    
     const productData = await Product.find({
       isActive: true,
       categoryId: { $in: categoryIds },
@@ -271,7 +269,6 @@ const loadHomepage = async (req, res) => {
       .populate("categoryId")
       .exec();
 
-    
     const formattedProductData = productData.map((product) => {
       const firstVariant = product.variants?.[0] || {};
       return {
@@ -284,16 +281,15 @@ const loadHomepage = async (req, res) => {
       };
     });
 
-
     const topReviews = await Review.find({
-      rating: { $gte: 4 }, 
+      rating: { $gte: 4 },
     })
       .sort({
-        helpfulVotes: -1, 
+        helpfulVotes: -1,
         createdAt: -1,
       })
-      .limit(6) 
-      .populate("userId", "fullname profileImage") 
+      .limit(6)
+      .populate("userId", "fullname profileImage")
       .populate("productId", "name")
       .lean();
 
@@ -302,7 +298,7 @@ const loadHomepage = async (req, res) => {
       data: formattedProductData,
       cat: categories,
       Banner: findBanner || [],
-      reviews: topReviews || [], 
+      reviews: topReviews || [],
       error: formattedProductData.length === 0 ? "No products available" : null,
     });
   } catch (error) {
@@ -312,7 +308,7 @@ const loadHomepage = async (req, res) => {
       data: [],
       cat: [],
       Banner: [],
-      reviews: [], 
+      reviews: [],
       error: "Server error",
     });
   }
@@ -679,10 +675,13 @@ const allproduct = async (req, res) => {
       const regularPrice =
         firstVariant.varientPrice || firstVariant.salePrice || 0;
 
-      const salePrice =
+      let salePrice =
         product.offer > 0
           ? regularPrice * (1 - product.offer / 100)
           : regularPrice;
+
+      const regularPriceInt = Math.floor(regularPrice);
+      const salePriceInt = Math.floor(salePrice);
 
       return {
         _id: product._id,
@@ -691,8 +690,8 @@ const allproduct = async (req, res) => {
         ratings: product.ratings || { average: 0, count: 0 },
         categoryId: product.categoryId,
         offer: product.offer || 0,
-        regularPrice: regularPrice,
-        salePrice: salePrice,
+        regularPrice: regularPriceInt,
+        salePrice: salePriceInt,
       };
     });
 
@@ -741,37 +740,57 @@ const filterProducts = async (req, res) => {
       query["variants.size"] = size;
     }
 
-    if (minPrice || maxPrice) {
-      query["variants.salePrice"] = {};
-      if (minPrice) query["variants.salePrice"].$gte = parseFloat(minPrice);
-      if (maxPrice) query["variants.salePrice"].$lte = parseFloat(maxPrice);
-    }
-
     if (color) query.color = { $regex: new RegExp(color, "i") };
 
-    let sortOption = {};
+    let products = await Product.find(query).lean();
+
+    products = products.map((product) => {
+      let lowestPrice = Infinity;
+
+      product.variants.forEach((variant) => {
+        const effectivePrice = variant.salePrice * (1 - product.offer / 100);
+        if (effectivePrice < lowestPrice) {
+          lowestPrice = effectivePrice;
+        }
+      });
+
+      return {
+        ...product,
+        effectivePrice: Math.floor(lowestPrice),
+      };
+    });
+
+    if (minPrice) {
+      products = products.filter(
+        (product) => product.effectivePrice >= parseFloat(minPrice)
+      );
+    }
+
+    if (maxPrice) {
+      products = products.filter(
+        (product) => product.effectivePrice <= parseFloat(maxPrice)
+      );
+    }
+
     switch (sort) {
       case "price-high-low":
-        sortOption = { "variants.salePrice": -1 };
+        products.sort((a, b) => b.effectivePrice - a.effectivePrice);
         break;
       case "price-low-high":
-        sortOption = { "variants.salePrice": 1 };
+        products.sort((a, b) => a.effectivePrice - b.effectivePrice);
         break;
       case "popular":
-        sortOption = { popularity: -1 };
+        products.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
         break;
       case "latest":
       default:
-        sortOption = { createdAt: -1 };
+        products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     }
 
-    const products = await Product.find(query)
-      .sort(sortOption)
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const totalProducts = products.length;
 
-    const totalProducts = await Product.countDocuments(query);
+    products = products.slice(skip, skip + limit);
+
     const totalPages = Math.ceil(totalProducts / limit);
     const categories = await Category.find({});
 
@@ -786,12 +805,9 @@ const filterProducts = async (req, res) => {
 
     const formattedProducts = products.map((product) => {
       const firstVariant = product.variants?.[0] || {};
-      const regularPrice =
-        firstVariant.varientPrice || firstVariant.salePrice || 0;
-      const salePrice =
-        product.offer > 0
-          ? regularPrice * (1 - product.offer / 100)
-          : regularPrice;
+      const regularPrice = Math.floor(
+        firstVariant.varientPrice || firstVariant.salePrice || 0
+      );
 
       return {
         _id: product._id,
@@ -800,7 +816,7 @@ const filterProducts = async (req, res) => {
         ratings: product.ratings || { average: 0, count: 0 },
         offer: product.offer || 0,
         regularPrice: regularPrice,
-        salePrice: salePrice,
+        salePrice: product.effectivePrice,
       };
     });
 
@@ -884,10 +900,8 @@ const searchProducts = async (req, res) => {
 
     if (minPrice || maxPrice) {
       searchQuery["variants.salePrice"] = {};
-      if (minPrice)
-        searchQuery["variants.salePrice"].$gte = parseFloat(minPrice);
-      if (maxPrice)
-        searchQuery["variants.salePrice"].$lte = parseFloat(maxPrice);
+      if (minPrice) searchQuery["variants.salePrice"].$gte = parseInt(minPrice);
+      if (maxPrice) searchQuery["variants.salePrice"].$lte = parseInt(maxPrice);
     }
 
     let sortOption = {};

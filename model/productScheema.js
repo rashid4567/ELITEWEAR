@@ -13,7 +13,6 @@ const variantSchema = new Schema({
   salePrice: {
     type: Number,
     required: true,
-
   },
   varientquatity: {
     type: Number,

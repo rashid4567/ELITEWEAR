@@ -695,21 +695,17 @@ const processManualRefund = async (req, res) => {
     }
 
     if (!orderItem.orderId) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Order reference not found for this item",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Order reference not found for this item",
+      });
     }
 
     if (!orderItem.orderId.userId) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "User reference not found for this order",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "User reference not found for this order",
+      });
     }
 
     const userId = orderItem.orderId.userId._id;
@@ -755,12 +751,10 @@ const processManualRefund = async (req, res) => {
     });
   } catch (error) {
     console.error("Error processing manual refund:", error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Internal server error: " + error.message,
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error: " + error.message,
+    });
   }
 };
 
@@ -840,12 +834,10 @@ const getRefundDetails = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching refund details:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Internal server error: " + error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Internal server error: " + error.message,
+    });
   }
 };
 

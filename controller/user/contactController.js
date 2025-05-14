@@ -1,6 +1,5 @@
-const nodemailer = require("nodemailer")
-require("dotenv").config()
-
+const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 const transporter = nodemailer.createTransport({
   secure: true,
@@ -10,12 +9,12 @@ const transporter = nodemailer.createTransport({
     user: process.env.NODEMAILER_EMAIL,
     pass: process.env.NODEMAILER_PASSWORD,
   },
-})
+});
 
 const createContactMailOptions = (from, name, subject, message) => ({
   from: `"Elite Wear Contact" <${process.env.NODEMAILER_EMAIL}>`,
-  to: process.env.NODEMAILER_EMAIL, 
-  replyTo: from, 
+  to: process.env.NODEMAILER_EMAIL,
+  replyTo: from,
   subject: `Contact Form: ${subject}`,
   html: `
     <!DOCTYPE html>
@@ -158,14 +157,17 @@ const createContactMailOptions = (from, name, subject, message) => ({
             <p><span class="contact-label">Name:</span> ${name}</p>
             <p><span class="contact-label">Email:</span> ${from}</p>
             <p><span class="contact-label">Subject:</span> ${subject}</p>
-            <p><span class="contact-label">Date:</span> ${new Date().toLocaleString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })}</p>
+            <p><span class="contact-label">Date:</span> ${new Date().toLocaleString(
+              "en-US",
+              {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              }
+            )}</p>
           </div>
           
           <h3 style="margin-top: 24px; color: var(--accent-color);">Message Content:</h3>
@@ -188,7 +190,6 @@ const createContactMailOptions = (from, name, subject, message) => ({
     </html>
   `,
 });
-
 
 const createAutoReplyMailOptions = (to, name) => ({
   from: `"Elite Wear" <${process.env.NODEMAILER_EMAIL}>`,
@@ -419,76 +420,74 @@ const createAutoReplyMailOptions = (to, name) => ({
   `,
 });
 
-
 const contactController = {
-
   getContactPage: (req, res) => {
     res.render("contact", {
       title: "Contact Us | Elite Wear",
-    })
+    });
   },
-
 
   sendContactMessage: async (req, res) => {
     try {
-      const { name, email, subject, message } = req.body
+      const { name, email, subject, message } = req.body;
 
-      const errors = {}
+      const errors = {};
       if (!name || name.trim() === "") {
-        errors.name = "Name is required"
+        errors.name = "Name is required";
       }
       if (!email || email.trim() === "") {
-        errors.email = "Email is required"
+        errors.email = "Email is required";
       } else if (!/^[\w-.+]+@([\w-]+\.)+[\w-]{2,8}$/.test(email)) {
-        errors.email = "Please enter a valid email address"
+        errors.email = "Please enter a valid email address";
       }
       if (!subject || subject.trim() === "") {
-        errors.subject = "Subject is required"
+        errors.subject = "Subject is required";
       }
       if (!message || message.trim() === "") {
-        errors.message = "Message is required"
+        errors.message = "Message is required";
       }
 
-     
       if (Object.keys(errors).length > 0) {
         return res.render("contact", {
           title: "Contact Us | Elite Wear",
           errors,
           formData: { name, email, subject, message },
           error: "Please correct the errors in the form",
-        })
+        });
       }
 
-   
-      const adminMailOptions = createContactMailOptions(email, name, subject, message)
+      const adminMailOptions = createContactMailOptions(
+        email,
+        name,
+        subject,
+        message
+      );
 
+      const customerMailOptions = createAutoReplyMailOptions(email, name);
 
-      const customerMailOptions = createAutoReplyMailOptions(email, name)
+      const adminInfo = await transporter.sendMail(adminMailOptions);
 
-   
-      const adminInfo = await transporter.sendMail(adminMailOptions)
-
-  
-      const customerInfo = await transporter.sendMail(customerMailOptions)
-
+      const customerInfo = await transporter.sendMail(customerMailOptions);
 
       if (adminInfo && customerInfo) {
         return res.render("contact", {
           title: "Contact Us | Elite Wear",
-          success: "Your message has been sent successfully. We'll get back to you soon!",
-        })
+          success:
+            "Your message has been sent successfully. We'll get back to you soon!",
+        });
       } else {
-        throw new Error("Failed to send email")
+        throw new Error("Failed to send email");
       }
     } catch (error) {
-      console.error("Error sending contact email:", error)
+      console.error("Error sending contact email:", error);
       return res.render("contact", {
         title: "Contact Us | Elite Wear",
-        error: "There was an error sending your message. Please try again later.",
+        error:
+          "There was an error sending your message. Please try again later.",
         formData: req.body,
-      })
+      });
     }
   },
-}
+};
 
-module.exports = contactController
+module.exports = contactController;

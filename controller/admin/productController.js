@@ -705,7 +705,6 @@ const editProduct = async (req, res) => {
         const variantPrice = Number.parseFloat(variant.varientPrice);
         const variantQuantity = Number.parseInt(variant.varientquatity);
 
-       
         const variantObj = applyDiscountToVariant(
           {
             size: variant.size,
@@ -725,10 +724,8 @@ const editProduct = async (req, res) => {
 
     product.variants = variants.length > 0 ? variants : product.variants;
 
-  
     if (product.variants && product.variants.length > 0) {
       product.variants = product.variants.map((variant) => {
-       
         return applyDiscountToVariant(
           {
             ...variant,
@@ -740,7 +737,6 @@ const editProduct = async (req, res) => {
       });
     }
 
-  
     const regularPrice = product.variants[0]?.varientPrice || 0;
     product.regularPrice = regularPrice;
     product.salePrice = calculateSalePrice(regularPrice, effectiveDiscount);
@@ -759,8 +755,6 @@ const editProduct = async (req, res) => {
     });
   }
 };
-
-
 
 const ProductManagement = async (req, res) => {
   try {
