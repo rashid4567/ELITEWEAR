@@ -768,7 +768,7 @@ const getUserOrders = async (req, res) => {
       return { ...order.toObject(), progressWidth };
     });
 
-    res.render("orders", {
+    res.render("Orderslist", {
       title: "My Orders",
       user,
       orders: ordersWithProgress,
