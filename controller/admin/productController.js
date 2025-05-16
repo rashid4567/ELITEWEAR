@@ -16,7 +16,7 @@ const getaddproduct = async (req, res) => {
     res.render("addproduct", { categories });
   } catch (error) {
     console.error("Error fetching add product page:", error);
-    res.redirect("/pageerror");
+    res.redirect("/notfound");
   }
 };
 
@@ -411,7 +411,7 @@ const geteditProduct = async (req, res) => {
     const product = await Product.findById(id).populate("categoryId");
 
     if (!product) {
-      return res.redirect("/pageerror");
+      return res.redirect("/notfound");
     }
 
     if (!product.offer && product.offer !== 0) {
@@ -452,7 +452,7 @@ const geteditProduct = async (req, res) => {
     }
   } catch (error) {
     console.error("Error in product editing page:", error);
-    res.redirect("/pageerror");
+    res.redirect("/notfound");
   }
 };
 

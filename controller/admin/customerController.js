@@ -398,6 +398,8 @@ const updateCustomerProfile = async (req, res) => {
   }
 };
 
+
+
 module.exports = {
   customerBlocked,
   customerUnblocked,
@@ -406,4 +408,5 @@ module.exports = {
   getCustomerOrders,
   getCustomerWallet,
   updateCustomerProfile,
+  
 };

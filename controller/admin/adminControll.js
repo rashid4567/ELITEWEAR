@@ -1114,6 +1114,18 @@ exports.getChartDataAPI = async (req, res) => {
   }
 };
 
+exports.adminNotFound = async (req, res) => {   
+  try {     
+    
+    const adminId = req.session && req.session.admin;     
+    const adminData = adminId ? await User.findById(adminId) : null;     
+    
+    return res.status(404).render("error-404", { user: adminData });   
+  } catch (error) {    
+    console.error("error on loading the page -404", error);
+    res.status(500).send("Error loading admin error page");   
+  } 
+};
 exports.exportReport = async (req, res) => {
   try {
     const { format, period, reportType, startDate, endDate, timeRange } =
@@ -1897,7 +1909,7 @@ exports.exportReport = async (req, res) => {
 
       salesSheet.getColumn("revenue").numFmt = "₹#,##0";
 
-      // Payment methods sheet
+     
       const paymentSheet = workbook.addWorksheet("Payment Methods");
       paymentSheet.columns = [
         { header: "Method", key: "method", width: 20 },
@@ -2209,5 +2221,6 @@ exports.exportReport = async (req, res) => {
     }
   }
 };
+
 
 module.exports = exports;

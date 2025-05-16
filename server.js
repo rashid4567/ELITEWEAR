@@ -13,17 +13,25 @@ const passport = require("./config/passport");
 const flash = require("connect-flash");
 const moment = require("moment");
 const addCountsMiddleware = require("./middleware/addCountsMiddleware");
+const adminNotFoundHandler = require("./middleware/adminErrorHandle");
+
 connectDB();
+
+// Set up view engine
+app.set("view engine", "ejs");
+app.set("views", [
+  path.join(__dirname, "views/user"),
+  path.join(__dirname, "views/admin"),
+]);
 
 app.locals.moment = moment;
 
 app.use(nocache());
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(flash());
-app.use(addCountsMiddleware);
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -37,6 +45,7 @@ app.use(
   })
 );
 
+app.use(flash());
 app.use((req, res, next) => {
   res.locals.success_msg = req.flash("success_msg");
   res.locals.error_msg = req.flash("error_msg");
@@ -52,17 +61,15 @@ app.use((req, res, next) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(addCountsMiddleware);
+
 app.use("/admin", adminRouter);
 app.use("/", userRouter);
 
-app.set("view engine", "ejs");
-app.set("views", [
-  path.join(__dirname, "views/user"),
-  path.join(__dirname, "views/admin"),
-]);
+app.use(adminNotFoundHandler);
 
-app.get("/", (req, res) => {
-  res.send("Hello");
+app.use((req, res) => {
+  res.status(404).redirect("/page-not-found");
 });
 
 app.listen(PORT, () => {

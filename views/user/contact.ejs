@@ -12,6 +12,228 @@
     <link rel="stylesheet" href="/userStyle/header.css">
     <link rel="stylesheet" href="/userStyle/footer.css">
     <link rel="stylesheet" href="/userStyle/contact.css">
+    <!-- Three.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls for camera manipulation -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        /* 3D Canvas Styles */
+        #hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+        
+        .contact-hero {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .contact-hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Enhanced Form Styles */
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(95, 39, 205, 0.25);
+            border-color: #6a11cb;
+        }
+        
+        .form-control.is-valid {
+            border-color: #198754;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right calc(0.375em + 0.1875rem) center;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+        }
+        
+        /* 3D Form Effect */
+        .contact-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        
+        .contact-card:hover {
+            transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.07);
+        }
+        
+        .btn-submit {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.7s ease;
+            z-index: -1;
+        }
+        
+        .btn-submit:hover::before {
+            left: 100%;
+        }
+        
+        /* Loading animation */
+        @keyframes pulse-border {
+            0% {
+                box-shadow: 0 0 0 0 rgba(106, 17, 203, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(106, 17, 203, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(106, 17, 203, 0);
+            }
+        }
+        
+        .pulse-animation {
+            animation: pulse-border 2s infinite;
+        }
+        
+        /* 3D Social Icons */
+        .social-link {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transform-style: preserve-3d;
+        }
+        
+        .social-link:hover {
+            transform: translateY(-3px) rotateY(10deg);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 3D Map Container */
+        .map-container {
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .map-container:hover {
+            transform: rotateX(5deg);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* 3D Accordion */
+        .accordion-button {
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        /* Floating animation for contact info icons */
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .contact-info-icon {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Improved dark mode */
+        body.dark-mode {
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .contact-card {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .form-control {
+            background-color: #2d2d2d;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .form-control:focus {
+            background-color: #2d2d2d;
+            border-color: #6a11cb;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .accordion-item {
+            background-color: #1e1e1e;
+            border-color: #444;
+        }
+        
+        body.dark-mode .accordion-button {
+            background-color: #2d2d2d;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .accordion-button:not(.collapsed) {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+        }
+        
+        body.dark-mode .accordion-body {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+        }
+        
+        /* Form label floating effect */
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            padding: 0 5px;
+            background-color: white;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        body.dark-mode .form-label {
+            background-color: #1e1e1e;
+        }
+        
+        .form-control:focus + .form-label,
+        .form-control:not(:placeholder-shown) + .form-label {
+            top: -10px;
+            left: 10px;
+            font-size: 0.8rem;
+            color: #6a11cb;
+        }
+    </style>
 </head>
 
 <body>
@@ -20,8 +242,9 @@
 
     <%- include("../partials/user/header") %>
 
-  
     <section class="contact-hero">
+        <!-- Three.js canvas for 3D background -->
+        <canvas id="hero-canvas"></canvas>
         <div class="contact-hero-content" data-aos="fade-up">
             <h1 class="contact-hero-title">Get In Touch</h1>
             <p class="contact-hero-subtitle">We'd love to hear from you. Reach out to us with any questions, feedback, or inquiries.</p>
@@ -61,16 +284,16 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="name" class="form-label">Your Name <span class="text-danger">*</span></label>
                                             <input 
                                                 type="text" 
                                                 class="form-control <%= locals.errors && errors.name ? 'is-invalid' : '' %>" 
                                                 id="name" 
                                                 name="name" 
-                                                placeholder="Enter your name" 
+                                                placeholder=" " 
                                                 required 
                                                 value="<%= locals.formData ? formData.name : '' %>"
                                             >
+                                            <label for="name" class="form-label">Your Name <span class="text-danger">*</span></label>
                                             <% if (locals.errors && errors.name) { %>
                                             <div class="invalid-feedback">
                                                 <i class="fas fa-exclamation-circle"></i>
@@ -86,16 +309,16 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
                                             <input 
                                                 type="email" 
                                                 class="form-control <%= locals.errors && errors.email ? 'is-invalid' : '' %>" 
                                                 id="email" 
                                                 name="email" 
-                                                placeholder="Enter your email" 
+                                                placeholder=" " 
                                                 required 
                                                 value="<%= locals.formData ? formData.email : '' %>"
                                             >
+                                            <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
                                             <% if (locals.errors && errors.email) { %>
                                             <div class="invalid-feedback">
                                                 <i class="fas fa-exclamation-circle"></i>
@@ -111,16 +334,16 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="subject" class="form-label">Subject <span class="text-danger">*</span></label>
                                     <input 
                                         type="text" 
                                         class="form-control <%= locals.errors && errors.subject ? 'is-invalid' : '' %>" 
                                         id="subject" 
                                         name="subject" 
-                                        placeholder="Enter subject" 
+                                        placeholder=" " 
                                         required 
                                         value="<%= locals.formData ? formData.subject : '' %>"
                                     >
+                                    <label for="subject" class="form-label">Subject <span class="text-danger">*</span></label>
                                     <% if (locals.errors && errors.subject) { %>
                                     <div class="invalid-feedback">
                                         <i class="fas fa-exclamation-circle"></i>
@@ -134,15 +357,15 @@
                                     <% } %>
                                 </div>
                                 <div class="form-group">
-                                    <label for="message" class="form-label">Message <span class="text-danger">*</span></label>
                                     <textarea 
                                         class="form-control <%= locals.errors && errors.message ? 'is-invalid' : '' %>" 
                                         id="message" 
                                         name="message" 
-                                        placeholder="Enter your message" 
+                                        placeholder=" " 
                                         required
                                         rows="5"
                                     ><%= locals.formData ? formData.message : '' %></textarea>
+                                    <label for="message" class="form-label">Message <span class="text-danger">*</span></label>
                                     <% if (locals.errors && errors.message) { %>
                                     <div class="invalid-feedback">
                                         <i class="fas fa-exclamation-circle"></i>
@@ -333,7 +556,7 @@
                 once: true
             });
 
-     
+            // Scroll indicator
             const scrollIndicator = document.querySelector('.scroll-indicator');
             window.addEventListener('scroll', () => {
                 const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
@@ -342,44 +565,85 @@
                 scrollIndicator.style.width = scrolled + '%';
             });
 
+            // Form validation - IMPROVED to only validate on submit
             const contactForm = document.getElementById('contactForm');
             const submitBtn = document.getElementById('submitBtn');
             const submitText = document.getElementById('submitText');
             const loadingSpinner = document.getElementById('loadingSpinner');
-
+            const formInputs = contactForm.querySelectorAll('input, textarea');
+            
+            // Initialize Three.js scene
+            initThreeScene();
+            
+            // Initialize 3D form effects
+            initFormEffects();
             
             if (contactForm) {
+                // Only validate on submit, not on input blur
                 contactForm.addEventListener('submit', function(event) {
-                    if (!contactForm.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                
-                        const invalidInputs = contactForm.querySelectorAll(':invalid');
-                        invalidInputs.forEach(input => {
-                            input.classList.add('is-invalid');
-                        });
-                        
-            
-                        if (invalidInputs.length > 0) {
-                            invalidInputs[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            invalidInputs[0].focus();
-                        }
-                    } else {
-                        // Show loading state
-                        submitText.classList.add('d-none');
-                        loadingSpinner.classList.remove('d-none');
-                        submitBtn.disabled = true;
+                    // Prevent the default form submission
+                    event.preventDefault();
+                    
+                    // Validate the form
+                    if (!validateForm()) {
+                        // If validation fails, stop here
+                        return;
                     }
+                    
+                    // If validation passes, show loading state
+                    submitText.classList.add('d-none');
+                    loadingSpinner.classList.remove('d-none');
+                    submitBtn.disabled = true;
+                    
+                    // Submit the form
+                    this.submit();
                 });
                 
                 // Clear validation state when input changes
-                const formInputs = contactForm.querySelectorAll('input, textarea');
                 formInputs.forEach(input => {
                     input.addEventListener('input', function() {
                         // Remove validation classes when user starts typing
                         this.classList.remove('is-invalid');
                     });
                 });
+            }
+            
+            // Form validation function
+            function validateForm() {
+                let isValid = true;
+                
+                // Check each required field
+                formInputs.forEach(input => {
+                    if (input.hasAttribute('required')) {
+                        if (input.value.trim() === '') {
+                            input.classList.add('is-invalid');
+                            isValid = false;
+                        } else {
+                            input.classList.remove('is-invalid');
+                            input.classList.add('is-valid');
+                            
+                            // Additional validation for email
+                            if (input.type === 'email') {
+                                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                if (!emailRegex.test(input.value)) {
+                                    input.classList.add('is-invalid');
+                                    isValid = false;
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // If validation fails, focus on the first invalid input
+                if (!isValid) {
+                    const invalidInputs = contactForm.querySelectorAll('.is-invalid');
+                    if (invalidInputs.length > 0) {
+                        invalidInputs[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        invalidInputs[0].focus();
+                    }
+                }
+                
+                return isValid;
             }
 
             // Auto-hide success and error messages after 5 seconds
@@ -422,7 +686,6 @@
                 delay: 5000
             });
             
-
             <% if (locals.success || locals.error) { %>
                 const toastBody = document.getElementById('toastBody');
                 const toastElement = document.getElementById('contactToast');
@@ -440,13 +703,11 @@
                     toastIcon.className = 'toast-icon fas fa-exclamation-circle';
                 <% } %>
                 
-            
                 setTimeout(() => {
                     contactToast.show();
                 }, 1000);
             <% } %>
 
- 
             <% if (locals.success) { %>
                 if (contactForm) {
                     contactForm.reset();
@@ -496,6 +757,214 @@
                     }
                 }
             });
+            
+            // Initialize Three.js scene for hero section
+            function initThreeScene() {
+                // Variables
+                let scene, camera, renderer;
+                let particles = [];
+                const particleCount = 100;
+                const colors = [0x6a11cb, 0x2575fc, 0xff6b6b];
+                
+                // Get canvas
+                const canvas = document.getElementById('hero-canvas');
+                if (!canvas) return;
+                
+                // Create scene
+                scene = new THREE.Scene();
+                
+                // Create camera
+                const heroSection = document.querySelector('.contact-hero');
+                const width = heroSection.offsetWidth;
+                const height = heroSection.offsetHeight;
+                
+                camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+                camera.position.z = 200;
+                
+                // Create renderer
+                renderer = new THREE.WebGLRenderer({ 
+                    canvas: canvas,
+                    antialias: true,
+                    alpha: true 
+                });
+                renderer.setSize(width, height);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                
+                // Add ambient light
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+                scene.add(ambientLight);
+                
+                // Create particles
+                for (let i = 0; i < particleCount; i++) {
+                    createParticle();
+                }
+                
+                // Add event listener for mouse movement
+                document.addEventListener('mousemove', onMouseMove);
+                
+                // Handle window resize
+                window.addEventListener('resize', onWindowResize);
+                
+                // Start animation loop
+                animate();
+                
+                function createParticle() {
+                    // Create geometry
+                    const geometry = new THREE.SphereGeometry(Math.random() * 2 + 0.5, 12, 12);
+                    
+                    // Create material
+                    const material = new THREE.MeshPhongMaterial({
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        transparent: true,
+                        opacity: Math.random() * 0.5 + 0.3,
+                        shininess: 100
+                    });
+                    
+                    // Create mesh
+                    const particle = new THREE.Mesh(geometry, material);
+                    
+                    // Set random position
+                    particle.position.x = Math.random() * width - width / 2;
+                    particle.position.y = Math.random() * height - height / 2;
+                    particle.position.z = Math.random() * 100 - 50;
+                    
+                    // Set random velocity
+                    particle.velocity = {
+                        x: (Math.random() - 0.5) * 0.2,
+                        y: (Math.random() - 0.5) * 0.2,
+                        z: (Math.random() - 0.5) * 0.2
+                    };
+                    
+                    // Add to scene and particles array
+                    scene.add(particle);
+                    particles.push(particle);
+                }
+                
+                function onMouseMove(event) {
+                    // Calculate mouse position in normalized device coordinates
+                    const heroRect = heroSection.getBoundingClientRect();
+                    const mouseX = ((event.clientX - heroRect.left) / width) * 2 - 1;
+                    const mouseY = -((event.clientY - heroRect.top) / height) * 2 + 1;
+                    
+                    // Move particles slightly based on mouse position
+                    particles.forEach(particle => {
+                        particle.velocity.x += mouseX * 0.001;
+                        particle.velocity.y += mouseY * 0.001;
+                    });
+                }
+                
+                function onWindowResize() {
+                    // Update sizes
+                    const width = heroSection.offsetWidth;
+                    const height = heroSection.offsetHeight;
+                    
+                    // Update camera
+                    camera.aspect = width / height;
+                    camera.updateProjectionMatrix();
+                    
+                    // Update renderer
+                    renderer.setSize(width, height);
+                }
+                
+                function animate() {
+                    requestAnimationFrame(animate);
+                    
+                    // Update particles
+                    particles.forEach(particle => {
+                        // Update position
+                        particle.position.x += particle.velocity.x;
+                        particle.position.y += particle.velocity.y;
+                        particle.position.z += particle.velocity.z;
+                        
+                        // Rotate particle
+                        particle.rotation.x += 0.01;
+                        particle.rotation.y += 0.01;
+                        
+                        // Check boundaries and reset if needed
+                        if (particle.position.x < -width / 2 || particle.position.x > width / 2) {
+                            particle.velocity.x = -particle.velocity.x;
+                        }
+                        
+                        if (particle.position.y < -height / 2 || particle.position.y > height / 2) {
+                            particle.velocity.y = -particle.velocity.y;
+                        }
+                        
+                        if (particle.position.z < -50 || particle.position.z > 50) {
+                            particle.velocity.z = -particle.velocity.z;
+                        }
+                    });
+                    
+                    // Render scene
+                    renderer.render(scene, camera);
+                }
+            }
+            
+            // Initialize 3D form effects
+            function initFormEffects() {
+                const contactCards = document.querySelectorAll('.contact-card');
+                
+                contactCards.forEach(card => {
+                    card.addEventListener('mousemove', function(e) {
+                        const rect = this.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        
+                        const rotateX = (y - centerY) / 30;
+                        const rotateY = (centerX - x) / 30;
+                        
+                        this.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
+                    });
+                    
+                    card.addEventListener('mouseleave', function() {
+                        this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
+                        this.style.transition = 'transform 0.5s ease';
+                    });
+                });
+                
+                // Add 3D effect to social links
+                const socialLinks = document.querySelectorAll('.social-link');
+                socialLinks.forEach(link => {
+                    link.addEventListener('mousemove', function(e) {
+                        const rect = this.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        
+                        const centerX = rect.width / 2;
+                        const centerY = rect.height / 2;
+                        
+                        const rotateX = (y - centerY) / 3;
+                        const rotateY = (centerX - x) / 3;
+                        
+                        this.style.transform = `perspective(300px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(5px)`;
+                    });
+                    
+                    link.addEventListener('mouseleave', function() {
+                        this.style.transform = 'perspective(300px) rotateX(0) rotateY(0) translateZ(0)';
+                        this.style.transition = 'transform 0.3s ease';
+                    });
+                });
+                
+                // Add 3D effect to submit button
+                const submitButton = document.querySelector('.btn-submit');
+                if (submitButton) {
+                    submitButton.addEventListener('mousemove', function(e) {
+                        const rect = this.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        
+                        // Create gradient effect based on mouse position
+                        const percentage = Math.round((x / rect.width) * 100);
+                        this.style.background = `linear-gradient(90deg, #6a11cb ${percentage - 10}%, #2575fc ${percentage + 10}%)`;
+                    });
+                    
+                    submitButton.addEventListener('mouseleave', function() {
+                        this.style.background = 'linear-gradient(45deg, #6a11cb, #2575fc)';
+                        this.style.transition = 'background 0.3s ease';
+                    });
+                }
+            }
         });
     </script>
 </body>

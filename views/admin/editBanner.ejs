@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Wear Admin - Add New Banner</title>
+    <title>Elite Wear Admin - Edit Banner</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
@@ -97,12 +97,12 @@
     <div class="main-content">
         <div class="page-header">
             <div>
-                <h2>Add New Banner</h2>
+                <h2>Edit Banner</h2>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="/admin/">Dashboard</a></li>
                         <li class="breadcrumb-item"><a href="/admin/banner">Banners</a></li>
-                        <li class="breadcrumb-item active">Add New Banner</li>
+                        <li class="breadcrumb-item active">Edit Banner</li>
                     </ol>
                 </nav>
             </div>
@@ -117,56 +117,84 @@
 
         <div class="form-container">
             <h3 class="form-title">
-                <i class="bi bi-image-fill me-2"></i>
-                Create New Banner
+                <i class="bi bi-pencil-square me-2"></i>
+                Edit Banner
             </h3>
 
-            <form action="/admin/addBanner" method="POST" enctype="multipart/form-data" id="bannerForm">
+            <form action="/admin/editBaner?id=<%= banner._id %>" method="POST" enctype="multipart/form-data" id="bannerForm">
                 <div class="form-group">
                     <label for="title" class="form-label">Banner Title</label>
-                    <input type="text" class="form-control" id="title" name="title" placeholder="Enter banner title" required>
+                    <input type="text" class="form-control" id="title" name="title" value="<%= banner.title %>" required>
                 </div>
 
                 <div class="upload-area" id="dropzone">
-                    <i class="bi bi-cloud-arrow-up upload-icon"></i>
-                    <p class="upload-text">Drag and drop image here, or click to browse</p>
-                    <p class="text-muted small">Recommended size: 1200 x 400 pixels, Max size: 5MB</p>
+                    <% if(banner.image) { %>
+                        <img src="<%= banner.image %>" alt="Current Banner" class="preview-image" style="max-width: 100%; max-height: 200px; margin-bottom: 15px; border-radius: 8px; box-shadow: var(--shadow);">
+                        <p style="margin: 10px 0; font-size: 0.875rem;">Current banner image</p>
+                    <% } else { %>
+                        <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                        <p class="upload-text">Drag and drop image here, or click to browse</p>
+                        <p class="text-muted small">Recommended size: 1200 x 400 pixels, Max size: 5MB</p>
+                    <% } %>
                     <button type="button" class="upload-btn" id="selectImage">
-                        <i class="bi bi-image me-2"></i>Select Image
+                        <i class="bi bi-arrow-repeat me-2"></i>Change Image
                     </button>
-                    <input type="file" id="fileInput" name="posterImage" style="display: none;" accept="image/*" required>
+                    <input type="file" id="fileInput" name="posterImage" style="display: none;" accept="image/*">
                     
                     <!-- Hidden input for the cropped image data -->
                     <input type="hidden" id="croppedImageData" name="croppedImageData">
+                    
+                    <!-- Flag to indicate if the image was changed -->
+                    <input type="hidden" id="imageChanged" name="imageChanged" value="false">
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label for="startDate" class="form-label">Starting Date</label>
-                        <input type="date" class="form-control" id="startDate" name="startingDate" required>
+                        <input type="date" class="form-control" id="startDate" name="startingDate"
+                            value="<%= banner.startingDate.toISOString().split('T')[0] %>" required>
                     </div>
 
                     <div class="form-group">
                         <label for="endDate" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="endDate" name="endingDate" required>
+                        <input type="date" class="form-control" id="endDate" name="endingDate" 
+                            value="<%= banner.endingDate.toISOString().split('T')[0] %>" required>
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="link" class="form-label">Banner Link (Optional)</label>
-                    <input type="url" class="form-control" id="link" name="link" placeholder="https://example.com/page">
+                    <input type="url" class="form-control" id="link" name="link" 
+                        value="<%= banner.link !== '#' ? banner.link : '' %>" placeholder="https://example.com/page">
                     <small class="text-muted">Where users will be directed when they click on the banner</small>
                 </div>
 
-                <div class="form-group" style="display: none;">
-                    <label for="status" class="form-label">Status</label>
-                    <input type="text" class="form-control" id="status" name="status" value="Upcoming">
-                    <small class="text-muted">Status will be automatically set based on dates</small>
+                <div class="form-group">
+                    <label for="status" class="form-label">Current Status</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <% if(banner.status.toLowerCase().includes('upcoming')) { %>
+                                <i class="bi bi-clock text-info"></i>
+                            <% } else if(banner.status.toLowerCase().includes('expired')) { %>
+                                <i class="bi bi-x-circle text-danger"></i>
+                            <% } else { %>
+                                <i class="bi bi-check-circle text-success"></i>
+                            <% } %>
+                        </span>
+                        <input type="text" class="form-control" id="status" value="<%= banner.status %>" readonly>
+                        <input type="hidden" name="status" value="<%= banner.status %>">
+                    </div>
+                    <small class="text-muted">Status will be automatically updated based on dates</small>
                 </div>
 
-                <button type="submit" class="submit-btn" id="submitBtn" disabled>
-                    <i class="bi bi-plus-circle me-2"></i>Create Banner
-                </button>
+                <div class="d-flex gap-3 mt-4">
+                    <a href="/admin/banner" class="btn btn-outline-secondary flex-grow-1">
+                        <i class="bi bi-arrow-left me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="submit-btn flex-grow-1">
+                        <i class="bi bi-save me-2"></i>Save Changes
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -228,19 +256,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script>
-        // Set default dates
-        document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            
-            const thirtyDaysLater = new Date(today);
-            thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
-            
-            document.getElementById('startDate').valueAsDate = tomorrow;
-            document.getElementById('endDate').valueAsDate = thirtyDaysLater;
-        });
-
         // Image upload and cropping
         const dropzone = document.getElementById('dropzone');
         const fileInput = document.getElementById('fileInput');
@@ -248,8 +263,8 @@
         const cropperModal = new bootstrap.Modal(document.getElementById('cropperModal'));
         const cropperImage = document.getElementById('cropperImage');
         const cropBtn = document.getElementById('cropBtn');
-        const submitBtn = document.getElementById('submitBtn');
         const croppedImageData = document.getElementById('croppedImageData');
+        const imageChanged = document.getElementById('imageChanged');
         
         let cropper;
 
@@ -419,14 +434,14 @@
                     
                     croppedImageData.value = dataUrl;
                     
+                    // Set the flag to indicate the image was changed
+                    imageChanged.value = 'true';
+                    
                     // Update the dropzone with the cropped image
                     updateDropzoneWithCroppedImage(dataUrl);
                     
                     // Close the modal
                     cropperModal.hide();
-                    
-                    // Enable the submit button
-                    submitBtn.disabled = false;
                 };
                 reader.readAsDataURL(blob);
             }, 'image/jpeg', 0.9); // JPEG format with 90% quality
@@ -461,53 +476,51 @@
             
             // Add success message
             const successText = document.createElement('p');
-            successText.innerHTML = '<i class="bi bi-check-circle-fill text-success me-2"></i>Image cropped successfully';
+            successText.innerHTML = '<i class="bi bi-check-circle-fill text-success me-2"></i>Image updated successfully';
             successText.style.margin = '10px 0';
             successText.style.fontSize = '0.875rem';
             
             // Insert before the button
             dropzone.insertBefore(img, selectImageBtn);
             dropzone.insertBefore(successText, selectImageBtn);
-            
-            // Change button text
-            selectImageBtn.innerHTML = '<i class="bi bi-arrow-repeat me-2"></i>Change Image';
         }
 
-        // Form submission with fetch API
+        // Form submission
         document.getElementById('bannerForm').addEventListener('submit', function(e) {
             e.preventDefault(); // Prevent default form submission
             
-            if (!croppedImageData.value) {
-                alert('Please select and crop an image first');
-                return;
-            }
-            
             // Show loading state
-            const submitBtn = document.getElementById('submitBtn');
+            const submitBtn = document.querySelector('.submit-btn');
             const originalBtnText = submitBtn.innerHTML;
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing...';
             
-            // Get form data as a plain object
+            // Get form data
             const formData = {
                 title: document.getElementById('title').value,
                 startingDate: document.getElementById('startDate').value,
                 endingDate: document.getElementById('endDate').value,
                 link: document.getElementById('link').value,
+                imageChanged: document.getElementById('imageChanged').value,
                 croppedImageData: document.getElementById('croppedImageData').value
             };
             
-            // Log form data for debugging (without the actual image data)
+            // Log form data for debugging
             console.log('Form submission:');
             console.log('- Title:', formData.title);
             console.log('- Start date:', formData.startingDate);
             console.log('- End date:', formData.endingDate);
-            console.log('- Link:', formData.link);
+            console.log('- Image changed:', formData.imageChanged);
             console.log('- Image data present:', formData.croppedImageData ? 'Yes' : 'No');
-            console.log('- Image data length:', formData.croppedImageData ? formData.croppedImageData.length : 0);
+            if (formData.croppedImageData) {
+                console.log('- Image data length:', formData.croppedImageData.length);
+            }
             
-            // Submit the form with fetch API as JSON
-            fetch('/admin/addBanner', {
+            // Get the form action URL (includes the banner ID)
+            const formAction = this.getAttribute('action');
+            
+            // Submit the form with fetch API
+            fetch(formAction, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -544,7 +557,7 @@
             })
             .catch(error => {
                 console.error('Fetch error:', error);
-                alert('An error occurred while saving the banner: ' + error.message);
+                alert('An error occurred while updating the banner: ' + error.message);
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
             });

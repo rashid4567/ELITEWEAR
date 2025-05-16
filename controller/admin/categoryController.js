@@ -24,7 +24,7 @@ const categoryInfo = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching category data:", error);
-    res.status(500).redirect("/pageerror");
+    res.status(500).redirect("/notfound");
   }
 };
 
@@ -220,19 +220,19 @@ const geteditCategory = async (req, res) => {
     const id = req.query.id;
 
     if (!id) {
-      return res.redirect("/pageerror");
+      return res.redirect("/notfound");
     }
 
     const category = await Category.findById(id);
 
     if (!category) {
-      return res.redirect("/pageerror");
+      return res.redirect("/notfound");
     }
 
     res.render("editCategory", { category });
   } catch (error) {
     console.error("Error fetching category:", error);
-    res.redirect("/pageerror");
+    res.redirect("/notfound");
   }
 };
 
