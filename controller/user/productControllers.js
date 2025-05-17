@@ -39,7 +39,7 @@ const productdetails = async (req, res) => {
       .limit(4)
       .lean();
 
-    res.render("productDetails", {
+    res.render("userproductDetails", {
       user: req.session.user ? await User.findById(req.session.user) : null,
       product: product,
       quantity: quantity,
