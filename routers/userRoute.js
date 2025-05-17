@@ -31,7 +31,8 @@ router.use(addCountsMiddleware)
   });
   router.post("/verify-otp", userControllers.verifyOtp);
   router.post("/resend-otp", userControllers.resendOtp);
-
+router.get("/terms", userControllers.Terms)
+router.get("/privacy", userControllers.Privacy)
   router.get("/login", userControllers.userLogin);
   router.post("/login", userControllers.login);
   router.post("/apply-referral", UserAuth, userControllers.applyReferralCode);

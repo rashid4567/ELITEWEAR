@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create your ELITE WEAR account">
     <title>ELITE WEAR | Create Account</title>
     <link rel="stylesheet" href="/userStyle/signup.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -135,18 +136,40 @@
                                 placeholder="••••••••"
                                 autocomplete="new-password"
                             >
-                            <div class="form-field__icon form-field__icon--toggle" id="passwordToggle" data-visible="false">
+                            <button type="button" class="form-field__icon form-field__icon--toggle" id="passwordToggle" aria-label="Show password">
                                 <svg class="form-field__icon--show" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                     <circle cx="12" cy="12" r="3"></circle>
                                 </svg>
-                                <svg class="form-field__icon--hide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg class="form-field__icon--hide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
                                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
                                     <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                            <div class="form-field__icon form-field__icon--success">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <div class="form-field__icon form-field__icon--error">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
                                 </svg>
                             </div>
                         </div>
                         <div class="form-field__message" id="error4"></div>
+                        <div class="password-strength" id="passwordStrength">
+                            <div class="strength-meter">
+                                <div class="strength-segment" data-strength="1"></div>
+                                <div class="strength-segment" data-strength="2"></div>
+                                <div class="strength-segment" data-strength="3"></div>
+                                <div class="strength-segment" data-strength="4"></div>
+                            </div>
+                            <span class="strength-text">Password strength</span>
+                        </div>
                     </div>
 
                     <div class="form-field">
@@ -160,14 +183,27 @@
                                 placeholder="••••••••"
                                 autocomplete="new-password"
                             >
-                            <div class="form-field__icon form-field__icon--toggle" id="cpasswordToggle" data-visible="false">
+                            <button type="button" class="form-field__icon form-field__icon--toggle" id="cpasswordToggle" aria-label="Show password">
                                 <svg class="form-field__icon--show" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                     <circle cx="12" cy="12" r="3"></circle>
                                 </svg>
-                                <svg class="form-field__icon--hide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg class="form-field__icon--hide" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
                                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
                                     <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                            <div class="form-field__icon form-field__icon--success">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                </svg>
+                            </div>
+                            <div class="form-field__icon form-field__icon--error">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
                                 </svg>
                             </div>
                         </div>
@@ -183,6 +219,15 @@
                         <% if (typeof referralCode !== 'undefined' && referralCode) { %>
                             <p class="signup__referral-applied">Referral code <%= referralCode %> applied!</p>
                         <% } %>
+                    </div>
+
+                    <div class="terms-privacy">
+                        <label class="checkbox-container">
+                            <input type="checkbox" name="agreeTerms" id="agreeTerms" required>
+                            <span class="checkmark" aria-hidden="true"></span>
+                            I agree to the <a href="/terms" class="terms-link">Terms of Service</a> and <a href="/privacy" class="terms-link">Privacy Policy</a>
+                        </label>
+                        <div class="form-field__message" id="error6"></div>
                     </div>
 
                     <button type="submit" class="signup__button">
@@ -230,6 +275,7 @@
             const mobileInput = document.getElementById('mobile');
             const passwordInput = document.getElementById('password');
             const confirmPasswordInput = document.getElementById('cpassword');
+            const agreeTermsCheckbox = document.getElementById('agreeTerms');
             const referralBtn = document.getElementById('referralBtn');
             const passwordToggle = document.getElementById('passwordToggle');
             const cpasswordToggle = document.getElementById('cpasswordToggle');
@@ -241,8 +287,14 @@
                 email: document.getElementById('error2'),
                 mobile: document.getElementById('error3'),
                 password: document.getElementById('error4'),
-                confirm: document.getElementById('error5')
+                confirm: document.getElementById('error5'),
+                terms: document.getElementById('error6')
             };
+
+            // Password strength elements
+            const strengthMeter = document.querySelector('.strength-meter');
+            const strengthSegments = document.querySelectorAll('.strength-segment');
+            const strengthText = document.querySelector('.strength-text');
             
             // Add animation classes after page load
             setTimeout(() => {
@@ -250,7 +302,7 @@
                 document.querySelector('.signup__form-container').classList.add('signup__form-container--animate');
             }, 100);
             
-            // Password visibility toggle - improved functionality
+            // Fixed Password visibility toggle
             passwordToggle.addEventListener('click', function() {
                 togglePasswordVisibility(passwordInput, this);
             });
@@ -263,7 +315,20 @@
             function togglePasswordVisibility(inputElement, toggleElement) {
                 const isPassword = inputElement.type === 'password';
                 inputElement.type = isPassword ? 'text' : 'password';
-                toggleElement.setAttribute('data-visible', isPassword ? 'true' : 'false');
+                
+                // Toggle the visibility of the eye icons
+                const showIcon = toggleElement.querySelector('.form-field__icon--show');
+                const hideIcon = toggleElement.querySelector('.form-field__icon--hide');
+                
+                if (isPassword) {
+                    showIcon.style.display = 'none';
+                    hideIcon.style.display = 'block';
+                    toggleElement.setAttribute('aria-label', 'Hide password');
+                } else {
+                    showIcon.style.display = 'block';
+                    hideIcon.style.display = 'none';
+                    toggleElement.setAttribute('aria-label', 'Show password');
+                }
                 
                 // Add focus back to input field for better UX
                 inputElement.focus();
@@ -272,11 +337,81 @@
                 const length = inputElement.value.length;
                 inputElement.setSelectionRange(length, length);
             }
+
+            // Password strength meter
+            passwordInput.addEventListener('input', function() {
+                updatePasswordStrength(this.value);
+            });
+
+            function updatePasswordStrength(password) {
+                // Reset all segments
+                strengthSegments.forEach(segment => {
+                    segment.classList.remove('active', 'weak', 'fair', 'good', 'strong');
+                });
+                
+                if (!password) {
+                    strengthText.textContent = 'Password strength';
+                    return;
+                }
+
+                // Calculate strength score (0-4)
+                let score = 0;
+                
+                // Length check
+                if (password.length >= 8) score++;
+                if (password.length >= 12) score++;
+                
+                // Complexity checks
+                if (/[A-Z]/.test(password)) score++;
+                if (/[0-9]/.test(password)) score++;
+                if (/[^A-Za-z0-9]/.test(password)) score++;
+                
+                // Cap at 4
+                score = Math.min(score, 4);
+                
+                // Update UI
+                let strengthClass = '';
+                let strengthLabel = '';
+                
+                switch(score) {
+                    case 1:
+                        strengthClass = 'weak';
+                        strengthLabel = 'Weak';
+                        break;
+                    case 2:
+                        strengthClass = 'fair';
+                        strengthLabel = 'Fair';
+                        break;
+                    case 3:
+                        strengthClass = 'good';
+                        strengthLabel = 'Good';
+                        break;
+                    case 4:
+                        strengthClass = 'strong';
+                        strengthLabel = 'Strong';
+                        break;
+                    default:
+                        strengthClass = 'weak';
+                        strengthLabel = 'Too weak';
+                }
+                
+                // Update segments
+                for (let i = 0; i < score; i++) {
+                    strengthSegments[i].classList.add('active', strengthClass);
+                }
+                
+                strengthText.textContent = strengthLabel;
+            }
             
             // Form submission validation
             signupForm.addEventListener('submit', function(e) {
                 if (!validateForm()) {
                     e.preventDefault();
+                    // Scroll to the first error
+                    const firstError = document.querySelector('.form-field__message[style*="display: block"]');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 } else {
                     // Clear stored form data on successful submission
                     sessionStorage.removeItem('signupFormData');
@@ -289,13 +424,33 @@
                 
                 input.addEventListener('input', function() {
                     modified = true;
+                    
+                    // Reset validation state when user starts typing
+                    const wrapper = this.closest('.form-field__input-wrapper');
+                    wrapper.setAttribute('data-state', 'default');
+                    
+                    const errorId = this.id === 'cpassword' ? 'error5' : 
+                                   this.id === 'password' ? 'error4' : 
+                                   this.id === 'mobile' ? 'error3' : 
+                                   this.id === 'email' ? 'error2' : 'error1';
+                    
+                    const errorElement = document.getElementById(errorId);
+                    errorElement.style.display = 'none';
                 });
                 
                 input.addEventListener('blur', function() {
                     if (modified) {
                         validateField(this);
+                        modified = false;
                     }
                 });
+            });
+
+            // Terms checkbox validation
+            agreeTermsCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    errorElements.terms.style.display = 'none';
+                }
             });
             
             // Save form data and redirect to referral page
@@ -327,6 +482,11 @@
                 mobileInput.value = formData.mobile || '';
                 passwordInput.value = formData.password || '';
                 confirmPasswordInput.value = formData.cpassword || '';
+                
+                // Update password strength if password exists
+                if (formData.password) {
+                    updatePasswordStrength(formData.password);
+                }
             }
             
             // Check for referral code in URL parameters
@@ -373,9 +533,10 @@
                 const isMobileValid = validateMobile();
                 const isPasswordValid = validatePassword();
                 const isPasswordMatchValid = validatePasswordMatch();
+                const isTermsValid = validateTerms();
                 
                 return isNameValid && isEmailValid && isMobileValid &&
-                       isPasswordValid && isPasswordMatchValid;
+                       isPasswordValid && isPasswordMatchValid && isTermsValid;
             }
             
             function validateName() {
@@ -457,6 +618,17 @@
                     return false;
                 } else {
                     showSuccess(confirmPasswordInput, errorElements.confirm);
+                    return true;
+                }
+            }
+            
+            function validateTerms() {
+                if (!agreeTermsCheckbox.checked) {
+                    errorElements.terms.textContent = "You must agree to the Terms of Service and Privacy Policy";
+                    errorElements.terms.style.display = 'block';
+                    return false;
+                } else {
+                    errorElements.terms.style.display = 'none';
                     return true;
                 }
             }

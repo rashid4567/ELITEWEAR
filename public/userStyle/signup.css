@@ -5,7 +5,7 @@
 
 /* Base Styles & Variables
    ========================================= */
-   :root {
+:root {
     /* Color Palette */
     --color-primary: #1a1a1a;
     --color-secondary: #c9a96e;
@@ -19,6 +19,12 @@
     --color-error: #d32f2f;
     --color-success: #388e3c;
     --color-google: #4285f4;
+    
+    /* Password strength colors */
+    --color-weak: #d32f2f;
+    --color-fair: #ff9800;
+    --color-good: #8bc34a;
+    --color-strong: #388e3c;
     
     /* Typography */
     --font-family-heading: 'Cormorant', serif;
@@ -182,7 +188,7 @@ button, input, select, textarea {
 
 .signup__form-container--animate {
     opacity: 1;
-    transform: translateY(1);
+    transform: translateY(20%);
 }
 
 /* Header
@@ -263,16 +269,9 @@ button, input, select, textarea {
 }
 
 /* Input States */
-.form-field__input-wrapper[data-state="default"] .form-field__icon {
+.form-field__input-wrapper[data-state="default"] .form-field__icon--success,
+.form-field__input-wrapper[data-state="default"] .form-field__icon--error {
     display: none;
-}
-
-.form-field__input-wrapper[data-state="default"] .form-field__icon--toggle {
-    display: block;
-}
-
-.form-field__input-wrapper[data-state="success"] {
-    border-color: var(--color-success);
 }
 
 .form-field__input-wrapper[data-state="success"] .form-field__input {
@@ -285,13 +284,8 @@ button, input, select, textarea {
     color: var(--color-success);
 }
 
-.form-field__input-wrapper[data-state="success"] .form-field__icon--error,
-.form-field__input-wrapper[data-state="success"] .form-field__icon--toggle {
+.form-field__input-wrapper[data-state="success"] .form-field__icon--error {
     display: none;
-}
-
-.form-field__input-wrapper[data-state="error"] {
-    border-color: var(--color-error);
 }
 
 .form-field__input-wrapper[data-state="error"] .form-field__input {
@@ -304,8 +298,7 @@ button, input, select, textarea {
     color: var(--color-error);
 }
 
-.form-field__input-wrapper[data-state="error"] .form-field__icon--success,
-.form-field__input-wrapper[data-state="error"] .form-field__icon--toggle {
+.form-field__input-wrapper[data-state="error"] .form-field__icon--success {
     display: none;
 }
 
@@ -320,51 +313,33 @@ button, input, select, textarea {
     cursor: pointer;
     color: var(--color-text-tertiary);
     transition: color var(--transition-fast);
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .form-field__icon--toggle {
     color: var(--color-text-tertiary);
+    z-index: 2;
 }
 
 .form-field__icon--toggle:hover {
     color: var(--color-secondary);
-}
-
-.form-field__icon--toggle[data-visible="true"] .form-field__icon--show {
-    display: none;
-}
-
-.form-field__icon--toggle[data-visible="true"] .form-field__icon--hide {
-    display: block;
-}
-
-.form-field__icon--toggle[data-visible="false"] .form-field__icon--show {
-    display: block;
-}
-
-.form-field__icon--toggle[data-visible="false"] .form-field__icon--hide {
-    display: none;
-}
-
-/* Enhanced toggle button styles */
-.form-field__icon--toggle {
-    color: var(--color-text-tertiary);
-    cursor: pointer;
-    transition: transform var(--transition-fast), color var(--transition-fast);
-}
-
-.form-field__icon--toggle:hover {
-    color: var(--color-secondary);
-    transform: scale(1.1);
+    transform: translateY(-50%) scale(1.1);
 }
 
 .form-field__icon--toggle:active {
-    transform: scale(0.95);
+    transform: translateY(-50%) scale(0.95);
 }
 
 /* Improve visibility of the toggle icons */
 .form-field__icon--toggle svg {
     stroke-width: 2px;
+    width: 1.25rem;
+    height: 1.25rem;
 }
 
 .form-field__message {
@@ -372,6 +347,122 @@ button, input, select, textarea {
     color: var(--color-error);
     font-size: 0.8rem;
     margin-top: var(--spacing-sm);
+}
+
+/* Password Strength Meter
+   ========================================= */
+.password-strength {
+    margin-top: 0.75rem;
+}
+
+.strength-meter {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 0.25rem;
+}
+
+.strength-segment {
+    height: 4px;
+    flex: 1;
+    background-color: var(--color-border);
+    border-radius: 2px;
+    transition: all var(--transition-medium);
+}
+
+.strength-segment.active.weak {
+    background-color: var(--color-weak);
+}
+
+.strength-segment.active.fair {
+    background-color: var(--color-fair);
+}
+
+.strength-segment.active.good {
+    background-color: var(--color-good);
+}
+
+.strength-segment.active.strong {
+    background-color: var(--color-strong);
+}
+
+.strength-text {
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+}
+
+/* Terms & Privacy Checkbox
+   ========================================= */
+.terms-privacy {
+    margin-bottom: var(--spacing-lg);
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-left: 30px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    user-select: none;
+}
+
+.checkbox-container input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: var(--color-background-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    transition: all var(--transition-medium);
+}
+
+.checkbox-container:hover input ~ .checkmark {
+    background-color: #f0f0f0;
+}
+
+.checkbox-container input:checked ~ .checkmark {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+}
+
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.checkbox-container .checkmark:after {
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.terms-link {
+    color: var(--color-secondary);
+    text-decoration: underline;
+    transition: color var(--transition-fast);
+}
+
+.terms-link:hover {
+    color: var(--color-secondary-dark);
 }
 
 /* Referral Section

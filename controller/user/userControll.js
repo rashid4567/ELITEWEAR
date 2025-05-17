@@ -1069,6 +1069,26 @@ const getUserReferralHistory = async (req, res) => {
   }
 };
 
+const Terms = async (req, res) => {
+  try {
+    res.status(200).render("terms"); // Render the page with status
+  } catch (error) {
+    console.error('Error in loading the terms page:', error);
+    res.status(500).send("Server error");
+  }
+};
+
+
+const Privacy = async (req, res) => {
+  try {
+    res.status(200).render("privacy");
+  } catch (error) {
+    console.error('Error in loading the privacy page:', error);
+    res.status(500).send("Server error");
+  }
+};
+
+
 module.exports = {
   loadHomepage,
   pageNotfound,
@@ -1089,6 +1109,8 @@ module.exports = {
   applyReferralCode,
   loadReferralPage,
   getUserReferralHistory,
+  Terms,
+  Privacy,
   REFERRER_REWARD,
   NEW_USER_REWARD,
 };
