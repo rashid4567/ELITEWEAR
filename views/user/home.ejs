@@ -15,16 +15,16 @@
     <link rel="stylesheet" href="/userStyle/trending-section-styles.css">
     <link rel="stylesheet" href="/userStyle/customer-reviews.css">
     <link rel="stylesheet" href="/userStyle/home.css">
+
 </head>
 
 <body>
-
-
     <!-- Scroll Indicator -->
     <div class="scroll-indicator"></div>
 
-    <!-- Cursor Glow Effect -->
-    <div class="cursor-glow"></div>
+    <!-- Custom Cursor Elements -->
+    <div class="cursor"></div>
+    <div class="cursor-follower"></div>
 
     <%- include("../partials/user/header") %>
 
@@ -58,7 +58,7 @@
                         </div>
                     </div>
                     <div class="swiper-slide">
-                        <div class="hero-slide" style="background-image: url('/Uploads/LP_Hero Banner_linen_D-2.jpg');">
+                        <div class="hero-slide" style="background-image: url('/Uploads/LP_HD_M_Wedding_May25.jpeg');">
                             <span class="futuristic-badge">Premium Linen</span>
                             <div class="hero-content" data-aos="fade-up" data-aos-delay="200">
                                 <h1 class="hero-title">Breathable Luxury</h1>
@@ -68,7 +68,7 @@
                         </div>
                     </div>
                     <div class="swiper-slide">
-                        <div class="hero-slide" style="background-image: url('/Uploads/timesnap.jpeg');">
+                        <div class="hero-slide" style="background-image: url('/Uploads/LP_MOS_Bkk_Hero\ Banner\ D.jpeg');">
                             <span class="futuristic-badge">Formal Collection</span>
                             <div class="hero-content" data-aos="fade-up" data-aos-delay="200">
                                 <h1 class="hero-title">Elevate Your Presence</h1>
@@ -210,7 +210,7 @@
         <div class="container">
             <div class="row g-4">
                 <div class="col-md-6" data-aos="fade-right">
-                    <div class="banner-card" style="background-image: url('/Uploads/LP_Hero Banner_linen_D-2.jpg');">
+                    <div class="banner-card" style="background-image: url('/Uploads/LP_Green_crest_RB_Hero\ Banner\ D.jpeg');">
                         <div class="banner-content">
                             <h3>Summer Essentials</h3>
                             <p>Breathable fabrics designed for comfort in warm weather</p>
@@ -219,7 +219,7 @@
                     </div>
                 </div>
                 <div class="col-md-6" data-aos="fade-left">
-                    <div class="banner-card" style="background-image: url('/Uploads/Screenshot 2025-04-07 201605.png');">
+                    <div class="banner-card" style="background-image: url('/Uploads/LP_the\ crest_D.jpeg');">
                         <div class="banner-content">
                             <h3>Professional Collection</h3>
                             <p>Elevate your workwear with our premium formal attire</p>
@@ -232,184 +232,204 @@
     </section>
 
     <!-- Trending Products Section -->
-<section class="trending-products-section">
-  <div class="container">
-    <div class="section-header" data-aos="fade-up">
-      <h2 class="section-title">Trending Now</h2>
-      <a href="/allproduct?sort=popular" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
-    </div>
-    
-    <div class="trending-grid">
-      <% if (data && Array.isArray(data) && data.length > 0) { %>
-        <% data.slice(0, 4).forEach((product, index) => { %>
-          <div class="trending-item" data-aos="fade-up" data-aos-delay="<%= index * 100 %>">
-            <div class="product-card">
-              <div class="product-card-inner">
-                <div class="wishlist-icon">
-                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart" data-product-id="<%= product._id %>">
-                    <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                  </svg>
-                </div>
-                <a href="/productdetails/<%= product._id %>" class="product-image-link1">
-                  <div class="product-image-wrapper">
-                    <% 
-                    let imageUrl = '/placeholder.svg?height=300&width=300&query=fashion+product';
-                    if (product.images && product.images.length > 0 && product.images[0].url) {
-                      imageUrl = product.images[0].url;
-                    }
-                    %>
-                    <img 
-                      src="<%= imageUrl %>" 
-                      alt="<%= product.name || 'Product Image' %>" 
-                      class="product-image"
-                      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block !important; opacity: 1 !important; visibility: visible !important; z-index: 1;"
-                      onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';"
-                    >
-                  </div>
-                </a>
-                <div class="product-info">
-                  <div class="product-badge">
-                    <span>Trending</span>
-                  </div>
-                  <h3 class="product-name"><%= product.name || 'Unnamed Product' %></h3>
-                  <div class="product-price-rating">
-                    <p class="product-price">₹<%= (product.variants && product.variants.length > 0 ? product.variants[0].salePrice : 0).toFixed(2) %></p>
-                    <div class="star-rating">
-                      <% const rating = product.ratings && product.ratings.average ? product.ratings.average : 0;
-                        for(let i = 1; i <= 5; i++) {
-                          if(i <= rating) { %>
-                            <i class="fas fa-star"></i>
-                          <% } else if(i - 0.5 <= rating) { %>
-                            <i class="fas fa-star-half-alt"></i>
-                          <% } else { %>
-                            <i class="far fa-star"></i>
-                          <% } 
-                        } 
-                      %>
+    <section class="trending-products-section">
+      <div class="container">
+        <div class="section-header" data-aos="fade-up">
+          <h2 class="section-title">Trending Now</h2>
+          <a href="/allproduct?sort=popular" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        
+        <div class="trending-grid">
+          <% if (data && Array.isArray(data) && data.length > 0) { %>
+            <% data.slice(0, 4).forEach((product, index) => { %>
+              <div class="trending-item" data-aos="fade-up" data-aos-delay="<%= index * 100 %>">
+                <div class="product-card">
+                  <div class="product-card-inner">
+                    <div class="wishlist-icon">
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart" data-product-id="<%= product._id %>">
+                        <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                      </svg>
+                    </div>
+                    <a href="/productdetails/<%= product._id %>" class="product-image-link1">
+                      <div class="product-image-wrapper">
+                        <% 
+                        let imageUrl = '/placeholder.svg?height=300&width=300&query=fashion+product';
+                        if (product.images && product.images.length > 0 && product.images[0].url) {
+                          imageUrl = product.images[0].url;
+                        }
+                        %>
+                        <img 
+                          src="<%= imageUrl %>" 
+                          alt="<%= product.name || 'Product Image' %>" 
+                          class="product-image"
+                          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block !important; opacity: 1 !important; visibility: visible !important; z-index: 1;"
+                          onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';"
+                        >
+                      </div>
+                    </a>
+                    <div class="product-info">
+                      <div class="product-badge">
+                        <span>Trending</span>
+                      </div>
+                      <h3 class="product-name"><%= product.name || 'Unnamed Product' %></h3>
+                      <div class="product-price-rating">
+                        <p class="product-price">₹<%= (product.variants && product.variants.length > 0 ? product.variants[0].salePrice : 0).toFixed(2) %></p>
+                        <div class="star-rating">
+                          <% const rating = product.ratings && product.ratings.average ? product.ratings.average : 0;
+                            for(let i = 1; i <= 5; i++) {
+                              if(i <= rating) { %>
+                                <i class="fas fa-star"></i>
+                              <% } else if(i - 0.5 <= rating) { %>
+                                <i class="fas fa-star-half-alt"></i>
+                              <% } else { %>
+                                <i class="far fa-star"></i>
+                              <% } 
+                            } 
+                          %>
+                        </div>
+                      </div>
+                      <a href="/productdetails/<%= product._id %>" class="btn-view-product">
+                        View Product <i class="fas fa-arrow-right"></i>
+                      </a>
                     </div>
                   </div>
-                  <a href="/productdetails/<%= product._id %>" class="btn-view-product">
-                    View Product <i class="fas fa-arrow-right"></i>
-                  </a>
                 </div>
               </div>
-            </div>
-          </div>
-        <% }) %>
-      <% } else { %>
-        <!-- Fallback products if no data is available -->
-        <% 
-        const fallbackProducts = [
-          { 
-            name: "Signature Twill Paisley Effect Shirt", 
-            price: 3612.00, 
-            rating: 0, 
-            image: "/placeholder.svg?height=300&width=300&query=pink%20dress%20shirt" 
-          },
-          { 
-            name: "Solid Merino Wool Shirt", 
-            price: 18275.00, 
-            rating: 5, 
-            image: "/placeholder.svg?height=300&width=300&query=brown%20dress%20shirt" 
-          },
-          { 
-            name: "Paisley Pulse Twill Shirt", 
-            price: 3807.00, 
-            rating: 0, 
-            image: "/placeholder.svg?height=300&width=300&query=paisley%20pattern%20shirt" 
-          },
-          { 
-            name: "Solid Signature Twill Shirt", 
-            price: 5727.00, 
-            rating: 0, 
-            image: "/placeholder.svg?height=300&width=300&query=cream%20dress%20shirt" 
-          }
-        ];
-        
-        fallbackProducts.forEach((product, index) => { 
-        %>
-          <div class="trending-item" data-aos="fade-up" data-aos-delay="<%= index * 100 %>">
-            <div class="product-card">
-              <div class="product-card-inner">
-                <div class="wishlist-icon">
-                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart">
-                    <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                  </svg>
-                </div>
-                <a href="/allproduct" class="product-image-link1">
-                  <div class="product-image-wrapper">
-                    <img 
-                      src="<%= product.image %>" 
-                      alt="<%= product.name %>" 
-                      class="product-image"
-                      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block !important; opacity: 1 !important; visibility: visible !important; z-index: 1;"
-                      onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';"
-                    >
-                  </div>
-                </a>
-                <div class="product-info">
-                  <div class="product-badge">
-                    <span>Trending</span>
-                  </div>
-                  <h3 class="product-name"><%= product.name %></h3>
-                  <div class="product-price-rating">
-                    <p class="product-price">₹<%= product.price.toFixed(2) %></p>
-                    <div class="star-rating">
-                      <% for(let i = 1; i <= 5; i++) {
-                        if(i <= Math.floor(product.rating)) { %>
-                          <i class="fas fa-star"></i>
-                        <% } else if(i - 0.5 <= product.rating) { %>
-                          <i class="fas fa-star-half-alt"></i>
-                        <% } else { %>
-                          <i class="far fa-star"></i>
-                        <% } 
-                      } %>
+            <% }) %>
+          <% } else { %>
+            <!-- Fallback products if no data is available -->
+            <% 
+            const fallbackProducts = [
+              { 
+                name: "Signature Twill Paisley Effect Shirt", 
+                price: 3612.00, 
+                rating: 0, 
+                image: "/placeholder.svg?height=300&width=300&query=pink%20dress%20shirt" 
+              },
+              { 
+                name: "Solid Merino Wool Shirt", 
+                price: 18275.00, 
+                rating: 5, 
+                image: "/placeholder.svg?height=300&width=300&query=brown%20dress%20shirt" 
+              },
+              { 
+                name: "Paisley Pulse Twill Shirt", 
+                price: 3807.00, 
+                rating: 0, 
+                image: "/placeholder.svg?height=300&width=300&query=paisley%20pattern%20shirt" 
+              },
+              { 
+                name: "Solid Signature Twill Shirt", 
+                price: 5727.00, 
+                rating: 0, 
+                image: "/placeholder.svg?height=300&width=300&query=cream%20dress%20shirt" 
+              }
+            ];
+            
+            fallbackProducts.forEach((product, index) => { 
+            %>
+              <div class="trending-item" data-aos="fade-up" data-aos-delay="<%= index * 100 %>">
+                <div class="product-card">
+                  <div class="product-card-inner">
+                    <div class="wishlist-icon">
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart">
+                        <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                      </svg>
+                    </div>
+                    <a href="/allproduct" class="product-image-link1">
+                      <div class="product-image-wrapper">
+                        <img 
+                          src="<%= product.image %>" 
+                          alt="<%= product.name %>" 
+                          class="product-image"
+                          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; display: block !important; opacity: 1 !important; visibility: visible !important; z-index: 1;"
+                          onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';"
+                        >
+                      </div>
+                    </a>
+                    <div class="product-info">
+                      <div class="product-badge">
+                        <span>Trending</span>
+                      </div>
+                      <h3 class="product-name"><%= product.name %></h3>
+                      <div class="product-price-rating">
+                        <p class="product-price">₹<%= product.price.toFixed(2) %></p>
+                        <div class="star-rating">
+                          <% for(let i = 1; i <= 5; i++) {
+                            if(i <= Math.floor(product.rating)) { %>
+                              <i class="fas fa-star"></i>
+                            <% } else if(i - 0.5 <= product.rating) { %>
+                              <i class="fas fa-star-half-alt"></i>
+                            <% } else { %>
+                              <i class="far fa-star"></i>
+                            <% } 
+                          } %>
+                        </div>
+                      </div>
+                      <a href="/allproduct" class="btn-view-product">
+                        View Product <i class="fas fa-arrow-right"></i>
+                      </a>
                     </div>
                   </div>
-                  <a href="/allproduct" class="btn-view-product">
-                    View Product <i class="fas fa-arrow-right"></i>
-                  </a>
                 </div>
               </div>
-            </div>
-          </div>
-        <% }) %>
-      <% } %>
-    </div>
-  </div>
-</section>
-
-    <!-- Add this script to fix image rendering issues -->
-    <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      // Fix for trending product images
-      const trendingImages = document.querySelectorAll('.trending-item .product-image');
-      
-      trendingImages.forEach((img) => {
-        // Force image display properties
-        img.style.display = "block";
-        img.style.opacity = "1";
-        img.style.visibility = "visible";
-        
-        // Add error handling
-        img.onerror = function() {
-          this.src = '/placeholder.svg?height=300&width=300&query=fashion+product';
-        };
-      });
-    });
-    </script>
+            <% }) %>
+          <% } %>
+        </div>
+      </div>
+    </section>
 
     <!-- Collection Showcase with Video -->
     <section class="collection-showcase">
         <div class="container">
             <div class="collection-card" data-aos="fade-up">
                 <div class="collection-video-container">
-                    <video class="collection-video" autoplay loop muted playsinline>
-                        <source src="/videos/formal-collection.mp4" type="video/mp4">
+                    <!-- Video element with controls -->
+                    <video id="formalCollectionVideo" class="collection-video" loop playsinline>
+                        <source src="/uploads/LOUIS PHILIPPE ROYAL WEDDING 30 Sec (Sub 10mb).mp4" type="video/mp4">
                         <!-- Fallback image if video doesn't load -->
                         <img src="/Uploads/Screenshot 2025-04-07 201605.png" alt="Formal Collection" class="collection-video">
                     </video>
+                    
+                    <!-- Video overlay -->
                     <div class="video-overlay"></div>
+                    
+                    <!-- Loading indicator -->
+                    <div class="video-loading" id="videoLoading">
+                        <div class="video-loading-spinner"></div>
+                        <p>Loading video...</p>
+                    </div>
+                    
+                    <!-- Replay button -->
+                    <button class="video-replay" id="videoReplay">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                    
+                    <!-- Custom video controls -->
+                    <div class="video-controls" id="videoControls">
+                        <button class="video-play-pause" id="videoPlayPause">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        
+                        <div class="video-progress" id="videoProgress">
+                            <div class="video-progress-filled" id="videoProgressFilled"></div>
+                        </div>
+                        
+                        <div class="video-time" id="videoTime">0:00 / 0:00</div>
+                        
+                        <div class="video-volume">
+                            <button class="video-volume-btn" id="videoVolumeBtn">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                            <div class="video-volume-slider" id="videoVolumeSlider">
+                                <div class="video-volume-filled" id="videoVolumeFilled"></div>
+                            </div>
+                        </div>
+                        
+                        <button class="video-fullscreen" id="videoFullscreen">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="collection-content">
                     <h2>REFINED FORMAL COLLECTION</h2>
@@ -458,29 +478,37 @@
                                                 <% } %>
                                             </div>
                                             <div class="review-product">
-                                                <span>on <%= review.product ? review.product.name : 'Product' %></span>
+                                                <% if (review.productId && review.productId.name) { %>
+                                                    <span>on <%= review.productId.name %></span>
+                                                <% } else { %>
+                                                    <span>on Product</span>
+                                                <% } %>
                                             </div>
                                         </div>
                                         
-                                        <h4 class="review-title"><%= review.title %></h4>
+                                        <h4 class="review-title"><%= review.title || 'Review' %></h4>
                                         
                                         <div class="review-content">
-                                            <p class="review-text"><%= review.description %></p>
+                                            <p class="review-text"><%= review.description || review.content || 'No description provided.' %></p>
                                         </div>
                                         
                                         <div class="review-footer">
                                             <div class="reviewer">
                                                 <div class="reviewer-avatar">
-                                                    <% if (review.user && review.user.profileImage) { %>
-                                                        <img src="<%= review.user.profileImage %>" alt="<%= review.user.fullname %>">
+                                                    <% if (review.userId && review.userId.profileImage) { %>
+                                                        <img src="<%= review.userId.profileImage %>" alt="<%= review.userId.fullname %>">
                                                     <% } else { %>
                                                         <div class="avatar-placeholder">
-                                                            <%= review.user && review.user.fullname ? review.user.fullname.charAt(0).toUpperCase() : 'U' %>
+                                                            <%= review.userId && review.userId.fullname ? review.userId.fullname.charAt(0).toUpperCase() : 'U' %>
                                                         </div>
                                                     <% } %>
                                                 </div>
                                                 <div class="reviewer-info">
-                                                    <h5><%= review.user ? review.user.fullname : 'Anonymous' %></h5>
+                                                    <% if (review.userId && review.userId.fullname) { %>
+                                                        <h5><%= review.userId.fullname %></h5>
+                                                    <% } else { %>
+                                                        <h5>Anonymous User</h5>
+                                                    <% } %>
                                                     <p>Verified Buyer</p>
                                                 </div>
                                             </div>
@@ -510,6 +538,9 @@
                                             <i class="fas fa-star"></i>
                                             <i class="fas fa-star"></i>
                                         </div>
+                                        <div class="review-product">
+                                            <span>on Premium Formal Shirt</span>
+                                        </div>
                                     </div>
                                     <h4 class="review-title">Exceptional Quality</h4>
                                     <div class="review-content">
@@ -525,6 +556,9 @@
                                                 <p>Verified Buyer</p>
                                             </div>
                                         </div>
+                                        <div class="review-date">
+                                            May 10, 2025
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -538,6 +572,9 @@
                                             <i class="fas fa-star"></i>
                                             <i class="fas fa-star"></i>
                                             <i class="fas fa-star-half-alt"></i>
+                                        </div>
+                                        <div class="review-product">
+                                            <span>on Casual Linen Collection</span>
                                         </div>
                                     </div>
                                     <h4 class="review-title">Always Up-to-Date</h4>
@@ -554,6 +591,9 @@
                                                 <p>Loyal Customer</p>
                                             </div>
                                         </div>
+                                        <div class="review-date">
+                                            April 25, 2025
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -568,6 +608,9 @@
                                             <i class="fas fa-star"></i>
                                             <i class="fas fa-star"></i>
                                         </div>
+                                        <div class="review-product">
+                                            <span>on Premium Linen Shirt</span>
+                                        </div>
                                     </div>
                                     <h4 class="review-title">Remarkable Attention to Detail</h4>
                                     <div class="review-content">
@@ -578,7 +621,13 @@
                                             <div class="reviewer-avatar">
                                                 <div class="avatar-placeholder">A</div>
                                             </div>
-                                         <h5><%= fullName %></h5>
+                                            <div class="reviewer-info">
+                                                <h5>Aditya Sharma</h5>
+                                                <p>Verified Buyer</p>
+                                            </div>
+                                        </div>
+                                        <div class="review-date">
+                                            May 5, 2025
                                         </div>
                                     </div>
                                 </div>
@@ -627,7 +676,7 @@
                     </form>
                 </div>
                 <div class="newsletter-image" data-aos="fade-left">
-                    <img src="/placeholder.svg?height=300&width=300&query=fashion newsletter" alt="Newsletter">
+                    <img src="/uploads/LP_Hero Banner_halfsleeves_D-2.jpeg" alt="Newsletter">
                 </div>
             </div>
         </div>
@@ -695,11 +744,13 @@
 
             // Preloader
             const preloader = document.querySelector('.preloader');
-            window.addEventListener('load', () => {
-                setTimeout(() => {
-                    preloader.classList.add('fade-out');
-                }, 500);
-            });
+            if (preloader) {
+                window.addEventListener('load', () => {
+                    setTimeout(() => {
+                        preloader.classList.add('fade-out');
+                    }, 500);
+                });
+            }
 
             // Scroll Indicator
             const scrollIndicator = document.querySelector('.scroll-indicator');
@@ -707,27 +758,51 @@
                 const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
                 const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
                 const scrolled = (winScroll / height) * 100;
-                scrollIndicator.style.width = scrolled + '%';
+                if (scrollIndicator) {
+                    scrollIndicator.style.width = scrolled + '%';
+                }
             });
 
-            // Cursor Glow Effect
-            const cursorGlow = document.querySelector('.cursor-glow');
-            document.addEventListener('mousemove', (e) => {
-                cursorGlow.style.left = e.clientX + 'px';
-                cursorGlow.style.top = e.clientY + 'px';
-            });
-
-            document.addEventListener('mousedown', () => {
-                cursorGlow.style.width = '30px';
-                cursorGlow.style.height = '30px';
-                cursorGlow.style.opacity = '0.8';
-            });
-
-            document.addEventListener('mouseup', () => {
-                cursorGlow.style.width = '20px';
-                cursorGlow.style.height = '20px';
-                cursorGlow.style.opacity = '0.5';
-            });
+            // Custom Cursor - matching allproduct.ejs but with different color
+            const cursor = document.querySelector('.cursor');
+            const cursorFollower = document.querySelector('.cursor-follower');
+            
+            if (cursor && cursorFollower) {
+                document.addEventListener('mousemove', (e) => {
+                    cursor.style.left = e.clientX + 'px';
+                    cursor.style.top = e.clientY + 'px';
+                    
+                    // Add a slight delay to the follower for a smooth effect
+                    setTimeout(() => {
+                        cursorFollower.style.left = e.clientX + 'px';
+                        cursorFollower.style.top = e.clientY + 'px';
+                    }, 50);
+                });
+                
+                document.addEventListener('mousedown', () => {
+                    cursor.classList.add('active');
+                    cursorFollower.classList.add('active');
+                });
+                
+                document.addEventListener('mouseup', () => {
+                    cursor.classList.remove('active');
+                    cursorFollower.classList.remove('active');
+                });
+                
+                // Add hover effect for interactive elements
+                const interactiveElements = document.querySelectorAll('a, button, .product-card, .wishlist-icon, .category-card, .swiper-button-next, .swiper-button-prev, .reviews-button-next, .reviews-button-prev, .dark-mode-toggle, .video-controls, .video-progress, .video-volume-slider');
+                interactiveElements.forEach(el => {
+                    el.addEventListener('mouseenter', () => {
+                        cursor.classList.add('active');
+                        cursorFollower.classList.add('active');
+                    });
+                    
+                    el.addEventListener('mouseleave', () => {
+                        cursor.classList.remove('active');
+                        cursorFollower.classList.remove('active');
+                    });
+                });
+            }
 
             // Initialize Swiper carousels
             const heroSwiper = new Swiper('.hero-swiper', {
@@ -916,7 +991,7 @@
                         e.stopPropagation();
                         
                         const productCard = this.closest('.product-card') || this.closest('.product-card-inner').parentElement;
-                        const productLink = productCard.querySelector('.product-image-link').getAttribute('href');
+                        const productLink = productCard.querySelector('.product-image-link, .product-image-link1').getAttribute('href');
                         const productImage = productCard.querySelector('.product-image').getAttribute('src');
                         const productName = productCard.querySelector('.product-name').textContent;
                         const productPrice = productCard.querySelector('.product-price').textContent;
@@ -1040,11 +1115,177 @@
             
             // Video loading event
             const collectionVideo = document.querySelector('.collection-video');
+            const videoLoading = document.getElementById('videoLoading');
+            const videoReplay = document.getElementById('videoReplay');
+            const videoControls = document.getElementById('videoControls');
+            const videoPlayPause = document.getElementById('videoPlayPause');
+            const videoProgress = document.getElementById('videoProgress');
+            const videoProgressFilled = document.getElementById('videoProgressFilled');
+            const videoTime = document.getElementById('videoTime');
+            const videoVolumeBtn = document.getElementById('videoVolumeBtn');
+            const videoVolumeSlider = document.getElementById('videoVolumeSlider');
+            const videoVolumeFilled = document.getElementById('videoVolumeFilled');
+            const videoFullscreen = document.getElementById('videoFullscreen');
+            
             if (collectionVideo) {
-                collectionVideo.addEventListener('loadeddata', function() {
-                    this.classList.add('loaded');
-                    this.closest('.collection-video-container').classList.add('video-loaded');
+                // Initialize video
+                collectionVideo.volume = 0.5; // Set default volume to 50%
+                
+                // Show loading indicator
+                if (videoLoading) {
+                    videoLoading.style.display = 'flex';
+                }
+                
+                // When video metadata is loaded
+                collectionVideo.addEventListener('loadedmetadata', function() {
+                    if (videoLoading) {
+                        videoLoading.style.display = 'none';
+                    }
+                    
+                    // Format time for display
+                    const formatTime = (seconds) => {
+                        const minutes = Math.floor(seconds / 60);
+                        const remainingSeconds = Math.floor(seconds % 60);
+                        return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+                    };
+                    
+                    // Update video time display
+                    videoTime.textContent = `0:00 / ${formatTime(collectionVideo.duration)}`;
+                    
+                    // Start playing the video
+                    collectionVideo.play();
+                    videoPlayPause.innerHTML = '<i class="fas fa-pause"></i>';
                 });
+                
+                // Handle video errors
+                collectionVideo.addEventListener('error', function() {
+                    if (videoLoading) {
+                        videoLoading.style.display = 'none';
+                    }
+                    
+                    // Show error message
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'video-error';
+                    errorMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i><p>Video could not be loaded</p>';
+                    collectionVideo.parentNode.appendChild(errorMessage);
+                });
+                
+                // Play/Pause button
+                videoPlayPause.addEventListener('click', function() {
+                    if (collectionVideo.paused) {
+                        collectionVideo.play();
+                        this.innerHTML = '<i class="fas fa-pause"></i>';
+                    } else {
+                        collectionVideo.pause();
+                        this.innerHTML = '<i class="fas fa-play"></i>';
+                    }
+                });
+                
+                // Update progress bar as video plays
+                collectionVideo.addEventListener('timeupdate', function() {
+                    const percent = (collectionVideo.currentTime / collectionVideo.duration) * 100;
+                    videoProgressFilled.style.width = `${percent}%`;
+                    
+                    // Update time display
+                    const formatTime = (seconds) => {
+                        const minutes = Math.floor(seconds / 60);
+                        const remainingSeconds = Math.floor(seconds % 60);
+                        return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+                    };
+                    
+                    videoTime.textContent = `${formatTime(collectionVideo.currentTime)} / ${formatTime(collectionVideo.duration)}`;
+                    
+                    // Show replay button when video ends
+                    if (collectionVideo.currentTime >= collectionVideo.duration - 0.5) {
+                        videoReplay.classList.add('visible');
+                    } else {
+                        videoReplay.classList.remove('visible');
+                    }
+                });
+                
+                // Click on progress bar to seek
+                videoProgress.addEventListener('click', function(e) {
+                    const progressRect = this.getBoundingClientRect();
+                    const percent = (e.clientX - progressRect.left) / progressRect.width;
+                    collectionVideo.currentTime = percent * collectionVideo.duration;
+                });
+                
+                // Volume button
+                videoVolumeBtn.addEventListener('click', function() {
+                    if (collectionVideo.muted) {
+                        collectionVideo.muted = false;
+                        this.innerHTML = '<i class="fas fa-volume-up"></i>';
+                        videoVolumeFilled.style.width = `${collectionVideo.volume * 100}%`;
+                    } else {
+                        collectionVideo.muted = true;
+                        this.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                        videoVolumeFilled.style.width = '0%';
+                    }
+                });
+                
+                // Volume slider
+                videoVolumeSlider.addEventListener('click', function(e) {
+                    const sliderRect = this.getBoundingClientRect();
+                    const percent = (e.clientX - sliderRect.left) / sliderRect.width;
+                    collectionVideo.volume = percent;
+                    videoVolumeFilled.style.width = `${percent * 100}%`;
+                    
+                    // Update volume icon based on level
+                    if (percent === 0) {
+                        videoVolumeBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                        collectionVideo.muted = true;
+                    } else if (percent < 0.5) {
+                        videoVolumeBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+                        collectionVideo.muted = false;
+                    } else {
+                        videoVolumeBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                        collectionVideo.muted = false;
+                    }
+                });
+                
+                // Fullscreen button
+                videoFullscreen.addEventListener('click', function() {
+                    const videoContainer = collectionVideo.closest('.collection-video-container');
+                    
+                    if (document.fullscreenElement) {
+                        document.exitFullscreen();
+                        this.innerHTML = '<i class="fas fa-expand"></i>';
+                    } else {
+                        videoContainer.requestFullscreen().catch(err => {
+                            console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                        });
+                        this.innerHTML = '<i class="fas fa-compress"></i>';
+                    }
+                });
+                
+                // Replay button
+                videoReplay.addEventListener('click', function() {
+                    collectionVideo.currentTime = 0;
+                    collectionVideo.play();
+                    videoPlayPause.innerHTML = '<i class="fas fa-pause"></i>';
+                    this.classList.remove('visible');
+                });
+                
+                // Handle fullscreen change
+                document.addEventListener('fullscreenchange', function() {
+                    if (document.fullscreenElement) {
+                        videoFullscreen.innerHTML = '<i class="fas fa-compress"></i>';
+                    } else {
+                        videoFullscreen.innerHTML = '<i class="fas fa-expand"></i>';
+                    }
+                });
+                
+                // Pause video when it's not in viewport
+                const videoObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (!entry.isIntersecting && !collectionVideo.paused) {
+                            collectionVideo.pause();
+                            videoPlayPause.innerHTML = '<i class="fas fa-play"></i>';
+                        }
+                    });
+                }, { threshold: 0.2 });
+                
+                videoObserver.observe(collectionVideo);
             }
             
             // Parallax effect for hero section
@@ -1143,224 +1384,222 @@
         });
     </script>
 
-    <!-- Trending Section Specific JavaScript -->
-    <!-- Add this script immediately after the trending products section -->
-<!-- Force Trending Products Visibility -->
-<script>
-  // Execute immediately without waiting for DOMContentLoaded
-  (function() {
-    // Force trending section to be visible
-    const trendingSection = document.querySelector('.trending-products-section');
-    if (trendingSection) {
-      trendingSection.style.display = 'block';
-      trendingSection.style.visibility = 'visible';
-      trendingSection.style.opacity = '1';
-      trendingSection.style.zIndex = '5';
-      trendingSection.style.position = 'relative';
-    }
-    
-    // Force trending grid to be visible
-    const trendingGrid = document.querySelector('.trending-grid');
-    if (trendingGrid) {
-      trendingGrid.style.display = 'grid';
-      trendingGrid.style.visibility = 'visible';
-      trendingGrid.style.opacity = '1';
-      trendingGrid.style.zIndex = '10';
-    }
-    
-    // Force all trending items to be visible with smaller size
-    const trendingItems = document.querySelectorAll('.trending-item');
-    trendingItems.forEach(item => {
-      item.style.display = 'block';
-      item.style.visibility = 'visible';
-      item.style.opacity = '1';
-      item.style.zIndex = '1000';
-      item.style.transform = 'none';
-      
-      // Force product cards to be visible with smaller size
-      const productCard = item.querySelector('.product-card');
-      if (productCard) {
-        productCard.style.display = 'flex';
-        productCard.style.visibility = 'visible';
-        productCard.style.opacity = '1';
-        productCard.style.zIndex = '15';
-        productCard.style.position = 'relative';
-        productCard.style.transform = 'none';
-        productCard.style.height = 'auto'; // Allow height to be determined by content
-      }
-      
-      const productCardInner = item.querySelector('.product-card-inner');
-      if (productCardInner) {
-        productCardInner.style.display = 'flex';
-        productCardInner.style.visibility = 'visible';
-        productCardInner.style.opacity = '1';
-        productCardInner.style.zIndex = '20';
-        productCardInner.style.position = 'relative';
-        productCardInner.style.transform = 'none';
-        productCardInner.style.height = 'auto'; // Allow height to be determined by content
-      }
-      
-      // Force product images to be visible with square aspect ratio
-      const productImageWrapper = item.querySelector('.product-image-wrapper');
-      if (productImageWrapper) {
-        productImageWrapper.style.display = 'block';
-        productImageWrapper.style.visibility = 'visible';
-        productImageWrapper.style.opacity = '1';
-        productImageWrapper.style.position = 'relative';
-        productImageWrapper.style.paddingTop = '100%'; // Square aspect ratio
-      }
-      
-      const productImage = item.querySelector('.product-image');
-      if (productImage) {
-        productImage.style.display = 'block';
-        productImage.style.visibility = 'visible';
-        productImage.style.opacity = '1';
-        productImage.style.position = 'absolute';
-        productImage.style.top = '0';
-        productImage.style.left = '0';
-        productImage.style.width = '100%';
-        productImage.style.height = '100%';
-        productImage.style.objectFit = 'cover';
-        
-        // Force reload image
-        const currentSrc = productImage.getAttribute('src');
-        if (currentSrc) {
-          setTimeout(() => {
-            productImage.setAttribute('src', currentSrc);
-          }, 100);
+    <!-- Force Trending Products Visibility -->
+    <script>
+      // Execute immediately without waiting for DOMContentLoaded
+      (function() {
+        // Force trending section to be visible
+        const trendingSection = document.querySelector('.trending-products-section');
+        if (trendingSection) {
+          trendingSection.style.display = 'block';
+          trendingSection.style.visibility = 'visible';
+          trendingSection.style.opacity = '1';
+          trendingSection.style.zIndex = '5';
+          trendingSection.style.position = 'relative';
         }
-      }
-      
-      // Force product info to be visible with smaller padding
-      const productInfo = item.querySelector('.product-info');
-      if (productInfo) {
-        productInfo.style.display = 'flex';
-        productInfo.style.visibility = 'visible';
-        productInfo.style.opacity = '1';
-        productInfo.style.zIndex = '25';
-        productInfo.style.padding = '1rem'; // Smaller padding
-      }
-      
-      // Make product name smaller
-      const productName = item.querySelector('.product-name');
-      if (productName) {
-        productName.style.fontSize = '0.95rem';
-        productName.style.marginBottom = '0.5rem';
-      }
-      
-      // Make view product button smaller
-      const viewButton = item.querySelector('.btn-view-product');
-      if (viewButton) {
-        viewButton.style.padding = '0.5rem 1rem';
-        viewButton.style.fontSize = '0.9rem';
-      }
-      
-      // Make wishlist icon smaller
-      const wishlistIcon = item.querySelector('.wishlist-icon');
-      if (wishlistIcon) {
-        wishlistIcon.style.width = '32px';
-        wishlistIcon.style.height = '32px';
-        wishlistIcon.style.top = '0.75rem';
-        wishlistIcon.style.right = '0.75rem';
-      }
-    });
-    
-    // Add a fallback for empty trending section with smaller cards
-    setTimeout(() => {
-      const trendingGrid = document.querySelector('.trending-grid');
-      if (trendingGrid && trendingGrid.children.length === 0) {
-        // Create fallback products if none exist
-        const fallbackProducts = [
-          { 
-            name: "Signature Twill Paisley Effect Shirt", 
-            price: 3612.00, 
-            rating: 0, 
-            image: "/placeholder.svg?height=300&width=300&query=pink%20dress%20shirt" 
-          },
-          { 
-            name: "Solid Merino Wool Shirt", 
-            price: 18275.00, 
-            rating: 5, 
-            image: "/placeholder.svg?height=300&width=300&query=brown%20dress%20shirt" 
-          },
-          { 
-            name: "Paisley Pulse Twill Shirt", 
-            price: 3807.00, 
-            rating: 0, 
-            image: "/placeholder.svg?height=300&width=300&query=paisley%20pattern%20shirt" 
-          },
-          { 
-            name: "Solid Signature Twill Shirt", 
-            price: 5727.00, 
-            rating: 0, 
-            image: "/placeholder.svg?height=300&width=300&query=cream%20dress%20shirt" 
-          }
-        ];
         
-        fallbackProducts.forEach(product => {
-          const trendingItem = document.createElement('div');
-          trendingItem.className = 'trending-item';
-          trendingItem.style.display = 'block';
-          trendingItem.style.visibility = 'visible';
-          trendingItem.style.opacity = '1';
-          trendingItem.style.zIndex = '1000';
+        // Force trending grid to be visible
+        const trendingGrid = document.querySelector('.trending-grid');
+        if (trendingGrid) {
+          trendingGrid.style.display = 'grid';
+          trendingGrid.style.visibility = 'visible';
+          trendingGrid.style.opacity = '1';
+          trendingGrid.style.zIndex = '10';
+        }
+        
+        // Force all trending items to be visible with smaller size
+        const trendingItems = document.querySelectorAll('.trending-item');
+        trendingItems.forEach(item => {
+          item.style.display = 'block';
+          item.style.visibility = 'visible';
+          item.style.opacity = '1';
+          item.style.zIndex = '1000';
+          item.style.transform = 'none';
           
-          trendingItem.innerHTML = `
-            <div class="product-card" style="display:flex;visibility:visible;opacity:1;z-index:15;position:relative;height:auto;">
-              <div class="product-card-inner" style="display:flex;visibility:visible;opacity:1;z-index:20;position:relative;height:auto;">
-                <div class="wishlist-icon" style="width:32px;height:32px;top:0.75rem;right:0.75rem;">
-                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart" style="width:20px;height:20px;">
-                    <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                  </svg>
-                </div>
-                <a href="/allproduct" class="product-image-link1">
-                  <div class="product-image-wrapper" style="display:block;visibility:visible;opacity:1;position:relative;padding-top:100%;overflow:hidden;">
-                    <img 
-                      src="${product.image}" 
-                      alt="${product.name}" 
-                      class="product-image"
-                      style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;visibility:visible;opacity:1;"
-                      onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';"
-                    >
-                  </div>
-                </a>
-                <div class="product-info" style="display:flex;visibility:visible;opacity:1;z-index:25;padding:1rem;">
-                  <div class="product-badge">
-                    <span>Trending</span>
-                  </div>
-                  <h3 class="product-name" style="font-size:0.95rem;margin-bottom:0.5rem;">${product.name}</h3>
-                  <div class="product-price-rating" style="margin-bottom:0.75rem;">
-                    <p class="product-price">₹${product.price.toFixed(2)}</p>
-                    <div class="star-rating" style="font-size:0.8rem;gap:0.15rem;">
-                      ${product.rating === 5 ? `
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                      ` : `
-                        <i class="far fa-star"></i>
-                        <i class="far fa-star"></i>
-                        <i class="far fa-star"></i>
-                        <i class="far fa-star"></i>
-                        <i class="far fa-star"></i>
-                      `}
+          // Force product cards to be visible with smaller size
+          const productCard = item.querySelector('.product-card');
+          if (productCard) {
+            productCard.style.display = 'flex';
+            productCard.style.visibility = 'visible';
+            productCard.style.opacity = '1';
+            productCard.style.zIndex = '15';
+            productCard.style.position = 'relative';
+            productCard.style.transform = 'none';
+            productCard.style.height = 'auto'; // Allow height to be determined by content
+          }
+          
+          const productCardInner = item.querySelector('.product-card-inner');
+          if (productCardInner) {
+            productCardInner.style.display = 'flex';
+            productCardInner.style.visibility = 'visible';
+            productCardInner.style.opacity = '1';
+            productCardInner.style.zIndex = '20';
+            productCardInner.style.position = 'relative';
+            productCardInner.style.transform = 'none';
+            productCardInner.style.height = 'auto'; // Allow height to be determined by content
+          }
+          
+          // Force product images to be visible with square aspect ratio
+          const productImageWrapper = item.querySelector('.product-image-wrapper');
+          if (productImageWrapper) {
+            productImageWrapper.style.display = 'block';
+            productImageWrapper.style.visibility = 'visible';
+            productImageWrapper.style.opacity = '1';
+            productImageWrapper.style.position = 'relative';
+            productImageWrapper.style.paddingTop = '100%'; // Square aspect ratio
+          }
+          
+          const productImage = item.querySelector('.product-image');
+          if (productImage) {
+            productImage.style.display = 'block';
+            productImage.style.visibility = 'visible';
+            productImage.style.opacity = '1';
+            productImage.style.position = 'absolute';
+            productImage.style.top = '0';
+            productImage.style.left = '0';
+            productImage.style.width = '100%';
+            productImage.style.height = '100%';
+            productImage.style.objectFit = 'cover';
+            
+            // Force reload image
+            const currentSrc = productImage.getAttribute('src');
+            if (currentSrc) {
+              setTimeout(() => {
+                productImage.setAttribute('src', currentSrc);
+              }, 100);
+            }
+          }
+          
+          // Force product info to be visible with smaller padding
+          const productInfo = item.querySelector('.product-info');
+          if (productInfo) {
+            productInfo.style.display = 'flex';
+            productInfo.style.visibility = 'visible';
+            productInfo.style.opacity = '1';
+            productInfo.style.zIndex = '25';
+            productInfo.style.padding = '1rem'; // Smaller padding
+          }
+          
+          // Make product name smaller
+          const productName = item.querySelector('.product-name');
+          if (productName) {
+            productName.style.fontSize = '0.95rem';
+            productName.style.marginBottom = '0.5rem';
+          }
+          
+          // Make view product button smaller
+          const viewButton = item.querySelector('.btn-view-product');
+          if (viewButton) {
+            viewButton.style.padding = '0.5rem 1rem';
+            viewButton.style.fontSize = '0.9rem';
+          }
+          
+          // Make wishlist icon smaller
+          const wishlistIcon = item.querySelector('.wishlist-icon');
+          if (wishlistIcon) {
+            wishlistIcon.style.width = '32px';
+            wishlistIcon.style.height = '32px';
+            wishlistIcon.style.top = '0.75rem';
+            wishlistIcon.style.right = '0.75rem';
+          }
+        });
+        
+        // Add a fallback for empty trending section with smaller cards
+        setTimeout(() => {
+          const trendingGrid = document.querySelector('.trending-grid');
+          if (trendingGrid && trendingGrid.children.length === 0) {
+            // Create fallback products if none exist
+            const fallbackProducts = [
+              { 
+                name: "Signature Twill Paisley Effect Shirt", 
+                price: 3612.00, 
+                rating: 0, 
+                image: "/placeholder.svg?height=300&width=300&query=pink%20dress%20shirt" 
+              },
+              { 
+                name: "Solid Merino Wool Shirt", 
+                price: 18275.00, 
+                rating: 5, 
+                image: "/placeholder.svg?height=300&width=300&query=brown%20dress%20shirt" 
+              },
+              { 
+                name: "Paisley Pulse Twill Shirt", 
+                price: 3807.00, 
+                rating: 0, 
+                image: "/placeholder.svg?height=300&width=300&query=paisley%20pattern%20shirt" 
+              },
+              { 
+                name: "Solid Signature Twill Shirt", 
+                price: 5727.00, 
+                rating: 0, 
+                image: "/placeholder.svg?height=300&width=300&query=cream%20dress%20shirt" 
+              }
+            ];
+            
+            fallbackProducts.forEach(product => {
+              const trendingItem = document.createElement('div');
+              trendingItem.className = 'trending-item';
+              trendingItem.style.display = 'block';
+              trendingItem.style.visibility = 'visible';
+              trendingItem.style.opacity = '1';
+              trendingItem.style.zIndex = '1000';
+              
+              trendingItem.innerHTML = `
+                <div class="product-card" style="display:flex;visibility:visible;opacity:1;z-index:15;position:relative;height:auto;">
+                  <div class="product-card-inner" style="display:flex;visibility:visible;opacity:1;z-index:20;position:relative;height:auto;">
+                    <div class="wishlist-icon" style="width:32px;height:32px;top:0.75rem;right:0.75rem;">
+                      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="wishlist-heart" style="width:20px;height:20px;">
+                        <path class="heart" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                      </svg>
+                    </div>
+                    <a href="/allproduct" class="product-image-link1">
+                      <div class="product-image-wrapper" style="display:block;visibility:visible;opacity:1;position:relative;padding-top:100%;overflow:hidden;">
+                        <img 
+                          src="${product.image}" 
+                          alt="${product.name}" 
+                          class="product-image"
+                          style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;visibility:visible;opacity:1;"
+                          onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';"
+                        >
+                      </div>
+                    </a>
+                    <div class="product-info" style="display:flex;visibility:visible;opacity:1;z-index:25;padding:1rem;">
+                      <div class="product-badge">
+                        <span>Trending</span>
+                      </div>
+                      <h3 class="product-name" style="font-size:0.95rem;margin-bottom:0.5rem;">${product.name}</h3>
+                      <div class="product-price-rating" style="margin-bottom:0.75rem;">
+                        <p class="product-price">₹${product.price.toFixed(2)}</p>
+                        <div class="star-rating" style="font-size:0.8rem;gap:0.15rem;">
+                          ${product.rating === 5 ? `
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                          ` : `
+                            <i class="far fa-star"></i>
+                            <i class="far fa-star"></i>
+                            <i class="far fa-star"></i>
+                            <i class="far fa-star"></i>
+                            <i class="far fa-star"></i>
+                          `}
+                        </div>
+                      </div>
+                      <a href="/allproduct" class="btn-view-product" style="padding:0.5rem 1rem;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+                        View Product <i class="fas fa-arrow-right"></i>
+                      </a>
                     </div>
                   </div>
-                  <a href="/allproduct" class="btn-view-product" style="padding:0.5rem 1rem;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;">
-                    View Product <i class="fas fa-arrow-right"></i>
-                  </a>
                 </div>
-              </div>
-            </div>
-          `;
-          
-          trendingGrid.appendChild(trendingItem);
-        });
-      }
-    }, 500);
-  })();
-</script>
+              `;
+              
+              trendingGrid.appendChild(trendingItem);
+            });
+          }
+        }, 500);
+      })();
+    </script>
 
 </body>
 

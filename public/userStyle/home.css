@@ -2284,3 +2284,262 @@ img.product-image[src*="placeholder"] {
   font-weight: 500;
   transition: all var(--transition-fast);
 }
+
+        /* Custom cursor styles - matching allproduct.ejs but with different color */
+        body, 
+        a, button, .product-card, .quick-view, 
+        .wishlist-icon, .newsletter-form button,
+        .btn-shop-now, .btn-banner, .btn-collection,
+        .btn-view-product, .btn-view-all-reviews,
+        .reviews-button-prev, .reviews-button-next,
+        .dark-mode-toggle, .swiper-button-next, 
+        .swiper-button-prev, .category-card {
+            cursor: none !important;
+        }
+        
+        /* Cursor and follower styles with updated colors */
+        .cursor {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #8b5cf6; /* Changed from white to purple */
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+        
+        .cursor-follower {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            background-color: rgba(139, 92, 246, 0.2); /* Changed from white to purple */
+            border: 1px solid rgba(139, 92, 246, 0.5); /* Changed from white to purple */
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9998;
+            transition: width 0.3s, height 0.3s, background-color 0.3s, border 0.3s, transform 0.1s;
+        }
+        
+        .cursor.active, .cursor-follower.active {
+            width: 15px;
+            height: 15px;
+            background-color: #ec4899; /* Changed to pink for active state */
+        }
+        
+        .cursor-follower.active {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(236, 72, 153, 0.2); /* Changed to pink for active state */
+            border-color: rgba(236, 72, 153, 0.5); /* Changed to pink for active state */
+            transform: translate(-50%, -50%) scale(0.8);
+        }
+        
+        /* Hide default cursor glow since we're using the new cursor system */
+        .cursor-glow {
+            display: none;
+        }
+
+        /* Enhanced video container styles */
+        .collection-video-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            height: 500px;
+            background-color: #0f172a; /* Dark background while video loads */
+        }
+        
+        .collection-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.5s ease;
+        }
+        
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.4));
+            z-index: 1;
+            pointer-events: none; /* Allow clicks to pass through to the video */
+        }
+        
+        .collection-content {
+            position: relative;
+            z-index: 2;
+            padding: 2rem;
+        }
+        
+        /* Custom video controls */
+        .video-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .collection-video-container:hover .video-controls {
+            opacity: 1;
+        }
+        
+        .video-play-pause {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: rgba(139, 92, 246, 0.7);
+            transition: background-color 0.3s ease;
+        }
+        
+        .video-play-pause:hover {
+            background-color: rgba(139, 92, 246, 1);
+        }
+        
+        .video-progress {
+            flex-grow: 1;
+            height: 5px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .video-progress-filled {
+            height: 100%;
+            background-color: #8b5cf6;
+            border-radius: 5px;
+            width: 0%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .video-time {
+            color: white;
+            font-size: 0.8rem;
+            min-width: 80px;
+            text-align: center;
+        }
+        
+        .video-volume {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .video-volume-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        
+        .video-volume-slider {
+            width: 60px;
+            height: 5px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .video-volume-filled {
+            height: 100%;
+            background-color: white;
+            border-radius: 5px;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .video-fullscreen {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        
+        /* Video loading animation */
+        .video-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .video-loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #8b5cf6;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Video replay button */
+        .video-replay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            background-color: rgba(139, 92, 246, 0.7);
+            color: white;
+            border: none;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .video-replay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .video-replay:hover {
+            background-color: rgba(139, 92, 246, 1);
+            transform: translate(-50%, -50%) scale(1.1);
+        }

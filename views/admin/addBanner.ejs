@@ -7,89 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/adminStyle/banner-management.css">
-    <style>
-        /* Cropper Modal Styles */
-        .cropper-container {
-            width: 100%;
-            height: 400px;
-            background-color: #f8f9fa;
-            overflow: hidden;
-        }
-        
-        #cropperImage {
-            display: block;
-            max-width: 100%;
-        }
-        
-        .cropper-view-box {
-            outline: 1px solid #fff;
-            outline-color: rgba(255, 255, 255, 0.75);
-        }
-        
-        .cropper-modal {
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        
-        .aspect-ratio-buttons {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .aspect-ratio-buttons button {
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            background-color: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            color: #475569;
-            transition: all 0.2s;
-        }
-        
-        .aspect-ratio-buttons button:hover {
-            background-color: #e2e8f0;
-        }
-        
-        .aspect-ratio-buttons button.active {
-            background-color: #4f46e5;
-            color: white;
-            border-color: #4f46e5;
-        }
-        
-        .crop-controls {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
-        }
-        
-        .crop-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .crop-actions button {
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .crop-preview {
-            margin-top: 15px;
-            text-align: center;
-        }
-        
-        .crop-preview img {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-    </style>
+    <link rel="stylesheet" href="/adminStyle/addBanner.css">
 </head>
 <body>
     <%- include("../partials/admin/header") %>
@@ -109,11 +27,35 @@
             <div class="user-profile">
                 <img src="/api/placeholder/40/40" alt="User Avatar">
                 <div>
-                    <div>Aimad</div>
-                    <small class="text-muted">Admin</small>
+                    <div>Admin</div>
+                    <small class="text-muted">Administrator</small>
                 </div>
             </div>
         </div>
+
+        <% if (locals.error) { %>
+        <div class="alert alert-danger" role="alert">
+            <div class="alert-icon">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <div class="alert-content">
+                <h5 class="alert-heading">Error</h5>
+                <p class="alert-message"><%= error %></p>
+            </div>
+        </div>
+        <% } %>
+
+        <% if (locals.success) { %>
+        <div class="alert alert-success" role="alert">
+            <div class="alert-icon">
+                <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="alert-content">
+                <h5 class="alert-heading">Success</h5>
+                <p class="alert-message"><%= success %></p>
+            </div>
+        </div>
+        <% } %>
 
         <div class="form-container">
             <h3 class="form-title">
@@ -121,10 +63,30 @@
                 Create New Banner
             </h3>
 
-            <form action="/admin/addBanner" method="POST" enctype="multipart/form-data" id="bannerForm">
+            <form action="/admin/addBanner" method="POST" enctype="multipart/form-data" id="bannerForm" novalidate>
                 <div class="form-group">
-                    <label for="title" class="form-label">Banner Title</label>
-                    <input type="text" class="form-control" id="title" name="title" placeholder="Enter banner title" required>
+                    <label for="title" class="form-label">
+                        Banner Title
+                        <span class="text-danger">*</span>
+                        <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="This title will be displayed on the banner">
+                            <i class="bi bi-question"></i>
+                        </span>
+                    </label>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="title" 
+                        name="title" 
+                        placeholder="Enter banner title" 
+                        required
+                        minlength="3"
+                        maxlength="100"
+                        value="<%= locals.formData ? formData.title : '' %>"
+                    >
+                    <div class="invalid-feedback">
+                        <i class="bi bi-exclamation-circle me-1"></i>
+                        Please enter a valid title (3-100 characters)
+                    </div>
                 </div>
 
                 <div class="upload-area" id="dropzone">
@@ -138,35 +100,116 @@
                     
                     <!-- Hidden input for the cropped image data -->
                     <input type="hidden" id="croppedImageData" name="croppedImageData">
+                    <div class="invalid-feedback">
+                        <i class="bi bi-exclamation-circle me-1"></i>
+                        Please select and crop an image for the banner
+                    </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="startDate" class="form-label">Starting Date</label>
-                        <input type="date" class="form-control" id="startDate" name="startingDate" required>
+                        <label for="startDate" class="form-label">
+                            Starting Date
+                            <span class="text-danger">*</span>
+                            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Banner will be active from this date">
+                                <i class="bi bi-question"></i>
+                            </span>
+                        </label>
+                        <input 
+                            type="date" 
+                            class="form-control" 
+                            id="startDate" 
+                            name="startingDate" 
+                            required
+                            value="<%= locals.formData ? formData.startingDate : '' %>"
+                        >
+                        <div class="invalid-feedback">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                            Please select a valid starting date
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="endDate" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="endDate" name="endingDate" required>
+                        <label for="endDate" class="form-label">
+                            End Date
+                            <span class="text-danger">*</span>
+                            <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Banner will be inactive after this date">
+                                <i class="bi bi-question"></i>
+                            </span>
+                        </label>
+                        <input 
+                            type="date" 
+                            class="form-control" 
+                            id="endDate" 
+                            name="endingDate" 
+                            required
+                            value="<%= locals.formData ? formData.endingDate : '' %>"
+                        >
+                        <div class="invalid-feedback">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                            Please select a valid end date
+                        </div>
                     </div>
+                </div>
+                
+                <!-- Date validation error message -->
+                <div class="date-validation-error" id="dateValidationError">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    End date must be after start date
                 </div>
 
                 <div class="form-group">
-                    <label for="link" class="form-label">Banner Link (Optional)</label>
-                    <input type="url" class="form-control" id="link" name="link" placeholder="https://example.com/page">
-                    <small class="text-muted">Where users will be directed when they click on the banner</small>
+                    <label for="link" class="form-label">
+                        Banner Link
+                        <span class="tooltip-icon" data-bs-toggle="tooltip" data-bs-placement="top" title="Where users will be directed when they click on the banner">
+                            <i class="bi bi-question"></i>
+                        </span>
+                    </label>
+                    <input 
+                        type="url" 
+                        class="form-control" 
+                        id="link" 
+                        name="link" 
+                        placeholder="https://example.com/page"
+                        value="<%= locals.formData ? formData.link : '' %>"
+                    >
+                    <small class="text-muted">Where users will be directed when they click on the banner (optional)</small>
+                    <div class="invalid-feedback">
+                        <i class="bi bi-exclamation-circle me-1"></i>
+                        Please enter a valid URL (e.g., https://example.com)
+                    </div>
                 </div>
 
                 <div class="form-group" style="display: none;">
-                    <label for="status" class="form-label">Status</label>
                     <input type="text" class="form-control" id="status" name="status" value="Upcoming">
-                    <small class="text-muted">Status will be automatically set based on dates</small>
                 </div>
 
-                <button type="submit" class="submit-btn" id="submitBtn" disabled>
-                    <i class="bi bi-plus-circle me-2"></i>Create Banner
-                </button>
+                <!-- Live Banner Preview -->
+                <div class="banner-preview-section" id="bannerPreviewSection" style="display: none;">
+                    <h4 class="banner-preview-title">
+                        <i class="bi bi-eye me-2"></i>
+                        Banner Preview
+                    </h4>
+                    <div class="banner-preview-container">
+                        <img src="/placeholder.svg" alt="Banner Preview" class="banner-preview-image" id="bannerPreviewImage">
+                        <div class="banner-preview-content">
+                            <div class="banner-preview-title-text" id="bannerPreviewTitle">Banner Title</div>
+                            <div class="banner-preview-dates" id="bannerPreviewDates">
+                                Active: <span id="bannerPreviewStartDate">Start Date</span> to <span id="bannerPreviewEndDate">End Date</span>
+                            </div>
+                            <a href="#" class="banner-preview-link" id="bannerPreviewLink">View Link</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mt-4">
+                    <button type="submit" class="submit-btn" id="submitBtn" disabled>
+                        <i class="bi bi-plus-circle me-2"></i>Create Banner
+                    </button>
+                    <a href="/admin/banner" class="btn btn-outline-secondary ms-2">
+                        <i class="bi bi-x-circle me-2"></i>Cancel
+                    </a>
+                </div>
             </form>
         </div>
     </div>
@@ -176,7 +219,10 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="cropperModalLabel">Crop Banner Image</h5>
+                    <h5 class="modal-title" id="cropperModalLabel">
+                        <i class="bi bi-crop me-2"></i>
+                        Crop Banner Image
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -219,7 +265,44 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="cropBtn">Crop & Use</button>
+                    <button type="button" class="btn btn-primary" id="cropBtn">
+                        <i class="bi bi-check2 me-1"></i>
+                        Crop & Use
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmationModalLabel">
+                        <i class="bi bi-exclamation-triangle me-2 text-warning"></i>
+                        Confirm Submission
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to create this banner?</p>
+                    <div class="d-flex align-items-center mt-3 p-2 bg-light rounded">
+                        <div class="me-3" style="width: 80px; height: 60px; overflow: hidden; border-radius: 4px;">
+                            <img id="confirmationImage" src="/placeholder.svg" alt="Banner" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div>
+                            <strong id="confirmationTitle">Banner Title</strong>
+                            <div class="small text-muted" id="confirmationDates">Start Date - End Date</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmSubmitBtn">
+                        <i class="bi bi-check2 me-1"></i>
+                        Yes, Create Banner
+                    </button>
                 </div>
             </div>
         </div>
@@ -228,8 +311,50 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <script>
-        // Set default dates
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize tooltips
+            const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            tooltips.forEach(tooltip => {
+                new bootstrap.Tooltip(tooltip);
+            });
+            
+            // Form elements
+            const bannerForm = document.getElementById('bannerForm');
+            const titleInput = document.getElementById('title');
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const linkInput = document.getElementById('link');
+            const submitBtn = document.getElementById('submitBtn');
+            const dateValidationError = document.getElementById('dateValidationError');
+            
+            // Image upload and cropping elements
+            const dropzone = document.getElementById('dropzone');
+            const fileInput = document.getElementById('fileInput');
+            const selectImageBtn = document.getElementById('selectImage');
+            const cropperModal = new bootstrap.Modal(document.getElementById('cropperModal'));
+            const cropperImage = document.getElementById('cropperImage');
+            const cropBtn = document.getElementById('cropBtn');
+            const croppedImageData = document.getElementById('croppedImageData');
+            
+            // Confirmation modal elements
+            const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+            const confirmationTitle = document.getElementById('confirmationTitle');
+            const confirmationDates = document.getElementById('confirmationDates');
+            const confirmationImage = document.getElementById('confirmationImage');
+            const confirmSubmitBtn = document.getElementById('confirmSubmitBtn');
+            
+            // Banner preview elements
+            const bannerPreviewSection = document.getElementById('bannerPreviewSection');
+            const bannerPreviewImage = document.getElementById('bannerPreviewImage');
+            const bannerPreviewTitle = document.getElementById('bannerPreviewTitle');
+            const bannerPreviewStartDate = document.getElementById('bannerPreviewStartDate');
+            const bannerPreviewEndDate = document.getElementById('bannerPreviewEndDate');
+            const bannerPreviewLink = document.getElementById('bannerPreviewLink');
+            
+            let cropper;
+            let formIsValid = false;
+            
+            // Set default dates
             const today = new Date();
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
@@ -237,340 +362,514 @@
             const thirtyDaysLater = new Date(today);
             thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
             
-            document.getElementById('startDate').valueAsDate = tomorrow;
-            document.getElementById('endDate').valueAsDate = thirtyDaysLater;
-        });
-
-        // Image upload and cropping
-        const dropzone = document.getElementById('dropzone');
-        const fileInput = document.getElementById('fileInput');
-        const selectImageBtn = document.getElementById('selectImage');
-        const cropperModal = new bootstrap.Modal(document.getElementById('cropperModal'));
-        const cropperImage = document.getElementById('cropperImage');
-        const cropBtn = document.getElementById('cropBtn');
-        const submitBtn = document.getElementById('submitBtn');
-        const croppedImageData = document.getElementById('croppedImageData');
-        
-        let cropper;
-
-        // Initialize cropper when image is loaded in the modal
-        function initCropper() {
-            if (cropper) {
-                cropper.destroy();
+            // Format date as YYYY-MM-DD
+            function formatDate(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
             }
             
-            cropper = new Cropper(cropperImage, {
-                aspectRatio: 3 / 1,
-                viewMode: 1,
-                dragMode: 'move',
-                autoCropArea: 0.8,
-                restore: false,
-                guides: true,
-                center: true,
-                highlight: false,
-                cropBoxMovable: true,
-                cropBoxResizable: true,
-                toggleDragModeOnDblclick: false,
-                preview: '#previewContainer'
-            });
-        }
-
-        // Handle file selection
-        selectImageBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            fileInput.click();
-        });
-
-        dropzone.addEventListener('click', function(e) {
-            if (e.target === dropzone || e.target.classList.contains('upload-icon') || e.target.classList.contains('upload-text')) {
-                fileInput.click();
-            }
-        });
-
-        fileInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                handleFile(this.files[0]);
-            }
-        });
-
-        dropzone.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            dropzone.classList.add('active');
-        });
-
-        dropzone.addEventListener('dragleave', function() {
-            dropzone.classList.remove('active');
-        });
-
-        dropzone.addEventListener('drop', function(e) {
-            e.preventDefault();
-            dropzone.classList.remove('active');
-
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                fileInput.files = e.dataTransfer.files;
-                handleFile(e.dataTransfer.files[0]);
-            }
-        });
-
-        function handleFile(file) {
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                alert('Please select an image file');
-                return;
-            }
-            
-            // Validate file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('File size exceeds 5MB limit');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                // Set the image source for the cropper
-                cropperImage.src = e.target.result;
-                
-                // Show the cropper modal
-                cropperModal.show();
-                
-                // Initialize the cropper after the modal is shown
-                document.getElementById('cropperModal').addEventListener('shown.bs.modal', function() {
-                    initCropper();
-                }, { once: true });
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // Aspect ratio buttons
-        document.querySelectorAll('.aspect-ratio-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                // Update active state
-                document.querySelectorAll('.aspect-ratio-btn').forEach(btn => {
-                    btn.classList.remove('active');
+            // Format date for display
+            function formatDateForDisplay(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
                 });
-                this.classList.add('active');
-                
-                // Get the aspect ratio
-                const ratio = this.getAttribute('data-ratio');
-                let aspectRatio;
-                
-                if (ratio === 'NaN') {
-                    aspectRatio = NaN; // Free aspect ratio
-                } else {
-                    const [width, height] = ratio.split('/');
-                    aspectRatio = parseFloat(width) / parseFloat(height);
+            }
+            
+            // Set default dates if not already set
+            if (!startDateInput.value) {
+                startDateInput.value = formatDate(tomorrow);
+            }
+            
+            if (!endDateInput.value) {
+                endDateInput.value = formatDate(thirtyDaysLater);
+            }
+            
+            // Initialize cropper when image is loaded in the modal
+            function initCropper() {
+                if (cropper) {
+                    cropper.destroy();
                 }
                 
-                // Set the new aspect ratio
-                cropper.setAspectRatio(aspectRatio);
-            });
-        });
-
-        // Rotation and flip controls
-        document.getElementById('rotateLeftBtn').addEventListener('click', function() {
-            cropper.rotate(-90);
-        });
-
-        document.getElementById('rotateRightBtn').addEventListener('click', function() {
-            cropper.rotate(90);
-        });
-
-        document.getElementById('flipHorizontalBtn').addEventListener('click', function() {
-            cropper.scaleX(cropper.getData().scaleX === 1 ? -1 : 1);
-        });
-
-        document.getElementById('flipVerticalBtn').addEventListener('click', function() {
-            cropper.scaleY(cropper.getData().scaleY === 1 ? -1 : 1);
-        });
-
-        document.getElementById('resetCropBtn').addEventListener('click', function() {
-            cropper.reset();
-        });
-
-        // Crop button
-        cropBtn.addEventListener('click', function() {
-            // Get the cropped canvas
-            const canvas = cropper.getCroppedCanvas({
-                width: 1200, // Set maximum width
-                imageSmoothingEnabled: true,
-                imageSmoothingQuality: 'high',
-            });
-            
-            if (!canvas) {
-                alert('Cropping failed. Please try again.');
-                return;
+                cropper = new Cropper(cropperImage, {
+                    aspectRatio: 3 / 1,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 0.8,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                    preview: '#previewContainer',
+                    ready() {
+                        // Add a class to the cropper container when it's ready
+                        document.querySelector('.cropper-container').classList.add('cropper-ready');
+                    }
+                });
             }
             
-            // Convert canvas to blob
-            canvas.toBlob(function(blob) {
-                // Create a data URL from the blob
+            // Handle file selection
+            selectImageBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                fileInput.click();
+            });
+            
+            dropzone.addEventListener('click', function(e) {
+                if (e.target === dropzone || e.target.classList.contains('upload-icon') || e.target.classList.contains('upload-text')) {
+                    fileInput.click();
+                }
+            });
+            
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    handleFile(this.files[0]);
+                }
+            });
+            
+            dropzone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropzone.classList.add('active');
+            });
+            
+            dropzone.addEventListener('dragleave', function() {
+                dropzone.classList.remove('active');
+            });
+            
+            dropzone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropzone.classList.remove('active');
+            
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFile(e.dataTransfer.files[0]);
+                }
+            });
+            
+            function handleFile(file) {
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    showError('Please select an image file (JPEG, PNG, GIF, etc.)');
+                    return;
+                }
+                
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showError('File size exceeds 5MB limit');
+                    return;
+                }
+            
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    // Store the data URL in the hidden input
-                    const dataUrl = e.target.result;
-                    console.log('Image cropped successfully, data URL length:', dataUrl.length);
+                    // Set the image source for the cropper
+                    cropperImage.src = e.target.result;
                     
-                    // Ensure the data URL is properly formatted
-                    if (!dataUrl.startsWith('data:image/')) {
-                        console.error('Invalid data URL format');
-                        alert('Error: Invalid image format. Please try again.');
-                        return;
+                    // Show the cropper modal
+                    cropperModal.show();
+                    
+                    // Initialize the cropper after the modal is shown
+                    document.getElementById('cropperModal').addEventListener('shown.bs.modal', function() {
+                        initCropper();
+                    }, { once: true });
+                };
+                reader.readAsDataURL(file);
+            }
+            
+     
+            function showError(message) {
+                const errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger alert-dismissible fade show';
+                errorAlert.innerHTML = `
+                    <div class="alert-icon">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                    <div class="alert-content">
+                        <h5 class="alert-heading">Error</h5>
+                        <p class="alert-message">${message}</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+             
+                const formContainer = document.querySelector('.form-container');
+                formContainer.insertBefore(errorAlert, formContainer.firstChild);
+            
+                setTimeout(() => {
+                    errorAlert.classList.remove('show');
+                    setTimeout(() => {
+                        errorAlert.remove();
+                    }, 300);
+                }, 5000);
+            }
+            
+       
+            document.querySelectorAll('.aspect-ratio-btn').forEach(button => {
+                button.addEventListener('click', function() {
+               
+                    document.querySelectorAll('.aspect-ratio-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                  
+                    const ratio = this.getAttribute('data-ratio');
+                    let aspectRatio;
+                    
+                    if (ratio === 'NaN') {
+                        aspectRatio = NaN; 
+                    } else {
+                        const [width, height] = ratio.split('/');
+                        aspectRatio = parseFloat(width) / parseFloat(height);
                     }
                     
-                    croppedImageData.value = dataUrl;
-                    
-                    // Update the dropzone with the cropped image
-                    updateDropzoneWithCroppedImage(dataUrl);
-                    
-                    // Close the modal
-                    cropperModal.hide();
-                    
-                    // Enable the submit button
-                    submitBtn.disabled = false;
-                };
-                reader.readAsDataURL(blob);
-            }, 'image/jpeg', 0.9); // JPEG format with 90% quality
-        });
-
-        function updateDropzoneWithCroppedImage(dataUrl) {
-            // Remove existing elements
-            const icon = dropzone.querySelector('.upload-icon');
-            const text = dropzone.querySelector('.upload-text');
-            const small = dropzone.querySelector('.small');
-            
-            if (icon) icon.style.display = 'none';
-            if (text) text.style.display = 'none';
-            if (small) small.style.display = 'none';
-            
-            // Remove existing preview if any
-            const existingPreview = dropzone.querySelector('.preview-image');
-            const existingText = dropzone.querySelector('p:not(.upload-text):not(.small)');
-            
-            if (existingPreview) existingPreview.remove();
-            if (existingText) existingText.remove();
-
-            // Create preview
-            const img = document.createElement('img');
-            img.src = dataUrl;
-            img.className = 'preview-image';
-            img.style.maxWidth = '100%';
-            img.style.maxHeight = '200px';
-            img.style.marginBottom = '15px';
-            img.style.borderRadius = '8px';
-            img.style.boxShadow = 'var(--shadow)';
-            
-            // Add success message
-            const successText = document.createElement('p');
-            successText.innerHTML = '<i class="bi bi-check-circle-fill text-success me-2"></i>Image cropped successfully';
-            successText.style.margin = '10px 0';
-            successText.style.fontSize = '0.875rem';
-            
-            // Insert before the button
-            dropzone.insertBefore(img, selectImageBtn);
-            dropzone.insertBefore(successText, selectImageBtn);
-            
-            // Change button text
-            selectImageBtn.innerHTML = '<i class="bi bi-arrow-repeat me-2"></i>Change Image';
-        }
-
-        // Form submission with fetch API
-        document.getElementById('bannerForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // Prevent default form submission
-            
-            if (!croppedImageData.value) {
-                alert('Please select and crop an image first');
-                return;
-            }
-            
-            // Show loading state
-            const submitBtn = document.getElementById('submitBtn');
-            const originalBtnText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Processing...';
-            
-            // Get form data as a plain object
-            const formData = {
-                title: document.getElementById('title').value,
-                startingDate: document.getElementById('startDate').value,
-                endingDate: document.getElementById('endDate').value,
-                link: document.getElementById('link').value,
-                croppedImageData: document.getElementById('croppedImageData').value
-            };
-            
-            // Log form data for debugging (without the actual image data)
-            console.log('Form submission:');
-            console.log('- Title:', formData.title);
-            console.log('- Start date:', formData.startingDate);
-            console.log('- End date:', formData.endingDate);
-            console.log('- Link:', formData.link);
-            console.log('- Image data present:', formData.croppedImageData ? 'Yes' : 'No');
-            console.log('- Image data length:', formData.croppedImageData ? formData.croppedImageData.length : 0);
-            
-            // Submit the form with fetch API as JSON
-            fetch('/admin/addBanner', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                
-                if (response.redirected) {
-                    console.log('Redirecting to:', response.url);
-                    window.location.href = response.url;
-                    return null;
-                } else if (response.ok) {
-                    // If response is OK but not a redirect
-                    return response.json().catch(() => null); // Handle case where response is not JSON
-                } else {
-                    // If response is not OK, try to parse as JSON for error message
-                    return response.json().catch(() => {
-                        throw new Error(`Server error: ${response.status} ${response.statusText}`);
-                    });
-                }
-            })
-            .then(data => {
-                if (data && data.error) {
-                    console.error('Error from server:', data.error);
-                    alert('Error: ' + data.error);
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnText;
-                } else if (data && data.success) {
-                    // Handle success if needed
-                    window.location.href = '/admin/banner';
-                }
-            })
-            .catch(error => {
-                console.error('Fetch error:', error);
-                alert('An error occurred while saving the banner: ' + error.message);
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
+              
+                    cropper.setAspectRatio(aspectRatio);
+                });
             });
-        });
-
-        // Date validation
-        document.getElementById('endDate').addEventListener('change', function() {
-            const startDate = new Date(document.getElementById('startDate').value);
-            const endDate = new Date(this.value);
             
-            if (endDate <= startDate) {
-                alert('End date must be after start date');
-                this.valueAsDate = new Date(startDate);
-                this.valueAsDate.setDate(startDate.getDate() + 1);
-            }
-        });
-
-        document.getElementById('startDate').addEventListener('change', function() {
-            const startDate = new Date(this.value);
-            const endDate = new Date(document.getElementById('endDate').value);
+        
+            document.getElementById('rotateLeftBtn').addEventListener('click', function() {
+                cropper.rotate(-90);
+            });
             
-            if (startDate >= endDate) {
-                const newEndDate = new Date(startDate);
-                newEndDate.setDate(startDate.getDate() + 1);
-                document.getElementById('endDate').valueAsDate = newEndDate;
+            document.getElementById('rotateRightBtn').addEventListener('click', function() {
+                cropper.rotate(90);
+            });
+            
+            document.getElementById('flipHorizontalBtn').addEventListener('click', function() {
+                cropper.scaleX(cropper.getData().scaleX === 1 ? -1 : 1);
+            });
+            
+            document.getElementById('flipVerticalBtn').addEventListener('click', function() {
+                cropper.scaleY(cropper.getData().scaleY === 1 ? -1 : 1);
+            });
+            
+            document.getElementById('resetCropBtn').addEventListener('click', function() {
+                cropper.reset();
+            });
+            
+
+            cropBtn.addEventListener('click', function() {
+
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
+                
+                
+                const canvas = cropper.getCroppedCanvas({
+                    width: 1200, 
+                    imageSmoothingEnabled: true,
+                    imageSmoothingQuality: 'high',
+                });
+                
+                if (!canvas) {
+                    showError('Cropping failed. Please try again.');
+                    this.disabled = false;
+                    this.innerHTML = '<i class="bi bi-check2 me-1"></i>Crop & Use';
+                    return;
+                }
+                
+            
+                canvas.toBlob(function(blob) {
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                     
+                        const dataUrl = e.target.result;
+                        
+                      
+                        if (!dataUrl.startsWith('data:image/')) {
+                            showError('Invalid image format. Please try again.');
+                            cropBtn.disabled = false;
+                            cropBtn.innerHTML = '<i class="bi bi-check2 me-1"></i>Crop & Use';
+                            return;
+                        }
+                        
+                        croppedImageData.value = dataUrl;
+                        
+               
+                        updateDropzoneWithCroppedImage(dataUrl);
+                        
+                       
+                        updateBannerPreview();
+                        
+            
+                        cropperModal.hide();
+                        
+               
+                        cropBtn.disabled = false;
+                        cropBtn.innerHTML = '<i class="bi bi-check2 me-1"></i>Crop & Use';
+                        
+                     
+                        validateForm();
+                    };
+                    reader.readAsDataURL(blob);
+                }, 'image/jpeg', 0.9); 
+            });
+            
+            function updateDropzoneWithCroppedImage(dataUrl) {
+ 
+                dropzone.classList.add('has-image');
+      
+                const icon = dropzone.querySelector('.upload-icon');
+                const text = dropzone.querySelector('.upload-text');
+                const small = dropzone.querySelector('.small');
+                
+                if (icon) icon.style.display = 'none';
+                if (text) text.style.display = 'none';
+                if (small) small.style.display = 'none';
+                
+               
+                const existingPreview = dropzone.querySelector('.preview-image');
+                const existingText = dropzone.querySelector('.success-text');
+                
+                if (existingPreview) existingPreview.remove();
+                if (existingText) existingText.remove();
+            
+        
+                const img = document.createElement('img');
+                img.src = dataUrl;
+                img.className = 'preview-image';
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '200px';
+                img.style.marginBottom = '15px';
+                img.style.borderRadius = '8px';
+                img.style.boxShadow = 'var(--shadow)';
+                
+        
+                const successText = document.createElement('p');
+                successText.className = 'success-text';
+                successText.innerHTML = '<i class="bi bi-check-circle-fill text-success me-2"></i>Image cropped successfully';
+                successText.style.margin = '10px 0';
+                successText.style.fontSize = '0.875rem';
+                
+                dropzone.insertBefore(img, selectImageBtn);
+                dropzone.insertBefore(successText, selectImageBtn);
+                
+       
+                selectImageBtn.innerHTML = '<i class="bi bi-arrow-repeat me-2"></i>Change Image';
             }
+            
+    
+            function updateBannerPreview() {
+                if (!croppedImageData.value) return;
+                
+            
+                bannerPreviewSection.style.display = 'block';
+                
+             
+                bannerPreviewImage.src = croppedImageData.value;
+                
+               
+                bannerPreviewTitle.textContent = titleInput.value || 'Banner Title';
+                
+              
+                bannerPreviewStartDate.textContent = formatDateForDisplay(startDateInput.value);
+                bannerPreviewEndDate.textContent = formatDateForDisplay(endDateInput.value);
+                
+             
+                if (linkInput.value) {
+                    bannerPreviewLink.href = linkInput.value;
+                    bannerPreviewLink.style.display = 'inline-block';
+                } else {
+                    bannerPreviewLink.style.display = 'none';
+                }
+            }
+            
+         
+            function validateForm() {
+                let isValid = true;
+                
+            
+                if (!titleInput.value || titleInput.value.length < 3 || titleInput.value.length > 100) {
+                    titleInput.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    titleInput.classList.remove('is-invalid');
+                    titleInput.classList.add('is-valid');
+                }
+                
+
+                if (!croppedImageData.value) {
+                    dropzone.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    dropzone.classList.remove('is-invalid');
+                }
+                
+     
+                if (!startDateInput.value) {
+                    startDateInput.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    startDateInput.classList.remove('is-invalid');
+                    startDateInput.classList.add('is-valid');
+                }
+                
+                if (!endDateInput.value) {
+                    endDateInput.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    endDateInput.classList.remove('is-invalid');
+                    endDateInput.classList.add('is-valid');
+                }
+                
+
+                if (startDateInput.value && endDateInput.value) {
+                    const startDate = new Date(startDateInput.value);
+                    const endDate = new Date(endDateInput.value);
+                    
+                    if (endDate <= startDate) {
+                        dateValidationError.style.display = 'block';
+                        endDateInput.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        dateValidationError.style.display = 'none';
+                    }
+                }
+                
+
+                if (linkInput.value) {
+                    try {
+                        new URL(linkInput.value);
+                        linkInput.classList.remove('is-invalid');
+                        linkInput.classList.add('is-valid');
+                    } catch (e) {
+                        linkInput.classList.add('is-invalid');
+                        isValid = false;
+                    }
+                } else {
+                    linkInput.classList.remove('is-invalid');
+                }
+                
+            
+                submitBtn.disabled = !isValid;
+                formIsValid = isValid;
+             
+                if (isValid) {
+                    updateBannerPreview();
+                }
+                
+                return isValid;
+            }
+    
+            titleInput.addEventListener('input', validateForm);
+            startDateInput.addEventListener('change', validateForm);
+            endDateInput.addEventListener('change', validateForm);
+            linkInput.addEventListener('input', validateForm);
+            
+       
+            endDateInput.addEventListener('change', function() {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(this.value);
+                
+                if (endDate <= startDate) {
+                    dateValidationError.style.display = 'block';
+                    this.classList.add('is-invalid');
+                } else {
+                    dateValidationError.style.display = 'none';
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                    updateBannerPreview();
+                }
+            });
+            
+            startDateInput.addEventListener('change', function() {
+                const startDate = new Date(this.value);
+                const endDate = new Date(endDateInput.value);
+                
+                if (startDate >= endDate) {
+              
+                    const newEndDate = new Date(startDate);
+                    newEndDate.setDate(startDate.getDate() + 1);
+                    endDateInput.value = formatDate(newEndDate);
+                }
+                
+                validateForm();
+                updateBannerPreview();
+            });
+            
+ 
+            bannerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (!validateForm()) {
+             
+                    const firstInvalid = document.querySelector('.is-invalid');
+                    if (firstInvalid) {
+                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return;
+                }
+                
+                confirmationTitle.textContent = titleInput.value;
+                confirmationDates.textContent = `${formatDateForDisplay(startDateInput.value)} - ${formatDateForDisplay(endDateInput.value)}`;
+                confirmationImage.src = croppedImageData.value;
+                
+          
+                confirmationModal.show();
+            });
+            
+       
+            confirmSubmitBtn.addEventListener('click', function() {
+             
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...';
+                
+              
+                const formData = {
+                    title: titleInput.value,
+                    startingDate: startDateInput.value,
+                    endingDate: endDateInput.value,
+                    link: linkInput.value,
+                    croppedImageData: croppedImageData.value,
+                    status: 'Upcoming'
+                };
+                
+
+                fetch('/admin/addBanner', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return null;
+                    } else if (response.ok) {
+                        return response.json().catch(() => null);
+                    } else {
+                        return response.json().catch(() => {
+                            throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                        });
+                    }
+                })
+                .then(data => {
+                    if (data && data.error) {
+                        showError(data.error);
+                        confirmSubmitBtn.disabled = false;
+                        confirmSubmitBtn.innerHTML = '<i class="bi bi-check2 me-1"></i>Yes, Create Banner';
+                        confirmationModal.hide();
+                    } else if (data && data.success) {
+                        window.location.href = '/admin/banner?success=Banner created successfully';
+                    }
+                })
+                .catch(error => {
+                    showError('An error occurred while saving the banner: ' + error.message);
+                    confirmSubmitBtn.disabled = false;
+                    confirmSubmitBtn.innerHTML = '<i class="bi bi-check2 me-1"></i>Yes, Create Banner';
+                    confirmationModal.hide();
+                });
+            });
+            
+
+            validateForm();
         });
     </script>
 </body>

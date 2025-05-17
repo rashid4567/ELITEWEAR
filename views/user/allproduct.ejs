@@ -18,18 +18,68 @@
   <link rel="stylesheet" href="/userStyle/header.css">
   <link rel="stylesheet" href="/userStyle/footer.css">
   <link rel="stylesheet" href="/userStyle/allproduct.css">
+  <style>
+    /* Override cursor styles */
+    body, 
+    a, button, .product-card, .quick-view, 
+    .size-btn, .wishlist-icon, .filter-toggle-btn,
+    .pagination .page-link, .search-button,
+    .btn-shop-now, .btn-reset {
+      cursor: none !important;
+    }
+    
+    /* Enhanced price display styles */
+    .product-price {
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--accent-color);
+      transition: all 0.3s ease;
+    }
+    
+    .product-original-price {
+      font-size: 0.95rem;
+      color: var(--text-light);
+      text-decoration: line-through;
+      margin-left: 0.5rem;
+      position: relative;
+      opacity: 0.7;
+    }
+    
+    /* Quick view button enhancement */
+    .quick-view {
+      background-color: white;
+      color: var(--text-primary);
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--border-radius-full);
+      font-weight: 500;
+      transform: translateY(20px);
+      transition: all var(--transition-normal);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      border: none;
+      z-index: 5;
+      position: relative;
+    }
+    
+    .product-card:hover .quick-view {
+      transform: translateY(0);
+    }
+    
+    .quick-view:hover {
+      background: var(--gradient-primary);
+      color: white;
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    }
+  </style>
 </head>
 
 <body>
- 
-
   <div class="scroll-indicator"></div>
 
   <div class="cursor"></div>
   <div class="cursor-follower"></div>
   
   <script>
-   
     document.body.setAttribute('data-header-bg', 'dark');
   </script>
   
@@ -161,7 +211,7 @@
                       <span class="product-badge"><%= product.offer %>% OFF</span>
                     <% } %>
                     <div class="product-overlay">
-                      <span class="quick-view">Quick View</span>
+                      <button type="button" class="quick-view" data-product-id="<%= product._id %>">Quick View</button>
                     </div>
                   </a>
                   <div class="product-info">
@@ -307,7 +357,10 @@
             </div>
             <div class="col-md-6">
               <h3 id="quickViewName" class="mb-3"></h3>
-              <p id="quickViewPrice" class="product-price mb-3"></p>
+              <div id="quickViewPriceContainer" class="mb-3">
+                <span id="quickViewPrice" class="product-price"></span>
+                <span id="quickViewOriginalPrice" class="product-original-price"></span>
+              </div>
               <div id="quickViewRating" class="star-rating mb-3"></div>
               <p id="quickViewDescription" class="mb-4"></p>
               <div class="d-grid">
@@ -342,13 +395,141 @@
         once: true
       });
       
+      // Initialize Bootstrap Modal
+      const quickViewModal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+      
+      // Quick View functionality
+      document.addEventListener('click', function(e) {
+        const quickViewButton = e.target.closest('.quick-view');
+        if (quickViewButton) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const productId = quickViewButton.getAttribute('data-product-id');
+          const productCard = quickViewButton.closest('.product-card');
+          
+          // Show loading state in modal
+          document.getElementById('quickViewName').textContent = 'Loading...';
+          document.getElementById('quickViewPrice').textContent = '';
+          document.getElementById('quickViewOriginalPrice').textContent = '';
+          document.getElementById('quickViewRating').innerHTML = '';
+          document.getElementById('quickViewDescription').textContent = 'Loading product details...';
+          document.getElementById('quickViewImage').src = '/placeholder.svg?height=300&width=300&query=loading+product';
+          document.getElementById('quickViewLink').setAttribute('href', '#');
+          
+          // Show the modal
+          quickViewModal.show();
+          
+          // Try to get product details from API
+          fetch(`/api/products/${productId}`)
+            .then(response => response.json())
+            .then(product => {
+              if (product && product._id) {
+                updateQuickViewModal(product);
+              } else {
+                // Fallback to DOM data if API fails
+                fallbackToDOM(productCard);
+              }
+            })
+            .catch(error => {
+              console.error('Error fetching product details:', error);
+              // Fallback to DOM data if API fails
+              fallbackToDOM(productCard);
+            });
+        }
+      });
+      
+      function updateQuickViewModal(product) {
+        // Get main image
+        const mainImage = product.images && product.images.find(img => img.isMain) || 
+                         (product.images && product.images[0]) || 
+                         { url: '/placeholder.svg?height=300&width=300&query=fashion+product' };
+        
+        // Update modal content
+        document.getElementById('quickViewName').textContent = product.name;
+        document.getElementById('quickViewImage').src = mainImage.url;
+        document.getElementById('quickViewLink').setAttribute('href', `/productdetails/${product._id}`);
+        document.getElementById('quickViewDescription').textContent = product.description || 'Premium quality product crafted with the finest materials for the modern lifestyle.';
+        
+        // Update price display
+        if (product.offer && product.offer > 0) {
+          document.getElementById('quickViewPrice').textContent = `₹${product.salePrice.toFixed(2)}`;
+          document.getElementById('quickViewOriginalPrice').textContent = `₹${product.regularPrice.toFixed(2)}`;
+          document.getElementById('quickViewOriginalPrice').style.display = 'inline-block';
+        } else {
+          document.getElementById('quickViewPrice').textContent = `₹${product.regularPrice.toFixed(2)}`;
+          document.getElementById('quickViewOriginalPrice').style.display = 'none';
+        }
+        
+        // Update rating
+        const rating = product.ratings ? (product.ratings.average || 0) : 0;
+        let starsHtml = '';
+        
+        for (let star = 1; star <= 5; star++) {
+          if (star <= Math.floor(rating)) {
+            starsHtml += '<i class="fas fa-star"></i>';
+          } else if (star <= Math.ceil(rating) && star > Math.floor(rating)) {
+            starsHtml += '<i class="fas fa-star-half-alt"></i>';
+          } else {
+            starsHtml += '<i class="far fa-star"></i>';
+          }
+        }
+        
+        starsHtml += `<span class="rating-count">(${product.ratings ? (product.ratings.count || 0) : 0})</span>`;
+        document.getElementById('quickViewRating').innerHTML = starsHtml;
+        
+        // Initialize magnifier for the quick view image
+        setTimeout(() => {
+          initMagnifier('quickViewImage', 2);
+        }, 300);
+      }
+      
+      function fallbackToDOM(productCard) {
+        if (!productCard) return;
+        
+        const productLink = productCard.querySelector('.product-image-link').getAttribute('href');
+        const productId = productLink.split('/').pop();
+        const productImage = productCard.querySelector('.product-image').getAttribute('src');
+        const productName = productCard.querySelector('.product-name').textContent;
+        const productRating = productCard.querySelector('.product-rating').innerHTML;
+        
+        // Get price information
+        const productPriceElement = productCard.querySelector('.product-price');
+        const productOriginalPriceElement = productCard.querySelector('.product-original-price');
+        
+        document.getElementById('quickViewName').textContent = productName;
+        document.getElementById('quickViewImage').src = productImage;
+        document.getElementById('quickViewRating').innerHTML = productRating;
+        document.getElementById('quickViewDescription').textContent = 'Premium quality product crafted with the finest materials for the modern lifestyle.';
+        document.getElementById('quickViewLink').setAttribute('href', productLink);
+        
+        // Update price display
+        if (productPriceElement) {
+          document.getElementById('quickViewPrice').textContent = productPriceElement.textContent;
+        }
+        
+        if (productOriginalPriceElement) {
+          document.getElementById('quickViewOriginalPrice').textContent = productOriginalPriceElement.textContent;
+          document.getElementById('quickViewOriginalPrice').style.display = 'inline-block';
+        } else {
+          document.getElementById('quickViewOriginalPrice').style.display = 'none';
+        }
+        
+        // Initialize magnifier for the quick view image
+        setTimeout(() => {
+          initMagnifier('quickViewImage', 2);
+        }, 300);
+      }
+      
       // Preloader
       const preloader = document.querySelector('.preloader');
-      window.addEventListener('load', () => {
-        setTimeout(() => {
-          preloader.classList.add('fade-out');
-        }, 500);
-      });
+      if (preloader) {
+        window.addEventListener('load', () => {
+          setTimeout(() => {
+            preloader.classList.add('fade-out');
+          }, 500);
+        });
+      }
 
       // Scroll Indicator
       const scrollIndicator = document.querySelector('.scroll-indicator');
@@ -385,7 +566,7 @@
       });
       
       // Add hover effect for interactive elements
-      const interactiveElements = document.querySelectorAll('a, button, .product-card, .size-btn, .wishlist-icon, .filter-toggle-btn');
+      const interactiveElements = document.querySelectorAll('a, button, .product-card, .size-btn, .wishlist-icon, .filter-toggle-btn, .quick-view');
       interactiveElements.forEach(el => {
         el.addEventListener('mouseenter', () => {
           cursor.classList.add('active');
@@ -399,26 +580,32 @@
       });
       
       // Image Magnifier Function
-      function magnify(imgID, zoom) {
-        var img, glass, w, h, bw;
-        img = document.getElementById(imgID);
+      function initMagnifier(imgID, zoom) {
+        var img = document.getElementById(imgID);
         
         if (!img) return;
         
+        // Remove any existing magnifier glass
+        const parent = img.parentElement;
+        const existingGlass = parent.querySelector('.img-magnifier-glass');
+        if (existingGlass) {
+          existingGlass.remove();
+        }
+        
         // Create magnifier glass
-        glass = document.createElement("DIV");
+        var glass = document.createElement("DIV");
         glass.setAttribute("class", "img-magnifier-glass");
         
         // Insert magnifier glass
-        img.parentElement.insertBefore(glass, img);
+        parent.insertBefore(glass, img);
         
         // Set background properties for the magnifier glass
         glass.style.backgroundImage = "url('" + img.src + "')";
         glass.style.backgroundRepeat = "no-repeat";
         glass.style.backgroundSize = (img.width * zoom) + "px " + (img.height * zoom) + "px";
-        bw = 3; // Border width
-        w = glass.offsetWidth / 2;
-        h = glass.offsetHeight / 2;
+        var bw = 3; // Border width
+        var w = glass.offsetWidth / 2;
+        var h = glass.offsetHeight / 2;
         
         // Execute function when someone moves the magnifier glass over the image
         glass.addEventListener("mousemove", moveMagnifier);
@@ -470,16 +657,18 @@
       }
       
       // Apply magnifier to all product images
-      function initMagnifiers() {
+      function initAllMagnifiers() {
         const productImages = document.querySelectorAll('img[data-magnify="true"]');
         productImages.forEach((img, index) => {
-          img.id = 'magnifyImg' + index;
-          magnify('magnifyImg' + index, 2); // Zoom level of 2x
+          if (!img.id) {
+            img.id = 'magnifyImg' + index;
+          }
+          initMagnifier(img.id, 2); // Zoom level of 2x
         });
       }
       
       // Initialize magnifiers after a short delay to ensure images are loaded
-      setTimeout(initMagnifiers, 500);
+      setTimeout(initAllMagnifiers, 500);
       
       const filters = <%- JSON.stringify(filters || { category: 'all', size: '', color: '', minPrice: '', maxPrice: '', sort: 'latest' }) %>;
       let currentPage = <%= currentPage || 1 %>;
@@ -596,37 +785,6 @@
         });
       });
       
-      // Quick View functionality
-      const quickViewModal = new bootstrap.Modal(document.getElementById('quickViewModal'));
-      
-      document.querySelectorAll('.quick-view').forEach(quickViewBtn => {
-        quickViewBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          const productCard = this.closest('.product-card');
-          const productLink = productCard.querySelector('.product-image-link').getAttribute('href');
-          const productImage = productCard.querySelector('.product-image').getAttribute('src');
-          const productName = productCard.querySelector('.product-name').textContent;
-          const productPrice = productCard.querySelector('.product-price').textContent;
-          const productRating = productCard.querySelector('.product-rating').innerHTML;
-          
-          document.getElementById('quickViewImage').setAttribute('src', productImage);
-          document.getElementById('quickViewName').textContent = productName;
-          document.getElementById('quickViewPrice').textContent = productPrice;
-          document.getElementById('quickViewRating').innerHTML = productRating;
-          document.getElementById('quickViewDescription').textContent = 'Premium quality product crafted with the finest materials for the modern lifestyle. This item features exceptional craftsmanship and attention to detail.';
-          document.getElementById('quickViewLink').setAttribute('href', productLink);
-          
-          quickViewModal.show();
-          
-          // Reinitialize magnifier for the quick view image
-          setTimeout(() => {
-            magnify('quickViewImage', 2);
-          }, 300);
-        });
-      });
-      
       // Filter functionality
       const applyFiltersBtn = document.getElementById('applyFilters');
       const categorySelect = document.getElementById('categorySelect');
@@ -684,7 +842,23 @@
           loadWishlistState();
           
           // Initialize magnifiers for new product images
-          setTimeout(initMagnifiers, 500);
+          setTimeout(initAllMagnifiers, 500);
+          
+          // Reattach event listeners for interactive elements
+          setTimeout(() => {
+            const newInteractiveElements = document.querySelectorAll('a, button, .product-card, .size-btn, .wishlist-icon, .filter-toggle-btn, .quick-view');
+            newInteractiveElements.forEach(el => {
+              el.addEventListener('mouseenter', () => {
+                cursor.classList.add('active');
+                cursorFollower.classList.add('active');
+              });
+              
+              el.addEventListener('mouseleave', () => {
+                cursor.classList.remove('active');
+                cursorFollower.classList.remove('active');
+              });
+            });
+          }, 600);
         })
         .catch(error => {
           console.error('Error fetching products:', error);
@@ -766,10 +940,18 @@
               }
             }
             
-            const pricingHtml = product.offer > 0 
-              ? `<span class="product-price">₹${product.salePrice.toFixed(2)}</span>
-                 <span class="product-original-price">₹${product.regularPrice.toFixed(2)}</span>`
-              : `<span class="product-price">₹${product.regularPrice.toFixed(2)}</span>`;
+            starsHtml += `<span class="rating-count">(${product.ratings ? (product.ratings.count || 0) : 0})</span>`;
+            
+            // Price display logic
+            let pricingHtml = '';
+            if (product.offer > 0) {
+              pricingHtml = `
+                <span class="product-price">₹${product.salePrice.toFixed(2)}</span>
+                <span class="product-original-price">₹${product.regularPrice.toFixed(2)}</span>
+              `;
+            } else {
+              pricingHtml = `<span class="product-price">₹${product.regularPrice.toFixed(2)}</span>`;
+            }
             
             const badgeHtml = product.offer > 0 
               ? `<span class="product-badge">${product.offer}% OFF</span>` 
@@ -787,7 +969,7 @@
                     <img src="${mainImage.url}" class="product-image" alt="${product.name}" onerror="this.onerror=null; this.src='/placeholder.svg?height=300&width=300&query=fashion+product';" data-magnify="true">
                     ${badgeHtml}
                     <div class="product-overlay">
-                      <span class="quick-view">Quick View</span>
+                      <button type="button" class="quick-view" data-product-id="${product._id}">Quick View</button>
                     </div>
                   </a>
                   <div class="product-info">
@@ -798,7 +980,6 @@
                       </div>
                       <div class="product-rating">
                         ${starsHtml}
-                        <span class="rating-count">(${product.ratings ? (product.ratings.count || 0) : 0})</span>
                       </div>
                     </div>
                     <a href="/productdetails/${product._id}" class="btn-view-product">View Product</a>
@@ -859,35 +1040,6 @@
                 toastBody.innerHTML = `<i class="fas fa-exclamation-circle text-danger"></i> Operation failed`;
                 wishlistToast.show();
               }
-            });
-          });
-          
-          // Reattach quick view event listeners
-          document.querySelectorAll('.quick-view').forEach(quickViewBtn => {
-            quickViewBtn.addEventListener('click', function(e) {
-              e.preventDefault();
-              e.stopPropagation();
-              
-              const productCard = this.closest('.product-card');
-              const productLink = productCard.querySelector('.product-image-link').getAttribute('href');
-              const productImage = productCard.querySelector('.product-image').getAttribute('src');
-              const productName = productCard.querySelector('.product-name').textContent;
-              const productPrice = productCard.querySelector('.product-pricing').textContent.trim();
-              const productRating = productCard.querySelector('.product-rating').innerHTML;
-              
-              document.getElementById('quickViewImage').setAttribute('src', productImage);
-              document.getElementById('quickViewName').textContent = productName;
-              document.getElementById('quickViewPrice').textContent = productPrice;
-              document.getElementById('quickViewRating').innerHTML = productRating;
-              document.getElementById('quickViewDescription').textContent = 'Premium quality product crafted with the finest materials for the modern lifestyle. This item features exceptional craftsmanship and attention to detail.';
-              document.getElementById('quickViewLink').setAttribute('href', productLink);
-              
-              quickViewModal.show();
-              
-              // Reinitialize magnifier for the quick view image
-              setTimeout(() => {
-                magnify('quickViewImage', 2);
-              }, 300);
             });
           });
 
@@ -1005,4 +1157,4 @@
     });
   </script>
 </body>
-</html>
+</html> 

@@ -59,6 +59,11 @@
             background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
         }
         
+        /* Hide validation feedback initially */
+        .invalid-feedback {
+            display: none !important;
+        }
+        
         /* 3D Form Effect */
         .contact-card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -270,23 +275,13 @@
                             </div>
                             <% } %>
                             
-                            <% if (locals.error) { %>
-                            <div class="error-message" id="errorMessage">
-                                <i class="fas fa-exclamation-circle fa-lg"></i>
-                                <div>
-                                    <strong>Error!</strong>
-                                    <p class="mb-0"><%= error %></p>
-                                </div>
-                            </div>
-                            <% } %>
-                            
                             <form action="/send" method="POST" id="contactForm" novalidate>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <input 
                                                 type="text" 
-                                                class="form-control <%= locals.errors && errors.name ? 'is-invalid' : '' %>" 
+                                                class="form-control" 
                                                 id="name" 
                                                 name="name" 
                                                 placeholder=" " 
@@ -294,24 +289,21 @@
                                                 value="<%= locals.formData ? formData.name : '' %>"
                                             >
                                             <label for="name" class="form-label">Your Name <span class="text-danger">*</span></label>
-                                            <% if (locals.errors && errors.name) { %>
                                             <div class="invalid-feedback">
                                                 <i class="fas fa-exclamation-circle"></i>
-                                                <%= errors.name %>
+                                                <% if (locals.errors && errors.name) { %>
+                                                    <%= errors.name %>
+                                                <% } else { %>
+                                                    Please enter your name
+                                                <% } %>
                                             </div>
-                                            <% } else { %>
-                                            <div class="invalid-feedback">
-                                                <i class="fas fa-exclamation-circle"></i>
-                                                Please enter your name
-                                            </div>
-                                            <% } %>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <input 
                                                 type="email" 
-                                                class="form-control <%= locals.errors && errors.email ? 'is-invalid' : '' %>" 
+                                                class="form-control" 
                                                 id="email" 
                                                 name="email" 
                                                 placeholder=" " 
@@ -319,24 +311,21 @@
                                                 value="<%= locals.formData ? formData.email : '' %>"
                                             >
                                             <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                                            <% if (locals.errors && errors.email) { %>
                                             <div class="invalid-feedback">
                                                 <i class="fas fa-exclamation-circle"></i>
-                                                <%= errors.email %>
+                                                <% if (locals.errors && errors.email) { %>
+                                                    <%= errors.email %>
+                                                <% } else { %>
+                                                    Please enter a valid email address
+                                                <% } %>
                                             </div>
-                                            <% } else { %>
-                                            <div class="invalid-feedback">
-                                                <i class="fas fa-exclamation-circle"></i>
-                                                Please enter a valid email address
-                                            </div>
-                                            <% } %>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <input 
                                         type="text" 
-                                        class="form-control <%= locals.errors && errors.subject ? 'is-invalid' : '' %>" 
+                                        class="form-control" 
                                         id="subject" 
                                         name="subject" 
                                         placeholder=" " 
@@ -344,21 +333,18 @@
                                         value="<%= locals.formData ? formData.subject : '' %>"
                                     >
                                     <label for="subject" class="form-label">Subject <span class="text-danger">*</span></label>
-                                    <% if (locals.errors && errors.subject) { %>
                                     <div class="invalid-feedback">
                                         <i class="fas fa-exclamation-circle"></i>
-                                        <%= errors.subject %>
+                                        <% if (locals.errors && errors.subject) { %>
+                                            <%= errors.subject %>
+                                        <% } else { %>
+                                            Please enter a subject
+                                        <% } %>
                                     </div>
-                                    <% } else { %>
-                                    <div class="invalid-feedback">
-                                        <i class="fas fa-exclamation-circle"></i>
-                                        Please enter a subject
-                                    </div>
-                                    <% } %>
                                 </div>
                                 <div class="form-group">
                                     <textarea 
-                                        class="form-control <%= locals.errors && errors.message ? 'is-invalid' : '' %>" 
+                                        class="form-control" 
                                         id="message" 
                                         name="message" 
                                         placeholder=" " 
@@ -366,17 +352,14 @@
                                         rows="5"
                                     ><%= locals.formData ? formData.message : '' %></textarea>
                                     <label for="message" class="form-label">Message <span class="text-danger">*</span></label>
-                                    <% if (locals.errors && errors.message) { %>
                                     <div class="invalid-feedback">
                                         <i class="fas fa-exclamation-circle"></i>
-                                        <%= errors.message %>
+                                        <% if (locals.errors && errors.message) { %>
+                                            <%= errors.message %>
+                                        <% } else { %>
+                                            Please enter your message
+                                        <% } %>
                                     </div>
-                                    <% } else { %>
-                                    <div class="invalid-feedback">
-                                        <i class="fas fa-exclamation-circle"></i>
-                                        Please enter your message
-                                    </div>
-                                    <% } %>
                                 </div>
                                 <div class="form-group">
                                     <button type="submit" class="btn-submit" id="submitBtn">
@@ -604,6 +587,7 @@
                     input.addEventListener('input', function() {
                         // Remove validation classes when user starts typing
                         this.classList.remove('is-invalid');
+                        this.classList.remove('is-valid');
                     });
                 });
             }
@@ -617,16 +601,37 @@
                     if (input.hasAttribute('required')) {
                         if (input.value.trim() === '') {
                             input.classList.add('is-invalid');
+                            
+                            // Show the invalid feedback
+                            const feedback = input.nextElementSibling.nextElementSibling;
+                            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                                feedback.style.display = 'block !important';
+                            }
+                            
                             isValid = false;
                         } else {
                             input.classList.remove('is-invalid');
                             input.classList.add('is-valid');
                             
+                            // Hide the feedback
+                            const feedback = input.nextElementSibling.nextElementSibling;
+                            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                                feedback.style.display = 'none';
+                            }
+                            
                             // Additional validation for email
                             if (input.type === 'email') {
                                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                                 if (!emailRegex.test(input.value)) {
+                                    input.classList.remove('is-valid');
                                     input.classList.add('is-invalid');
+                                    
+                                    // Show the invalid feedback
+                                    const feedback = input.nextElementSibling.nextElementSibling;
+                                    if (feedback && feedback.classList.contains('invalid-feedback')) {
+                                        feedback.style.display = 'block !important';
+                                    }
+                                    
                                     isValid = false;
                                 }
                             }
@@ -648,7 +653,6 @@
 
             // Auto-hide success and error messages after 5 seconds
             const successMessage = document.getElementById('successMessage');
-            const errorMessage = document.getElementById('errorMessage');
             
             if (successMessage) {
                 // Add pulse animation to success message
@@ -666,49 +670,26 @@
                     }, 500);
                 }, 5000);
             }
-            
-            if (errorMessage) {
-                // Auto-hide after 8 seconds (give more time for error messages)
-                setTimeout(() => {
-                    errorMessage.style.opacity = '0';
-                    errorMessage.style.transform = 'translateY(-10px)';
-                    errorMessage.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                    
-                    // Remove from DOM after fade out
-                    setTimeout(() => {
-                        errorMessage.remove();
-                    }, 500);
-                }, 8000);
-            }
 
             // Toast functionality
             const contactToast = new bootstrap.Toast(document.getElementById('contactToast'), {
                 delay: 5000
             });
             
-            <% if (locals.success || locals.error) { %>
+            <% if (locals.success) { %>
                 const toastBody = document.getElementById('toastBody');
                 const toastElement = document.getElementById('contactToast');
                 const toastIcon = toastElement.querySelector('.toast-icon');
                 
-                <% if (locals.success) { %>
-                    toastBody.textContent = "<%= success %>";
-                    toastElement.classList.remove('toast-error');
-                    toastElement.classList.add('toast-success');
-                    toastIcon.className = 'toast-icon fas fa-check-circle';
-                <% } else if (locals.error) { %>
-                    toastBody.textContent = "<%= error %>";
-                    toastElement.classList.remove('toast-success');
-                    toastElement.classList.add('toast-error');
-                    toastIcon.className = 'toast-icon fas fa-exclamation-circle';
-                <% } %>
+                toastBody.textContent = "<%= success %>";
+                toastElement.classList.remove('toast-error');
+                toastElement.classList.add('toast-success');
+                toastIcon.className = 'toast-icon fas fa-check-circle';
                 
                 setTimeout(() => {
                     contactToast.show();
                 }, 1000);
-            <% } %>
-
-            <% if (locals.success) { %>
+                
                 if (contactForm) {
                     contactForm.reset();
                     const validInputs = contactForm.querySelectorAll('.is-valid');
