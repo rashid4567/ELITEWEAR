@@ -230,42 +230,26 @@ const resendForgotOtp = async (req, res) => {
   }
 };
 
+
 const loadProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-
+    
+    
     const wallet = await Wallet.findOne({ userId });
     const walletBalance = wallet ? wallet.amount : 0;
-
-    const wishlist = await Wishlist.findOne({ user: userId });
-    const wishlistCount = wishlist ? wishlist.products.length : 0;
-
-    const orderCount = await Order.countDocuments({ userId });
-
-    const currentDate = new Date();
-    const availableCoupons = await Coupon.find({
-      isActive: true,
-      startingDate: { $lte: currentDate },
-      expiryDate: { $gte: currentDate },
-    });
-
-    const couponCount = availableCoupons.filter((coupon) => {
-      const userUsage = coupon.usedBy.find(
-        (usage) => usage.userId.toString() === userId.toString()
-      );
-      return !userUsage || userUsage.usedCount < coupon.limit;
-    }).length;
 
     const recentActivities = await generateRecentActivities(userId);
 
     res.render("profile", {
+
       email: req.user.email || "N/A",
       fullname: req.user.fullname || "Unknown",
       mobile: req.user.mobile || "N/A",
       walletBalance,
-      wishlistCount,
-      orderCount,
-      couponCount,
+      wishlistCount: res.locals.wishlistCount,
+      orderCount: res.locals.orderCount,
+      couponCount: res.locals.couponCount,
       recentActivities,
     });
   } catch (error) {
