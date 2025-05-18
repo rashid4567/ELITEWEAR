@@ -12,6 +12,38 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
    <link rel="stylesheet" href="/userStyle/orderSuccess.css">
+   <style>
+     /* Additional styles for discount display */
+     .original-price {
+       text-decoration: line-through;
+       color: #999;
+       font-size: 0.85em;
+       display: block;
+     }
+     .discounted-price {
+       color: #e74c3c;
+       font-weight: bold;
+     }
+     .discount-badge {
+       background-color: #e74c3c;
+       color: white;
+       font-size: 0.7rem;
+       padding: 2px 6px;
+       border-radius: 10px;
+       margin-left: 5px;
+       font-weight: 600;
+     }
+     .price-container {
+       display: flex;
+       flex-direction: column;
+       align-items: flex-end;
+     }
+     .item-discount-info {
+       font-size: 0.75rem;
+       color: #28a745;
+       margin-top: 2px;
+     }
+   </style>
 </head>
 <body>
     <%- include("../partials/user/header") %>
@@ -161,6 +193,9 @@
                                 </div>
                                 <div class="order-detail-value text-success">
                                     -₹<%= order.discount.toFixed(2) %>
+                                    <% if (order.couponCode) { %>
+                                        <small class="d-block">Coupon: <%= order.couponCode %></small>
+                                    <% } %>
                                 </div>
                             </div>
                         <% } %>
@@ -226,6 +261,11 @@
                 <div class="order-card mb-4">
                     <div class="order-card-header">
                         <h3>Order Items</h3>
+                        <% if (order.discount > 0 && order.couponCode) { %>
+                            <span class="badge bg-success">
+                                <i class="fas fa-tag me-1"></i> <%= order.couponCode %>
+                            </span>
+                        <% } %>
                     </div>
                     <div class="order-card-body p-0">
                         <div class="list-group list-group-flush">
@@ -255,8 +295,19 @@
                                             Size: <%= item.size || 'N/A' %> | Qty: <%= item.quantity || 1 %>
                                         </p>
                                     </div>
-                                    <div class="flex-shrink-0 ms-3 text-end">
-                                        <span class="fw-bold">₹<%= (item.price !== undefined ? item.price.toFixed(2) : '0.00') %></span>
+                                    <div class="flex-shrink-0 ms-3 text-end price-container">
+                                        <% if (item.discountPerUnit && item.discountPerUnit > 0) { %>
+                                            <span class="original-price">₹<%= (item.price !== undefined ? item.price.toFixed(2) : '0.00') %></span>
+                                            <span class="discounted-price">₹<%= (item.finalPrice !== undefined ? item.finalPrice.toFixed(2) : '0.00') %></span>
+                                            <% 
+                                                const discountPercent = Math.round((item.discountPerUnit / item.price) * 100);
+                                            %>
+                                            <span class="item-discount-info">
+                                                <span class="discount-badge"><%= discountPercent %>% off</span>
+                                            </span>
+                                        <% } else { %>
+                                            <span class="fw-bold">₹<%= (item.price !== undefined ? item.price.toFixed(2) : '0.00') %></span>
+                                        <% } %>
                                     </div>
                                 </div>
                             <% }) %>

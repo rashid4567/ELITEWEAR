@@ -614,4 +614,183 @@ body {
   .wallet-badge i {
     font-size: 0.7rem;
   }
+
+   /* Additional styles for final state items */
+        .final-state {
+            background-color: #f8f9fa;
+            color: #6c757d;
+        }
+        
+        .final-state-badge {
+            position: relative;
+        }
+        
+        .final-state-badge::after {
+            content: "Final";
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 9px;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .tooltip-inner {
+            max-width: 250px;
+            text-align: left;
+        }
+
+        /* Status badge colors */
+        .status-pending {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .status-processing {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .status-confirmed {
+            background-color: #6f42c1;
+            color: white;
+        }
+        
+        .status-shipped {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .status-delivered {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .status-cancelled {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .status-returned {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .status-return-requested {
+            background-color: #fd7e14;
+            color: white;
+        }
+        
+        .status-return-approved {
+            background-color: #20c997;
+            color: white;
+        }
+
+        /* Timeline styles */
+        .order-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 20px;
+        }
+        
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: #e9ecef;
+        }
+        
+        .timeline-item:last-child:before {
+            height: 0;
+        }
+        
+        .timeline-badge {
+            position: absolute;
+            left: -29px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+        
+        .timeline-badge i {
+            font-size: 10px;
+            color: white;
+        }
+        
+        .timeline-content {
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            margin-bottom: 10px;
+        }
+        
+        /* Refund styles */
+        .refund-badge {
+            margin-left: 5px;
+            font-size: 0.8em;
+        }
+        
+        .returned-item {
+            background-color: #f8f9fa;
+        }
+        
+        .refund-amount {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .refund-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        /* Direct action button styles */
+        .direct-update-btn, 
+        .direct-approve-return-btn, 
+        .direct-reject-return-btn, 
+        .direct-complete-return-btn {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 4px;
+        }
+
+        .direct-update-btn:disabled,
+        .direct-approve-return-btn:disabled,
+        .direct-reject-return-btn:disabled,
+        .direct-complete-return-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        /* Make buttons more compact */
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        /* Product image styles */
+        .product-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .main-content{
+            transform: translateY(-95vh);
+
+        }
   

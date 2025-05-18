@@ -15,12 +15,12 @@ const userSchema = new mongoose.Schema({
   },
   mobile: {
     type: String,
-
     required: function () {
       return !this.googleId;
     },
-    unique: true,
+
     sparse: true,
+    unique: true,
   },
   password: {
     type: String,

@@ -7,186 +7,84 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="/adminStyle/adminOrderdetails.css">
-    <!-- Add SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
     <style>
-        /* Additional styles for final state items */
-        .final-state {
-            background-color: #f8f9fa;
+        /* Discount price styling */
+        .original-price {
+            text-decoration: line-through;
             color: #6c757d;
+            font-size: 0.9em;
+            display: block;
         }
         
-        .final-state-badge {
-            position: relative;
-        }
-        
-        .final-state-badge::after {
-            content: "Final";
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            font-size: 9px;
-            color: white;
-            padding: 1px 4px;
-            border-radius: 3px;
+        .discounted-price {
+            color: #dc3545;
             font-weight: bold;
         }
         
-        .tooltip-inner {
-            max-width: 250px;
-            text-align: left;
-        }
-
-        /* Status badge colors */
-        .status-pending {
-            background-color: #ffc107;
-            color: #212529;
-        }
-        
-        .status-processing {
-            background-color: #17a2b8;
-            color: white;
-        }
-        
-        .status-confirmed {
-            background-color: #6f42c1;
-            color: white;
-        }
-        
-        .status-shipped {
-            background-color: #007bff;
-            color: white;
-        }
-        
-        .status-delivered {
-            background-color: #28a745;
-            color: white;
-        }
-        
-        .status-cancelled {
+        .discount-badge {
             background-color: #dc3545;
             color: white;
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 1rem;
+            margin-left: 0.5rem;
+            display: inline-block;
         }
         
-        .status-returned {
-            background-color: #6c757d;
-            color: white;
+        .price-container {
+            display: flex;
+            flex-direction: column;
         }
         
-        .status-return-requested {
-            background-color: #fd7e14;
-            color: white;
-        }
-        
-        .status-return-approved {
-            background-color: #20c997;
-            color: white;
-        }
-
-        /* Timeline styles */
-        .order-timeline {
-            position: relative;
-            padding-left: 30px;
-        }
-        
-        .timeline-item {
-            position: relative;
-            padding-bottom: 20px;
-        }
-        
-        .timeline-item:before {
-            content: '';
-            position: absolute;
-            left: -20px;
-            top: 0;
-            height: 100%;
-            width: 2px;
-            background-color: #e9ecef;
-        }
-        
-        .timeline-item:last-child:before {
-            height: 0;
-        }
-        
-        .timeline-badge {
-            position: absolute;
-            left: -29px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            text-align: center;
-            line-height: 20px;
-            background-color: #e9ecef;
-            z-index: 1;
-        }
-        
-        .timeline-badge i {
-            font-size: 10px;
-            color: white;
-        }
-        
-        .timeline-content {
-            padding: 10px;
-            border-radius: 5px;
-            background-color: #f8f9fa;
-            margin-bottom: 10px;
-        }
-        
-        /* Refund styles */
-        .refund-badge {
-            margin-left: 5px;
-            font-size: 0.8em;
-        }
-        
-        .returned-item {
-            background-color: #f8f9fa;
-        }
-        
-        .refund-amount {
+        .coupon-applied {
+            font-size: 0.8rem;
             color: #28a745;
+            margin-top: 0.25rem;
+        }
+        
+        /* For the order summary section */
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .summary-row .discount-value {
+            color: #dc3545;
             font-weight: bold;
         }
         
-        .refund-info {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
+        .coupon-info {
+            background-color: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
         }
-
-        /* Direct action button styles */
-        .direct-update-btn, 
-        .direct-approve-return-btn, 
-        .direct-reject-return-btn, 
-        .direct-complete-return-btn {
-            width: 100%;
-            text-align: left;
-            margin-bottom: 4px;
+        
+        .coupon-code {
+            background-color: #28a745;
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            margin: 0 0.25rem;
         }
-
-        .direct-update-btn:disabled,
-        .direct-approve-return-btn:disabled,
-        .direct-reject-return-btn:disabled,
-        .direct-complete-return-btn:disabled {
-            opacity: 0.65;
-            cursor: not-allowed;
+        
+        .saved-amount {
+            font-size: 0.8rem;
+            color: #28a745;
+            display: block;
         }
-
-        /* Make buttons more compact */
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        /* Product image styles */
-        .product-image {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-        .main-content{
-            transform: translateY(-95vh);
-
+        
+        .grand-total {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 0.5rem;
+            border-top: 1px solid #dee2e6;
+            padding-top: 0.5rem;
         }
     </style>
 </head>
@@ -248,7 +146,15 @@
                                                            title="This order is in a final state and cannot be modified"></i>
                                                     <% } %>
                                                 </p>
-                                                <p><strong>Total Amount:</strong> ₹<%= order.total.toFixed(2) %></p>
+                                                <p>
+                                                    <strong>Total Amount:</strong> 
+                                                    <% if (order.discount && order.discount > 0) { %>
+                                                        <span class="original-price">₹<%= (order.total + order.discount).toFixed(2) %></span>
+                                                        <span class="discounted-price">₹<%= order.total.toFixed(2) %></span>
+                                                    <% } else { %>
+                                                        ₹<%= order.total.toFixed(2) %>
+                                                    <% } %>
+                                                </p>
                                             </div>
                                         </div>
                                         
@@ -263,6 +169,22 @@
                                                 <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectReturnModal" data-order-id="<%= order._id %>">
                                                     <i class="fas fa-times me-1"></i> Reject Return
                                                 </button>
+                                            </div>
+                                        </div>
+                                        <% } %>
+                                        
+                                        <% if (order.discount && order.discount > 0) { %>
+                                        <div class="discount-summary mt-3">
+                                            <div class="alert alert-success">
+                                                <h6 class="alert-heading"><i class="fas fa-tag me-2"></i>Discount Applied</h6>
+                                                <p class="mb-1">A discount of <strong>₹<%= order.discount.toFixed(2) %></strong> has been applied to this order.</p>
+                                                <% if (order.couponCode) { %>
+                                                    <p class="mb-0">Coupon Code: <span class="coupon-code"><%= order.couponCode %></span>
+                                                    <% if (order.couponDiscountPercent) { %>
+                                                        (<%= order.couponDiscountPercent %>% off)
+                                                    <% } %>
+                                                    </p>
+                                                <% } %>
                                             </div>
                                         </div>
                                         <% } %>
@@ -299,9 +221,26 @@
                                                             </div>
                                                         </td>
                                                         <td><%= item.size %></td>
-                                                        <td>₹<%= item.price.toFixed(2) %></td>
+                                                        <td>
+                                                            <% if (item.discountPerUnit && item.discountPerUnit > 0) { %>
+                                                                <span class="original-price">₹<%= item.price.toFixed(2) %></span>
+                                                                <span class="discounted-price">₹<%= (item.price - item.discountPerUnit).toFixed(2) %></span>
+                                                                <% const discountPercent = Math.round((item.discountPerUnit / item.price) * 100); %>
+                                                                <span class="discount-badge"><%= discountPercent %>% off</span>
+                                                            <% } else { %>
+                                                                ₹<%= item.price.toFixed(2) %>
+                                                            <% } %>
+                                                        </td>
                                                         <td><%= item.quantity %></td>
-                                                        <td>₹<%= item.total_amount.toFixed(2) %></td>
+                                                        <td>
+                                                            <% if (item.discountPerUnit && item.discountPerUnit > 0) { %>
+                                                                <span class="original-price">₹<%= (item.price * item.quantity).toFixed(2) %></span>
+                                                                <span class="discounted-price">₹<%= ((item.price - item.discountPerUnit) * item.quantity).toFixed(2) %></span>
+                                                                <span class="saved-amount">Saved: ₹<%= (item.discountPerUnit * item.quantity).toFixed(2) %></span>
+                                                            <% } else { %>
+                                                                ₹<%= item.total_amount.toFixed(2) %>
+                                                            <% } %>
+                                                        </td>
                                                         <td>
                                                             <span class="badge status-badge status-<%= item.status.toLowerCase().replace(/\s+/g, '-') %> <%= ['Cancelled', 'Returned'].includes(item.status) ? 'final-state-badge' : '' %>">
                                                                 <%= item.status %>
@@ -357,7 +296,7 @@
                                                                 <button class="btn btn-sm btn-outline-success direct-complete-return-btn"
                                                                         type="button" 
                                                                         data-item-id="<%= item._id %>"
-                                                                        data-refund-amount="<%= item.total_amount %>">
+                                                                        data-refund-amount="<%= item.discountPerUnit ? (item.price - item.discountPerUnit) * item.quantity : item.total_amount %>">
                                                                     <i class="fas fa-check-circle me-1"></i> Complete
                                                                 </button>
                                                                 <% } %>
@@ -481,23 +420,72 @@
                                         <h5 class="mb-0">Order Summary</h5>
                                     </div>
                                     <div class="card-body">
-                                        <div class="d-flex justify-content-between mb-2">
+                                        <% 
+                                        // Calculate subtotal before discount
+                                        let subtotalBeforeDiscount = 0;
+                                        let subtotalAfterDiscount = 0;
+                                        
+                                        order.orderItems.forEach(item => {
+                                            const itemOriginalTotal = item.price * item.quantity;
+                                            subtotalBeforeDiscount += itemOriginalTotal;
+                                            
+                                            if (item.discountPerUnit && item.discountPerUnit > 0) {
+                                                const discountedPrice = item.price - item.discountPerUnit;
+                                                subtotalAfterDiscount += discountedPrice * item.quantity;
+                                            } else {
+                                                subtotalAfterDiscount += itemOriginalTotal;
+                                            }
+                                        });
+                                        
+                                        const totalDiscount = subtotalBeforeDiscount - subtotalAfterDiscount;
+                                        const shipping = 0; // Assuming shipping is free
+                                        const tax = 0; // Assuming no tax
+                                        const grandTotal = subtotalAfterDiscount + shipping + tax;
+                                        %>
+                                        
+                                        <div class="summary-row">
                                             <span>Subtotal:</span>
-                                            <span>₹<%= order.total.toFixed(2) %></span>
+                                            <% if (totalDiscount > 0) { %>
+                                                <div class="text-end">
+                                                    <span class="original-price">₹<%= subtotalBeforeDiscount.toFixed(2) %></span>
+                                                    <span>₹<%= subtotalAfterDiscount.toFixed(2) %></span>
+                                                </div>
+                                            <% } else { %>
+                                                <span>₹<%= subtotalBeforeDiscount.toFixed(2) %></span>
+                                            <% } %>
                                         </div>
-                                        <div class="d-flex justify-content-between mb-2">
+                                        
+                                        <div class="summary-row">
                                             <span>Shipping:</span>
-                                            <span>₹0.00</span>
+                                            <span>₹<%= shipping.toFixed(2) %></span>
                                         </div>
-                                        <div class="d-flex justify-content-between mb-2">
+                                        
+                                        <% if (totalDiscount > 0) { %>
+                                        <div class="summary-row">
+                                            <span>Discount:</span>
+                                            <span class="discount-value">-₹<%= totalDiscount.toFixed(2) %></span>
+                                        </div>
+                                        <% } %>
+                                        
+                                        <div class="summary-row">
                                             <span>Tax:</span>
-                                            <span>₹0.00</span>
+                                            <span>₹<%= tax.toFixed(2) %></span>
                                         </div>
-                                        <hr>
-                                        <div class="d-flex justify-content-between fw-bold">
+                                        
+                                        <div class="summary-row grand-total">
                                             <span>Total:</span>
-                                            <span>₹<%= order.total.toFixed(2) %></span>
+                                            <span>₹<%= grandTotal.toFixed(2) %></span>
                                         </div>
+                                        
+                                        <% if (order.discount && order.discount > 0) { %>
+                                        <div class="coupon-info mt-3">
+                                            <i class="fas fa-tag me-1"></i> Coupon<span class="coupon-code"><%= order.couponCode || 'DISCOUNT' %></span>applied
+                                            <% if (order.couponDiscountPercent) { %>
+                                                (<%= order.couponDiscountPercent %>% off)
+                                            <% } %>
+                                            <div class="saved-amount mt-1">Customer saved: ₹<%= totalDiscount.toFixed(2) %></div>
+                                        </div>
+                                        <% } %>
                                     </div>
                                 </div>
                                 

@@ -52,6 +52,11 @@
             background-color: rgba(201, 169, 110, 0.05);
         }
 
+        body, .gallery-main, .main-image, .thumb-slide, .size-option label, .color-option label, 
+        a, button, .product-card, .review-image img {
+            cursor: none !important;
+        }
+
         /* Image magnifier styles */
         .img-magnifier-container {
             position: relative;
@@ -554,6 +559,9 @@
         
         // Initialize custom cursor
         function initCustomCursor() {
+            // Make sure cursor is visible on all pages
+            document.body.style.cursor = 'none';
+
             const cursor = document.querySelector('.cursor');
             const cursorFollower = document.querySelector('.cursor-follower');
             
@@ -580,7 +588,7 @@
             });
             
             // Add hover effect for interactive elements
-            const interactiveElements = document.querySelectorAll('a, button, .thumb-slide, .size-option label, .color-option label');
+            const interactiveElements = document.querySelectorAll('a, button, .thumb-slide, .size-option label, .color-option label, .product-card');
             interactiveElements.forEach(el => {
                 el.addEventListener('mouseenter', function() {
                     cursor.classList.add('active');

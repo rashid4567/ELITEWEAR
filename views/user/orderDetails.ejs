@@ -14,7 +14,69 @@
     <!-- Toastify CSS for review notifications -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <style>
+        /* Discount price styling */
+        .original-price {
+            text-decoration: line-through;
+            color: #6c757d;
+            font-size: 0.9em;
+            display: block;
+        }
         
+        .discounted-price {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .discount-badge {
+            background-color: #dc3545;
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 1rem;
+            margin-left: 0.5rem;
+            display: inline-block;
+        }
+        
+        .price-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .coupon-applied {
+            font-size: 0.8rem;
+            color: #28a745;
+            margin-top: 0.25rem;
+        }
+        
+        /* For the order summary section */
+        .summary-row .discount-value {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .coupon-info {
+            background-color: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .coupon-code {
+            background-color: #28a745;
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            margin: 0 0.25rem;
+        }
+        
+        .saved-amount {
+            font-size: 0.8rem;
+            color: #28a745;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -107,10 +169,21 @@
                                 <div class="col-md-4 mb-4">
                                     <div class="order-summary">
                                         <h5 class="fw-bold mb-3">Order Summary</h5>
+                                        <% 
+                                        // Calculate original subtotal (before discounts)
+                                        let originalSubtotal = ((order.total || 0) - ((order.total || 0) > 8000 ? 0 : 200) + (order.discount || 0));
+                                        let discountedSubtotal = originalSubtotal - (order.discount || 0);
+                                        %>
                                         <div class="summary-row">
                                             <span>Items Total</span>
-                                            <span>₹<%= ((order.total || 0) - ((order.total || 0) > 8000 ? 0 : 200) + (order.discount || 0)).toFixed(2) %>
-                                            </span>
+                                            <% if (order.discount > 0) { %>
+                                                <span>
+                                                    <span class="original-price">₹<%= originalSubtotal.toFixed(2) %></span>
+                                                    <span class="discounted-price">₹<%= discountedSubtotal.toFixed(2) %></span>
+                                                </span>
+                                            <% } else { %>
+                                                <span>₹<%= originalSubtotal.toFixed(2) %></span>
+                                            <% } %>
                                         </div>
                                         <div class="summary-row">
                                             <span>Shipping Charge</span>
@@ -119,8 +192,16 @@
                                         <% if (order.discount > 0) { %>
                                             <div class="summary-row">
                                                 <span>Discount</span>
-                                                <span>-₹<%= order.discount.toFixed(2) %></span>
+                                                <span class="discount-value">-₹<%= order.discount.toFixed(2) %></span>
                                             </div>
+                                            <% if (order.couponCode) { %>
+                                                <div class="coupon-info">
+                                                    <i class="bi bi-tag-fill me-1"></i> Coupon<span class="coupon-code"><%= order.couponCode %></span>applied
+                                                    <% if (order.couponDiscountPercent) { %>
+                                                        (<%= order.couponDiscountPercent %>% off)
+                                                    <% } %>
+                                                </div>
+                                            <% } %>
                                         <% } %>
                                         <div class="summary-row grand-total">
                                             <span>Grand Total</span>
@@ -209,9 +290,26 @@
                                                             </div>
                                                         </td>
                                                         <td><%= item.size %></td>
-                                                        <td>₹<%= item.price.toFixed(2) %></td>
+                                                        <td>
+                                                            <% if (item.discountPerUnit && item.discountPerUnit > 0) { %>
+                                                                <span class="original-price">₹<%= item.price.toFixed(2) %></span>
+                                                                <span class="discounted-price">₹<%= (item.price - item.discountPerUnit).toFixed(2) %></span>
+                                                                <% const discountPercent = Math.round((item.discountPerUnit / item.price) * 100); %>
+                                                                <span class="discount-badge"><%= discountPercent %>% off</span>
+                                                            <% } else { %>
+                                                                ₹<%= item.price.toFixed(2) %>
+                                                            <% } %>
+                                                        </td>
                                                         <td><%= item.quantity %></td>
-                                                        <td>₹<%= item.total_amount.toFixed(2) %></td>
+                                                        <td>
+                                                            <% if (item.discountPerUnit && item.discountPerUnit > 0) { %>
+                                                                <span class="original-price">₹<%= (item.price * item.quantity).toFixed(2) %></span>
+                                                                <span class="discounted-price">₹<%= item.total_amount.toFixed(2) %></span>
+                                                                <span class="saved-amount">Saved: ₹<%= (item.discountPerUnit * item.quantity).toFixed(2) %></span>
+                                                            <% } else { %>
+                                                                ₹<%= item.total_amount.toFixed(2) %>
+                                                            <% } %>
+                                                        </td>
                                                         <td>
                                                             <!-- Status badge with appropriate color -->
                                                             <span class="badge status-badge bg-<%= 
@@ -1775,6 +1873,19 @@
                                 `;
                             }
                             
+                            // Add discount information to item details
+                            let priceInfo = '';
+                            if (item.discountPerUnit && item.discountPerUnit > 0) {
+                                const discountPercent = Math.round((item.discountPerUnit / item.price) * 100);
+                                priceInfo = `
+                                    <p><strong>Original Price:</strong> <span class="original-price">₹${item.price.toFixed(2)}</span></p>
+                                    <p><strong>Discounted Price:</strong> <span class="discounted-price">₹${(item.price - item.discountPerUnit).toFixed(2)}</span> <span class="discount-badge">${discountPercent}% off</span></p>
+                                    <p><strong>Total Savings:</strong> <span class="text-success">₹${(item.discountPerUnit * item.quantity).toFixed(2)}</span></p>
+                                `;
+                            } else {
+                                priceInfo = `<p><strong>Price:</strong> ₹${item.price.toFixed(2)}</p>`;
+                            }
+                            
                             contentDiv.innerHTML = `
                                 <div class="item-details-container">
                                     <div class="text-center mb-4">
@@ -1788,7 +1899,7 @@
                                         <div class="col-6">
                                             <p><strong>Size:</strong> ${item.size}</p>
                                             <p><strong>Quantity:</strong> ${item.quantity}</p>
-                                            <p><strong>Price:</strong> ₹${item.price.toFixed(2)}</p>
+                                            ${priceInfo}
                                         </div>
                                         <div class="col-6">
                                             <p><strong>Total:</strong> ₹${item.total_amount.toFixed(2)}</p>
