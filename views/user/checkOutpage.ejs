@@ -1157,9 +1157,5 @@ function createCouponElement(coupon) {
     }
   });
 </script>
-// Add this script at the end of the file, just before the closing </body> tag
-// Initialize server coupons data
-window.serverCoupons = <%- JSON.stringify(coupons || []) %>;
-console.log("Server coupons initialized:", window.serverCoupons);
 </body>
 </html>
