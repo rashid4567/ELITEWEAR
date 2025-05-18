@@ -38,6 +38,7 @@ router.get("/privacy", userControllers.Privacy)
   router.post("/apply-referral", UserAuth, userControllers.applyReferralCode);
   router.get("/", checkBlockedStatus, userControllers.loadHomepage);
   router.get("/logout", checkBlockedStatus, userControllers.logout);
+  router.get("/blog", UserAuth, userControllers.blog)
 
   // Referral routes
   router.get("/referral", UserAuth, referralController.loadReferralPage);

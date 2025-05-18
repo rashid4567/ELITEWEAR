@@ -15,12 +15,23 @@ const userSchema = new mongoose.Schema({
   },
   mobile: {
     type: String,
-    required: true,
+
+    required: function () {
+      return !this.googleId;
+    },
     unique: true,
+    sparse: true,
   },
   password: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.googleId;
+    },
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true,
   },
   isVerified: {
     type: Boolean,

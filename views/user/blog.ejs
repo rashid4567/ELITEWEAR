@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elite Wear - Premium Fashion Blog</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/userStyle/blog.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="blog-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-4 text-center text-md-start mb-3 mb-md-0">
+                    <a href="/" class="blog-header-logo text-dark">Elite Wear</a>
+                </div>
+                <div class="col-md-8">
+                    <nav class="nav justify-content-center justify-content-md-end">
+                        <a class="nav-link" href="/">Home</a>
+                        <a class="nav-link active" href="/blog">Blog</a>
+                        <a class="nav-link" href="/collections">Collections</a>
+                        <a class="nav-link" href="/about">About</a>
+                        <a class="nav-link" href="/contact">Contact</a>
+                        <a class="nav-link" href="/cart"><i class="bi bi-bag"></i></a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+  
+    <div class="breaking-news-container">
+        <div class="container">
+            <span class="breaking-news-label">LATEST UPDATES</span>
+            <div class="breaking-news-ticker" id="breakingNewsTicker">
+               
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="blog-hero d-flex align-items-center">
+        <img src="https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=1974&auto=format&fit=crop" alt="Featured Blog Post" class="blog-hero-image" id="heroImage">
+        <div class="container">
+            <div class="blog-hero-content">
+                <span class="blog-hero-tag" id="heroTag">Style Guide</span>
+                <h1 class="blog-hero-title" id="heroTitle">The Art of Layering: Mastering Fall Fashion with Premium Shirts</h1>
+                <p class="blog-hero-excerpt" id="heroExcerpt">Discover how to create sophisticated layered looks with our premium shirts for the fall season. From casual to formal, we've got you covered with expert styling tips.</p>
+                <div class="blog-hero-meta">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1974&auto=format&fit=crop" alt="Author" id="heroAuthorImage">
+                    <div>
+                        <div id="heroAuthor">By James Wilson</div>
+                        <div id="heroAuthorRole">Fashion Director</div>
+                    </div>
+                    <span class="blog-hero-meta-divider">|</span>
+                    <div id="heroDate">October 15, 2023</div>
+                    <span class="blog-hero-meta-divider">|</span>
+                    <div><i class="bi bi-clock me-1"></i> <span id="heroReadTime">8 min read</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <!-- Blog Posts -->
+            <div class="col-lg-8">
+                <!-- Featured Posts Section -->
+                <section class="featured-posts">
+                    <h2 class="featured-posts-title">Latest Articles</h2>
+                    <div class="row" id="featuredPostsContainer">
+                        <!-- Featured posts will be inserted here dynamically -->
+                    </div>
+                </section>
+
+                <!-- More Posts -->
+                <div class="row" id="morePostsContainer">
+                    <!-- More posts will be inserted here dynamically -->
+                </div>
+
+                <!-- Pagination -->
+                <nav class="blog-pagination" aria-label="Blog pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="blog-sidebar">
+                    <div class="sidebar-section">
+                        <h4 class="sidebar-title">About Elite Wear</h4>
+                        <p>Elite Wear is a premium shirt brand dedicated to crafting exceptional garments for the modern gentleman. Our blog shares style advice, fashion insights, and the stories behind our collections.</p>
+                        <a href="/about" class="btn btn-outline-accent">Learn More</a>
+                    </div>
+                </div>
+
+                <div class="blog-sidebar">
+                    <div class="sidebar-section">
+                        <h4 class="sidebar-title">Popular Posts</h4>
+                        <div id="popularPostsContainer">
+                            <!-- Popular posts will be inserted here dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="blog-sidebar">
+                    <div class="sidebar-section">
+                        <h4 class="sidebar-title">Categories</h4>
+                        <ul class="sidebar-categories" id="categoriesContainer">
+                            <!-- Categories will be inserted here dynamically -->
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="blog-sidebar">
+                    <div class="sidebar-section">
+                        <h4 class="sidebar-title">Tags</h4>
+                        <div class="sidebar-tags" id="tagsContainer">
+                            <!-- Tags will be inserted here dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="blog-sidebar">
+                    <div class="sidebar-section">
+                        <h4 class="sidebar-title">Follow Us</h4>
+                        <div class="footer-social">
+                            <a href="#" class="footer-social-link"><i class="bi bi-facebook"></i></a>
+                            <a href="#" class="footer-social-link"><i class="bi bi-instagram"></i></a>
+                            <a href="#" class="footer-social-link"><i class="bi bi-twitter"></i></a>
+                            <a href="#" class="footer-social-link"><i class="bi bi-pinterest"></i></a>
+                            <a href="#" class="footer-social-link"><i class="bi bi-youtube"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Updates Notification -->
+    <div class="live-updates-badge" id="liveUpdatesBadge">
+        <div class="pulse"></div>
+        <span>New posts available</span>
+    </div>
+
+    <!-- Newsletter Section -->
+    <section class="newsletter">
+        <div class="container text-center">
+            <h2 class="newsletter-title">Subscribe to Our Newsletter</h2>
+            <p class="newsletter-description">Stay updated with our latest collections, style guides, and exclusive offers.</p>
+            <form class="newsletter-form">
+                <div class="input-group">
+                    <input type="email" class="form-control newsletter-input" placeholder="Your email address" required>
+                    <button class="btn newsletter-button" type="submit">Subscribe</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="blog-footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <a href="/" class="footer-logo">Elite Wear</a>
+                    <p class="footer-description">Crafting premium shirts for the modern gentleman since 2010. Our commitment to quality, craftsmanship, and style is unwavering.</p>
+                    <div class="footer-social">
+                        <a href="#" class="footer-social-link"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="footer-social-link"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="footer-social-link"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="footer-social-link"><i class="bi bi-pinterest"></i></a>
+                        <a href="#" class="footer-social-link"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-4 col-lg-2 mb-4 mb-md-0">
+                    <h5 class="footer-title">Quick Links</h5>
+                    <ul class="footer-links">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/blog">Blog</a></li>
+                        <li><a href="/collections">Collections</a></li>
+                        <li><a href="/about">About Us</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 col-lg-2 mb-4 mb-md-0">
+                    <h5 class="footer-title">Shop</h5>
+                    <ul class="footer-links">
+                        <li><a href="/collections/formal-shirts">Formal Shirts</a></li>
+                        <li><a href="/collections/casual-shirts">Casual Shirts</a></li>
+                        <li><a href="/collections/linen-collection">Linen Collection</a></li>
+                        <li><a href="/collections/custom-tailoring">Custom Tailoring</a></li>
+                        <li><a href="/collections/accessories">Accessories</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 col-lg-4">
+                    <h5 class="footer-title">Contact Us</h5>
+                    <div class="footer-contact-item">
+                        <div class="footer-contact-icon">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+                        <div>
+                            123 Fashion Street, Design District<br>
+                            New York, NY 10001
+                        </div>
+                    </div>
+                    <div class="footer-contact-item">
+                        <div class="footer-contact-icon">
+                            <i class="bi bi-telephone"></i>
+                        </div>
+                        <div>
+                            +1 (212) 555-7890
+                        </div>
+                    </div>
+                    <div class="footer-contact-item">
+                        <div class="footer-contact-icon">
+                            <i class="bi bi-envelope"></i>
+                        </div>
+                        <div>
+                            info@elitewear.com
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2023 Elite Wear. All rights reserved. | <a href="/privacy-policy">Privacy Policy</a> | <a href="/terms-of-service">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sample blog post data - In a real application, this would come from your database or API
+        const blogPosts = [
+            {
+                id: 1,
+                image: "https://images.unsplash.com/photo-1603252109303-2751441dd157?q=80&w=1974&auto=format&fit=crop",
+                tag: "Business Attire",
+                title: "5 Essential White Shirts Every Professional Should Own",
+                excerpt: "The white shirt is the foundation of business attire. Discover the five essential styles that will elevate your professional wardrobe and make dressing for success effortless.",
+                author: "Michael Chen",
+                authorImage: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1974&auto=format&fit=crop",
+                date: "October 10, 2023",
+                readTime: "6 min read",
+                isNew: false
+            },
+            {
+                id: 2,
+                image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=1976&auto=format&fit=crop",
+                tag: "Summer Style",
+                title: "Linen Shirts: Your Ultimate Summer Companion",
+                excerpt: "As temperatures rise, your wardrobe needs to adapt. Explore our collection of premium linen shirts designed to keep you cool, comfortable, and stylish throughout the summer months.",
+                author: "Alex Morgan",
+                authorImage: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?q=80&w=1974&auto=format&fit=crop",
+                date: "October 5, 2023",
+                readTime: "5 min read",
+                isNew: false
+            },
+            {
+                id: 3,
+                image: "https://images.unsplash.com/photo-1589310243389-96a5483213a8?q=80&w=1974&auto=format&fit=crop",
+                tag: "Style Guide",
+                title: "The Oxford Shirt: A Versatile Classic for Every Occasion",
+                excerpt: "Discover why the Oxford shirt has remained a staple in men's fashion for decades and learn how to style it for any occasion, from casual weekends to important meetings.",
+                author: "David Brooks",
+                authorImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=1974&auto=format&fit=crop",
+                date: "September 28, 2023",
+                readTime: "7 min read",
+                isNew: false
+            },
+            {
+                id: 4,
+                image: "https://images.unsplash.com/photo-1598522325074-042db73aa4e6?q=80&w=1974&auto=format&fit=crop",
+                tag: "Craftsmanship",
+                title: "The Art of Custom Tailoring: Why Fit Matters",
+                excerpt: "A perfectly fitted shirt can transform your appearance and boost your confidence. Learn about the meticulous process behind our custom tailoring service and why the perfect fit is worth the investment.",
+                author: "Thomas Reynolds",
+                authorImage: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1974&auto=format&fit=crop",
+                date: "September 20, 2023",
+                readTime: "9 min read",
+                isNew: false
+            },
+            {
+                id: 5,
+                image: "https://images.unsplash.com/photo-1606041008023-472dfb5e530f?q=80&w=1976&auto=format&fit=crop",
+                tag: "Sustainability",
+                title: "Our Commitment to Sustainable Fashion",
+                excerpt: "Explore Elite Wear's journey toward sustainability. From organic cotton sourcing to ethical manufacturing practices, discover how we're working to reduce our environmental footprint without compromising on quality.",
+                author: "Emma Clarke",
+                authorImage: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1961&auto=format&fit=crop",
+                date: "September 15, 2023",
+                readTime: "8 min read",
+                isNew: false
+            },
+            {
+                id: 6,
+                image: "https://images.unsplash.com/photo-1626557981101-aae6f84aa6ff?q=80&w=1964&auto=format&fit=crop",
+                tag: "Trends",
+                title: "Bold Patterns: Making a Statement with Printed Shirts",
+                excerpt: "This season is all about expression through pattern. From subtle geometrics to bold florals, learn how to incorporate printed shirts into your wardrobe with confidence and style.",
+                author: "Marcus Johnson",
+                authorImage: "https://images.unsplash.com/photo-1531384441138-2736e62e0919?q=80&w=1974&auto=format&fit=crop",
+                date: "September 8, 2023",
+                readTime: "6 min read",
+                isNew: false
+            }
+        ];
+
+        const popularPosts = [
+            {
+                image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?q=80&w=1971&auto=format&fit=crop",
+                title: "The Complete Guide to Formal Shirt Etiquette",
+                date: "August 15, 2023"
+            },
+            {
+                image: "https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=1972&auto=format&fit=crop",
+                title: "Understanding Fabric: A Buyer's Guide to Premium Shirts",
+                date: "July 28, 2023"
+            },
+            {
+                image: "https://images.unsplash.com/photo-1593030761757-71fae45fa0e7?q=80&w=1974&auto=format&fit=crop",
+                title: "Collar Styles: Finding the Perfect Match for Your Face Shape",
+                date: "July 10, 2023"
+            }
+        ];
+
+        const categories = [
+            { name: "Style Guides", count: 12 },
+            { name: "Fashion Trends", count: 8 },
+            { name: "Craftsmanship", count: 6 },
+            { name: "Care & Maintenance", count: 5 },
+            { name: "Sustainability", count: 4 },
+            { name: "Behind the Scenes", count: 3 }
+        ];
+
+        const tags = [
+            "Business Attire", "Casual Style", "Formal Wear", "Summer Fashion", 
+            "Winter Essentials", "Fabric Guide", "Color Theory", "Styling Tips", 
+            "Custom Tailoring", "Sustainable Fashion", "Shirt Care", "Accessories"
+        ];
+
+        const breakingNews = [
+            "New Fall Collection launching next week - exclusive preview for subscribers",
+            "Elite Wear opens new flagship store in Milan",
+            "Limited edition collaboration with renowned designer James Smith",
+            "Sustainable cotton initiative reduces our carbon footprint by 30%",
+            "CEO interview: The future of premium menswear in the digital age"
+        ];
+
+        // Function to render featured posts
+        function renderFeaturedPosts() {
+            const container = document.getElementById('featuredPostsContainer');
+            container.innerHTML = '';
+
+            // Get the first two posts for the featured section
+            const featuredPosts = blogPosts.slice(0, 2);
+            
+            featuredPosts.forEach(post => {
+                const postHTML = `
+                    <div class="col-md-6">
+                        <div class="card blog-card">
+                            <div class="position-relative">
+                                <img src="${post.image}" class="card-img-top blog-card-img" alt="${post.title}">
+                                ${post.isNew ? '<span class="new-post-indicator">NEW</span>' : ''}
+                            </div>
+                            <div class="card-body">
+                                <span class="blog-card-tag">${post.tag}</span>
+                                <h3 class="blog-card-title"><a href="/blog/post/${post.id}">${post.title}</a></h3>
+                                <p class="blog-card-excerpt">${post.excerpt}</p>
+                                <div class="blog-card-meta">
+                                    <img src="${post.authorImage}" alt="${post.author}">
+                                    <div>${post.author}</div>
+                                    <span class="blog-card-meta-divider">|</span>
+                                    <div>${post.date}</div>
+                                    <span class="blog-card-meta-divider">|</span>
+                                    <div><i class="bi bi-clock me-1"></i> ${post.readTime}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += postHTML;
+            });
+        }
+
+        // Function to render more posts
+        function renderMorePosts() {
+            const container = document.getElementById('morePostsContainer');
+            container.innerHTML = '';
+
+            // Get the remaining posts
+            const morePosts = blogPosts.slice(2);
+            
+            morePosts.forEach(post => {
+                const postHTML = `
+                    <div class="col-md-6">
+                        <div class="card blog-card">
+                            <div class="position-relative">
+                                <img src="${post.image}" class="card-img-top blog-card-img" alt="${post.title}">
+                                ${post.isNew ? '<span class="new-post-indicator">NEW</span>' : ''}
+                            </div>
+                            <div class="card-body">
+                                <span class="blog-card-tag">${post.tag}</span>
+                                <h3 class="blog-card-title"><a href="/blog/post/${post.id}">${post.title}</a></h3>
+                                <p class="blog-card-excerpt">${post.excerpt}</p>
+                                <div class="blog-card-meta">
+                                    <img src="${post.authorImage}" alt="${post.author}">
+                                    <div>${post.author}</div>
+                                    <span class="blog-card-meta-divider">|</span>
+                                    <div>${post.date}</div>
+                                    <span class="blog-card-meta-divider">|</span>
+                                    <div><i class="bi bi-clock me-1"></i> ${post.readTime}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += postHTML;
+            });
+        }
+
+        // Function to render popular posts
+        function renderPopularPosts() {
+            const container = document.getElementById('popularPostsContainer');
+            container.innerHTML = '';
+            
+            popularPosts.forEach(post => {
+                const postHTML = `
+                    <div class="sidebar-post">
+                        <img src="${post.image}" alt="${post.title}" class="sidebar-post-img">
+                        <div>
+                            <h5 class="sidebar-post-title"><a href="/blog/post">${post.title}</a></h5>
+                            <div class="sidebar-post-date">${post.date}</div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += postHTML;
+            });
+        }
+
+        // Function to render categories
+        function renderCategories() {
+            const container = document.getElementById('categoriesContainer');
+            container.innerHTML = '';
+            
+            categories.forEach(category => {
+                const categoryHTML = `
+                    <li><a href="/blog/category/${category.name.toLowerCase().replace(/\s+/g, '-')}">${category.name} <span class="sidebar-categories-count">${category.count}</span></a></li>
+                `;
+                container.innerHTML += categoryHTML;
+            });
+        }
+
+        // Function to render tags
+        function renderTags() {
+            const container = document.getElementById('tagsContainer');
+            container.innerHTML = '';
+            
+            tags.forEach(tag => {
+                const tagHTML = `
+                    <a href="/blog/tag/${tag.toLowerCase().replace(/\s+/g, '-')}" class="sidebar-tag">${tag}</a>
+                `;
+                container.innerHTML += tagHTML;
+            });
+        }
+
+        // Function to render breaking news ticker
+        function renderBreakingNews() {
+            const container = document.getElementById('breakingNewsTicker');
+            container.innerHTML = '';
+            
+            // Duplicate the array to create a continuous loop effect
+            const duplicatedNews = [...breakingNews, ...breakingNews];
+            
+            duplicatedNews.forEach(news => {
+                const newsHTML = `
+                    <div class="breaking-news-item">${news}</div>
+                `;
+                container.innerHTML += newsHTML;
+            });
+        }
+
+        // Function to simulate new posts being added
+        function simulateNewPosts() {
+            // Create new post data
+            const newPosts = [
+                {
+                    id: 7,
+                    image: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?q=80&w=1980&auto=format&fit=crop",
+                    tag: "Craftsmanship",
+                    title: "The Details That Matter: Crafting the Perfect Shirt",
+                    excerpt: "Discover the subtle details that elevate a good shirt to a great one. From stitching techniques to button selection, learn what to look for in premium menswear.",
+                    author: "Richard Harlow",
+                    authorImage: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?q=80&w=1964&auto=format&fit=crop",
+                    date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                    readTime: "7 min read",
+                    isNew: true
+                },
+                {
+                    id: 8,
+                    image: "https://images.unsplash.com/photo-1588359348347-9bc6cbbb689e?q=80&w=1974&auto=format&fit=crop",
+                    tag: "Style Guide",
+                    title: "Color Psychology: Choosing Shirts That Enhance Your Professional Image",
+                    excerpt: "The colors you wear communicate subtle messages in professional settings. Learn how to strategically select shirt colors to project confidence, trustworthiness, and authority.",
+                    author: "Sophia Martinez",
+                    authorImage: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=1974&auto=format&fit=crop",
+                    date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+                    readTime: "5 min read",
+                    isNew: true
+                }
+            ];
+
+            // Add new posts to the beginning of the array
+            blogPosts.unshift(...newPosts);
+
+            // Update hero section with the newest post
+            updateHeroSection(blogPosts[0]);
+
+            // Show notification
+            const liveUpdatesBadge = document.getElementById('liveUpdatesBadge');
+            liveUpdatesBadge.classList.add('show');
+
+            // Add new breaking news
+            breakingNews.unshift("JUST IN: New article on shirt color psychology published - read now");
+            renderBreakingNews();
+        }
+
+        // Function to update hero section
+        function updateHeroSection(post) {
+            document.getElementById('heroImage').src = post.image;
+            document.getElementById('heroTag').textContent = post.tag;
+            document.getElementById('heroTitle').textContent = post.title;
+            document.getElementById('heroExcerpt').textContent = post.excerpt;
+            document.getElementById('heroAuthorImage').src = post.authorImage;
+            document.getElementById('heroAuthor').textContent = `By ${post.author}`;
+            document.getElementById('heroDate').textContent = post.date;
+            document.getElementById('heroReadTime').textContent = post.readTime;
+        }
+
+        // Function to refresh content when notification is clicked
+        document.getElementById('liveUpdatesBadge').addEventListener('click', function() {
+            // Re-render all content with the updated data
+            renderFeaturedPosts();
+            renderMorePosts();
+            
+            // Hide notification
+            this.classList.remove('show');
+            
+            // Scroll to top to show new content
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Initial render
+        document.addEventListener('DOMContentLoaded', function() {
+            renderFeaturedPosts();
+            renderMorePosts();
+            renderPopularPosts();
+            renderCategories();
+            renderTags();
+            renderBreakingNews();
+            
+            // Set hero section to first post
+            updateHeroSection(blogPosts[0]);
+            
+            // Simulate new posts after a delay (in a real app, this would be a server-side event)
+            setTimeout(simulateNewPosts, 30000); // 30 seconds
+            
+            // Set up periodic content refresh (in a real app, this would use WebSockets or Server-Sent Events)
+            setInterval(function() {
+                // Check for new content from the server
+                // This is a simulation - in a real app, you would make an API call
+                fetch('/api/blog/check-updates?lastUpdate=' + new Date().toISOString())
+                    .then(response => response.json())
+                    .catch(error => {
+                        console.log('Simulating server response...');
+                        // Simulate server response
+                        return { hasUpdates: Math.random() > 0.7 }; 
+                    })
+                    .then(data => {
+                        if (data && data.hasUpdates) {
+                            simulateNewPosts();
+                        }
+                    });
+            }, 60000); 
+        });
+    </script>
+</body>
+</html>

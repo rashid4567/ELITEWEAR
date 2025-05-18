@@ -8,7 +8,6 @@ require("dotenv").config();
 const clientID = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
-
 passport.use(
   new LocalStrategy(
     { usernameField: "email", passwordField: "password" },
@@ -48,10 +47,10 @@ passport.use(
       clientID: clientID,
       clientSecret: clientSecret,
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
+     
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-
         let user = await User.findOne({ googleId: profile.id });
 
         if (user) {
@@ -66,7 +65,6 @@ passport.use(
         user = await User.findOne({ email: profile.emails[0].value });
 
         if (user) {
-     
           if (user.password) {
             return done(null, false, {
               message:
@@ -84,15 +82,17 @@ passport.use(
           return done(null, user);
         }
 
-
-        user = new User({
+        const newUser = new User({
           fullname: profile.displayName,
           email: profile.emails[0].value,
           googleId: profile.id,
+          isVerified: true,
         });
-        await user.save();
-        return done(null, user);
+
+        await newUser.save();
+        return done(null, newUser);
       } catch (error) {
+        console.error("Google authentication error:", error);
         return done(error, null);
       }
     }

@@ -1087,7 +1087,14 @@ const Privacy = async (req, res) => {
     res.status(500).send("Server error");
   }
 };
-
+const blog = async (req,res)=>{
+  try {
+    res.status(200).render("blog")
+  } catch (error) {
+    console.error("error in login the blog page")
+    res.status(500).json({success:false, message:"server issue"})
+  }
+}
 
 module.exports = {
   loadHomepage,
@@ -1111,6 +1118,7 @@ module.exports = {
   getUserReferralHistory,
   Terms,
   Privacy,
+  blog,
   REFERRER_REWARD,
   NEW_USER_REWARD,
 };
