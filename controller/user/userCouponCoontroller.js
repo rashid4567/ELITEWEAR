@@ -148,6 +148,7 @@ const getAvailableCoupons = async (req, res) => {
   }
 };
 
+// Modified applyCoupon function to properly handle per-item discount information
 const applyCoupon = async (req, res) => {
   try {
     const { couponCode } = req.body;
@@ -177,6 +178,7 @@ const applyCoupon = async (req, res) => {
         .json({ success: false, message: "Invalid or expired coupon" });
     }
 
+    // Check user usage limits
     const usedBy = coupon.usedBy || [];
     const userUsage = usedBy.find(
       (u) => u && u.userId && u.userId.toString() === userId
@@ -189,6 +191,7 @@ const applyCoupon = async (req, res) => {
       });
     }
 
+    // Map cart items to format needed for discount calculator
     const cartItems = cart.items.map((item) => {
       const variant = item.productId.variants.find((v) => v.size === item.size);
       return {
@@ -204,6 +207,9 @@ const applyCoupon = async (req, res) => {
       };
     });
 
+    // Apply the per-product discount calculation
+    const { calculateProportionalDiscount } = require("../../utils/discountCalculator");
+    
     const discountResult = calculateProportionalDiscount(
       cartItems,
       coupon.couponpercent,
@@ -218,9 +224,11 @@ const applyCoupon = async (req, res) => {
       });
     }
 
+    // Calculate final pricing
     const deliveryCharge = discountResult.cartTotal > 8000 ? 0 : 200;
     const grandTotal = discountResult.finalTotal + deliveryCharge;
 
+    // Store discount information in session for order placement
     req.session.checkout = {
       totalPrice: discountResult.cartTotal,
       discount: discountResult.totalDiscount,
@@ -253,14 +261,16 @@ const applyCoupon = async (req, res) => {
         });
       }
 
+      // Provide clear information in the response
       res.status(200).json({
         success: true,
-        message: "Coupon applied successfully",
+        message: "Coupon applied successfully - discount applied to each product individually",
         data: {
           discount: discountResult.totalDiscount.toFixed(2),
           grandTotal: grandTotal.toFixed(2),
           totalPrice: discountResult.cartTotal.toFixed(2),
           deliveryCharge: deliveryCharge.toFixed(2),
+          discountPercent: coupon.couponpercent,
           items: discountResult.cartItems.map((item) => ({
             id: item.id,
             name: item.name,
@@ -270,6 +280,7 @@ const applyCoupon = async (req, res) => {
             quantity: item.quantity,
             totalDiscount: item.discountAmount.toFixed(2),
             finalTotal: item.finalTotal.toFixed(2),
+            appliedPercentage: coupon.couponpercent
           })),
         },
       });

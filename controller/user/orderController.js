@@ -90,24 +90,25 @@ const updateOrderStatusHelper = async (orderId) => {
   }
 };
 
+// Modified placeOrder function to ensure discount information is properly transferred to order items
 const placeOrder = async (req, res) => {
   try {
     const userId = req.session.user || req.user._id;
     const { paymentMethod } = req.body;
-    const {
-      calculateProportionalDiscount,
-    } = require("../../utils/discountCalculator");
+    const { calculateProportionalDiscount } = require("../../utils/discountCalculator");
 
     logger.info(
       `[INFO] Processing order for user ${userId} with payment method ${paymentMethod}`
     );
 
+    // Validate payment method
     if (!["COD", "Wallet", "Online"].includes(paymentMethod)) {
       return res
         .status(400)
         .json({ success: false, message: "Invalid payment method" });
     }
 
+    // Find user
     const user = await User.findById(userId);
     if (!user) {
       return res
@@ -115,6 +116,7 @@ const placeOrder = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
+    // Get user's cart
     const cart = await Cart.findOne({ userId }).populate({
       path: "items.productId",
       select: "name images variants",
@@ -126,6 +128,7 @@ const placeOrder = async (req, res) => {
         .json({ success: false, message: "Your cart is empty" });
     }
 
+    // Check product availability
     for (const item of cart.items) {
       const variant = item.productId.variants.find((v) => v.size === item.size);
       if (!variant) {
@@ -142,6 +145,7 @@ const placeOrder = async (req, res) => {
       }
     }
 
+    // Prepare cart items for discount calculation
     const cartItems = cart.items.map((item) => {
       const variant = item.productId.variants.find((v) => v.size === item.size);
       return {
@@ -157,6 +161,7 @@ const placeOrder = async (req, res) => {
       };
     });
 
+    // Initialize discount result with no discount applied
     let discountResult = {
       cartItems: cartItems.map((item) => ({
         ...item,
@@ -180,10 +185,9 @@ const placeOrder = async (req, res) => {
     };
 
     const totalPrice = discountResult.cartTotal;
-    const deliveryCharge = totalPrice > 8000 ? 0 : 200;
-
     let appliedCoupon = null;
 
+    // Check for and apply coupon if available in session
     if (req.session.checkout?.coupon) {
       const couponId = req.session.checkout.coupon.couponId;
       const coupon = await Coupon.findById(couponId);
@@ -200,6 +204,7 @@ const placeOrder = async (req, res) => {
           );
 
           if (!userUsage || userUsage.usedCount < coupon.limit) {
+            // Apply discount calculation per product
             discountResult = calculateProportionalDiscount(
               cartItems,
               coupon.couponpercent,
@@ -215,8 +220,11 @@ const placeOrder = async (req, res) => {
       }
     }
 
+    // Calculate delivery charge and grand total
+    const deliveryCharge = discountResult.cartTotal > 8000 ? 0 : 200;
     let grandTotal = discountResult.finalTotal + deliveryCharge;
 
+    // Check if delivery address is selected
     const addressId = req.session.checkout?.addressId;
     if (!addressId) {
       return res
@@ -224,6 +232,7 @@ const placeOrder = async (req, res) => {
         .json({ success: false, message: "Delivery address not selected" });
     }
 
+    // Handle wallet payment
     if (paymentMethod === "Wallet") {
       let wallet = await Wallet.findOne({ userId });
       if (!wallet) {
@@ -246,6 +255,7 @@ const placeOrder = async (req, res) => {
       }
     }
 
+    // Check COD limit
     if (paymentMethod === "COD" && grandTotal > 1000) {
       return res.status(400).json({
         success: false,
@@ -254,6 +264,7 @@ const placeOrder = async (req, res) => {
       });
     }
 
+    // Create order
     const orderNumber = generateOrderNumber();
     const newOrder = new Order({
       userId: userId,
@@ -285,6 +296,7 @@ const placeOrder = async (req, res) => {
       `[INFO] Created order ${newOrder._id} with number ${orderNumber}`
     );
 
+    // Create order items with individual discount information
     const orderItems = [];
     for (const item of discountResult.cartItems) {
       const orderItem = new OrderItem({
@@ -294,8 +306,8 @@ const placeOrder = async (req, res) => {
         quantity: item.quantity,
         size: item.size,
         price: item.originalPrice,
-        discountPerUnit: item.discountPerUnit || 0,
-        discountAmount: item.discountAmount || 0,
+        discountPerUnit: item.discountPerUnit || 0,  // Important: Store per-unit discount
+        discountAmount: item.discountAmount || 0,    // Important: Store total discount amount for item
         finalPrice: item.finalPrice || item.originalPrice,
         total_amount: item.finalTotal || item.originalPrice * item.quantity,
         itemImage: item.image,
@@ -310,7 +322,7 @@ const placeOrder = async (req, res) => {
         couponApplied: appliedCoupon ? true : false,
         couponId: appliedCoupon ? appliedCoupon._id : null,
         couponCode: appliedCoupon ? appliedCoupon.coupencode : "",
-        couponDiscountPercent: appliedCoupon ? appliedCoupon.couponpercent : 0,
+        couponDiscountPercent: appliedCoupon ? appliedCoupon.couponpercent : 0, // Store the exact percentage for reference
       });
       await orderItem.save();
       orderItems.push(orderItem._id);
@@ -319,9 +331,11 @@ const placeOrder = async (req, res) => {
       );
     }
 
+    // Update order with order items
     newOrder.order_items = orderItems;
     await newOrder.save();
 
+    // Update inventory
     for (const item of cart.items) {
       const product = await Product.findById(item.productId);
       if (product) {
@@ -338,6 +352,7 @@ const placeOrder = async (req, res) => {
       }
     }
 
+    // Update coupon usage stats
     if (appliedCoupon) {
       const userUsageIndex = appliedCoupon.usedBy.findIndex(
         (usage) => usage.userId.toString() === userId.toString()
@@ -360,6 +375,7 @@ const placeOrder = async (req, res) => {
       );
     }
 
+    // Process wallet payment
     if (paymentMethod === "Wallet") {
       const wallet = await Wallet.findOne({ userId });
       if (wallet) {
@@ -380,15 +396,18 @@ const placeOrder = async (req, res) => {
       }
     }
 
+    // Clear cart
     cart.items = [];
     await cart.save();
     logger.info(`[INFO] Cleared cart for user ${userId}`);
 
+    // Clear checkout session
     delete req.session.checkout;
     req.session.save();
 
+    // Handle payment method specific response
     if (paymentMethod === "Online") {
-      const paymentSuccess = true;
+      const paymentSuccess = true; // Simulate payment success
 
       if (paymentSuccess) {
         return res.status(200).json({
@@ -399,6 +418,7 @@ const placeOrder = async (req, res) => {
           redirect: `/order-success/${newOrder._id}`,
         });
       } else {
+        // Update order status on payment failure
         newOrder.paymentStatus = "Failed";
         newOrder.status = "Cancelled";
         newOrder.statusHistory.push({
@@ -417,7 +437,7 @@ const placeOrder = async (req, res) => {
         });
       }
     } else {
-      // For COD and Wallet payments, always redirect to success
+      // For COD and Wallet payments
       return res.status(200).json({
         success: true,
         message: "Order placed successfully",
@@ -431,11 +451,10 @@ const placeOrder = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to place order. Please try again.",
-      redirect: "/order-failed", // This should ideally include an order ID if available
+      redirect: "/order-failed",
     });
   }
 };
-
 const loadOrderSuccess = async (req, res) => {
   try {
     const userId = req.session.user || req.user._id;
