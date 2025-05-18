@@ -20,75 +20,7 @@
 </head>
 <body>
     <!-- Sidebar -->
-    <nav class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo">
-                <i class="fas fa-shopping-bag"></i>
-                <span>ELITE WEAR</span>
-            </div>
-        </div>
-        <ul class="sidebar-menu">
-            <li>
-                <a href="/admin/">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/productManagement" class="active">
-                    <i class="fas fa-box"></i>
-                    <span>Products</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/adminorder">
-                    <i class="fas fa-list"></i>
-                    <span>Order List</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/customers">
-                    <i class="fas fa-users"></i>
-                    <span>Customers</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/sales">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Sales</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/categories">
-                    <i class="fas fa-tag"></i>
-                    <span>Category</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/coupons">
-                    <i class="fas fa-percent"></i>
-                    <span>Coupons</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/getbannerPage">
-                    <i class="fas fa-image"></i>
-                    <span>Banner</span>
-                </a>
-            </li>
-            <li>
-                <a href="/admin/wallet-transactions">
-                    <i class="fas fa-wallet"></i>
-                    <span>Wallet</span>
-                </a>
-            </li>
-        </ul>
-        <div class="sidebar-footer">
-            <button class="btn btn-outline-primary">Account</button>
-            <a href="/admin/logout" class="btn btn-logout">Logout</a>
-        </div>
-    </nav>
-
+        <%- include("../partials/admin/header") %>  
     <!-- Sidebar Toggle Button -->
     <button id="sidebar-toggle">
         <i class="fas fa-chevron-left"></i>

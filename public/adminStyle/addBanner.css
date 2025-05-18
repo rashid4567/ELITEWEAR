@@ -24,6 +24,7 @@
             padding: 2rem;
             margin-left: 250px;
             transition: all 0.3s ease;
+             transform: translateY(-100vh);
         }
         
         .page-header {
