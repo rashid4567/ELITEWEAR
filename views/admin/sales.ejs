@@ -4,22 +4,240 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elite Wear - Sales Report</title>
-    <!-- Bootstrap CSS -->
+    <!-- Preload critical assets -->
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" as="style">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" as="style">
+    <link rel="preload" href="/adminStyle/sales.css" as="style">
+    
+    <!-- Critical CSS inline -->
+    <style>
+        /* Critical path CSS */
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            z-index: 100;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar-collapsed {
+            width: 70px;
+        }
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            transition: all 0.3s ease;
+            padding: 20px;
+        }
+        .main-content-expanded {
+            margin-left: 70px;
+        }
+        .debug-info {
+            display: none;
+            position: fixed;
+            top: 50px;
+            right: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            z-index: 1000;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .debug-toggle {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1001;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        /* Clear button styles */
+        .filter-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .clear-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 5;
+            padding: 0;
+            margin: 0;
+            height: 20px;
+            width: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .clear-btn:hover {
+            color: #333;
+        }
+        .search-bar {
+            position: relative;
+        }
+        .search-bar input {
+            padding-right: 30px;
+        }
+        .discount-filter {
+            position: relative;
+        }
+        /* Product offer badge styles */
+        .product-offer-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #fff;
+            background-color: #27ae60;
+            white-space: nowrap;
+        }
+        .product-offer-badge.no-offer {
+            background-color: #e0e0e0;
+            color: #777;
+        }
+        .product-offer-badge .offer-icon {
+            margin-right: 0.25rem;
+        }
+        /* Tooltip styles */
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip-container:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+        .tooltip-content {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 0.5rem;
+            width: 200px;
+            z-index: 1;
+            transition: opacity 0.3s;
+            font-size: 0.75rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .tooltip-content::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+        /* Product offers section */
+        .product-offers-section {
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .product-offers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        .product-offer-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e0e0e0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .product-offer-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .product-offer-card h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .product-offer-card .offer-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
+        }
+        .product-offer-card .offer-percentage {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #27ae60;
+        }
+        .product-offer-card .offer-value {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        .product-offer-card .offer-count {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        @media (max-width: 991px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+    
+    <!-- Deferred CSS loading -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="/adminStyle/sales.css">
+    
+    <!-- Preconnect to external domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="/adminStyle/sales.css">
 </head>
 <body>
     <!-- Debug toggle button -->
-    <button class="debug-toggle" onclick="toggleDebug()">Toggle Debug Info</button>
+ 
     
     <!-- Debug info panel -->
     <div class="debug-info" id="debugInfo">
@@ -138,7 +356,7 @@
                         <p class="user-name"><%= user?.fullname || 'Admin' %></p>
                         <p class="user-role">Administrator</p>
                     </div>
-                    <img src="/api/placeholder/40/40?query=profile" alt="User Profile" class="user-avatar">
+                    <img src="/api/placeholder/40/40?query=profile" alt="User Profile" class="user-avatar" loading="lazy">
                 </div>
             </div>
             
@@ -250,6 +468,29 @@
                 </div>
             </div>
             
+            <!-- Product Offers Section -->
+            <% if (typeof productOffers !== 'undefined' && productOffers && productOffers.length > 0) { %>
+                <div class="product-offers-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-tag me-2"></i> Active Product Offers
+                    </h3>
+                    <div class="product-offers-grid">
+                        <% productOffers.forEach(offer => { %>
+                            <div class="product-offer-card">
+                                <h4 title="<%= offer.productName %>"><%= offer.productName %></h4>
+                                <div class="offer-details">
+                                    <div class="offer-percentage"><%= offer.offer %>% OFF</div>
+                                    <div class="offer-value">₹<%= offer.totalValue.toLocaleString() %></div>
+                                </div>
+                                <div class="offer-count">
+                                    <i class="fas fa-shopping-cart me-1"></i> <%= offer.count %> items sold
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            <% } %>
+            
             <form id="filterForm" action="/admin/sales" method="GET">
                 <div class="filter-section">
                     <div class="date-filter">
@@ -258,7 +499,7 @@
                         <input type="hidden" name="from" id="fromDate" value="<%= fromDate %>">
                         <input type="hidden" name="to" id="toDate" value="<%= toDate %>">
                     </div>
-                    <div class="discount-filter">
+                    <div class="discount-filter filter-group">
                         <span>Discount:</span>
                         <select id="discountFilter" name="discountFilter" class="form-select form-select-sm">
                             <option value="" <%= discountFilter === '' ? 'selected' : '' %>>All</option>
@@ -267,10 +508,20 @@
                             <option value="coupon-only" <%= discountFilter === 'coupon-only' ? 'selected' : '' %>>Coupon Only</option>
                             <option value="product-offer-only" <%= discountFilter === 'product-offer-only' ? 'selected' : '' %>>Product Offer Only</option>
                         </select>
+                        <% if (discountFilter && discountFilter !== '') { %>
+                            <button type="button" class="clear-btn" id="clearDiscountFilter" title="Clear discount filter">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        <% } %>
                     </div>
-                    <div class="search-bar">
+                    <div class="search-bar filter-group">
                         <i class="fas fa-search"></i>
-                        <input type="text" name="search" value="<%= searchQuery %>" placeholder="Search by buyer, product, coupon, or order ID...">
+                        <input type="text" name="search" id="searchInput" value="<%= searchQuery %>" placeholder="Search by buyer, product, coupon, or order ID...">
+                        <% if (searchQuery && searchQuery !== '') { %>
+                            <button type="button" class="clear-btn" id="clearSearch" title="Clear search">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        <% } %>
                     </div>
                 </div>
                 
@@ -283,6 +534,9 @@
                         <button type="button" class="btn quick-filter" data-filter="month">Last 30 Days</button>
                         <button type="button" class="btn quick-filter" data-filter="year">Last Year</button>
                     </div>
+                    <button type="button" class="btn btn-outline-secondary ms-2" id="clearAllFilters">
+                        <i class="fas fa-times me-1"></i> Clear All Filters
+                    </button>
                 </div>
             </form>
 
@@ -307,8 +561,8 @@
                                 <th data-sort="productName">Product Name <i class="fas fa-sort ms-1 text-gray-400"></i></th>
                                 <th data-sort="quantity">Qty <i class="fas fa-sort ms-1 text-gray-400"></i></th>
                                 <th data-sort="price">Price <i class="fas fa-sort ms-1 text-gray-400"></i></th>
-                                <th data-sort="couponCode">Coupon <i class="fas fa-sort ms-1 text-gray-400"></i></th>
                                 <th data-sort="productOffer">Product Offer <i class="fas fa-sort ms-1 text-gray-400"></i></th>
+                                <th data-sort="couponCode">Coupon <i class="fas fa-sort ms-1 text-gray-400"></i></th>
                                 <th data-sort="category">Category <i class="fas fa-sort ms-1 text-gray-400"></i></th>
                                 <th data-sort="total">Total <i class="fas fa-sort ms-1 text-gray-400"></i></th>
                             </tr>
@@ -323,21 +577,36 @@
                                         <td><%= item.quantity || 0 %></td>
                                         <td>₹<%= (item.price || 0).toLocaleString() %></td>
                                         <td>
-                                            <% if (item.couponApplied) { %>
-                                                <span class="coupon-badge" title="<%= item.couponDescription || '' %>">
-                                                    <%= item.couponCode || 'Coupon' %> (<%= item.couponPercent || 0 %>%)
-                                                </span>
+                                            <% if (item.productOffer && item.productOffer > 0) { %>
+                                                <div class="tooltip-container">
+                                                    <span class="product-offer-badge">
+                                                        <i class="fas fa-tag offer-icon"></i>
+                                                        <%= item.productOffer %>%
+                                                    </span>
+                                                    <div class="tooltip-content">
+                                                        <div>Discount: ₹<%= ((item.price * item.productOffer / 100) * item.quantity).toLocaleString() %></div>
+                                                        <div>Source: <%= item.productDiscountSource || 'Direct' %></div>
+                                                    </div>
+                                                </div>
                                             <% } else { %>
-                                                <span class="coupon-badge no-coupon">-</span>
+                                                <span class="product-offer-badge no-offer">-</span>
                                             <% } %>
                                         </td>
                                         <td>
-                                            <% if (item.productEffectiveDiscount && item.productEffectiveDiscount > 0) { %>
-                                                <span class="product-offer-badge">
-                                                    <%= item.productEffectiveDiscount %>%
-                                                </span>
+                                            <% if (item.couponApplied) { %>
+                                                <div class="tooltip-container">
+                                                    <span class="coupon-badge" title="<%= item.couponDescription || '' %>">
+                                                        <%= item.couponCode || 'Coupon' %> (<%= item.couponPercent || 0 %>%)
+                                                    </span>
+                                                    <div class="tooltip-content">
+                                                        <div>Discount: ₹<%= ((item.price * item.couponPercent / 100) * item.quantity).toLocaleString() %></div>
+                                                        <% if (item.couponDescription) { %>
+                                                            <div><%= item.couponDescription %></div>
+                                                        <% } %>
+                                                    </div>
+                                                </div>
                                             <% } else { %>
-                                                <span class="product-offer-badge no-offer">-</span>
+                                                <span class="coupon-badge no-coupon">-</span>
                                             <% } %>
                                         </td>
                                         <td><span class="category-badge"><%= item.category || 'Uncategorized' %></span></td>
@@ -401,27 +670,38 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script>
+    <!-- Optimized Scripts -->
+    <!-- Load Chart.js only when needed -->
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Load Bootstrap with defer -->
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Load Flatpickr with defer -->
+    <script defer src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
+    <!-- Main script with defer -->
+    <script defer>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize date range picker
             const fromDate = document.getElementById('fromDate').value;
             const toDate = document.getElementById('toDate').value;
             
-            flatpickr("#dateRange", {
-                mode: "range",
-                dateFormat: "Y-m-d",
-                defaultDate: [fromDate, toDate],
-                onChange: function(selectedDates, dateStr, instance) {
-                    if (selectedDates.length === 2) {
-                        document.getElementById('fromDate').value = formatDate(selectedDates[0]);
-                        document.getElementById('toDate').value = formatDate(selectedDates[1]);
-                        document.getElementById('filterForm').submit();
-                    }
+            // Use a timeout to defer non-critical initialization
+            setTimeout(() => {
+                if (typeof flatpickr === 'function') {
+                    flatpickr("#dateRange", {
+                        mode: "range",
+                        dateFormat: "Y-m-d",
+                        defaultDate: [fromDate, toDate],
+                        onChange: function(selectedDates, dateStr, instance) {
+                            if (selectedDates.length === 2) {
+                                document.getElementById('fromDate').value = formatDate(selectedDates[0]);
+                                document.getElementById('toDate').value = formatDate(selectedDates[1]);
+                                document.getElementById('filterForm').submit();
+                            }
+                        }
+                    });
                 }
-            });
+            }, 100);
             
             function formatDate(date) {
                 const year = date.getFullYear();
@@ -434,17 +714,48 @@
             const searchInput = document.querySelector('input[name="search"]');
             let searchTimeout;
             
-            searchInput.addEventListener('input', function() {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        document.getElementById('filterForm').submit();
+                    }, 500);
+                });
+            }
+            
+            // Clear search button
+            const clearSearchBtn = document.getElementById('clearSearch');
+            if (clearSearchBtn) {
+                clearSearchBtn.addEventListener('click', function() {
+                    document.getElementById('searchInput').value = '';
                     document.getElementById('filterForm').submit();
-                }, 500);
-            });
+                });
+            }
             
             // Discount filter change
-            document.getElementById('discountFilter').addEventListener('change', function() {
-                document.getElementById('filterForm').submit();
-            });
+            const discountFilter = document.getElementById('discountFilter');
+            if (discountFilter) {
+                discountFilter.addEventListener('change', function() {
+                    document.getElementById('filterForm').submit();
+                });
+            }
+            
+            // Clear discount filter button
+            const clearDiscountFilterBtn = document.getElementById('clearDiscountFilter');
+            if (clearDiscountFilterBtn) {
+                clearDiscountFilterBtn.addEventListener('click', function() {
+                    document.getElementById('discountFilter').value = '';
+                    document.getElementById('filterForm').submit();
+                });
+            }
+            
+            // Clear all filters button
+            const clearAllFiltersBtn = document.getElementById('clearAllFilters');
+            if (clearAllFiltersBtn) {
+                clearAllFiltersBtn.addEventListener('click', function() {
+                    resetFilters();
+                });
+            }
             
             // Quick date filters
             const quickFilters = document.querySelectorAll('.quick-filter');
@@ -486,62 +797,78 @@
                 });
             });
 
-            // PDF Download
-            document.getElementById('downloadPDF').addEventListener('click', function() {
-                const fromDate = document.getElementById('fromDate').value;
-                const toDate = document.getElementById('toDate').value;
-                const search = searchInput.value;
-                const discountFilter = document.getElementById('discountFilter').value;
-                
-                window.location.href = `/admin/sales/download-pdf?from=${fromDate}&to=${toDate}&search=${encodeURIComponent(search)}&discountFilter=${discountFilter}`;
-            });
-            
-            // Excel Download
-            document.getElementById('downloadExcel').addEventListener('click', function() {
-                const fromDate = document.getElementById('fromDate').value;
-                const toDate = document.getElementById('toDate').value;
-                const search = searchInput.value;
-                const discountFilter = document.getElementById('discountFilter').value;
-                
-                window.location.href = `/admin/sales/download-excel?from=${fromDate}&to=${toDate}&search=${encodeURIComponent(search)}&discountFilter=${discountFilter}`;
-            });
-            
-            // Table sorting
-            const tableHeaders = document.querySelectorAll('th[data-sort]');
-            tableHeaders.forEach(header => {
-                header.addEventListener('click', function() {
-                    const sortField = this.dataset.sort;
-                    const currentOrder = this.dataset.order || 'asc';
-                    const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+            // PDF Download - Lazy bind
+            const downloadPDF = document.getElementById('downloadPDF');
+            if (downloadPDF) {
+                downloadPDF.addEventListener('click', function() {
+                    const fromDate = document.getElementById('fromDate').value;
+                    const toDate = document.getElementById('toDate').value;
+                    const search = searchInput ? searchInput.value : '';
+                    const discountFilter = document.getElementById('discountFilter').value;
                     
-                    // Update UI to show sort direction
-                    tableHeaders.forEach(h => {
-                        h.dataset.order = '';
-                        const icon = h.querySelector('i');
-                        if (icon) {
-                            icon.className = 'fas fa-sort ms-1 text-gray-400';
-                        }
-                    });
-                    
-                    this.dataset.order = newOrder;
-                    
-                    // Update sort icon
-                    const icon = this.querySelector('i');
-                    if (icon) {
-                        icon.className = `fas fa-sort-${newOrder === 'asc' ? 'up' : 'down'} ms-1 text-primary`;
-                    }
-                    
-                    // Sort the table
-                    sortTable(sortField, newOrder);
+                    window.location.href = `/admin/sales/download-pdf?from=${fromDate}&to=${toDate}&search=${encodeURIComponent(search)}&discountFilter=${discountFilter}`;
                 });
-            });
+            }
+            
+            // Excel Download - Lazy bind
+            const downloadExcel = document.getElementById('downloadExcel');
+            if (downloadExcel) {
+                downloadExcel.addEventListener('click', function() {
+                    const fromDate = document.getElementById('fromDate').value;
+                    const toDate = document.getElementById('toDate').value;
+                    const search = searchInput ? searchInput.value : '';
+                    const discountFilter = document.getElementById('discountFilter').value;
+                    
+                    window.location.href = `/admin/sales/download-excel?from=${fromDate}&to=${toDate}&search=${encodeURIComponent(search)}&discountFilter=${discountFilter}`;
+                });
+            }
+            
+            // Table sorting - Defer initialization
+            setTimeout(() => {
+                initTableSorting();
+            }, 200);
+            
+            function initTableSorting() {
+                const tableHeaders = document.querySelectorAll('th[data-sort]');
+                tableHeaders.forEach(header => {
+                    header.addEventListener('click', function() {
+                        const sortField = this.dataset.sort;
+                        const currentOrder = this.dataset.order || 'asc';
+                        const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+                        
+                        // Update UI to show sort direction
+                        tableHeaders.forEach(h => {
+                            h.dataset.order = '';
+                            const icon = h.querySelector('i');
+                            if (icon) {
+                                icon.className = 'fas fa-sort ms-1 text-gray-400';
+                            }
+                        });
+                        
+                        this.dataset.order = newOrder;
+                        
+                        // Update sort icon
+                        const icon = this.querySelector('i');
+                        if (icon) {
+                            icon.className = `fas fa-sort-${newOrder === 'asc' ? 'up' : 'down'} ms-1 text-primary`;
+                        }
+                        
+                        // Sort the table
+                        sortTable(sortField, newOrder);
+                    });
+                });
+            }
             
             function sortTable(field, order) {
                 const tbody = document.querySelector('table tbody');
+                if (!tbody) return;
+                
                 const rows = Array.from(tbody.querySelectorAll('tr'));
                 
                 // Get column index
                 const headerRow = document.querySelector('table thead tr');
+                if (!headerRow) return;
+                
                 const headers = Array.from(headerRow.querySelectorAll('th'));
                 const columnIndex = headers.findIndex(h => h.dataset.sort === field);
                 
@@ -575,15 +902,17 @@
                         : bValue.localeCompare(aValue);
                 });
                 
-                // Reorder rows in the DOM
-                rows.forEach(row => tbody.appendChild(row));
+                // Use DocumentFragment for better performance
+                const fragment = document.createDocumentFragment();
+                rows.forEach(row => fragment.appendChild(row));
+                tbody.appendChild(fragment);
             }
             
             // Reset filters function
             window.resetFilters = function() {
                 document.getElementById('fromDate').value = '';
                 document.getElementById('toDate').value = '';
-                document.querySelector('input[name="search"]').value = '';
+                if (searchInput) searchInput.value = '';
                 document.getElementById('discountFilter').value = '';
                 document.getElementById('filterForm').submit();
             };
@@ -598,48 +927,58 @@
                 }
             };
             
-            // Sidebar toggle functionality
-            const sidebarToggle = document.getElementById('sidebar-toggle');
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('main-content');
+            // Sidebar toggle functionality - Defer initialization
+            setTimeout(() => {
+                initSidebar();
+            }, 100);
             
-            sidebarToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('sidebar-collapsed');
-                mainContent.classList.toggle('main-content-expanded');
+            function initSidebar() {
+                const sidebarToggle = document.getElementById('sidebar-toggle');
+                const sidebar = document.getElementById('sidebar');
+                const mainContent = document.getElementById('main-content');
                 
-                const icon = this.querySelector('i');
-                if (icon.classList.contains('fa-chevron-left')) {
-                    icon.classList.remove('fa-chevron-left');
-                    icon.classList.add('fa-chevron-right');
-                } else {
-                    icon.classList.remove('fa-chevron-right');
-                    icon.classList.add('fa-chevron-left');
-                }
-            });
-            
-            // Check screen size for responsive behavior
-            function checkScreenSize() {
-                if (window.innerWidth < 992) {
-                    sidebar.classList.add('sidebar-collapsed');
-                    mainContent.classList.add('main-content-expanded');
+                if (sidebarToggle && sidebar && mainContent) {
+                    sidebarToggle.addEventListener('click', function() {
+                        sidebar.classList.toggle('sidebar-collapsed');
+                        mainContent.classList.toggle('main-content-expanded');
+                        
+                        const icon = this.querySelector('i');
+                        if (icon) {
+                            if (icon.classList.contains('fa-chevron-left')) {
+                                icon.classList.remove('fa-chevron-left');
+                                icon.classList.add('fa-chevron-right');
+                            } else {
+                                icon.classList.remove('fa-chevron-right');
+                                icon.classList.add('fa-chevron-left');
+                            }
+                        }
+                    });
                     
-                    const icon = sidebarToggle.querySelector('i');
-                    if (icon && icon.classList.contains('fa-chevron-left')) {
-                        icon.classList.remove('fa-chevron-left');
-                        icon.classList.add('fa-chevron-right');
+                    // Check screen size for responsive behavior
+                    function checkScreenSize() {
+                        if (window.innerWidth < 992) {
+                            sidebar.classList.add('sidebar-collapsed');
+                            mainContent.classList.add('main-content-expanded');
+                            
+                            const icon = sidebarToggle.querySelector('i');
+                            if (icon && icon.classList.contains('fa-chevron-left')) {
+                                icon.classList.remove('fa-chevron-left');
+                                icon.classList.add('fa-chevron-right');
+                            }
+                        }
+                    }
+                    
+                    // Run on load and resize
+                    checkScreenSize();
+                    window.addEventListener('resize', checkScreenSize);
+                    
+                    // Mobile sidebar toggle
+                    if (window.innerWidth < 992) {
+                        sidebarToggle.addEventListener('click', function() {
+                            sidebar.classList.toggle('show');
+                        });
                     }
                 }
-            }
-            
-            // Run on load and resize
-            checkScreenSize();
-            window.addEventListener('resize', checkScreenSize);
-            
-            // Mobile sidebar toggle
-            if (window.innerWidth < 992) {
-                sidebarToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('show');
-                });
             }
         });
     </script>

@@ -2,7 +2,7 @@ const ExcelJS = require("exceljs")
 
 const generateSalesReport = async (salesData, res, options = {}) => {
   try {
-    const { fromDate, toDate, title = "Sales Report" } = options
+    const { fromDate, toDate, title = "Sales Report", productOffers = [] } = options
 
     if (!Array.isArray(salesData)) {
       throw new Error("Sales data must be an array")
@@ -82,6 +82,28 @@ const generateSalesReport = async (salesData, res, options = {}) => {
       hour12: true,
     })
 
+    // Generate product offers HTML
+    let productOffersHTML = '';
+    if (productOffers && productOffers.length > 0) {
+      productOffersHTML = `
+        <h2 class="section-title">Product Offers</h2>
+        <div class="product-offers-grid">
+          ${productOffers.map(offer => `
+            <div class="product-offer-card">
+              <h4>${offer.productName}</h4>
+              <div class="offer-details">
+                <div class="offer-percentage">${offer.offer}% OFF</div>
+                <div class="offer-value">₹${formatCurrency(offer.totalValue)}</div>
+              </div>
+              <div class="offer-count">
+                <i class="fas fa-shopping-cart"></i> ${offer.count} items sold
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
     const htmlContent = `
       <!DOCTYPE html>
       <html lang="en">
@@ -102,6 +124,7 @@ const generateSalesReport = async (salesData, res, options = {}) => {
             --border-color: #cccccc;
             --text-color: #333333;
             --white: #ffffff;
+            --offer-color: #27ae60;
           }
           
           * {
@@ -308,11 +331,59 @@ const generateSalesReport = async (salesData, res, options = {}) => {
           .offer-badge {
             display: inline-block;
             padding: 0.2rem 0.5rem;
-            background-color: #27ae60;
+            background-color: var(--offer-color);
             color: var(--white);
             border-radius: 4px;
             font-size: 0.8rem;
             font-weight: 600;
+          }
+          
+          /* Product offers grid */
+          .product-offers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+          }
+          
+          .product-offer-card {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+          }
+          
+          .product-offer-card h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          
+          .product-offer-card .offer-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.5rem;
+          }
+          
+          .product-offer-card .offer-percentage {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--offer-color);
+          }
+          
+          .product-offer-card .offer-value {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+          }
+          
+          .product-offer-card .offer-count {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            margin-top: 0.5rem;
           }
           
           @media print {
@@ -424,23 +495,26 @@ const generateSalesReport = async (salesData, res, options = {}) => {
           
           <!-- New summary row for product offers -->
           <div class="summary-row">
-            <div class="summary-box" style="background-color: #27ae60;">
+            <div class="summary-box" style="background-color: var(--offer-color);">
               <h3>PRODUCTS WITH OFFERS</h3>
               <p>${formatCurrency(productsWithOffers)}</p>
             </div>
-            <div class="summary-box" style="background-color: #27ae60;">
+            <div class="summary-box" style="background-color: var(--offer-color);">
               <h3>TOTAL OFFER VALUE</h3>
               <p>₹${formatCurrency(totalProductOfferValue)}</p>
             </div>
-            <div class="summary-box" style="background-color: #27ae60;">
+            <div class="summary-box" style="background-color: var(--offer-color);">
               <h3>AVG OFFER PERCENTAGE</h3>
               <p>${averageProductOffer.toFixed(1)}%</p>
             </div>
-            <div class="summary-box" style="background-color: #27ae60;">
+            <div class="summary-box" style="background-color: var(--offer-color);">
               <h3>UNIQUE COUPONS</h3>
               <p>${formatCurrency(uniqueCoupons)}</p>
             </div>
           </div>
+          
+          <!-- Product Offers Section -->
+          ${productOffersHTML}
           
           <h2 class="section-title">Sales Details</h2>
           
@@ -539,12 +613,13 @@ const generateSalesReport = async (salesData, res, options = {}) => {
 }
 
 const generateExcel = async (salesData, res, options = {}) => {
-  const { fromDate, toDate } = options
+  const { fromDate, toDate, productOffers = [] } = options
 
   const workbook = new ExcelJS.Workbook()
   workbook.creator = "Elite Wear"
   workbook.created = new Date()
 
+  // Main sales data worksheet
   const worksheet = workbook.addWorksheet("Sales Report")
 
   worksheet.columns = [
@@ -553,7 +628,7 @@ const generateExcel = async (salesData, res, options = {}) => {
     { header: "Product ID", key: "sku", width: 15 },
     { header: "Quantity", key: "quantity", width: 10 },
     { header: "Price", key: "price", width: 15 },
-    { header: "Product Offer %", key: "productOffer", width: 15 }, // New column
+    { header: "Product Offer %", key: "productOffer", width: 15 },
     { header: "Discount Amount", key: "discount", width: 15 },
     { header: "Discount %", key: "discountPercentage", width: 10 },
     { header: "Coupon Applied", key: "couponApplied", width: 15 },
@@ -581,7 +656,7 @@ const generateExcel = async (salesData, res, options = {}) => {
       sku: item.sku,
       quantity: item.quantity,
       price: item.price,
-      productOffer: item.productOffer || 0, // New field
+      productOffer: item.productOffer || 0,
       discount: item.discount,
       discountPercentage: item.discountPercentage,
       couponApplied: item.couponApplied ? "Yes" : "No",
@@ -652,6 +727,37 @@ const generateExcel = async (salesData, res, options = {}) => {
   worksheet.getColumn("price").numFmt = "₹#,##0.00"
   worksheet.getColumn("discount").numFmt = "₹#,##0.00"
   worksheet.getColumn("total").numFmt = "₹#,##0.00"
+
+  // Add a separate worksheet for product offers if available
+  if (productOffers && productOffers.length > 0) {
+    const offersWorksheet = workbook.addWorksheet("Product Offers");
+    
+    offersWorksheet.columns = [
+      { header: "Product Name", key: "productName", width: 40 },
+      { header: "Offer %", key: "offer", width: 15 },
+      { header: "Items Sold", key: "count", width: 15 },
+      { header: "Total Value", key: "totalValue", width: 20 },
+    ];
+    
+    offersWorksheet.getRow(1).font = { bold: true };
+    offersWorksheet.getRow(1).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "27AE60" },
+    };
+    offersWorksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFF" } };
+    
+    productOffers.forEach(offer => {
+      offersWorksheet.addRow({
+        productName: offer.productName,
+        offer: offer.offer,
+        count: offer.count,
+        totalValue: offer.totalValue
+      });
+    });
+    
+    offersWorksheet.getColumn("totalValue").numFmt = "₹#,##0.00";
+  }
 
   res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
   res.setHeader(

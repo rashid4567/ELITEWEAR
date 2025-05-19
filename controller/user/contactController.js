@@ -396,7 +396,7 @@ const createAutoReplyMailOptions = (to, name) => ({
           
           
           <div class="button-container">
-            <a href="https://www.elitewear.com/collections" class="button">Explore Collections</a>
+            <a href="https://www.elitewear.live" class="button">Explore Collections</a>
           </div>
           
           <p style="margin-top: 32px;">Thank you for choosing Elite Wear.</p>

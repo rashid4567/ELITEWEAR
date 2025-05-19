@@ -11,6 +11,7 @@
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/userStyle/sidebarpartials.css">
+<link rel="stylesheet" href="/userStyle/sidebarpartials.css">
 </head>
 <body>
   <div class="demo-container">
@@ -72,9 +73,7 @@
             <div class="menu-item" data-path="/orders">
               <span class="icon"><i class="fas fa-shopping-bag"></i></span>
               <span class="item-text">My Orders</span>
-              <div class="badge-container">
-                <span class="badge-count">2</span>
-              </div>
+              
             </div>
           </a>
 
@@ -82,9 +81,7 @@
             <div class="menu-item" data-path="/wishlist">
               <span class="icon"><i class="fas fa-heart"></i></span>
               <span class="item-text">My Wishlist</span>
-              <div class="badge-container">
-                <span class="badge-count">5</span>
-              </div>
+             
             </div>
           </a>
         </div>
@@ -105,9 +102,7 @@
             <div class="menu-item" data-path="/allcoupons">
               <span class="icon"><i class="fas fa-tag"></i></span>
               <span class="item-text">My Coupons</span>
-              <div class="badge-container">
-                <span class="badge-count">3</span>
-              </div>
+             
             </div>
           </a>
         </div>
@@ -296,7 +291,7 @@
       
       item.appendChild(ripple);
       
-      // Remove ripple after animation completes
+    
       setTimeout(() => {
         ripple.remove();
       }, 600);

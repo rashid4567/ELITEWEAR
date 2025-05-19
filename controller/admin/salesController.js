@@ -9,7 +9,7 @@ const {
 
 const loadsales = async (req, res) => {
   try {
-    console.log("Starting loadsales function");
+    console.time("sales-page-load");
 
     const endDate = new Date();
     const startDate = new Date();
@@ -27,17 +27,7 @@ const loadsales = async (req, res) => {
     const limit = 10;
     const skip = (page - 1) * limit;
 
-    console.log(
-      `Date range: ${from || startDate.toISOString()} to ${
-        to || endDate.toISOString()
-      }`
-    );
-    console.log(
-      `Search: ${search || "none"}, Discount filter: ${
-        discountFilter || "none"
-      }`
-    );
-
+    // Create date filter
     const dateFilter = {
       orderDate: {
         $gte: from ? new Date(from) : startDate,
@@ -46,84 +36,102 @@ const loadsales = async (req, res) => {
       status: { $in: ["Delivered", "Processing", "Confirmed", "Shipped"] },
     };
 
-    console.log("Fetching orders with filter:", JSON.stringify(dateFilter));
-
+    // Use lean() for better performance - returns plain JS objects instead of Mongoose documents
+    // Use projection to only fetch the fields we need
     const orders = await Order.find(dateFilter)
+      .select(
+        "userId couponId order_items orderDate status paymentMethod couponApplied couponCode couponDiscountPercent orderNumber"
+      )
       .populate({
         path: "userId",
         select: "fullname email",
+        options: { lean: true },
       })
       .populate({
         path: "couponId",
         select: "coupencode couponpercent description",
+        options: { lean: true },
+      })
+      .sort({ orderDate: -1 })
+      .lean();
+
+    console.time("populate-order-items");
+
+    // Collect all order item IDs to fetch in a single query
+    const orderItemIds = orders.reduce((ids, order) => {
+      if (order.order_items && order.order_items.length > 0) {
+        return [...ids, ...order.order_items];
+      }
+      return ids;
+    }, []);
+
+    // Fetch all order items in a single query
+    const orderItems = await OrderItem.find({ _id: { $in: orderItemIds } })
+      .populate({
+        path: "productId",
+        select: "name categoryId offer effectiveDiscount discountSource",
+        populate: {
+          path: "categoryId",
+          select: "name",
+          options: { lean: true },
+        },
+        options: { lean: true },
       })
       .populate({
-        path: "order_items",
+        path: "couponId",
+        select: "coupencode couponpercent description",
+        options: { lean: true },
       })
-      .sort({ orderDate: -1 });
+      .lean();
 
-    console.log(`Found ${orders.length} orders`);
+    // Create a map for quick lookup
+    const orderItemsMap = orderItems.reduce((map, item) => {
+      map[item._id.toString()] = item;
+      return map;
+    }, {});
 
-    for (const order of orders) {
+    // Replace order_items references with actual items
+    orders.forEach((order) => {
       if (order.order_items && order.order_items.length > 0) {
-        for (let i = 0; i < order.order_items.length; i++) {
-          const itemId = order.order_items[i];
-          try {
-            const populatedItem = await OrderItem.findById(itemId)
-              .populate({
-                path: "productId",
-                select:
-                  "name categoryId offer effectiveDiscount discountSource",
-                populate: {
-                  path: "categoryId",
-                  select: "name",
-                },
-              })
-              .populate({
-                path: "couponId",
-                select: "coupencode couponpercent description",
-              });
-
-            if (populatedItem) {
-              order.order_items[i] = populatedItem;
-            }
-          } catch (err) {
-            console.error(`Error populating order item ${itemId}:`, err);
-          }
-        }
+        order.order_items = order.order_items
+          .map((itemId) => {
+            const itemIdStr = itemId.toString();
+            return orderItemsMap[itemIdStr] || null;
+          })
+          .filter(Boolean); // Remove null items
       }
-    }
+    });
 
-    console.log("Finished populating order items");
+    console.timeEnd("populate-order-items");
+    console.time("process-sales-data");
 
     let salesData = [];
     let uniqueCoupons = new Set();
     let ordersWithCouponsCount = 0;
+    let totalSales = 0;
+    let totalItems = 0;
+    let totalDiscounts = 0;
+    let totalProductDiscounts = 0;
+    let totalCouponDiscounts = 0;
+    const uniqueCustomersSet = new Set();
 
+    // Process orders and calculate metrics in a single pass
     for (const order of orders) {
-      console.log(
-        `Processing order ${order._id}, items: ${
-          order.order_items ? order.order_items.length : 0
-        }`
-      );
-
       const orderHasCoupon = order.couponApplied || false;
+
       if (orderHasCoupon) {
         ordersWithCouponsCount++;
         if (order.couponCode) {
           uniqueCoupons.add(order.couponCode);
-          console.log(`Added coupon ${order.couponCode} to unique coupons`);
         }
       }
 
       if (!order.order_items || !Array.isArray(order.order_items)) {
-        console.log(`Order ${order._id} has no items or items is not an array`);
         continue;
       }
 
       for (const item of order.order_items) {
         if (!item || !item.productId) {
-          console.log("Skipping item with no product ID");
           continue;
         }
 
@@ -167,50 +175,62 @@ const loadsales = async (req, res) => {
             category = item.productId.categoryId.name;
           }
 
+          const buyer = order.userId ? order.userId.fullname : "Unknown";
+          uniqueCustomersSet.add(buyer);
+
+          // Calculate metrics as we go
+          totalSales += totalAmount;
+          totalItems += quantity;
+          totalDiscounts += discountAmount;
+
+          const productDiscountAmount =
+            price * (productEffectiveDiscount / 100) * quantity;
+          totalProductDiscounts += productDiscountAmount;
+
+          if (couponApplied && item.discount > 0) {
+            totalCouponDiscounts += item.discount;
+          } else if (couponApplied) {
+            const couponDiscountAmount =
+              price * (couponPercent / 100) * quantity;
+            totalCouponDiscounts += couponDiscountAmount;
+          }
+
           const saleEntry = {
-            buyer: order.userId ? order.userId.fullname : "Unknown",
-            productName: productName,
-            productId: productId,
+            buyer,
+            productName,
+            productId,
             sku: `#${productId.toString().slice(-5)}`,
-            quantity: quantity,
-            price: price,
+            quantity,
+            price,
             discount: discountAmount,
-            discountPercentage: discountPercentage,
-            category: category,
+            discountPercentage,
+            category,
             total: totalAmount,
             orderDate: order.orderDate || new Date(),
             status: order.status || "Unknown",
             paymentMethod: order.paymentMethod || "Unknown",
-
-            productOffer: productOffer,
-            productEffectiveDiscount: productEffectiveDiscount,
-            productDiscountSource: productDiscountSource,
-
-            couponApplied: couponApplied,
-            couponCode: couponCode,
-            couponPercent: couponPercent,
-            couponDescription: couponDescription,
+            productOffer,
+            productEffectiveDiscount,
+            productDiscountSource,
+            couponApplied,
+            couponCode,
+            couponPercent,
+            couponDescription,
             orderNumber:
               order.orderNumber || `ORD${order._id.toString().slice(-6)}`,
           };
 
           salesData.push(saleEntry);
-
-          if (couponApplied) {
-            console.log(
-              `Added sale with coupon: ${couponCode}, percent: ${couponPercent}%`
-            );
-          }
         } catch (err) {
           console.error("Error processing order item:", err);
         }
       }
     }
 
-    console.log(`Processed ${salesData.length} sales entries`);
-    console.log(`Found ${uniqueCoupons.size} unique coupons`);
-    console.log(`Found ${ordersWithCouponsCount} orders with coupons`);
+    console.timeEnd("process-sales-data");
+    console.time("filter-data");
 
+    // Apply filters
     if (search) {
       const searchLower = search.toLowerCase();
       salesData = salesData.filter(
@@ -226,7 +246,6 @@ const loadsales = async (req, res) => {
           (item.orderNumber &&
             item.orderNumber.toLowerCase().includes(searchLower))
       );
-      console.log(`After search filter: ${salesData.length} entries`);
     }
 
     if (discountFilter) {
@@ -247,67 +266,21 @@ const loadsales = async (req, res) => {
       } else if (discountFilter === "product-offer-only") {
         salesData = salesData.filter((item) => item.productOffer > 0);
       }
-      console.log(`After discount filter: ${salesData.length} entries`);
     }
 
-    const totalSales = salesData.reduce(
-      (sum, item) => sum + (item.total || 0),
-      0
-    );
-    const totalItems = salesData.reduce(
-      (sum, item) => sum + (item.quantity || 0),
-      0
-    );
-    const totalDiscounts = salesData.reduce(
-      (sum, item) => sum + (item.discount || 0),
-      0
-    );
+    console.timeEnd("filter-data");
 
-    const totalProductDiscounts = salesData.reduce((sum, item) => {
-      const productDiscountAmount =
-        (item.price || 0) *
-        ((item.productEffectiveDiscount || 0) / 100) *
-        (item.quantity || 0);
-      return sum + productDiscountAmount;
-    }, 0);
-
-    const totalCouponDiscounts = salesData.reduce((sum, item) => {
-      if (item.couponApplied) {
-        if (item.discount > 0) {
-          return sum + item.discount;
-        }
-
-        const couponDiscountAmount =
-          (item.price || 0) *
-          ((item.couponPercent || 0) / 100) *
-          (item.quantity || 0);
-        return sum + couponDiscountAmount;
-      }
-      return sum;
-    }, 0);
-
-    const uniqueCustomers = new Set(salesData.map((item) => item.buyer)).size;
-
+    const uniqueCustomers = uniqueCustomersSet.size;
     const ordersWithCoupons = salesData.filter(
       (item) => item.couponApplied
     ).length;
     const couponUsageCount = uniqueCoupons.size;
 
-    console.log("Calculated totals:");
-    console.log(`Total sales: ${totalSales}`);
-    console.log(`Total items: ${totalItems}`);
-    console.log(`Total discounts: ${totalDiscounts}`);
-    console.log(`Total product discounts: ${totalProductDiscounts}`);
-    console.log(`Total coupon discounts: ${totalCouponDiscounts}`);
-    console.log(`Unique customers: ${uniqueCustomers}`);
-    console.log(`Orders with coupons: ${ordersWithCoupons}`);
-    console.log(`Coupon usage count: ${couponUsageCount}`);
-
     const totalReports = salesData.length;
     const totalPages = Math.ceil(totalReports / limit);
     const paginatedSalesData = salesData.slice(skip, skip + limit);
 
-    console.log(`Rendering page ${page} of ${totalPages}`);
+    console.timeEnd("sales-page-load");
 
     res.render("sales", {
       salesData: paginatedSalesData,
@@ -335,15 +308,17 @@ const loadsales = async (req, res) => {
   }
 };
 
+
 const downloadSalesPDF = async (req, res) => {
   try {
-    const { from, to, search, discount, discountType, discountFilter } =
-      req.query;
+    console.time("pdf-generation");
+    const { from, to, search, discountFilter } = req.query;
 
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 30);
 
+    // Create date filter
     const dateFilter = {
       orderDate: {
         $gte: from ? new Date(from) : startDate,
@@ -352,55 +327,87 @@ const downloadSalesPDF = async (req, res) => {
       status: { $in: ["Delivered", "Processing", "Confirmed", "Shipped"] },
     };
 
+    // Use lean() for better performance - returns plain JS objects instead of Mongoose documents
+    // Use projection to only fetch the fields we need
     const orders = await Order.find(dateFilter)
+      .select('userId couponId order_items orderDate status paymentMethod couponApplied couponCode couponDiscountPercent orderNumber')
       .populate({
         path: "userId",
         select: "fullname email",
+        options: { lean: true }
       })
       .populate({
         path: "couponId",
         select: "coupencode couponpercent description",
+        options: { lean: true }
+      })
+      .sort({ orderDate: -1 })
+      .lean();
+
+    // Collect all order item IDs to fetch in a single query
+    const orderItemIds = orders.reduce((ids, order) => {
+      if (order.order_items && order.order_items.length > 0) {
+        return [...ids, ...order.order_items];
+      }
+      return ids;
+    }, []);
+
+    // Fetch all order items in a single query
+    const orderItems = await OrderItem.find({ _id: { $in: orderItemIds } })
+      .populate({
+        path: "productId",
+        select: "name categoryId offer effectiveDiscount discountSource",
+        populate: {
+          path: "categoryId",
+          select: "name",
+          options: { lean: true }
+        },
+        options: { lean: true }
       })
       .populate({
-        path: "order_items",
+        path: "couponId",
+        select: "coupencode couponpercent description",
+        options: { lean: true }
       })
-      .sort({ orderDate: -1 });
+      .lean();
 
-    for (const order of orders) {
+    // Create a map for quick lookup
+    const orderItemsMap = orderItems.reduce((map, item) => {
+      map[item._id.toString()] = item;
+      return map;
+    }, {});
+
+    // Replace order_items references with actual items
+    orders.forEach(order => {
       if (order.order_items && order.order_items.length > 0) {
-        for (let i = 0; i < order.order_items.length; i++) {
-          const itemId = order.order_items[i];
-          try {
-            const populatedItem = await OrderItem.findById(itemId)
-              .populate({
-                path: "productId",
-                select:
-                  "name categoryId offer effectiveDiscount discountSource",
-                populate: {
-                  path: "categoryId",
-                  select: "name",
-                },
-              })
-              .populate({
-                path: "couponId",
-                select: "coupencode couponpercent description",
-              });
-
-            if (populatedItem) {
-              order.order_items[i] = populatedItem;
-            }
-          } catch (err) {
-            console.error(`Error populating order item ${itemId}:`, err);
-          }
-        }
+        order.order_items = order.order_items.map(itemId => {
+          const itemIdStr = itemId.toString();
+          return orderItemsMap[itemIdStr] || null;
+        }).filter(Boolean); // Remove null items
       }
-    }
+    });
 
     let salesData = [];
     let uniqueCoupons = new Set();
+    let ordersWithCouponsCount = 0;
+    let totalSales = 0;
+    let totalItems = 0;
+    let totalDiscounts = 0;
+    let totalProductDiscounts = 0;
+    let totalCouponDiscounts = 0;
+    const uniqueCustomersSet = new Set();
+    const productOffersMap = new Map(); // Track individual product offers
 
+    // Process orders and calculate metrics in a single pass
     for (const order of orders) {
       const orderHasCoupon = order.couponApplied || false;
+      
+      if (orderHasCoupon) {
+        ordersWithCouponsCount++;
+        if (order.couponCode) {
+          uniqueCoupons.add(order.couponCode);
+        }
+      }
 
       if (!order.order_items || !Array.isArray(order.order_items)) {
         continue;
@@ -419,8 +426,7 @@ const downloadSalesPDF = async (req, res) => {
           const totalAmount = item.total_amount || 0;
 
           const discountPerUnit = item.discountPerUnit || 0;
-          const discountAmount =
-            item.discountAmount || discountPerUnit * quantity || 0;
+          const discountAmount = item.discountAmount || discountPerUnit * quantity || 0;
 
           let discountPercentage = 0;
           if (item.couponDiscountPercent) {
@@ -430,14 +436,29 @@ const downloadSalesPDF = async (req, res) => {
           }
 
           const productOffer = item.productId.offer || 0;
-          const productEffectiveDiscount =
-            item.productId.effectiveDiscount || 0;
+          const productEffectiveDiscount = item.productId.effectiveDiscount || 0;
           const productDiscountSource = item.productId.discountSource || "none";
+
+          // Track individual product offers
+          if (productOffer > 0) {
+            const offerKey = `${productId}-${productOffer}`;
+            if (!productOffersMap.has(offerKey)) {
+              productOffersMap.set(offerKey, {
+                productId,
+                productName,
+                offer: productOffer,
+                count: 0,
+                totalValue: 0
+              });
+            }
+            const offerInfo = productOffersMap.get(offerKey);
+            offerInfo.count += quantity;
+            offerInfo.totalValue += (price * (productOffer / 100) * quantity);
+          }
 
           const couponApplied = item.couponApplied || orderHasCoupon || false;
           const couponCode = item.couponCode || order.couponCode || "";
-          const couponPercent =
-            item.couponDiscountPercent || order.couponDiscountPercent || 0;
+          const couponPercent = item.couponDiscountPercent || order.couponDiscountPercent || 0;
 
           let couponDescription = "";
           if (item.couponId && item.couponId.description) {
@@ -451,29 +472,46 @@ const downloadSalesPDF = async (req, res) => {
             category = item.productId.categoryId.name;
           }
 
+          const buyer = order.userId ? order.userId.fullname : "Unknown";
+          uniqueCustomersSet.add(buyer);
+
+          // Calculate metrics as we go
+          totalSales += totalAmount;
+          totalItems += quantity;
+          totalDiscounts += discountAmount;
+
+          const productDiscountAmount = (price * (productEffectiveDiscount / 100)) * quantity;
+          totalProductDiscounts += productDiscountAmount;
+
+          if (couponApplied && item.discount > 0) {
+            totalCouponDiscounts += item.discount;
+          } else if (couponApplied) {
+            const couponDiscountAmount = (price * (couponPercent / 100)) * quantity;
+            totalCouponDiscounts += couponDiscountAmount;
+          }
+
           const saleEntry = {
-            buyer: order.userId ? order.userId.fullname : "Unknown",
-            productName: productName,
-            productId: productId,
+            buyer,
+            productName,
+            productId,
             sku: `#${productId.toString().slice(-5)}`,
-            quantity: quantity,
-            price: price,
+            quantity,
+            price,
             discount: discountAmount,
-            discountPercentage: discountPercentage,
-            category: category,
+            discountPercentage,
+            category,
             total: totalAmount,
             orderDate: order.orderDate || new Date(),
             status: order.status || "Unknown",
             paymentMethod: order.paymentMethod || "Unknown",
-            productOffer: productOffer,
-            productEffectiveDiscount: productEffectiveDiscount,
-            productDiscountSource: productDiscountSource,
-            couponApplied: couponApplied,
-            couponCode: couponCode,
-            couponPercent: couponPercent,
-            couponDescription: couponDescription,
-            orderNumber:
-              order.orderNumber || `ORD${order._id.toString().slice(-6)}`,
+            productOffer,
+            productEffectiveDiscount,
+            productDiscountSource,
+            couponApplied,
+            couponCode,
+            couponPercent,
+            couponDescription,
+            orderNumber: order.orderNumber || `ORD${order._id.toString().slice(-6)}`,
           };
 
           salesData.push(saleEntry);
@@ -483,35 +521,28 @@ const downloadSalesPDF = async (req, res) => {
       }
     }
 
+    // Apply filters
     if (search) {
       const searchLower = search.toLowerCase();
       salesData = salesData.filter(
         (item) =>
           (item.buyer && item.buyer.toLowerCase().includes(searchLower)) ||
-          (item.productName &&
-            item.productName.toLowerCase().includes(searchLower)) ||
+          (item.productName && item.productName.toLowerCase().includes(searchLower)) ||
           (item.sku && item.sku.toLowerCase().includes(searchLower)) ||
-          (item.category &&
-            item.category.toLowerCase().includes(searchLower)) ||
-          (item.couponCode &&
-            item.couponCode.toLowerCase().includes(searchLower)) ||
-          (item.orderNumber &&
-            item.orderNumber.toLowerCase().includes(searchLower))
+          (item.category && item.category.toLowerCase().includes(searchLower)) ||
+          (item.couponCode && item.couponCode.toLowerCase().includes(searchLower)) ||
+          (item.orderNumber && item.orderNumber.toLowerCase().includes(searchLower))
       );
     }
 
     if (discountFilter) {
       if (discountFilter === "with-discount") {
         salesData = salesData.filter(
-          (item) =>
-            item.discount > 0 || item.productOffer > 0 || item.couponApplied
+          (item) => item.discount > 0 || item.productOffer > 0 || item.couponApplied
         );
       } else if (discountFilter === "no-discount") {
         salesData = salesData.filter(
-          (item) =>
-            item.discount === 0 &&
-            item.productOffer === 0 &&
-            !item.couponApplied
+          (item) => item.discount === 0 && item.productOffer === 0 && !item.couponApplied
         );
       } else if (discountFilter === "coupon-only") {
         salesData = salesData.filter((item) => item.couponApplied);
@@ -520,10 +551,15 @@ const downloadSalesPDF = async (req, res) => {
       }
     }
 
+    // Add product offers data to the options
+    const productOffers = Array.from(productOffersMap.values());
+
+    console.timeEnd("pdf-generation");
     await generateSalesReport(salesData, res, {
       fromDate: from || startDate.toISOString().split("T")[0],
       toDate: to || endDate.toISOString().split("T")[0],
       title: "Sales Report",
+      productOffers: productOffers // Pass product offers data to the report generator
     });
   } catch (error) {
     console.error("Error generating PDF:", error);
@@ -533,15 +569,17 @@ const downloadSalesPDF = async (req, res) => {
   }
 };
 
+// Optimized Excel download function
 const downloadSalesExcel = async (req, res) => {
   try {
-    const { from, to, search, discount, discountType, discountFilter } =
-      req.query;
+    console.time("excel-generation");
+    const { from, to, search, discountFilter } = req.query;
 
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 30);
 
+    // Create date filter
     const dateFilter = {
       orderDate: {
         $gte: from ? new Date(from) : startDate,
@@ -550,53 +588,70 @@ const downloadSalesExcel = async (req, res) => {
       status: { $in: ["Delivered", "Processing", "Confirmed", "Shipped"] },
     };
 
+    // Use lean() for better performance - returns plain JS objects instead of Mongoose documents
+    // Use projection to only fetch the fields we need
     const orders = await Order.find(dateFilter)
+      .select('userId couponId order_items orderDate status paymentMethod couponApplied couponCode couponDiscountPercent orderNumber')
       .populate({
         path: "userId",
         select: "fullname email",
+        options: { lean: true }
       })
       .populate({
         path: "couponId",
         select: "coupencode couponpercent description",
+        options: { lean: true }
+      })
+      .sort({ orderDate: -1 })
+      .lean();
+
+    // Collect all order item IDs to fetch in a single query
+    const orderItemIds = orders.reduce((ids, order) => {
+      if (order.order_items && order.order_items.length > 0) {
+        return [...ids, ...order.order_items];
+      }
+      return ids;
+    }, []);
+
+    // Fetch all order items in a single query
+    const orderItems = await OrderItem.find({ _id: { $in: orderItemIds } })
+      .populate({
+        path: "productId",
+        select: "name categoryId offer effectiveDiscount discountSource",
+        populate: {
+          path: "categoryId",
+          select: "name",
+          options: { lean: true }
+        },
+        options: { lean: true }
       })
       .populate({
-        path: "order_items",
+        path: "couponId",
+        select: "coupencode couponpercent description",
+        options: { lean: true }
       })
-      .sort({ orderDate: -1 });
+      .lean();
 
-    // Populate order items
-    for (const order of orders) {
+    // Create a map for quick lookup
+    const orderItemsMap = orderItems.reduce((map, item) => {
+      map[item._id.toString()] = item;
+      return map;
+    }, {});
+
+    // Replace order_items references with actual items
+    orders.forEach(order => {
       if (order.order_items && order.order_items.length > 0) {
-        for (let i = 0; i < order.order_items.length; i++) {
-          const itemId = order.order_items[i];
-          try {
-            const populatedItem = await OrderItem.findById(itemId)
-              .populate({
-                path: "productId",
-                select:
-                  "name categoryId offer effectiveDiscount discountSource",
-                populate: {
-                  path: "categoryId",
-                  select: "name",
-                },
-              })
-              .populate({
-                path: "couponId",
-                select: "coupencode couponpercent description",
-              });
-
-            if (populatedItem) {
-              order.order_items[i] = populatedItem;
-            }
-          } catch (err) {
-            console.error(`Error populating order item ${itemId}:`, err);
-          }
-        }
+        order.order_items = order.order_items.map(itemId => {
+          const itemIdStr = itemId.toString();
+          return orderItemsMap[itemIdStr] || null;
+        }).filter(Boolean); // Remove null items
       }
-    }
+    });
 
     let salesData = [];
+    const productOffersMap = new Map(); // Track individual product offers
 
+    // Process orders and calculate metrics in a single pass
     for (const order of orders) {
       const orderHasCoupon = order.couponApplied || false;
 
@@ -617,8 +672,7 @@ const downloadSalesExcel = async (req, res) => {
           const totalAmount = item.total_amount || 0;
 
           const discountPerUnit = item.discountPerUnit || 0;
-          const discountAmount =
-            item.discountAmount || discountPerUnit * quantity || 0;
+          const discountAmount = item.discountAmount || discountPerUnit * quantity || 0;
 
           let discountPercentage = 0;
           if (item.couponDiscountPercent) {
@@ -628,14 +682,29 @@ const downloadSalesExcel = async (req, res) => {
           }
 
           const productOffer = item.productId.offer || 0;
-          const productEffectiveDiscount =
-            item.productId.effectiveDiscount || 0;
+          const productEffectiveDiscount = item.productId.effectiveDiscount || 0;
           const productDiscountSource = item.productId.discountSource || "none";
+
+          // Track individual product offers
+          if (productOffer > 0) {
+            const offerKey = `${productId}-${productOffer}`;
+            if (!productOffersMap.has(offerKey)) {
+              productOffersMap.set(offerKey, {
+                productId,
+                productName,
+                offer: productOffer,
+                count: 0,
+                totalValue: 0
+              });
+            }
+            const offerInfo = productOffersMap.get(offerKey);
+            offerInfo.count += quantity;
+            offerInfo.totalValue += (price * (productOffer / 100) * quantity);
+          }
 
           const couponApplied = item.couponApplied || orderHasCoupon || false;
           const couponCode = item.couponCode || order.couponCode || "";
-          const couponPercent =
-            item.couponDiscountPercent || order.couponDiscountPercent || 0;
+          const couponPercent = item.couponDiscountPercent || order.couponDiscountPercent || 0;
 
           let couponDescription = "";
           if (item.couponId && item.couponId.description) {
@@ -651,27 +720,26 @@ const downloadSalesExcel = async (req, res) => {
 
           const saleEntry = {
             buyer: order.userId ? order.userId.fullname : "Unknown",
-            productName: productName,
-            productId: productId,
+            productName,
+            productId,
             sku: `#${productId.toString().slice(-5)}`,
-            quantity: quantity,
-            price: price,
+            quantity,
+            price,
             discount: discountAmount,
-            discountPercentage: discountPercentage,
-            category: category,
+            discountPercentage,
+            category,
             total: totalAmount,
             orderDate: order.orderDate || new Date(),
             status: order.status || "Unknown",
             paymentMethod: order.paymentMethod || "Unknown",
-            productOffer: productOffer,
-            productEffectiveDiscount: productEffectiveDiscount,
-            productDiscountSource: productDiscountSource,
-            couponApplied: couponApplied,
-            couponCode: couponCode,
-            couponPercent: couponPercent,
-            couponDescription: couponDescription,
-            orderNumber:
-              order.orderNumber || `ORD${order._id.toString().slice(-6)}`,
+            productOffer,
+            productEffectiveDiscount,
+            productDiscountSource,
+            couponApplied,
+            couponCode,
+            couponPercent,
+            couponDescription,
+            orderNumber: order.orderNumber || `ORD${order._id.toString().slice(-6)}`,
           };
 
           salesData.push(saleEntry);
@@ -681,35 +749,28 @@ const downloadSalesExcel = async (req, res) => {
       }
     }
 
+    // Apply filters
     if (search) {
       const searchLower = search.toLowerCase();
       salesData = salesData.filter(
         (item) =>
           (item.buyer && item.buyer.toLowerCase().includes(searchLower)) ||
-          (item.productName &&
-            item.productName.toLowerCase().includes(searchLower)) ||
+          (item.productName && item.productName.toLowerCase().includes(searchLower)) ||
           (item.sku && item.sku.toLowerCase().includes(searchLower)) ||
-          (item.category &&
-            item.category.toLowerCase().includes(searchLower)) ||
-          (item.couponCode &&
-            item.couponCode.toLowerCase().includes(searchLower)) ||
-          (item.orderNumber &&
-            item.orderNumber.toLowerCase().includes(searchLower))
+          (item.category && item.category.toLowerCase().includes(searchLower)) ||
+          (item.couponCode && item.couponCode.toLowerCase().includes(searchLower)) ||
+          (item.orderNumber && item.orderNumber.toLowerCase().includes(searchLower))
       );
     }
 
     if (discountFilter) {
       if (discountFilter === "with-discount") {
         salesData = salesData.filter(
-          (item) =>
-            item.discount > 0 || item.productOffer > 0 || item.couponApplied
+          (item) => item.discount > 0 || item.productOffer > 0 || item.couponApplied
         );
       } else if (discountFilter === "no-discount") {
         salesData = salesData.filter(
-          (item) =>
-            item.discount === 0 &&
-            item.productOffer === 0 &&
-            !item.couponApplied
+          (item) => item.discount === 0 && item.productOffer === 0 && !item.couponApplied
         );
       } else if (discountFilter === "coupon-only") {
         salesData = salesData.filter((item) => item.couponApplied);
@@ -718,11 +779,16 @@ const downloadSalesExcel = async (req, res) => {
       }
     }
 
+    // Add product offers data to the options
+    const productOffers = Array.from(productOffersMap.values());
+
+    console.timeEnd("excel-generation");
     await generateExcel(salesData, res, {
       fromDate: from || startDate.toISOString().split("T")[0],
       toDate: to || endDate.toISOString().split("T")[0],
       title: "Sales Report",
       filename: "sales_report.xlsx",
+      productOffers: productOffers // Pass product offers data to the Excel generator
     });
   } catch (error) {
     console.error("Error generating Excel:", error);

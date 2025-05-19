@@ -692,3 +692,67 @@
             cursor: not-allowed !important;
             pointer-events: none !important;
         }
+
+          /* Discount price styling */
+        .original-price {
+            text-decoration: line-through;
+            color: #6c757d;
+            font-size: 0.9em;
+            display: block;
+        }
+        
+        .discounted-price {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .discount-badge {
+            background-color: #dc3545;
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 1rem;
+            margin-left: 0.5rem;
+            display: inline-block;
+        }
+        
+        .price-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .coupon-applied {
+            font-size: 0.8rem;
+            color: #28a745;
+            margin-top: 0.25rem;
+        }
+        
+        /* For the order summary section */
+        .summary-row .discount-value {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .coupon-info {
+            background-color: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .coupon-code {
+            background-color: #28a745;
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            margin: 0 0.25rem;
+        }
+        
+        .saved-amount {
+            font-size: 0.8rem;
+            color: #28a745;
+            display: block;
+        }
