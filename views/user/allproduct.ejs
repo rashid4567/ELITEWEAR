@@ -779,7 +779,7 @@
           } catch (error) {
             console.error('Error:', error);
             const toastBody = document.getElementById('toastBody');
-            toastBody.innerHTML = `<i class="fas fa-exclamation-circle text-danger"></i> Operation failed`;
+            toastBody.innerHTML = `<i class="fas fa-exclamation-circle text-danger"></i> Operation failed please login`;
             wishlistToast.show();
           }
         });
@@ -1037,7 +1037,7 @@
               } catch (error) {
                 console.error('Error:', error);
                 const toastBody = document.getElementById('toastBody');
-                toastBody.innerHTML = `<i class="fas fa-exclamation-circle text-danger"></i> Operation failed`;
+                toastBody.innerHTML = `<i class="fas fa-exclamation-circle text-danger"></i> Operation failed please login`;
                 wishlistToast.show();
               }
             });

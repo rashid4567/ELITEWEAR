@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Careers at ELITE WEAR | Join Our Team</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --gold-primary: #D4AF37;
+            --gold-secondary: #CFB53B;
+            --gold-light: #F8F4E3;
+            --dark-primary: #1A1A1A;
+            --dark-secondary: #333333;
+            --light-gray: #F5F5F5;
+            --white: #FFFFFF;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--dark-secondary);
+            background-color: var(--white);
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, h5 {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .text-gold {
+            color: var(--gold-primary);
+        }
+        
+        .bg-gold {
+            background-color: var(--gold-primary);
+        }
+        
+        .bg-gold-light {
+            background-color: var(--gold-light);
+        }
+        
+        .bg-dark-primary {
+            background-color: var(--dark-primary);
+        }
+        
+        .btn-gold {
+            background-color: var(--gold-primary);
+            color: var(--white);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-gold:hover {
+            background-color: var(--gold-secondary);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-outline-gold {
+            border: 2px solid var(--gold-primary);
+            color: var(--gold-primary);
+            background-color: transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-gold:hover {
+            background-color: var(--gold-primary);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* Hero Section */
+        .hero-section {
+            position: relative;
+            height: 80vh;
+            min-height: 600px;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/career-hero.jpg');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            text-align: center;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            padding: 0 20px;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .hero-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background-color: var(--gold-primary);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+        
+        /* About Section */
+        .about-section {
+            padding: 100px 0;
+            position: relative;
+        }
+        
+        .about-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 300px;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23D4AF37' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.5;
+            z-index: -1;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background-color: var(--gold-primary);
+        }
+        
+        .about-card {
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            height: 100%;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+        }
+        
+        .about-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .about-icon {
+            font-size: 2.5rem;
+            color: var(--gold-primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Benefits Section */
+        .benefits-section {
+            padding: 100px 0;
+            background-color: var(--light-gray);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .benefits-section::after {
+            content: '';
+            position: absolute;
+            bottom: -50px;
+            left: -50px;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background-color: rgba(212, 175, 55, 0.1);
+            z-index: 0;
+        }
+        
+        .benefit-card {
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            height: 100%;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border-bottom: 3px solid var(--gold-primary);
+        }
+        
+        .benefit-icon {
+            width: 60px;
+            height: 60px;
+            background-color: var(--gold-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .benefit-icon i {
+            font-size: 1.8rem;
+            color: var(--gold-primary);
+        }
+        
+        /* Jobs Section */
+        .jobs-section {
+            padding: 100px 0;
+        }
+        
+        .job-card {
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+        }
+        
+        .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .job-tag {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .job-tag.full-time {
+            background-color: rgba(25, 135, 84, 0.1);
+            color: #198754;
+        }
+        
+        .job-tag.part-time {
+            background-color: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+        }
+        
+        .job-tag.remote {
+            background-color: rgba(102, 16, 242, 0.1);
+            color: #6610f2;
+        }
+        
+        .job-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--dark-primary);
+        }
+        
+        .job-location {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: var(--dark-secondary);
+        }
+        
+        .job-location i {
+            margin-right: 10px;
+            color: var(--gold-primary);
+        }
+        
+        .job-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .job-meta-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--dark-secondary);
+        }
+        
+        .job-meta-item i {
+            margin-right: 5px;
+            color: var(--gold-primary);
+        }
+        
+        .job-description {
+            margin-bottom: 1.5rem;
+            color: #666;
+        }
+        
+        /* Process Section */
+        .process-section {
+            padding: 100px 0;
+            background-color: var(--light-gray);
+            position: relative;
+        }
+        
+        .process-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        .process-step {
+            display: flex;
+            margin-bottom: 50px;
+        }
+        
+        .process-number {
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            background-color: var(--gold-primary);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-right: 20px;
+        }
+        
+        .process-content {
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            flex-grow: 1;
+        }
+        
+        .process-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--dark-primary);
+        }
+        
+        /* Testimonials Section */
+        .testimonials-section {
+            padding: 100px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .testimonials-section::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background-color: rgba(212, 175, 55, 0.1);
+            z-index: 0;
+        }
+        
+        .testimonial-card {
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            height: 100%;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+            border-left: 3px solid var(--gold-primary);
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .testimonial-quote {
+            font-size: 4rem;
+            color: var(--gold-primary);
+            opacity: 0.2;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            line-height: 1;
+        }
+        
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+        
+        .testimonial-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 15px;
+        }
+        
+        .testimonial-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .testimonial-info h5 {
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .testimonial-info p {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: 80px 0;
+            background: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)), url('/images/cta-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            color: var(--white);
+            text-align: center;
+        }
+        
+        .cta-title {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .cta-text {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Contact Section */
+        .contact-section {
+            padding: 100px 0;
+        }
+        
+        .contact-info {
+            margin-bottom: 30px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            background-color: var(--gold-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .contact-icon i {
+            font-size: 1.2rem;
+            color: var(--gold-primary);
+        }
+        
+        .contact-text h5 {
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .contact-text p {
+            margin-bottom: 0;
+            color: #666;
+        }
+        
+        .contact-form {
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        
+        .form-control {
+            border: 1px solid #e0e0e0;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-control:focus {
+            box-shadow: none;
+            border-color: var(--gold-primary);
+        }
+        
+        /* Footer */
+        .footer {
+            background-color: var(--dark-primary);
+            color: var(--white);
+            padding: 30px 0;
+            text-align: center;
+        }
+        
+        .footer-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+        
+        .footer-logo span {
+            color: var(--gold-primary);
+        }
+        
+        .footer-text {
+            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            transition: all 0.3s ease;
+        }
+        
+        .social-link:hover {
+            background-color: var(--gold-primary);
+            color: var(--white);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+        
+        /* 3D Elements */
+        .gold-accent {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--gold-primary), var(--gold-secondary));
+            border-radius: 10px;
+            transform: rotate(45deg);
+            opacity: 0.1;
+            z-index: -1;
+        }
+        
+        .accent-1 {
+            top: 100px;
+            left: -50px;
+        }
+        
+        .accent-2 {
+            bottom: 150px;
+            right: -50px;
+        }
+        
+        .accent-3 {
+            top: 50%;
+            left: 10%;
+        }
+        
+        /* Responsive */
+        @media (max-width: 991px) {
+            .hero-title {
+                font-size: 2.8rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.3rem;
+            }
+            
+            .section-title {
+                font-size: 2.2rem;
+            }
+        }
+        
+        @media (max-width: 767px) {
+            .hero-section {
+                height: 70vh;
+            }
+            
+            .hero-title {
+                font-size: 2.3rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .process-step {
+                flex-direction: column;
+            }
+            
+            .process-number {
+                margin-bottom: 15px;
+                margin-right: 0;
+            }
+        }
+        
+        /* Animation Classes */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .fade-up.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* 3D Button Effect */
+        .btn-3d {
+            position: relative;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+        
+        .btn-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.1);
+            transform: translateZ(-5px);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-3d:hover {
+            transform: translateY(-5px) translateZ(0);
+        }
+        
+        .btn-3d:hover::before {
+            transform: translateZ(-10px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header/Navbar would be included here -->
+    <%- include("../partials/user/header") %>
+    
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content" data-aos="fade-up">
+            <h1 class="hero-title">Join the ELITE WEAR Family</h1>
+            <p class="hero-subtitle">Craft Excellence. Create Luxury. Define Style.</p>
+            <a href="#jobs" class="btn btn-gold btn-lg px-4 py-2 me-3 btn-3d">View Open Positions</a>
+            <a href="#about" class="btn btn-outline-gold btn-lg px-4 py-2">Learn About Us</a>
+        </div>
+    </section>
+    
+    <!-- About Section -->
+    <section id="about" class="about-section">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h2 class="section-title">Our Culture</h2>
+                    <p class="mb-4">At ELITE WEAR, we're more than just a premium shirt brand. We're a family of passionate individuals dedicated to crafting excellence and redefining luxury fashion. Our team thrives in an environment that values creativity, innovation, and personal growth.</p>
+                    <p>We believe that exceptional products come from exceptional people. That's why we invest in our team members, providing them with the resources, support, and opportunities they need to excel in their careers and personal lives.</p>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="ratio ratio-16x9 rounded overflow-hidden">
+                        <img src="/uploads/LP_Green_crest_RB_Hero Banner D.jpeg" alt="ELITE WEAR Team Culture" class="img-fluid">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-5">
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="about-card text-center">
+                        <div class="about-icon">
+                            <i class="bi bi-gem"></i>
+                        </div>
+                        <h4 class="mb-3">Excellence</h4>
+                        <p>We pursue excellence in everything we do, from the quality of our products to the experiences we create for our customers and team members.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="about-card text-center">
+                        <div class="about-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h4 class="mb-3">Collaboration</h4>
+                        <p>We believe in the power of teamwork and collaboration, bringing together diverse perspectives to create innovative solutions.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="about-card text-center">
+                        <div class="about-icon">
+                            <i class="bi bi-lightbulb"></i>
+                        </div>
+                        <h4 class="mb-3">Innovation</h4>
+                        <p>We encourage creative thinking and bold ideas, constantly pushing the boundaries of what's possible in luxury fashion.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Decorative Elements -->
+        <div class="gold-accent accent-1"></div>
+        <div class="gold-accent accent-2"></div>
+    </section>
+    
+    <!-- Benefits Section -->
+    <section class="benefits-section">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title d-inline-block">Why Join Us</h2>
+                <p class="mt-4">We offer more than just a job. At ELITE WEAR, you'll find a career that nurtures your growth and rewards your dedication.</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="bi bi-graph-up-arrow"></i>
+                        </div>
+                        <h4 class="mb-3">Career Growth</h4>
+                        <p>We invest in your professional development with mentorship programs, training opportunities, and clear paths for advancement.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="bi bi-heart-pulse"></i>
+                        </div>
+                        <h4 class="mb-3">Comprehensive Benefits</h4>
+                        <p>Enjoy competitive compensation, health insurance, retirement plans, and wellness programs designed to support your overall wellbeing.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <h4 class="mb-3">Work-Life Balance</h4>
+                        <p>We value your time outside of work with flexible scheduling options, generous paid time off, and family-friendly policies.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="bi bi-stars"></i>
+                        </div>
+                        <h4 class="mb-3">Employee Discounts</h4>
+                        <p>Access exclusive discounts on our premium products and enjoy special employee-only collections and events.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="500">
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="bi bi-trophy"></i>
+                        </div>
+                        <h4 class="mb-3">Recognition Programs</h4>
+                        <p>Your contributions are valued and celebrated through our employee recognition programs and performance-based incentives.</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="600">
+                    <div class="benefit-card">
+                        <div class="benefit-icon">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <h4 class="mb-3">Modern Workspace</h4>
+                        <p>Work in our state-of-the-art facilities designed to inspire creativity and foster collaboration.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Jobs Section -->
+    <section id="jobs" class="jobs-section">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title d-inline-block">Open Positions</h2>
+                <p class="mt-4">Join our team of passionate professionals and help shape the future of luxury fashion.</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="job-card">
+                        <span class="job-tag full-time">Full-Time</span>
+                        <h3 class="job-title">Senior Fashion Designer</h3>
+                        <div class="job-location">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Mumbai, India</span>
+                        </div>
+                        <div class="job-meta">
+                            <div class="job-meta-item">
+                                <i class="bi bi-briefcase"></i>
+                                <span>5+ Years Experience</span>
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="bi bi-currency-rupee"></i>
+                                <span>Competitive Salary</span>
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="bi bi-calendar"></i>
+                                <span>Posted 2 days ago</span>
+                            </div>
+                        </div>
+                        <p class="job-description">We're looking for a talented Senior Fashion Designer to lead our design team in creating innovative and luxurious shirt collections that embody the ELITE WEAR brand.</p>
+                        <a href="#" class="btn btn-gold px-4" data-bs-toggle="modal" data-bs-target="#applyModal" data-job="Senior Fashion Designer">Apply Now</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="job-card">
+                        <span class="job-tag full-time">Full-Time</span>
+                        <h3 class="job-title">E-Commerce Manager</h3>
+                        <div class="job-location">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Delhi, India</span>
+                        </div>
+                        <div class="job-meta">
+                            <div class="job-meta-item">
+                                <i class="bi bi-briefcase"></i>
+                                <span>3+ Years Experience</span>
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="bi bi-currency-rupee"></i>
+                                <span>Competitive Salary</span>
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="bi bi-calendar"></i>
+                                <span>Posted 1 week ago</span>
+                            </div>
+                        </div>
+                        <p class="job-description">Join our digital team to lead our e-commerce strategy, optimize the online shopping experience, and drive growth across our digital platforms.</p>
+                        <a href="#" class="btn btn-gold px-4" data-bs-toggle="modal" data-bs-target="#applyModal" data-job="E-Commerce Manager">Apply Now</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="job-card">
+                        <span class="job-tag remote">Remote</span>
+                        <h3 class="job-title">Digital Marketing Specialist</h3>
+                        <div class="job-location">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Remote, India</span>
+                        </div>
+                        <div class="job-meta">
+                            <div class="job-meta-item">
+                                <i class="bi bi-briefcase"></i>
+                                <span>2+ Years Experience</span>
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="bi bi-currency-rupee"></i>
+                                <span>Competitive Salary</span>
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="bi bi-calendar"></i>
+                                <span>Posted 3 days ago</span>
+                            </div>
+                        </div>
+                        <p class="job-description">We're seeking a creative and data-driven Digital Marketing Specialist to develop and execute marketing campaigns that elevate our brand and drive customer engagement.</p>
+                        <a href="#" class="btn btn-gold px-4" data-bs-toggle="modal" data-bs-target="#applyModal" data-job="Digital Marketing Specialist">Apply Now</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="job-card">
+                        <span class="job-tag full-time">Full-Time</span>
+                        <h3 class="job-title">Retail Store Manager</h3>
+                        <div class="job-location">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Bangalore, India</span>
+                        </div>
+                        <div class="job-meta">
+                            <div class="job-meta-item">
+                                <i class="bi bi-briefcase"></i>
+                                <span>4+ Years Experience</span>
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="bi bi-currency-rupee"></i>
+                                <span>Competitive Salary</span>
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="bi bi-calendar"></i>
+                                <span>Posted 5 days ago</span>
+                            </div>
+                        </div>
+                        <p class="job-description">Lead our flagship store in Bangalore, managing daily operations, developing your team, and creating exceptional shopping experiences for our customers.</p>
+                        <a href="#" class="btn btn-gold px-4" data-bs-toggle="modal" data-bs-target="#applyModal" data-job="Retail Store Manager">Apply Now</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="500">
+                    <div class="job-card">
+                        <span class="job-tag part-time">Part-Time</span>
+                        <h3 class="job-title">Social Media Content Creator</h3>
+                        <div class="job-location">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Mumbai, India</span>
+                        </div>
+                        <div class="job-meta">
+                            <div class="job-meta-item">
+                                <i class="bi bi-briefcase"></i>
+                                <span>1+ Years Experience</span>
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="bi bi-currency-rupee"></i>
+                                <span>Competitive Hourly Rate</span>
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="bi bi-calendar"></i>
+                                <span>Posted 1 day ago</span>
+                            </div>
+                        </div>
+                        <p class="job-description">Create engaging content for our social media platforms that showcases our products, tells our brand story, and connects with our audience.</p>
+                        <a href="#" class="btn btn-gold px-4" data-bs-toggle="modal" data-bs-target="#applyModal" data-job="Social Media Content Creator">Apply Now</a>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="600">
+                    <div class="job-card">
+                        <span class="job-tag full-time">Full-Time</span>
+                        <h3 class="job-title">Supply Chain Coordinator</h3>
+                        <div class="job-location">
+                            <i class="bi bi-geo-alt"></i>
+                            <span>Delhi, India</span>
+                        </div>
+                        <div class="job-meta">
+                            <div class="job-meta-item">
+                                <i class="bi bi-briefcase"></i>
+                                <span>2+ Years Experience</span>
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="bi bi-currency-rupee"></i>
+                                <span>Competitive Salary</span>
+                            </div>
+                            <div class="job-meta-item">
+                                <i class="bi bi-calendar"></i>
+                                <span>Posted 1 week ago</span>
+                            </div>
+                        </div>
+                        <p class="job-description">Join our operations team to manage inventory, coordinate with suppliers, and ensure the timely delivery of our premium products to stores and customers.</p>
+                        <a href="#" class="btn btn-gold px-4" data-bs-toggle="modal" data-bs-target="#applyModal" data-job="Supply Chain Coordinator">Apply Now</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4" data-aos="fade-up">
+                <p class="mb-4">Don't see a position that matches your skills? We're always looking for talented individuals to join our team.</p>
+                <a href="#" class="btn btn-outline-gold px-4 py-2" data-bs-toggle="modal" data-bs-target="#applyModal" data-job="General Application">Submit a General Application</a>
+            </div>
+        </div>
+        
+        <!-- Decorative Element -->
+        <div class="gold-accent accent-3"></div>
+    </section>
+    
+    <!-- Application Process Section -->
+    <section class="process-section">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title d-inline-block">Our Hiring Process</h2>
+                <p class="mt-4">We've designed a thoughtful process to find the right talent and ensure a great fit for both you and ELITE WEAR.</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <div class="process-step" data-aos="fade-up" data-aos-delay="100">
+                        <div class="process-number">1</div>
+                        <div class="process-content">
+                            <h4 class="process-title">Application Review</h4>
+                            <p>Our recruitment team carefully reviews your application, resume, and portfolio to assess your qualifications and potential fit with our team.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step" data-aos="fade-up" data-aos-delay="200">
+                        <div class="process-number">2</div>
+                        <div class="process-content">
+                            <h4 class="process-title">Initial Interview</h4>
+                            <p>If your application stands out, we'll invite you for an initial interview (virtual or in-person) to learn more about your experience, skills, and career aspirations.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step" data-aos="fade-up" data-aos-delay="300">
+                        <div class="process-number">3</div>
+                        <div class="process-content">
+                            <h4 class="process-title">Skills Assessment</h4>
+                            <p>Depending on the role, you may be asked to complete a skills assessment or project that demonstrates your expertise and approach to problem-solving.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step" data-aos="fade-up" data-aos-delay="400">
+                        <div class="process-number">4</div>
+                        <div class="process-content">
+                            <h4 class="process-title">Team Interview</h4>
+                            <p>Meet with potential team members and leaders to discuss your role in more detail and get a feel for our team dynamics and culture.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="process-step" data-aos="fade-up" data-aos-delay="500">
+                        <div class="process-number">5</div>
+                        <div class="process-content">
+                            <h4 class="process-title">Final Decision & Offer</h4>
+                            <p>After careful consideration, we'll make our decision and extend an offer to the candidate who best fits the role and our company culture.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Testimonials Section -->
+    <section class="testimonials-section">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title d-inline-block">Team Voices</h2>
+                <p class="mt-4">Hear what our team members have to say about their experience working at ELITE WEAR.</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote">"</div>
+                        <p class="testimonial-text">Working at ELITE WEAR has been the highlight of my career. The collaborative environment, opportunities for growth, and the chance to be part of creating luxury products that customers love is incredibly rewarding.</p>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar">
+                                <img src="/images/testimonial-1.jpg" alt="Priya Sharma">
+                            </div>
+                            <div class="testimonial-info">
+                                <h5>Priya Sharma</h5>
+                                <p>Senior Designer, 4 years</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote">"</div>
+                        <p class="testimonial-text">I joined ELITE WEAR as an intern and have grown into a leadership role. The mentorship I've received and the company's investment in my professional development have been exceptional.</p>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar">
+                                <img src="/images/testimonial-2.jpg" alt="Rahul Kapoor">
+                            </div>
+                            <div class="testimonial-info">
+                                <h5>Rahul Kapoor</h5>
+                                <p>Marketing Manager, 5 years</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="testimonial-card">
+                        <div class="testimonial-quote">"</div>
+                        <p class="testimonial-text">The work-life balance at ELITE WEAR is something I truly appreciate. The company understands that happy employees create exceptional products, and they genuinely care about our wellbeing.</p>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar">
+                                <img src="/images/testimonial-3.jpg" alt="Ananya Patel">
+                            </div>
+                            <div class="testimonial-info">
+                                <h5>Ananya Patel</h5>
+                                <p>Store Manager, 3 years</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div data-aos="fade-up">
+                <h2 class="cta-title">Ready to Join Our Team?</h2>
+                <p class="cta-text">Become part of a brand that's redefining luxury fashion. Explore our open positions and take the first step toward an exciting career with ELITE WEAR.</p>
+                <a href="#jobs" class="btn btn-gold btn-lg px-4 py-2 btn-3d">View Open Positions</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title d-inline-block">Get in Touch</h2>
+                <p class="mt-4">Have questions about our career opportunities? We're here to help.</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-5 mb-5 mb-lg-0" data-aos="fade-right">
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="bi bi-envelope"></i>
+                            </div>
+                            <div class="contact-text">
+                                <h5>Email Us</h5>
+                                <p>careers@elitewear.com</p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="bi bi-telephone"></i>
+                            </div>
+                            <div class="contact-text">
+                                <h5>Call Us</h5>
+                                <p>+91 98765 43210</p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="bi bi-geo-alt"></i>
+                            </div>
+                            <div class="contact-text">
+                                <h5>Visit Us</h5>
+                                <p>ELITE WEAR Headquarters<br>123 Fashion Avenue, Mumbai<br>Maharashtra, India - 400001</p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-item">
+                            <div class="contact-icon">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                            <div class="contact-text">
+                                <h5>Office Hours</h5>
+                                <p>Monday - Friday: 9:00 AM - 6:00 PM<br>Saturday: 10:00 AM - 2:00 PM<br>Sunday: Closed</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-7" data-aos="fade-left">
+                    <div class="contact-form">
+                        <form id="contactForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <input type="text" class="form-control" placeholder="Your Name" required>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <input type="email" class="form-control" placeholder="Your Email" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <input type="text" class="form-control" placeholder="Subject" required>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <textarea class="form-control" rows="5" placeholder="Your Message" required></textarea>
+                            </div>
+                            
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-gold px-4 py-2">Send Message</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-logo">ELITE <span>WEAR</span></div>
+            <p class="footer-text">Crafting Excellence. Creating Luxury. Defining Style.</p>
+            
+            <div class="social-links">
+                <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
+                <a href="#" class="social-link"><i class="bi bi-instagram"></i></a>
+                <a href="#" class="social-link"><i class="bi bi-twitter"></i></a>
+                <a href="#" class="social-link"><i class="bi bi-linkedin"></i></a>
+            </div>
+            
+            <p class="copyright">&copy; <%= new Date().getFullYear() %> ELITE WEAR. All Rights Reserved.</p>
+        </div>
+    </footer>
+    
+    <!-- Apply Modal -->
+    <div class="modal fade" id="applyModal" tabindex="-1" aria-labelledby="applyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark-primary text-white">
+                    <h5 class="modal-title" id="applyModalLabel">Apply for <span id="jobTitle"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="applicationForm">
+                        <input type="hidden" id="jobPosition" name="jobPosition">
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="firstName" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="firstName" name="firstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="lastName" name="lastName" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="location" class="form-label">Current Location</label>
+                            <input type="text" class="form-control" id="location" name="location" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="experience" class="form-label">Years of Experience</label>
+                            <select class="form-select" id="experience" name="experience" required>
+                                <option value="" selected disabled>Select experience</option>
+                                <option value="0-1">Less than 1 year</option>
+                                <option value="1-2">1-2 years</option>
+                                <option value="3-5">3-5 years</option>
+                                <option value="5-10">5-10 years</option>
+                                <option value="10+">10+ years</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="resume" class="form-label">Resume/CV</label>
+                            <input type="file" class="form-control" id="resume" name="resume" required>
+                            <div class="form-text">Upload your resume in PDF or DOCX format (max 5MB)</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="portfolio" class="form-label">Portfolio URL (if applicable)</label>
+                            <input type="url" class="form-control" id="portfolio" name="portfolio">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="coverLetter" class="form-label">Cover Letter</label>
+                            <textarea class="form-control" id="coverLetter" name="coverLetter" rows="5" required></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                <label class="form-check-label" for="termsCheck">
+                                    I agree to the processing of my personal data in accordance with ELITE WEAR's privacy policy.
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-gold" id="submitApplication">Submit Application</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- AOS Animation Library -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        // Initialize AOS Animation
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
+            });
+            
+            // Apply Modal Job Title
+            const applyModal = document.getElementById('applyModal');
+            if (applyModal) {
+                applyModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    const jobPosition = button.getAttribute('data-job');
+                    const jobTitle = document.getElementById('jobTitle');
+                    const jobPositionInput = document.getElementById('jobPosition');
+                    
+                    jobTitle.textContent = jobPosition;
+                    jobPositionInput.value = jobPosition;
+                });
+            }
+            
+            // Form Submission
+            const submitApplication = document.getElementById('submitApplication');
+            if (submitApplication) {
+                submitApplication.addEventListener('click', function() {
+                    const form = document.getElementById('applicationForm');
+                    
+                    // Check form validity
+                    if (form.checkValidity()) {
+                        // Show success message (in a real application, you would submit the form data to your server)
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('applyModal'));
+                        modal.hide();
+                        
+                        // Show success alert
+                        alert('Your application has been submitted successfully! Our team will review your application and contact you soon.');
+                    } else {
+                        form.reportValidity();
+                    }
+                });
+            }
+            
+            // Contact Form Submission
+            const contactForm = document.getElementById('contactForm');
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // In a real application, you would submit the form data to your server
+                    alert('Your message has been sent successfully! We will get back to you soon.');
+                    contactForm.reset();
+                });
+            }
+            
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+            
+            // Fade-in animation for elements
+            const fadeElements = document.querySelectorAll('.fade-up');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            fadeElements.forEach(element => {
+                observer.observe(element);
+            });
+        });
+    </script>
+</body>
+</html>

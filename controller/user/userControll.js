@@ -1096,6 +1096,15 @@ const blog = async (req,res)=>{
   }
 }
 
+const career = async (req,res)=>{
+  try {
+    res.status(200).render("career")
+  } catch (error) {
+    console.error("unable to load the career")
+    res.status(500).json({success:false, message:"Server issue"})
+  }
+}
+
 module.exports = {
   loadHomepage,
   pageNotfound,
@@ -1119,6 +1128,7 @@ module.exports = {
   Terms,
   Privacy,
   blog,
+  career,
   REFERRER_REWARD,
   NEW_USER_REWARD,
 };

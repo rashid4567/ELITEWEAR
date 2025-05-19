@@ -293,10 +293,7 @@
                                                                         </button>
                                                                     <% } %>
                                                                     
-                                                                    <!-- View details button for all items -->
-                                                                    <button class="btn btn-sm btn-outline-secondary" type="button" onclick="viewItemDetails('<%= item._id %>')">
-                                                                        <i class="bi bi-eye action-icon"></i> Details
-                                                                    </button>
+                                                                   
                                                                     
                                                                     <!-- Buy again button for completed items -->
                                                                     <% if (item.status === 'Delivered' || item.status === 'Cancelled' || item.status === 'Returned') { %>

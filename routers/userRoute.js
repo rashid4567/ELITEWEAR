@@ -104,7 +104,7 @@ router.get("/privacy", userControllers.Privacy)
   router.get("/allproduct", checkBlockedStatus, userControllers.allproduct);
   router.get("/aboutUs", checkBlockedStatus, userControllers.aboutUs);
   router.get("/search", checkBlockedStatus, userControllers.searchProducts);
-
+router.get("/careers", UserAuth, userControllers.career)
   // Profile routes
   router.get("/LoadProfile", UserAuth, profileController.loadProfile);
   router.get("/getprofileEdit", UserAuth, profileController.loadProfileEdit);

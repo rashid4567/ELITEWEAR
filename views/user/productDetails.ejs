@@ -1534,11 +1534,11 @@
                 }
             } catch (error) {
                 console.error('Error marking review as helpful:', error);
-                showToast('An error occurred. Please try again.', 'danger');
+                showToast('An error occurred. Please login.', 'danger');
             }
         }
         
-        // Show toast notification
+     
         function showToast(message, type = 'success') {
             const toastContainer = document.querySelector('.toast-container');
             if (!toastContainer) return;

@@ -199,7 +199,8 @@
         <!-- Filter & Sort Section -->
         <div class="card mb-4">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <!-- Fixed header section with proper alignment -->
+                <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
                     <h5 class="card-title mb-0">Filter & Sort</h5>
                     <button id="resetFilters" class="btn btn-sm btn-link">Reset All</button>
                 </div>
@@ -385,13 +386,13 @@
 
                                 <!-- Offers -->
                                 <div class="product-offers">
-                                    <span class="badge bg-light text-purple border border-purple">
+                                    <span class="badge bg-light text-purple border border-purple" style="color: #8b5cf6 !important;">
                                         <i class="fas fa-tag fa-sm me-1"></i> Product: <%= product.offer || 0 %>%
                                     </span>
-                                    <span class="badge bg-light text-orange border border-orange">
+                                    <span class="badge bg-light text-orange border border-orange" style="color: #f97316 !important;">
                                         Category: <%= product.categoryId?.offer || 0 %>%
                                     </span>
-                                    <span class="badge bg-light text-teal border border-teal">
+                                    <span class="badge bg-light text-teal border border-teal" style="color: #14b8a6 !important;">
                                         Applied: <%= product.effectiveDiscount || 0 %>%
                                     </span>
                                 </div>
@@ -457,7 +458,7 @@
                                                 </div>
                                             </div>
                                             <div class="mt-2 mt-md-0">
-                                                <span class="badge <%= product.isActive ? 'bg-success' : 'bg-danger' %>">
+                                                <span class="badge <%= product.isActive ? 'bg-success' : 'bg-danger' %>" style="color: #fff !important;">
                                                     <%= product.isActive ? 'Active' : 'Inactive' %>
                                                 </span>
                                             </div>
