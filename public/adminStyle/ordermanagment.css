@@ -127,10 +127,9 @@
             padding: 0;
             background-color: var(--bg-main);
             transition: var(--transition);
-                transform: translateX(-250px);
+                transform: translateX(-290px);
         }
 
-        /* Header Styling */
         .content-header {
             background-color: var(--bg-header);
             padding: 20px 30px;

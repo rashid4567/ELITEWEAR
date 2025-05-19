@@ -714,13 +714,10 @@
         });
     }
 
-    // Retry Payment
+    // Retry Payment - Modified to redirect to order details
     function retryPayment(orderId) {
-      // Show payment method selection modal
-      const paymentMethodModal = document.getElementById("paymentMethodModal");
-      paymentMethodModal.setAttribute("data-order-id", orderId);
-      const modal = new bootstrap.Modal(paymentMethodModal);
-      modal.show();
+      // Redirect to order details page instead of showing payment modal
+      window.location.href = `/order-details/${orderId}`;
     }
     
     // Complete Payment
