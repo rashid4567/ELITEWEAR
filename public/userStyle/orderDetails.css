@@ -705,6 +705,10 @@
             color: #dc3545;
             font-weight: bold;
         }
+        .original-price1{
+           color: #dc3545;
+            font-weight: bold;
+        }
         
         .discount-badge {
             background-color: #dc3545;
@@ -755,4 +759,4 @@
             font-size: 0.8rem;
             color: #28a745;
             display: block;
-        }
+        
