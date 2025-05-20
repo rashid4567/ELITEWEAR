@@ -1,105 +1,135 @@
-const ExcelJS = require("exceljs")
+const ExcelJS = require("exceljs");
 
 const generateSalesReport = async (salesData, res, options = {}) => {
   try {
-    const { fromDate, toDate, title = "Sales Report", productOffers = [] } = options
+    const {
+      fromDate,
+      toDate,
+      title = "Sales Report",
+      productOffers = [],
+    } = options;
 
     if (!Array.isArray(salesData)) {
-      throw new Error("Sales data must be an array")
+      throw new Error("Sales data must be an array");
     }
 
-    const totalSales = salesData.reduce((sum, item) => sum + (item.total || 0), 0)
-    const totalItems = salesData.reduce((sum, item) => sum + item.quantity, 0)
-    const uniqueCustomers = new Set(salesData.map((item) => item.buyer)).size
-    const averageOrderValue = totalSales / uniqueCustomers || 0
+    const totalSales = salesData.reduce(
+      (sum, item) => sum + (item.total || 0),
+      0
+    );
+    const totalItems = salesData.reduce((sum, item) => sum + item.quantity, 0);
+    const uniqueCustomers = new Set(salesData.map((item) => item.buyer)).size;
+    const averageOrderValue = totalSales / uniqueCustomers || 0;
 
-    const totalDiscounts = salesData.reduce((sum, item) => sum + (item.discount || 0), 0)
+    const totalDiscounts = salesData.reduce(
+      (sum, item) => sum + (item.discount || 0),
+      0
+    );
     const totalProductDiscounts = salesData.reduce((sum, item) => {
       const productDiscountAmount =
-        (item.price || 0) * ((item.productEffectiveDiscount || 0) / 100) * (item.quantity || 0)
-      return sum + productDiscountAmount
-    }, 0)
+        (item.price || 0) *
+        ((item.productEffectiveDiscount || 0) / 100) *
+        (item.quantity || 0);
+      return sum + productDiscountAmount;
+    }, 0);
 
     const totalCouponDiscounts = salesData.reduce((sum, item) => {
       if (item.couponApplied) {
         if (item.discount > 0) {
-          return sum + item.discount
+          return sum + item.discount;
         }
-        const couponDiscountAmount = (item.price || 0) * ((item.couponPercent || 0) / 100) * (item.quantity || 0)
-        return sum + couponDiscountAmount
+        const couponDiscountAmount =
+          (item.price || 0) *
+          ((item.couponPercent || 0) / 100) *
+          (item.quantity || 0);
+        return sum + couponDiscountAmount;
       }
-      return sum
-    }, 0)
+      return sum;
+    }, 0);
 
-    const ordersWithCoupons = salesData.filter((item) => item.couponApplied).length
-    const uniqueCoupons = new Set(salesData.filter((item) => item.couponCode).map((item) => item.couponCode)).size
+    const ordersWithCoupons = salesData.filter(
+      (item) => item.couponApplied
+    ).length;
+    const uniqueCoupons = new Set(
+      salesData.filter((item) => item.couponCode).map((item) => item.couponCode)
+    ).size;
 
     // New metrics for product offers
-    const productsWithOffers = salesData.filter((item) => item.productOffer > 0).length
+    const productsWithOffers = salesData.filter(
+      (item) => item.productOffer > 0
+    ).length;
     const totalProductOfferValue = salesData.reduce((sum, item) => {
       if (item.productOffer > 0) {
-        const offerValue = (item.price || 0) * (item.productOffer / 100) * (item.quantity || 0)
-        return sum + offerValue
+        const offerValue =
+          (item.price || 0) * (item.productOffer / 100) * (item.quantity || 0);
+        return sum + offerValue;
       }
-      return sum
-    }, 0)
+      return sum;
+    }, 0);
     const averageProductOffer =
-      salesData.reduce((sum, item) => sum + (item.productOffer || 0), 0) / (productsWithOffers || 1)
+      salesData.reduce((sum, item) => sum + (item.productOffer || 0), 0) /
+      (productsWithOffers || 1);
 
     const formatCurrency = (value) => {
-      if (value === undefined || value === null) return "0"
-      const numValue = typeof value === "number" ? value : Number(value)
-      if (isNaN(numValue)) return "0"
+      if (value === undefined || value === null) return "0";
+      const numValue = typeof value === "number" ? value : Number(value);
+      if (isNaN(numValue)) return "0";
       return numValue.toLocaleString("en-IN", {
         maximumFractionDigits: 0,
         style: "decimal",
-      })
-    }
+      });
+    };
 
     const formatDate = (dateString) => {
       try {
-        const date = new Date(dateString)
-        if (isNaN(date.getTime())) return dateString
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
         return date.toLocaleDateString("en-IN", {
           day: "2-digit",
           month: "2-digit",
           year: "numeric",
-        })
+        });
       } catch (e) {
-        return dateString
+        return dateString;
       }
-    }
+    };
 
-    const currentDate = new Date()
+    const currentDate = new Date();
     const formattedDate = currentDate.toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "long",
       year: "numeric",
-    })
+    });
     const formattedTime = currentDate.toLocaleTimeString("en-IN", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
-    })
+    });
 
     // Generate product offers HTML
-    let productOffersHTML = '';
+    let productOffersHTML = "";
     if (productOffers && productOffers.length > 0) {
       productOffersHTML = `
         <h2 class="section-title">Product Offers</h2>
         <div class="product-offers-grid">
-          ${productOffers.map(offer => `
+          ${productOffers
+            .map(
+              (offer) => `
             <div class="product-offer-card">
               <h4>${offer.productName}</h4>
               <div class="offer-details">
                 <div class="offer-percentage">${offer.offer}% OFF</div>
-                <div class="offer-value">₹${formatCurrency(offer.totalValue)}</div>
+                <div class="offer-value">₹${formatCurrency(
+                  offer.totalValue
+                )}</div>
               </div>
               <div class="offer-count">
                 <i class="fas fa-shopping-cart"></i> ${offer.count} items sold
               </div>
             </div>
-          `).join('')}
+          `
+            )
+            .join("")}
         </div>
       `;
     }
@@ -537,18 +567,28 @@ const generateSalesReport = async (salesData, res, options = {}) => {
                 .map(
                   (item, i) => `
                 <tr>
-                  <td>${(item.buyer || "Unknown").toString().substring(0, 15)}</td>
-                  <td>${(item.productName || "Unknown").toString().substring(0, 20)}</td>
+                  <td>${(item.buyer || "Unknown")
+                    .toString()
+                    .substring(0, 15)}</td>
+                  <td>${(item.productName || "Unknown")
+                    .toString()
+                    .substring(0, 20)}</td>
                   <td>${(item.sku || "").toString()}</td>
                   <td class="center">${(item.quantity || 0).toString()}</td>
                   <td class="right">₹${formatCurrency(item.price || 0)}</td>
                   <td class="right">
-                    ${item.productOffer > 0 ? `<span class="offer-badge">${item.productOffer}%</span>` : "-"}
+                    ${
+                      item.productOffer > 0
+                        ? `<span class="offer-badge">${item.productOffer}%</span>`
+                        : "-"
+                    }
                   </td>
                   <td class="right">
                     ${
                       item.discount > 0
-                        ? `<span class="discount-badge">₹${formatCurrency(item.discount)} (${item.discountPercentage}%)</span>`
+                        ? `<span class="discount-badge">₹${formatCurrency(
+                            item.discount
+                          )} (${item.discountPercentage}%)</span>`
                         : "₹0"
                     }
                   </td>
@@ -561,7 +601,7 @@ const generateSalesReport = async (salesData, res, options = {}) => {
                   </td>
                   <td class="right">₹${formatCurrency(item.total || 0)}</td>
                 </tr>
-              `,
+              `
                 )
                 .join("")}
             </tbody>
@@ -589,38 +629,40 @@ const generateSalesReport = async (salesData, res, options = {}) => {
         </script>
       </body>
       </html>
-    `
+    `;
 
-    const filename = `elite-wear-sales-report-${new Date().toISOString().split("T")[0]}.html`
-    res.setHeader("Content-Type", "text/html")
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`)
+    const filename = `elite-wear-sales-report-${
+      new Date().toISOString().split("T")[0]
+    }.html`;
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
 
-    res.send(htmlContent)
-    return true
+    res.send(htmlContent);
+    return true;
   } catch (error) {
-    console.error("Error generating HTML report:", error)
+    console.error("Error generating HTML report:", error);
 
     if (!res.headersSent) {
       res.status(500).json({
         success: false,
         message: "Failed to generate HTML report",
         error: error.message,
-      })
+      });
     }
 
-    return false
+    return false;
   }
-}
+};
 
 const generateExcel = async (salesData, res, options = {}) => {
-  const { fromDate, toDate, productOffers = [] } = options
+  const { fromDate, toDate, productOffers = [] } = options;
 
-  const workbook = new ExcelJS.Workbook()
-  workbook.creator = "Elite Wear"
-  workbook.created = new Date()
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "Elite Wear";
+  workbook.created = new Date();
 
   // Main sales data worksheet
-  const worksheet = workbook.addWorksheet("Sales Report")
+  const worksheet = workbook.addWorksheet("Sales Report");
 
   worksheet.columns = [
     { header: "Buyer", key: "buyer", width: 20 },
@@ -639,15 +681,15 @@ const generateExcel = async (salesData, res, options = {}) => {
     { header: "Date", key: "orderDate", width: 20 },
     { header: "Status", key: "status", width: 15 },
     { header: "Payment Method", key: "paymentMethod", width: 15 },
-  ]
+  ];
 
-  worksheet.getRow(1).font = { bold: true }
+  worksheet.getRow(1).font = { bold: true };
   worksheet.getRow(1).fill = {
     type: "pattern",
     pattern: "solid",
     fgColor: { argb: "4167B8" },
-  }
-  worksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFF" } }
+  };
+  worksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFF" } };
 
   salesData.forEach((item) => {
     worksheet.addRow({
@@ -667,78 +709,112 @@ const generateExcel = async (salesData, res, options = {}) => {
       orderDate: new Date(item.orderDate).toLocaleDateString(),
       status: item.status,
       paymentMethod: item.paymentMethod,
-    })
-  })
+    });
+  });
 
-  const totalSales = salesData.reduce((sum, item) => sum + (item.total || 0), 0)
-  const totalItems = salesData.reduce((sum, item) => sum + (item.quantity || 0), 0)
-  const totalDiscounts = salesData.reduce((sum, item) => sum + (item.discount || 0), 0)
+  const totalSales = salesData.reduce(
+    (sum, item) => sum + (item.total || 0),
+    0
+  );
+  const totalItems = salesData.reduce(
+    (sum, item) => sum + (item.quantity || 0),
+    0
+  );
+  const totalDiscounts = salesData.reduce(
+    (sum, item) => sum + (item.discount || 0),
+    0
+  );
 
   const totalProductDiscounts = salesData.reduce((sum, item) => {
     const productDiscountAmount =
-      (item.price || 0) * ((item.productEffectiveDiscount || 0) / 100) * (item.quantity || 0)
-    return sum + productDiscountAmount
-  }, 0)
+      (item.price || 0) *
+      ((item.productEffectiveDiscount || 0) / 100) *
+      (item.quantity || 0);
+    return sum + productDiscountAmount;
+  }, 0);
 
   const totalCouponDiscounts = salesData.reduce((sum, item) => {
     if (item.couponApplied) {
       if (item.discount > 0) {
-        return sum + item.discount
+        return sum + item.discount;
       }
-      const couponDiscountAmount = (item.price || 0) * ((item.couponPercent || 0) / 100) * (item.quantity || 0)
-      return sum + couponDiscountAmount
+      const couponDiscountAmount =
+        (item.price || 0) *
+        ((item.couponPercent || 0) / 100) *
+        (item.quantity || 0);
+      return sum + couponDiscountAmount;
     }
-    return sum
-  }, 0)
+    return sum;
+  }, 0);
 
-  const ordersWithCoupons = salesData.filter((item) => item.couponApplied).length
-  const uniqueCoupons = new Set(salesData.filter((item) => item.couponCode).map((item) => item.couponCode)).size
+  const ordersWithCoupons = salesData.filter(
+    (item) => item.couponApplied
+  ).length;
+  const uniqueCoupons = new Set(
+    salesData.filter((item) => item.couponCode).map((item) => item.couponCode)
+  ).size;
 
   // New product offer calculations
-  const productsWithOffers = salesData.filter((item) => item.productOffer > 0).length
+  const productsWithOffers = salesData.filter(
+    (item) => item.productOffer > 0
+  ).length;
   const totalProductOfferValue = salesData.reduce((sum, item) => {
     if (item.productOffer > 0) {
-      const offerValue = (item.price || 0) * (item.productOffer / 100) * (item.quantity || 0)
-      return sum + offerValue
+      const offerValue =
+        (item.price || 0) * (item.productOffer / 100) * (item.quantity || 0);
+      return sum + offerValue;
     }
-    return sum
-  }, 0)
+    return sum;
+  }, 0);
   const averageProductOffer =
-    salesData.reduce((sum, item) => sum + (item.productOffer || 0), 0) / (productsWithOffers || 1)
+    salesData.reduce((sum, item) => sum + (item.productOffer || 0), 0) /
+    (productsWithOffers || 1);
 
-  worksheet.addRow([])
-  worksheet.addRow(["Report Period:", `${fromDate} to ${toDate}`])
-  worksheet.addRow(["Total Sales:", `₹${totalSales.toLocaleString()}`])
-  worksheet.addRow(["Items Sold:", totalItems])
-  worksheet.addRow(["Total Discounts:", `₹${totalDiscounts.toLocaleString()}`])
-  worksheet.addRow(["Product Discounts:", `₹${totalProductDiscounts.toLocaleString()}`])
-  worksheet.addRow(["Coupon Discounts:", `₹${totalCouponDiscounts.toLocaleString()}`])
-  worksheet.addRow(["Orders with Coupons:", ordersWithCoupons])
-  worksheet.addRow(["Unique Coupons Used:", uniqueCoupons])
+  worksheet.addRow([]);
+  worksheet.addRow(["Report Period:", `${fromDate} to ${toDate}`]);
+  worksheet.addRow(["Total Sales:", `₹${totalSales.toLocaleString()}`]);
+  worksheet.addRow(["Items Sold:", totalItems]);
+  worksheet.addRow(["Total Discounts:", `₹${totalDiscounts.toLocaleString()}`]);
+  worksheet.addRow([
+    "Product Discounts:",
+    `₹${totalProductDiscounts.toLocaleString()}`,
+  ]);
+  worksheet.addRow([
+    "Coupon Discounts:",
+    `₹${totalCouponDiscounts.toLocaleString()}`,
+  ]);
+  worksheet.addRow(["Orders with Coupons:", ordersWithCoupons]);
+  worksheet.addRow(["Unique Coupons Used:", uniqueCoupons]);
 
   // Add product offer summary rows
-  worksheet.addRow([])
-  worksheet.addRow(["Products with Offers:", productsWithOffers])
-  worksheet.addRow(["Total Offer Value:", `₹${totalProductOfferValue.toLocaleString()}`])
-  worksheet.addRow(["Average Offer Percentage:", `${averageProductOffer.toFixed(1)}%`])
+  worksheet.addRow([]);
+  worksheet.addRow(["Products with Offers:", productsWithOffers]);
+  worksheet.addRow([
+    "Total Offer Value:",
+    `₹${totalProductOfferValue.toLocaleString()}`,
+  ]);
+  worksheet.addRow([
+    "Average Offer Percentage:",
+    `${averageProductOffer.toFixed(1)}%`,
+  ]);
 
-  worksheet.addRow(["Generated On:", new Date().toLocaleString()])
+  worksheet.addRow(["Generated On:", new Date().toLocaleString()]);
 
-  worksheet.getColumn("price").numFmt = "₹#,##0.00"
-  worksheet.getColumn("discount").numFmt = "₹#,##0.00"
-  worksheet.getColumn("total").numFmt = "₹#,##0.00"
+  worksheet.getColumn("price").numFmt = "₹#,##0.00";
+  worksheet.getColumn("discount").numFmt = "₹#,##0.00";
+  worksheet.getColumn("total").numFmt = "₹#,##0.00";
 
   // Add a separate worksheet for product offers if available
   if (productOffers && productOffers.length > 0) {
     const offersWorksheet = workbook.addWorksheet("Product Offers");
-    
+
     offersWorksheet.columns = [
       { header: "Product Name", key: "productName", width: 40 },
       { header: "Offer %", key: "offer", width: 15 },
       { header: "Items Sold", key: "count", width: 15 },
       { header: "Total Value", key: "totalValue", width: 20 },
     ];
-    
+
     offersWorksheet.getRow(1).font = { bold: true };
     offersWorksheet.getRow(1).fill = {
       type: "pattern",
@@ -746,29 +822,34 @@ const generateExcel = async (salesData, res, options = {}) => {
       fgColor: { argb: "27AE60" },
     };
     offersWorksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFF" } };
-    
-    productOffers.forEach(offer => {
+
+    productOffers.forEach((offer) => {
       offersWorksheet.addRow({
         productName: offer.productName,
         offer: offer.offer,
         count: offer.count,
-        totalValue: offer.totalValue
+        totalValue: offer.totalValue,
       });
     });
-    
+
     offersWorksheet.getColumn("totalValue").numFmt = "₹#,##0.00";
   }
 
-  res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename=sales-report-${new Date().toISOString().split("T")[0]}.xlsx`,
-  )
+    `attachment; filename=sales-report-${
+      new Date().toISOString().split("T")[0]
+    }.xlsx`
+  );
 
-  await workbook.xlsx.write(res)
-}
+  await workbook.xlsx.write(res);
+};
 
 module.exports = {
   generateSalesReport,
   generateExcel,
-}
+};

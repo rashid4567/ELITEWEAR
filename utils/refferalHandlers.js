@@ -236,7 +236,6 @@ const getReferralHistory = async (userId, page = 1, limit = 10) => {
 
     const skip = (page - 1) * limit;
 
-    
     const referralsGiven = await ReferralHistory.find({ referrerId: userId })
       .populate("newUserId", "fullname email createdAt")
       .sort({ date: -1 })
