@@ -302,21 +302,17 @@ const editCategory = async (req, res) => {
     }
 
     if (trimmedName.includes(" ")) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Category name cannot contain spaces",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Category name cannot contain spaces",
+      });
     }
 
     if (/\d/.test(trimmedName)) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Category name cannot contain numbers",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Category name cannot contain numbers",
+      });
     }
 
     if (trimmedDescription.length < 20) {
@@ -333,21 +329,17 @@ const editCategory = async (req, res) => {
     }
 
     if (maxRedeemableValue < 0) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Max redeemable amount cannot be negative",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Max redeemable amount cannot be negative",
+      });
     }
 
     if (maxRedeemableValue > 500000) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Max redeemable cannot exceed ₹500,000",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Max redeemable cannot exceed ₹500,000",
+      });
     }
 
     const existingCategory = await Category.findOne({
